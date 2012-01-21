@@ -16,7 +16,10 @@ public class ConnectEncoder implements MessageEncoder<ConnectMessage> {
     public void encode(IoSession session, ConnectMessage message, ProtocolEncoderOutput out) throws Exception {
         IoBuffer staticHeaderBuff = IoBuffer.allocate(12);
         staticHeaderBuff.put(Utils.encodeString("MQIsdp"));
-
+        
+        //version 
+        staticHeaderBuff.put((byte)0x03);
+        
         //connection flags and Strings
         byte connectionFlags = 0;
         if (message.isCleanSession()) {

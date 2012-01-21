@@ -68,6 +68,7 @@ public class ConnectEncoderTest {
         assertEquals(0x10, m_mockProtoEncoder.getBuffer().get()); //1 byte
         assertEquals(12, m_mockProtoEncoder.getBuffer().get()); //remaining length
         verifyString("MQIsdp", m_mockProtoEncoder.getBuffer());
+        assertEquals(0x03, m_mockProtoEncoder.getBuffer().get()); //protocol version
         assertEquals(0x32, m_mockProtoEncoder.getBuffer().get()); //flags
         assertEquals(2, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer msb
         assertEquals(0, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer lsb
@@ -94,6 +95,7 @@ public class ConnectEncoderTest {
         assertEquals(0x10, m_mockProtoEncoder.getBuffer().get()); //1 byte
         assertEquals(36, m_mockProtoEncoder.getBuffer().get()); //remaining length
         verifyString("MQIsdp", m_mockProtoEncoder.getBuffer());
+        assertEquals(0x03, m_mockProtoEncoder.getBuffer().get()); //protocol version
         assertEquals(0x36, m_mockProtoEncoder.getBuffer().get()); //flags
         assertEquals(2, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer msb
         assertEquals(0, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer lsb
@@ -129,6 +131,7 @@ public class ConnectEncoderTest {
         assertEquals(0x10, m_mockProtoEncoder.getBuffer().get()); //1 byte
         assertEquals(48, m_mockProtoEncoder.getBuffer().get()); //remaining length
         verifyString("MQIsdp", m_mockProtoEncoder.getBuffer());
+        assertEquals(0x03, m_mockProtoEncoder.getBuffer().get()); //protocol version
         assertEquals((byte)0xF6, (byte)m_mockProtoEncoder.getBuffer().get()); //flags
         assertEquals(2, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer msb
         assertEquals(0, m_mockProtoEncoder.getBuffer().get()); //keepAliveTimer lsb
