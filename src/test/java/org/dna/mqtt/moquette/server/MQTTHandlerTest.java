@@ -20,12 +20,12 @@ public class MQTTHandlerTest {
 
     byte m_returnCode;
     IoSession m_session;
-    MQTTHandler h;
+    MQTTHandler m_handler;
     ConnectMessage connMsg;
     
     @Before
     public void setUp() {
-        h = new MQTTHandler();
+        m_handler = new MQTTHandler();
         connMsg = new ConnectMessage();
         connMsg.setProcotolVersion((byte) 0x03);
         
@@ -50,7 +50,7 @@ public class MQTTHandlerTest {
         connMsg.setProcotolVersion((byte) 0x02);
 
         //Exercise
-        h.handleConnect(m_session, connMsg);
+        m_handler.handleConnect(m_session, connMsg);
         
         //Verify
         assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_returnCode);
@@ -62,7 +62,7 @@ public class MQTTHandlerTest {
         connMsg.setClientID("extremely_long_clientID_greater_than_23");
 
         //Exercise
-        h.handleConnect(m_session, connMsg);
+        m_handler.handleConnect(m_session, connMsg);
         
         //Verify
         assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, m_returnCode);
@@ -77,8 +77,8 @@ public class MQTTHandlerTest {
         IMessaging mockedMessaging = mock(IMessaging.class);
 
         //Exercise
-        h.setMessaging(mockedMessaging);
-        h.handleConnect(m_session, connMsg);
+        m_handler.setMessaging(mockedMessaging);
+        m_handler.handleConnect(m_session, connMsg);
         
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
