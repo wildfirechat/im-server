@@ -31,7 +31,7 @@ public class MQTTHandlerTest {
                     ConnAckMessage buf = (ConnAckMessage) writeRequest.getMessage();
                     assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, buf.getReturnCode());
                 } catch (Exception ex) {
-                    throw new AssertionError("Wrong return code");
+                    fail("Wrong return code");
                 }
             }
         });
@@ -39,4 +39,34 @@ public class MQTTHandlerTest {
         //Exercise
         h.handleConnect(session, connMsg);
     }
+    
+    
+    @Test
+    public void testConnect_badClientID() {
+        MQTTHandler h = new MQTTHandler();
+        ConnectMessage connMsg = new ConnectMessage();
+        connMsg.setProcotolVersion((byte) 0x03);
+        connMsg.setClientID("extremely_long_clientID_grtaer_than_23");
+
+        IoSession session = new DummySession();
+        session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
+
+            @Override
+            public void filterWrite(NextFilter nextFilter, IoSession session,
+                    WriteRequest writeRequest) throws Exception {
+                try {
+                    ConnAckMessage buf = (ConnAckMessage) writeRequest.getMessage();
+                    assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, buf.getReturnCode());
+                } catch (Exception ex) {
+                    fail("Wrong return code");
+                }
+            }
+        });
+
+        //Exercise
+        h.handleConnect(session, connMsg);
+    }
+    
+    
+    
 }
