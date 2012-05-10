@@ -8,7 +8,7 @@
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>moquette</name>
+    <name>Moquette MQTT library</name>
     <url>http://maven.apache.org</url>
 
     <properties>
