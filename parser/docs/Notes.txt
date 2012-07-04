@@ -10,13 +10,55 @@ Per Mina
 Glossario:
 
  QOS: presente solo per i messaggi PUBLISH, definisce 3 livelli
-  QoS0: at most once, cioe' viene notificato al piu' uno (il che' significa che potrebbe anche non essere notificato) equivalente a messaggi non persistenti di JMS
+  QoS0: at most once, cioe' viene notificato al piu' uno (il che' significa che 
+    potrebbe anche non essere notificato) equivalente a messaggi non persistenti di JMS
   QoS1: at least once, delivery equivalente ai messaggi persistenti di JMS
   Q0S2: exactly once, delivery assicurato equivalente ai messagi persistenti di JMS + DUPS_OK_ACKNOWLEDGE
   
 
- RETAIN: se true dice di persistere il messaggio dopo esser stato notificato a tutti i sottoscritori del topic. Se in un secondo momento un cliente si sottoscrive ad un messaggio pubblicato con RETAIN = 1 allora anche il messaggio di notifica dovrà avere RETAIN = 1, altrimenti non accade nulla. I messaggi  notificati al momento del PUBLISH non hanno flag RETAIN = 1 serve solo per dire ai posteri che il messaggio che stanno ricevendo non è "live".
+ RETAIN: Usato solo per i messaggi di PUBLISH, se true dice di persistere il messaggio dopo esser stato notificato a tutti 
+    i sottoscritori del topic. Se in un secondo momento un cliente si sottoscrive ad un 
+    messaggio pubblicato con RETAIN = 1 allora anche il messaggio di notifica dovrà avere RETAIN = 1, 
+    altrimenti non accade nulla. I messaggi  notificati al momento del PUBLISH non hanno flag RETAIN = 1 
+    serve solo per dire ai posteri che il messaggio che stanno ricevendo non è "live".
   Un server PUO' eliminare un messaggio marcato con RETAIN se ne arriva un'altro sullo stesso topic con lunghezza = 0 e RETAIN = 1.
 
- CLEAN SESSION: è un flag disponibile per il solo messaggio di CONNECT.Se = 0 allora il server DEVE memorizzare(mantenere) le sottoscrizioni del client dopo che si sia disconnesso. Questo prevede di continuare a salvare i messaggi QOS1 e QOS2 per i topic sottoscritti cosicche' possano essere consegnati quando il client si riconnetterà. Il server DEVE inoltre mantenere lo stato dei messaggi che stavano per essere consegnati prima che la connessione fosse persa. Questa informazione DEVE esser mantenuta finchè il client si ricconnetta. Se flag = 1 allora il server DEVE scartare qualsiasi informazione precedentemente memorizzata sul client e trattare la connessione come "pulita". Il server DEVE anche scartare qualunque stato qualora il client di disconnetta.  
- Solitamente, un client opererà o in un modo o nell'altro. La scelta dipenderà dall'applicazione. Un sessione cliente pulita non riceverà informazioni vecchie e DOVRA' ri-sottoscriversi ogni volta che si connette. Una sessione cliente NON pulita non perderà nessun messaggio di tipo QoS1 o QoS2 che sia stato pubblicato mentro esso era disconnesso. I messaggi di tipo QoS0 NON vengono mai salvati. Un server deve fornire un meccanismo di amministrazione per la pulizia delle informazione salvate su di un client e che possa essere usata qualora si sappia che il client non si riconnetterà.
+ CLEAN SESSION: è un flag disponibile per il solo messaggio di CONNECT.
+    Se = 0 allora il server DEVE memorizzare(mantenere) le sottoscrizioni del client 
+    dopo che si sia disconnesso. Questo prevede di continuare a salvare i messaggi 
+    QOS1 e QOS2 per i topic sottoscritti cosicche' possano essere consegnati quando 
+    il client si riconnetterà. Il server DEVE inoltre mantenere lo stato dei messaggi 
+    che stavano per essere consegnati prima che la connessione fosse persa. 
+    Questa informazione DEVE esser mantenuta finchè il client si ricconnetta. 
+    Se flag = 1 allora il server DEVE scartare qualsiasi informazione precedentemente 
+    memorizzata sul client e trattare la connessione come "pulita". 
+    Il server DEVE anche scartare qualunque stato qualora il client di disconnetta.  
+ Solitamente, un client opererà o in un modo o nell'altro. La scelta dipenderà dall'applicazione. 
+    Un sessione cliente pulita non riceverà informazioni vecchie e DOVRA' ri-sottoscriversi 
+    ogni volta che si connette. Una sessione cliente NON pulita non perderà nessun messaggio di 
+    tipo QoS1 o QoS2 che sia stato pubblicato mentro esso era disconnesso. I messaggi 
+    di tipo QoS0 NON vengono mai salvati. Un server deve fornire un meccanismo di 
+    amministrazione per la pulizia delle informazione salvate su di un client e 
+    che possa essere usata qualora si sappia che il client non si riconnetterà.
+
+
+**** CONNECT ****
+ C           S
+CONNECT ->
+        <-  CONNACK
+
+**** PUBLISH ****
+A client PUBLISH a message on a server QoS 1:
+
+ C               S
+PUBLISH -> 
+        <-    PUBACK
+
+A server send a PUBLISH notification to a client QoS 1:
+ S               C
+PUBLISH -> 
+        <-    PUBACK
+
+
+
+

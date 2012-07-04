@@ -19,6 +19,8 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 public class MQTTHandler extends IoHandlerAdapter {
 
     private static final Logger LOG = Logger.getLogger(MQTTHandler.class.getName());
+    
+    /** Maps CLIENT_ID to the IoSession that represents the connection*/
     Map<String, IoSession> m_clientIDs = new HashMap<String, IoSession>();
     private IMessaging m_messaging;
     private IAuthenticator m_authenticator;
@@ -80,7 +82,7 @@ public class MQTTHandler extends IoHandlerAdapter {
             }
         }
 
-        //TODO handle clean session flag
+        //TODO handle clean session flag once the QoS1 and QoS2
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);

@@ -38,7 +38,7 @@ public class Server {
         acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
         acceptor.setHandler( new MQTTHandler() );
-	acceptor.getSessionConfig().setReadBufferSize( 2048 );
+        acceptor.getSessionConfig().setReadBufferSize( 2048 );
         acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
         acceptor.bind( new InetSocketAddress(PORT) );
         LOG.info("Server binded");
