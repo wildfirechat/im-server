@@ -10,6 +10,8 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 
 /**
@@ -17,11 +19,12 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
  * @author andrea
  */
 public class MQTTHandler extends IoHandlerAdapter {
+    protected static final String ATTR_CLIENTID = "ClientID";
 
     private static final Logger LOG = Logger.getLogger(MQTTHandler.class.getName());
     
     /** Maps CLIENT_ID to the IoSession that represents the connection*/
-    Map<String, IoSession> m_clientIDs = new HashMap<String, IoSession>();
+    Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private IMessaging m_messaging;
     private IAuthenticator m_authenticator;
 
@@ -32,6 +35,8 @@ public class MQTTHandler extends IoHandlerAdapter {
         switch (msg.getMessageType()) {
             case CONNECT:
                 handleConnect(session, (ConnectMessage) msg);
+            case SUBSCRIBE:
+                handleSubscribe(session, (SubscribeMessage) msg);
         }
     }
 
@@ -53,13 +58,17 @@ public class MQTTHandler extends IoHandlerAdapter {
 
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
-            m_clientIDs.get(msg.getClientID()).close(false);
+            m_clientIDs.get(msg.getClientID()).getSession().close(false);
         }
-        m_clientIDs.put(msg.getClientID(), session);
+        
+        ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());
+        m_clientIDs.put(msg.getClientID(), connDescr);
 
         int keepAlive = msg.getKeepAlive();
         session.setAttribute("keepAlive", keepAlive);
         session.setAttribute("cleanSession", msg.isCleanSession());
+        //used to track the client in the subscription and publishing phases. 
+        session.setAttribute(ATTR_CLIENTID, msg.getClientID());
 
         session.getConfig().setIdleTime(IdleStatus.READER_IDLE, Math.round(keepAlive * 1.5f));
 
@@ -87,6 +96,23 @@ public class MQTTHandler extends IoHandlerAdapter {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
         session.write(okResp);
+    }
+    
+    protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
+        for(SubscribeMessage.Couple req : msg.subscriptions()) {
+            m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID), 
+                    req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
+        }
+        
+        //ack the client
+        SubAckMessage ackMessage = new SubAckMessage();
+        ackMessage.setMessageID(msg.getMessageID());
+        
+        //TODO by now it handles only QoS 0 messages
+        for (int i=0; i < msg.subscriptions().size(); i++) {
+            ackMessage.addType(QOSType.MOST_ONE);
+        }
+        session.write(ackMessage);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.dna.mqtt.moquette.server;
 
+import org.mockito.ArgumentCaptor;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.apache.mina.core.write.WriteRequest;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.apache.mina.core.filterchain.IoFilterAdapter;
@@ -7,6 +9,7 @@ import org.apache.mina.core.session.DummySession;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -83,5 +86,28 @@ public class MQTTHandlerTest {
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
         verify(mockedMessaging).publish(eq("topic"), eq("Topic message"), anyByte(), anyBoolean());
+    }
+    
+    
+    @Test
+    public void testHandleSubscribe() {
+        String topicName = "/news";
+        SubscribeMessage subscribeMsg = new SubscribeMessage();
+        subscribeMsg.setMessageID(0x555);
+        subscribeMsg.addSubscription(new SubscribeMessage.Couple(
+                (byte)AbstractMessage.QOSType.EXACTLY_ONCE.ordinal(), topicName));
+        IMessaging mockedMessaging = mock(IMessaging.class);
+        
+        m_session.setAttribute(MQTTHandler.ATTR_CLIENTID, "fakeID");
+        
+
+        //Exercise
+        m_handler.setMessaging(mockedMessaging);
+        m_handler.handleSubscribe(m_session, subscribeMsg);
+        
+        //Verify
+        ArgumentCaptor<AbstractMessage.QOSType> argument = ArgumentCaptor.forClass(AbstractMessage.QOSType.class);
+        verify(mockedMessaging).subscribe(eq("fakeID"), eq(topicName), argument.capture());
+        assertEquals(AbstractMessage.QOSType.EXACTLY_ONCE, argument.getValue());
     }
 }
