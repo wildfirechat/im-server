@@ -4,7 +4,7 @@ package org.dna.mqtt.moquette.proto.messages;
  * Base class for alla the messages that carries only MessageID. (PUBACK, PUBREC,
  * PUBREL, PUBCOMP, UNSUBACK)
  * 
- * The flags dup, QOS and Retained doens't take care.
+ * The flags dup, QOS and Retained doesn't take care.
  * 
  * @author andrea
  */
