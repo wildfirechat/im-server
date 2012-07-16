@@ -1,10 +1,7 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -43,6 +40,32 @@ public class SimpleMessagingTest {
         messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
         
         //Verify
-        assertTrue(messaging.getSubscriptions().contains(new Subscription(clientID, topic, QOSType.MOST_ONE)));
+        Subscription expectedSubscription = new Subscription(clientID, topic, QOSType.MOST_ONE);
+        assertTrue(messaging.getSubscriptions().contains(expectedSubscription));
+    }
+    
+    @Test
+    public void testDoubleSubscribe() {
+        String clientID = "FAKE_123";
+        String topic = "/news";
+        SimpleMessaging messaging = new SimpleMessaging();
+        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
+        
+        //Exercise
+        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
+        
+        //Verify
+        Subscription subscription = new Subscription(clientID, topic, QOSType.MOST_ONE);
+        assertEquals(1, countMatchingSubscriptions(messaging.getSubscriptions(), subscription));
+    }
+    
+    private int countMatchingSubscriptions(List<Subscription> l, Subscription matchingSub) {
+        int count = 0;
+        for (Subscription s : l) {
+            if (s.equals(matchingSub)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

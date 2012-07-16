@@ -18,7 +18,11 @@ public class SimpleMessaging implements IMessaging {
     }
 
     public void subscribe(String clientId, String topic, QOSType qos) {
-        subscriptions.add(new Subscription(clientId, topic, qos));
+        Subscription newSubscription = new Subscription(clientId, topic, qos);
+        if (subscriptions.contains(newSubscription)) {
+            return;
+        }
+        subscriptions.add(newSubscription);
     }
     
     protected List<Subscription> getSubscriptions() {

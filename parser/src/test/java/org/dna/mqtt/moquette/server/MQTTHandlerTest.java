@@ -109,5 +109,11 @@ public class MQTTHandlerTest {
         ArgumentCaptor<AbstractMessage.QOSType> argument = ArgumentCaptor.forClass(AbstractMessage.QOSType.class);
         verify(mockedMessaging).subscribe(eq("fakeID"), eq(topicName), argument.capture());
         assertEquals(AbstractMessage.QOSType.EXACTLY_ONCE, argument.getValue());
+        //TODO verify the message ACK and corresponding QoS!!
     }
+    
+//    @Test
+//    public void testHandleSubscribeMultipleTopics() {
+//        fail("TOBE implemented");
+//    }
 }
