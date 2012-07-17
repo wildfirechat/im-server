@@ -1,9 +1,12 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import org.mockito.ArgumentCaptor;
 import java.util.List;
+import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -67,5 +70,24 @@ public class SimpleMessagingTest {
             }
         }
         return count;
+    }
+    
+    
+    @Test
+    public void testPublish() {
+        String clientID = "FAKE_123";
+        String topic = "/news";
+        SimpleMessaging messaging = new SimpleMessaging();
+        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
+        INotifier notifier = mock(INotifier.class);
+        messaging.setNotifier(notifier);
+        
+        //Exercise
+        messaging.publish(topic, "Hello".getBytes(), QOSType.MOST_ONE, false);
+        
+        //Verify
+        ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
+        verify(notifier).notify(eq(clientID), eq(topic), any(QOSType.class), argument.capture());
+        assertEquals("Hello", new String(argument.getValue()));
     }
 }

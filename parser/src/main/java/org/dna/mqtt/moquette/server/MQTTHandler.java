@@ -1,5 +1,7 @@
 package org.dna.mqtt.moquette.server;
 
+import org.dna.mqtt.moquette.messaging.spi.INotifier;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +20,7 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
  *
  * @author andrea
  */
-public class MQTTHandler extends IoHandlerAdapter {
+public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected static final String ATTR_CLIENTID = "ClientID";
 
     private static final Logger LOG = Logger.getLogger(MQTTHandler.class.getName());
@@ -37,6 +39,8 @@ public class MQTTHandler extends IoHandlerAdapter {
                 handleConnect(session, (ConnectMessage) msg);
             case SUBSCRIBE:
                 handleSubscribe(session, (SubscribeMessage) msg);
+            case PUBLISH:
+                handlePublish(session, (PublishMessage) msg);
         }
     }
 
@@ -74,7 +78,9 @@ public class MQTTHandler extends IoHandlerAdapter {
 
         //Handle will flag
         if (msg.isWillFlag()) {
-            m_messaging.publish(msg.getWillTopic(), msg.getWillMessage(), msg.getWillQos(), msg.isWillRetain());
+            QOSType willQos = QOSType.values()[msg.getWillQos()];
+            m_messaging.publish(msg.getWillTopic(), msg.getWillMessage().getBytes(), 
+                    willQos, msg.isWillRetain());
         }
 
         //handle user authentication
@@ -114,7 +120,12 @@ public class MQTTHandler extends IoHandlerAdapter {
         }
         session.write(ackMessage);
     }
-
+    
+    protected void handlePublish(IoSession session, PublishMessage message) {
+        m_messaging.publish(message.getTopicName(), message.getPayload(), 
+                message.getQos(), message.isRetainFlag());
+    }
+    
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) {
         session.close(false);
@@ -126,5 +137,13 @@ public class MQTTHandler extends IoHandlerAdapter {
 
     public void setAuthenticator(IAuthenticator authenticator) {
         m_authenticator = authenticator;
+    }
+
+    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload) {
+        PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setTopicName(topic);
+        pubMessage.setQos(qOSType);
+        pubMessage.setPayload(payload);
+        m_clientIDs.get(clientId).getSession().write(pubMessage);
     }
 }

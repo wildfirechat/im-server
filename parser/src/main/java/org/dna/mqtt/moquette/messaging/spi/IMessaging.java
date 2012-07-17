@@ -15,7 +15,7 @@ public interface IMessaging {
      * notification also after all the current subscriber to the given topic has
      * been notified.
      */
-    void publish(String topic, Object message, byte qos, boolean retain) ;
+    void publish(String topic, byte[] message, QOSType qos, boolean retain);
     
     /**
      * Subscribe a client to a specified topic with a defined level

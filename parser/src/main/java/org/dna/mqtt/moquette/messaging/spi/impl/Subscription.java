@@ -62,4 +62,11 @@ public class Subscription {
         hash = 37 * hash + (this.topic != null ? this.topic.hashCode() : 0);
         return hash;
     }
+
+    /**
+     * Trivial match method
+     */
+    boolean match(String topic) {
+        return this.topic.equals(topic);
+    }
 }
