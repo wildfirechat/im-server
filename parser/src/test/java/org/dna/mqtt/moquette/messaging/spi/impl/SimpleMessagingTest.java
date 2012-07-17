@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import org.junit.Before;
 import org.mockito.ArgumentCaptor;
 import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
@@ -13,55 +14,38 @@ import static org.mockito.Mockito.*;
  * @author andrea
  */
 public class SimpleMessagingTest {
-    
-//    public SimpleMessagingTest() {
-//    }
-//
-//    @BeforeClass
-//    public static void setUpClass() throws Exception {
-//    }
-//
-//    @AfterClass
-//    public static void tearDownClass() throws Exception {
-//    }
-//    
-//    @Before
-//    public void setUp() {
-//    }
-//    
-//    @After
-//    public void tearDown() {
-//    }
+
+    final static String FAKE_CLIENT_ID = "FAKE_123";
+    final static String FAKE_TOPIC = "/news";
+    SimpleMessaging messaging;
+
+    @Before
+    public void setUp() {
+        messaging = new SimpleMessaging();
+    }
 
     @Test
     public void testSubscribe() {
-        String clientID = "FAKE_123";
-        String topic = "/news";
-        SimpleMessaging messaging = new SimpleMessaging();
-        
         //Exercise
-        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
-        
+        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+
         //Verify
-        Subscription expectedSubscription = new Subscription(clientID, topic, QOSType.MOST_ONE);
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
         assertTrue(messaging.getSubscriptions().contains(expectedSubscription));
     }
-    
+
     @Test
     public void testDoubleSubscribe() {
-        String clientID = "FAKE_123";
-        String topic = "/news";
-        SimpleMessaging messaging = new SimpleMessaging();
-        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
-        
+        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+
         //Exercise
-        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
-        
+        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+
         //Verify
-        Subscription subscription = new Subscription(clientID, topic, QOSType.MOST_ONE);
+        Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
         assertEquals(1, countMatchingSubscriptions(messaging.getSubscriptions(), subscription));
     }
-    
+
     private int countMatchingSubscriptions(List<Subscription> l, Subscription matchingSub) {
         int count = 0;
         for (Subscription s : l) {
@@ -71,23 +55,19 @@ public class SimpleMessagingTest {
         }
         return count;
     }
-    
-    
+
     @Test
     public void testPublish() {
-        String clientID = "FAKE_123";
-        String topic = "/news";
-        SimpleMessaging messaging = new SimpleMessaging();
-        messaging.subscribe(clientID, topic, QOSType.MOST_ONE);
+        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
         INotifier notifier = mock(INotifier.class);
         messaging.setNotifier(notifier);
-        
+
         //Exercise
-        messaging.publish(topic, "Hello".getBytes(), QOSType.MOST_ONE, false);
-        
+        messaging.publish(FAKE_TOPIC, "Hello".getBytes(), QOSType.MOST_ONE, false);
+
         //Verify
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-        verify(notifier).notify(eq(clientID), eq(topic), any(QOSType.class), argument.capture());
+        verify(notifier).notify(eq(FAKE_CLIENT_ID), eq(FAKE_TOPIC), any(QOSType.class), argument.capture());
         assertEquals("Hello", new String(argument.getValue()));
     }
 }
