@@ -5,6 +5,7 @@ import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -34,13 +35,20 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     public void messageReceived(IoSession session, Object message) throws Exception {
         AbstractMessage msg = (AbstractMessage) message;
         LOG.fine("Received a message of type " + msg.getMessageType());
-        switch (msg.getMessageType()) {
-            case CONNECT:
-                handleConnect(session, (ConnectMessage) msg);
-            case SUBSCRIBE:
-                handleSubscribe(session, (SubscribeMessage) msg);
-            case PUBLISH:
-                handlePublish(session, (PublishMessage) msg);
+        try {
+            switch (msg.getMessageType()) {
+                case CONNECT:
+                    handleConnect(session, (ConnectMessage) msg);
+                    break;
+                case SUBSCRIBE:
+                    handleSubscribe(session, (SubscribeMessage) msg);
+                    break;
+                case PUBLISH:
+                    handlePublish(session, (PublishMessage) msg);
+                    break;
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Bad error in processing the message", ex);
         }
     }
 
@@ -53,7 +61,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             return;
         }
 
-        if (msg.getClientID().length() > 23) {
+        if (msg.getClientID() == null || msg.getClientID().length() > 23) {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             session.write(okResp);

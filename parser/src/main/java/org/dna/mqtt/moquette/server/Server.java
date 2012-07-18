@@ -25,6 +25,11 @@ public class Server {
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;
     
     public static void main(String[] args) throws IOException {
+        new Server().startServer();
+        
+    }
+    
+    protected void startServer() throws IOException {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnectDecoder());
         
