@@ -19,8 +19,10 @@ import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
+import org.dna.mqtt.moquette.proto.DisconnectEncoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.server.Server;
 
 /**
@@ -62,6 +64,7 @@ public final class Client {
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
+        encoder.addMessageEncoder(DisconnectMessage.class, new DisconnectEncoder());
 
         m_connector = new NioSocketConnector();
 
@@ -145,14 +148,18 @@ public final class Client {
         }
     }
     
+    
+    /**
+     *  TODO extract this SPI method in a SPI
+     */
     protected void connectionAckCallback(byte returnCode) {
         m_returnCode = returnCode;
         m_connectBarrier.countDown();
     }
     
     public void close() {
-        //TODO send the CLOSE message
-        
+        //send the CLOSE message
+        m_session.write(new DisconnectMessage());
         
         // wait until the summation is done
         m_session.getCloseFuture().awaitUninterruptibly();
