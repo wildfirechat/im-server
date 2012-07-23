@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoConnector;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -17,12 +18,14 @@ import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
+import org.dna.mqtt.moquette.PublishException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.server.Server;
 
 /**
@@ -79,7 +82,7 @@ public final class Client {
     public void connect() throws MQTTException {
         int retries = 0;
         
-        //TODO perhapsh by proto deinifinition should be an implicit retry policy
+        //TODO perhaps by proto deinifinition should be an implicit retry policy
         for (; retries < m_connectRetries; retries++) {
             try {
                 ConnectFuture future = m_connector.connect(new InetSocketAddress(m_hostname, m_port));
@@ -145,6 +148,29 @@ public final class Client {
                     errMsg = "Not idetified erro code " + m_returnCode;
             }
             throw new ConnectionException(errMsg);
+        }
+    }
+    
+    /**
+     * Publish to the connected server the payload message to the given topic.
+     * It's admitted to publish a 0 -length payload.
+     */
+    public void publish(String topic, byte[] payload) throws PublishException{
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName(topic);
+        msg.setPayload(payload);
+        
+        WriteFuture wf = m_session.write(msg);
+        try {
+            wf.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new PublishException(ex);
+        }
+        
+        Throwable ex = wf.getException();
+        if (ex != null) {
+            throw new PublishException(ex);
         }
     }
     

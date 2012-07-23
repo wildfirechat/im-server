@@ -23,7 +23,7 @@ public class ServerIntegrationTest {
         Client client = new Client("localhost", Server.PORT);
         client.connect();
         
-        //TODO client.publish("/topic", what)
+        client.publish("/topic", "Test my payload".getBytes());
         //TODO client.subscribe("/topic", callback)
         
         client.close();
