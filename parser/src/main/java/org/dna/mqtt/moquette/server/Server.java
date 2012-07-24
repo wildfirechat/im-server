@@ -12,6 +12,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.dna.mqtt.moquette.proto.ConnAckEncoder;
 import org.dna.mqtt.moquette.proto.ConnectDecoder;
 import org.dna.mqtt.moquette.proto.DisconnectDecoder;
+import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 /**
  * Launch a  configured version of the server.
@@ -32,6 +33,7 @@ public class Server {
     protected void startServer() throws IOException {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnectDecoder());
+        decoder.addMessageDecoder(new PublishDecoder());
         decoder.addMessageDecoder(new DisconnectDecoder());
         
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();

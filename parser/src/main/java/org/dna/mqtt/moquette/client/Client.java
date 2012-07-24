@@ -22,6 +22,8 @@ import org.dna.mqtt.moquette.PublishException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
+import org.dna.mqtt.moquette.proto.PublishEncoder;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
@@ -42,7 +44,7 @@ public final class Client {
     private static final Logger LOG = Logger.getLogger(Client.class.getName());
 //    private static final String HOSTNAME = /*"localhost"*/ "127.0.0.1";
 //    private static final int PORT = Server.PORT;
-    private static final long CONNECT_TIMEOUT = 30 * 1000L; // 30 seconds
+    private static final long CONNECT_TIMEOUT = 3 * 1000L; // 30 seconds
     final static int DEFAULT_RETRIES = 3;
     private int m_connectRetries = DEFAULT_RETRIES;
     
@@ -67,6 +69,7 @@ public final class Client {
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
+        encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(DisconnectMessage.class, new DisconnectEncoder());
 
         m_connector = new NioSocketConnector();
@@ -159,6 +162,9 @@ public final class Client {
         PublishMessage msg = new PublishMessage();
         msg.setTopicName(topic);
         msg.setPayload(payload);
+        
+        //Untill the server could handle all the Qos levels
+        msg.setQos(AbstractMessage.QOSType.MOST_ONE);
         
         WriteFuture wf = m_session.write(msg);
         try {
