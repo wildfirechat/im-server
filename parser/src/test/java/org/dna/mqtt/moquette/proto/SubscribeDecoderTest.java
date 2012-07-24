@@ -1,16 +1,14 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.SubscribeDecoder;
-import org.dna.mqtt.moquette.proto.Utils;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage.Couple;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.TestUtils.MockProtocolDecoderOutput;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage.Couple;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -56,6 +54,7 @@ public class SubscribeDecoderTest {
         //Verify
         assertEquals(MessageDecoderResult.OK, res);
         assertEquals(2, m_mockProtoDecoder.getMessage().subscriptions().size());
+        assertEquals(AbstractMessage.SUBSCRIBE, m_mockProtoDecoder.getMessage().getMessageType());
     }
     
     private void initHeaderBadQos(IoBuffer buff) {

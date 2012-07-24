@@ -1,16 +1,14 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.PublishDecoder;
-import org.dna.mqtt.moquette.proto.Utils;
-import org.apache.mina.filter.codec.demux.MessageDecoderResult;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.filter.codec.demux.MessageDecoder;
+import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.TestUtils.MockProtocolDecoderOutput;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -48,6 +46,7 @@ public class PublishDecoderTest {
         assertEquals(MessageDecoder.OK, res);
         assertEquals("Fake Topic", m_mockProtoDecoder.getMessage().getTopicName());
         assertNull(m_mockProtoDecoder.getMessage().getMessageID());
+        assertEquals(AbstractMessage.PUBLISH, m_mockProtoDecoder.getMessage().getMessageType());
     }
 
     @Test

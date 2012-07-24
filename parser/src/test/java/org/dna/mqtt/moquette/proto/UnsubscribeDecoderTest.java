@@ -1,15 +1,13 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.Utils;
-import org.dna.mqtt.moquette.proto.UnsubscribeDecoder;
-import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.TestUtils.MockProtocolDecoderOutput;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -57,6 +55,7 @@ public class UnsubscribeDecoderTest {
         assertEquals(2, m_mockProtoDecoder.getMessage().topics().size());
         assertEquals(topic1, m_mockProtoDecoder.getMessage().topics().get(0));
         assertEquals(topic2, m_mockProtoDecoder.getMessage().topics().get(1));
+        assertEquals(AbstractMessage.UNSUBSCRIBE, m_mockProtoDecoder.getMessage().getMessageType());
     }
     
     private void initHeaderBadQos(IoBuffer buff) {
@@ -71,7 +70,7 @@ public class UnsubscribeDecoderTest {
         }
         topicBuffer.flip();
         
-        buff.clear().put((byte)(AbstractMessage.SUBSCRIBE << 4 | (byte)0x02))
+        buff.clear().put((byte)(AbstractMessage.UNSUBSCRIBE << 4 | (byte)0x02))
                 .put(Utils.encodeRemainingLength(topicBuffer.remaining()));
         buff.put(topicBuffer);
     }

@@ -18,7 +18,7 @@ public abstract class MqttDecoder extends MessageDecoderAdapter {
             return NEED_DATA;
         }
         byte h1 = in.get();
-        byte messageType = (byte) ((h1 & 0x0010) >> 4);
+        byte messageType = (byte) ((h1 & 0x00F0) >> 4);
         boolean dupFlag = ((byte) ((h1 & 0x0008) >> 3) == 1);
         byte qosLevel = (byte) ((h1 & 0x0006) >> 1);
         boolean retainFlag = ((byte) (h1 & 0x0001) == 1);

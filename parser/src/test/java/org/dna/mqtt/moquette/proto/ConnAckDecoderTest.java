@@ -1,15 +1,14 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.ConnAckDecoder;
-import org.apache.mina.filter.codec.demux.MessageDecoderResult;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.apache.mina.filter.codec.demux.MessageDecoder;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.filter.codec.demux.MessageDecoder;
+import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.TestUtils.MockProtocolDecoderOutput;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 /**
  *
  * @author andrea
@@ -50,6 +49,7 @@ public class ConnAckDecoderTest {
         assertNotNull(m_mockProtoDecoder.getMessage());
         assertEquals(MessageDecoder.OK, res);
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_mockProtoDecoder.getMessage().getReturnCode());
+        assertEquals(AbstractMessage.CONNACK, m_mockProtoDecoder.getMessage().getMessageType());
     }
     
     private void initHeader(IoBuffer buff) {
