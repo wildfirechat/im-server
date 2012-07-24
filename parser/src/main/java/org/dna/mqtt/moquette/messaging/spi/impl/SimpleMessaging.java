@@ -11,7 +11,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
  * @author andrea
  */
 public class SimpleMessaging implements IMessaging {
-    //TODO is poorly performace on concurrent load
+    //TODO is poorly performace on concurrent load, use at least ReadWriteLock
     private List<Subscription> subscriptions = new ArrayList<Subscription>();
     
     private INotifier m_notifier;
