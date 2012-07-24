@@ -92,7 +92,7 @@ public class Utils {
     }
     
     /**
-     * Return the IoBuffer with string ancoded as MSB, LSB and UTF-8 encoded
+     * Return the IoBuffer with string encoded as MSB, LSB and UTF-8 encoded
      * string content.
      */
     static IoBuffer encodeString(String str) {
