@@ -4,8 +4,8 @@ import java.util.logging.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
+import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 
 /**
  *
@@ -28,7 +28,7 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
         switch (msg.getMessageType()) {
             case CONNACK:
                 handleConnectAck(session, (ConnAckMessage) msg);
-        break;
+                break;
 //            case SUBSCRIBE:
 //                handleSubscribe(session, (SubscribeMessage) msg);
 //        break;

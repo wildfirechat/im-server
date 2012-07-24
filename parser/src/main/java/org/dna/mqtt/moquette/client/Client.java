@@ -115,7 +115,7 @@ public final class Client {
         //suspend until the server respond with CONN_ACK
         boolean unlocked = false; 
         try {
-            unlocked = m_connectBarrier.await(1000, TimeUnit.MILLISECONDS); //TODO parametrize
+            unlocked = m_connectBarrier.await(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
         } catch (InterruptedException ex) {
             throw new ConnectionException(ex);
         }
@@ -179,6 +179,7 @@ public final class Client {
      *  TODO extract this SPI method in a SPI
      */
     protected void connectionAckCallback(byte returnCode) {
+        LOG.info("connectionAckCallback invoked");
         m_returnCode = returnCode;
         m_connectBarrier.countDown();
     }
