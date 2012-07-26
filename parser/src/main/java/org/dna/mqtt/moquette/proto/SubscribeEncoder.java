@@ -34,10 +34,10 @@ public class SubscribeEncoder implements MessageEncoder<SubscribeMessage> {
         variableHeaderBuff.flip();
         int variableHeaderSize = variableHeaderBuff.remaining();
         byte flags = Utils.encodeFlags(message);
-        IoBuffer buff = IoBuffer.allocate(4 + variableHeaderSize);
+        IoBuffer buff = IoBuffer.allocate(2 + variableHeaderSize);
 
         buff.put((byte) (AbstractMessage.SUBSCRIBE << 4 | flags));
-        buff.put(Utils.encodeRemainingLength(4 + variableHeaderSize));
+        buff.put(Utils.encodeRemainingLength(variableHeaderSize));
         buff.put(variableHeaderBuff).flip();
 
         out.write(buff);
