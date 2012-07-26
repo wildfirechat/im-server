@@ -29,9 +29,10 @@ public class SubAckDecoder extends MqttDecoder {
         
         //MessageID
         message.setMessageID(Utils.readWord(in));
+        remainingLength -= 2;
         
         //Qos array
-        if (in.remaining() < remainingLength) {
+        if (in.remaining() < remainingLength ) {
             return NEED_DATA;
         }
         for (int i = 0; i < remainingLength; i++) {

@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.proto;
 
 import java.util.List;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.filter.codec.demux.MessageDecoder;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.TestUtils.MockProtocolDecoderOutput;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -46,10 +47,31 @@ public class SubAckDecoderTest {
         assertEquals(QOSType.MOST_ONE, qoses.get(2));
         assertEquals(AbstractMessage.SUBACK, m_mockProtoDecoder.getMessage().getMessageType());
     }
+    
+    
+    @Test
+    public void testBugBadRemainingCalculation() throws Exception {
+        byte[] overallMessage = new byte[] {(byte)0x90, 0x03, //fixed header
+             0x00, 0x0A, //MSG ID
+             0x01}; //QoS array
+         m_buff = IoBuffer.allocate(overallMessage.length).setAutoExpand(true);
+         m_buff.put(overallMessage);
+         m_buff.flip();
+         
+         //Exercise
+        MessageDecoderResult res = m_msgdec.decode(null, m_buff, m_mockProtoDecoder);
+
+        assertNotNull(m_mockProtoDecoder.getMessage());
+        assertEquals(MessageDecoder.OK, res);
+        SubAckMessage message = (SubAckMessage) m_mockProtoDecoder.getMessage();
+        assertEquals(0x0A, message.getMessageID());
+        assertEquals(1, message.types().size());
+        assertEquals(AbstractMessage.QOSType.LEAST_ONE, message.types().get(0));
+    }
 
     private void initHeaderQos(IoBuffer buff, int messageID, QOSType... qoss) throws IllegalAccessException {
         buff.clear().put((byte) (AbstractMessage.SUBACK << 4)).
-                put(Utils.encodeRemainingLength(3));
+                put(Utils.encodeRemainingLength(2 + qoss.length));
         
         Utils.writeWord(buff, messageID);
         for (QOSType qos : qoss) {
