@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.SubscribeException;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -35,7 +37,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.fine("Received a message of type " + msg.getMessageType());
+        LOG.log(Level.INFO, "Received a message of type {0}", msg.getMessageType());
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
@@ -54,6 +56,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     }
 
     protected void handleConnect(IoSession session, ConnectMessage msg) {
+        LOG.info("handleConnect invoked");
         if (msg.getProcotolVersion() != 0x03) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
@@ -114,6 +117,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     }
     
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
+        LOG.info("registering the subscriptions");
         for(SubscribeMessage.Couple req : msg.subscriptions()) {
             m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID), 
                     req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
@@ -127,6 +131,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         for (int i=0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(QOSType.MOST_ONE);
         }
+        LOG.log(Level.INFO, "replying with SubAct to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
     
