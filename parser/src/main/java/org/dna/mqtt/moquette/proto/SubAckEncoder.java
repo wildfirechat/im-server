@@ -27,7 +27,7 @@ public class SubAckEncoder implements MessageEncoder<SubAckMessage> {
 
         variableHeaderBuff.flip();
         int variableHeaderSize = variableHeaderBuff.remaining();
-        IoBuffer buff = IoBuffer.allocate(4 + variableHeaderSize);
+        IoBuffer buff = IoBuffer.allocate(2 + variableHeaderSize);
 
         buff.put((byte) (AbstractMessage.SUBACK << 4 ));
         buff.put(Utils.encodeRemainingLength(variableHeaderSize));
