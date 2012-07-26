@@ -25,7 +25,7 @@ public class PublishEncoderTest {
 
     @Test
     public void testEncodeWithQos_0_noMessageID() throws Exception {
-        String topic = "pictures/photos";
+        String topic = "/photos";
         PublishMessage msg = new PublishMessage();
         msg.setQos(QOSType.MOST_ONE);
         msg.setTopicName(topic);
@@ -39,7 +39,8 @@ public class PublishEncoderTest {
 
         //Verify
         assertEquals(0x30, m_mockProtoEncoder.getBuffer().get()); //1 byte
-        assertEquals(24, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        //(2+7) topic + 3 payload
+        assertEquals(12, m_mockProtoEncoder.getBuffer().get()); //remaining length
 
         //Variable part
         verifyString(topic, m_mockProtoEncoder.getBuffer());
@@ -48,7 +49,7 @@ public class PublishEncoderTest {
 
     @Test
     public void testEncodeWithQos_1_MessageID() throws Exception {
-        String topic = "pictures/photos";
+        String topic = "/photos";
         PublishMessage msg = new PublishMessage();
         msg.setQos(QOSType.LEAST_ONE);
         msg.setMessageID(1);
@@ -63,7 +64,8 @@ public class PublishEncoderTest {
 
         //Verify
         assertEquals(0x32, m_mockProtoEncoder.getBuffer().get()); //1 byte
-        assertEquals(26, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        //(2+7) topic + 2 messageID + 3 payload
+        assertEquals(14, m_mockProtoEncoder.getBuffer().get()); //remaining length
 
         //Variable part
         verifyString(topic, m_mockProtoEncoder.getBuffer());
@@ -117,5 +119,27 @@ public class PublishEncoderTest {
 
         //Exercise
         m_encoder.encode(null, msg, m_mockProtoEncoder);
+    }
+    
+    @Test
+    public void testBugMissedMessageIDEncoding() throws Exception{
+        String topic = "/topic";
+        PublishMessage msg = new PublishMessage();
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setTopicName(topic);
+
+        //variable part
+        byte[] payload = "Test my payload".getBytes();
+        msg.setPayload(payload);
+
+        //Exercise
+        m_encoder.encode(null, msg, m_mockProtoEncoder);
+
+        //Verify
+        //2 byte header + (2+6) topic name + [2 message ID if QoQ <> 0]+ payload
+        int size = m_mockProtoEncoder.getBuffer().remaining();
+        assertEquals(10+payload.length, size);
+        assertEquals(0x30, m_mockProtoEncoder.getBuffer().get()); //1 byte
+        assertEquals(23, m_mockProtoEncoder.getBuffer().get()); //1 byte the length
     }
 }

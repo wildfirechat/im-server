@@ -37,9 +37,9 @@ public class PublishEncoder implements MessageEncoder<PublishMessage> {
         
         byte flags = Utils.encodeFlags(message);
         
-        IoBuffer buff = IoBuffer.allocate(4 + variableHeaderSize);
+        IoBuffer buff = IoBuffer.allocate(2 + variableHeaderSize);
         buff.put((byte) (AbstractMessage.PUBLISH << 4 | flags));
-        buff.put(Utils.encodeRemainingLength(4 + variableHeaderSize));
+        buff.put(Utils.encodeRemainingLength(variableHeaderSize));
         buff.put(variableHeaderBuff).flip();
 
         out.write(buff);
