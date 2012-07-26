@@ -85,7 +85,6 @@ public class PublishDecoderTest {
     
      @Test
      public void testBugOnRealCase() throws Exception {
-      //msg hex = 30:1b:00:06:2f:74:6f:70:69:63:54:65:73:74:20:6d:79:20:70:61:79:6c:6f:61:64
          byte[] overallMessage = new byte[] {0x30, 0x17, //fixed header, 25 byte lenght
              0x00, 0x06, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, //[/topic] string 2 len + 6 content
              0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x79, // [Test my payload] encoding
