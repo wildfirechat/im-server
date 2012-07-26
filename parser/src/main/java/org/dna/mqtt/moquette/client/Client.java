@@ -19,15 +19,19 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.PublishException;
+import org.dna.mqtt.moquette.SubscribeException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
+import org.dna.mqtt.moquette.proto.SubAckDecoder;
+import org.dna.mqtt.moquette.proto.SubscribeEncoder;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.Server;
 
 /**
@@ -44,7 +48,8 @@ public final class Client {
     private static final Logger LOG = Logger.getLogger(Client.class.getName());
 //    private static final String HOSTNAME = /*"localhost"*/ "127.0.0.1";
 //    private static final int PORT = Server.PORT;
-    private static final long CONNECT_TIMEOUT = 3 * 1000L; // 30 seconds
+    private static final long CONNECT_TIMEOUT = 3 * 1000L; // 3 seconds
+    private static final long SUBACK_TIMEOUT = 4 * 1000L;
     final static int DEFAULT_RETRIES = 3;
     private int m_connectRetries = DEFAULT_RETRIES;
     
@@ -55,6 +60,7 @@ public final class Client {
     private IoConnector m_connector;
     private IoSession m_session;
     private CountDownLatch m_connectBarrier;
+    private CountDownLatch m_subscribeBarrier;
     private byte m_returnCode;
 
     public Client(String host, int port) {
@@ -66,15 +72,17 @@ public final class Client {
     protected void init() {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnAckDecoder());
+        decoder.addMessageDecoder(new SubAckDecoder());
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
+        encoder.addMessageEncoder(SubscribeMessage.class, new SubscribeEncoder());
         encoder.addMessageEncoder(DisconnectMessage.class, new DisconnectEncoder());
 
         m_connector = new NioSocketConnector();
 
-        m_connector.getFilterChain().addLast("logger", new LoggingFilter());
+//        m_connector.getFilterChain().addLast("logger", new LoggingFilter());
         m_connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(encoder, decoder));
 
         m_connector.setHandler(new ClientMQTTHandler(this));
@@ -180,6 +188,48 @@ public final class Client {
         }
     }
     
+    public void subscribe(String topic, IPublishCallback publishCallback) {
+        LOG.info("subscribe invoked");
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), topic));
+        msg.setQos(AbstractMessage.QOSType.LEAST_ONE);
+        
+        WriteFuture wf = m_session.write(msg);
+        try {
+            wf.await();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new SubscribeException(ex);
+        }
+        LOG.info("subscribe message sent");
+        
+        Throwable ex = wf.getException();
+        if (ex != null) {
+            throw new SubscribeException(ex);
+        }
+        
+        //TODO register the publishCallback in some registry to be notified
+        
+        //wait for the SubAck
+        m_subscribeBarrier = new CountDownLatch(1);
+        
+        //suspend until the server respond with CONN_ACK
+        boolean unlocked = false; 
+        try {
+            LOG.info("subscribe waiting for suback");
+            unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
+        } catch (InterruptedException iex) {
+            throw new SubscribeException(iex);
+        }
+        
+        //if not arrive into certain limit, raise an error
+        if (!unlocked) {
+            throw new SubscribeException("Subscribe timeout elapsed unless server responded with a SUB_ACK");
+        }
+        
+        //TODO check the ACK messageID
+    }
+    
     
     /**
      *  TODO extract this SPI method in a SPI
@@ -189,6 +239,13 @@ public final class Client {
         m_returnCode = returnCode;
         m_connectBarrier.countDown();
     }
+    
+    
+    protected void subscribeAckCallback() {
+        LOG.info("subscribeAckCallback invoked");
+        m_subscribeBarrier.countDown();
+    }
+    
     
     public void close() {
         //send the CLOSE message

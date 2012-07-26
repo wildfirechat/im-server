@@ -6,6 +6,7 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 
 /**
  *
@@ -29,6 +30,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
             case CONNACK:
                 handleConnectAck(session, (ConnAckMessage) msg);
                 break;
+            case SUBACK:
+                handleSubscribeAck(session, (SubAckMessage) msg);
+                break;
 //            case SUBSCRIBE:
 //                handleSubscribe(session, (SubscribeMessage) msg);
 //        break;
@@ -40,5 +44,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
 
     private void handleConnectAck(IoSession session, ConnAckMessage connAckMessage) {
         m_callback.connectionAckCallback(connAckMessage.getReturnCode());
+    }
+
+    private void handleSubscribeAck(IoSession session, SubAckMessage subAckMessage) {
+        m_callback.subscribeAckCallback();
     }
 }

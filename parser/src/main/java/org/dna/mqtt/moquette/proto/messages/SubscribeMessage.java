@@ -29,6 +29,11 @@ public class SubscribeMessage extends MessageIDMessage {
     }
     private List<Couple> m_subscriptions = new ArrayList<Couple>();
 
+    public SubscribeMessage() {
+        //Subscribe has always QoS 1
+        m_qos = AbstractMessage.QOSType.LEAST_ONE;
+    }
+    
     public List<Couple> subscriptions() {
         return m_subscriptions;
     }
