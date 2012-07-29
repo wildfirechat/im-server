@@ -6,6 +6,7 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 
 /**
@@ -36,9 +37,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
 //            case SUBSCRIBE:
 //                handleSubscribe(session, (SubscribeMessage) msg);
 //        break;
-//            case PUBLISH:
-//                handlePublish(session, (PublishMessage) msg);
-//        break;
+            case PUBLISH:
+                handlePublish(session, (PublishMessage) msg);
+                break;
         }
     }
 
@@ -48,5 +49,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
 
     private void handleSubscribeAck(IoSession session, SubAckMessage subAckMessage) {
         m_callback.subscribeAckCallback();
+    }
+    
+    private void handlePublish(IoSession session, PublishMessage pubMessage) {
+        m_callback.publishCallback(pubMessage.getTopicName(), pubMessage.getPayload());
     }
 }

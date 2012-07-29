@@ -1,6 +1,8 @@
 package org.dna.mqtt.moquette.client;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -14,7 +16,6 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
@@ -23,6 +24,7 @@ import org.dna.mqtt.moquette.SubscribeException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
+import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckDecoder;
 import org.dna.mqtt.moquette.proto.SubscribeEncoder;
@@ -62,6 +64,10 @@ public final class Client {
     private CountDownLatch m_connectBarrier;
     private CountDownLatch m_subscribeBarrier;
     private byte m_returnCode;
+    
+    //TODO synchronize the access
+    //Refact the da model should be a list of callback for each topic
+    private Map<String, IPublishCallback> m_subscribersList = new HashMap<String, IPublishCallback>();
 
     public Client(String host, int port) {
         m_hostname = host;
@@ -73,6 +79,7 @@ public final class Client {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnAckDecoder());
         decoder.addMessageDecoder(new SubAckDecoder());
+        decoder.addMessageDecoder(new PublishDecoder());
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
@@ -209,6 +216,7 @@ public final class Client {
         }
         
         //TODO register the publishCallback in some registry to be notified
+        m_subscribersList.put(topic, publishCallback);
         
         //wait for the SubAck
         m_subscribeBarrier = new CountDownLatch(1);
@@ -244,6 +252,11 @@ public final class Client {
     protected void subscribeAckCallback() {
         LOG.info("subscribeAckCallback invoked");
         m_subscribeBarrier.countDown();
+    }
+    
+    
+    protected void publishCallback(String topic, byte[] payload) {
+        m_subscribersList.get(topic).published(topic, payload);
     }
     
     

@@ -15,9 +15,11 @@ import org.dna.mqtt.moquette.proto.ConnAckEncoder;
 import org.dna.mqtt.moquette.proto.ConnectDecoder;
 import org.dna.mqtt.moquette.proto.DisconnectDecoder;
 import org.dna.mqtt.moquette.proto.PublishDecoder;
+import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckEncoder;
 import org.dna.mqtt.moquette.proto.SubscribeDecoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 /**
  * Launch a  configured version of the server.
@@ -29,6 +31,7 @@ public class Server {
     
     public static final int PORT = 9191;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;
+    private IoAcceptor m_acceptor;
     
     public static void main(String[] args) throws IOException {
         new Server().startServer();
@@ -46,11 +49,12 @@ public class Server {
 //        encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
         encoder.addMessageEncoder(ConnAckMessage.class, new ConnAckEncoder());
         encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
+        encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         
-        IoAcceptor acceptor = new NioSocketAcceptor();
+        m_acceptor = new NioSocketAcceptor();
 
-        acceptor.getFilterChain().addLast( "logger", new LoggingFilter("SERVER LOG") );
-        acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
+        m_acceptor.getFilterChain().addLast( "logger", new LoggingFilter("SERVER LOG") );
+        m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
         MQTTHandler handler = new MQTTHandler();
         SimpleMessaging messaging = new SimpleMessaging();
@@ -59,12 +63,17 @@ public class Server {
         messaging.setNotifier(handler);
         
         
-        acceptor.setHandler(handler);
-        ((NioSocketAcceptor)acceptor).getSessionConfig().setReuseAddress(true);
-        acceptor.getSessionConfig().setReadBufferSize( 2048 );
-        acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
-        acceptor.bind( new InetSocketAddress(PORT) );
+        m_acceptor.setHandler(handler);
+        ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);
+        m_acceptor.getSessionConfig().setReadBufferSize( 2048 );
+        m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
+        m_acceptor.bind( new InetSocketAddress(PORT) );
         LOG.info("Server binded");
+    }
+    
+    protected void stopServer() {
+        m_acceptor.unbind();
+        LOG.info("Server unbinded");
     }
     
 }
