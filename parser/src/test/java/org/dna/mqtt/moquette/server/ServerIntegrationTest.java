@@ -15,7 +15,6 @@ import org.junit.Before;
  */
 public class ServerIntegrationTest {
     
-    IoConnector connector;
     boolean received;
     Server server;
     

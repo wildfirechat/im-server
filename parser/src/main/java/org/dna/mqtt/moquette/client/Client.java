@@ -101,22 +101,22 @@ public final class Client {
         int retries = 0;
         
         //TODO perhaps by proto deinifinition should be an implicit retry policy
-        for (; retries < m_connectRetries; retries++) {
+//        for (; retries < m_connectRetries; retries++) {
             try {
                 ConnectFuture future = m_connector.connect(new InetSocketAddress(m_hostname, m_port));
                 LOG.fine("Client waiting to connect to server");
                 future.awaitUninterruptibly();
                 m_session = future.getSession();
-                break;
+//                break;
             } catch (RuntimeIoException e) {
                 LOG.log(Level.FINE, "Failed to connect, retry " + retries + " of ("+m_connectRetries+")", e);
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                LOG.log(Level.SEVERE, "Error while sleeping for retry", ex);
-            }
-        }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException ex) {
+//                LOG.log(Level.SEVERE, "Error while sleeping for retry", ex);
+//            }
+//        }
         
         if (retries == m_connectRetries) {
             throw new MQTTException("Can't connect to the server after " + retries + "retries");
