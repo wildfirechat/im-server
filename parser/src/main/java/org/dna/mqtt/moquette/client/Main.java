@@ -1,15 +1,16 @@
 package org.dna.mqtt.moquette.client;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.dna.mqtt.moquette.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author andrea
  */
 public class Main {
-    private static final Logger LOG = Logger.getLogger(Main.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     
     static boolean received;
     

@@ -2,13 +2,9 @@ package org.dna.mqtt.moquette.server;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.dna.mqtt.moquette.SubscribeException;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -19,6 +15,8 @@ import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -27,7 +25,7 @@ import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected static final String ATTR_CLIENTID = "ClientID";
 
-    private static final Logger LOG = Logger.getLogger(MQTTHandler.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(MQTTHandler.class);
     
     /** Maps CLIENT_ID to the IoSession that represents the connection*/
     Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
@@ -37,7 +35,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.log(Level.INFO, "Received a message of type {0}", msg.getMessageType());
+        LOG.info("Received a message of type {0}", msg.getMessageType());
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
@@ -51,7 +49,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                     break;
             }
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Bad error in processing the message", ex);
+            LOG.error("Bad error in processing the message", ex);
         }
     }
 
@@ -131,7 +129,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         for (int i=0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(QOSType.MOST_ONE);
         }
-        LOG.log(Level.INFO, "replying with SubAct to MSG ID {0}", msg.getMessageID());
+        LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
     

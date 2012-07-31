@@ -1,11 +1,10 @@
 package org.dna.mqtt.moquette.proto;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.slf4j.LoggerFactory;
 
 /**
  * Common utils methodd used in codecs.
@@ -103,7 +102,7 @@ public class Utils {
             //NB every Java platform has got UTF-8 encoding by default, so this 
             //exception are never raised.
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(ConnectEncoder.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(ConnectEncoder.class).error(null, ex);
             return null;
         }
         Utils.writeWord(out, raw.length);

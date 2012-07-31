@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.WriteFuture;
@@ -35,6 +33,8 @@ import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The API to connect to a MQTT server.
@@ -47,7 +47,7 @@ import org.dna.mqtt.moquette.server.Server;
  */
 public final class Client {
 
-    private static final Logger LOG = Logger.getLogger(Client.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 //    private static final String HOSTNAME = /*"localhost"*/ "127.0.0.1";
 //    private static final int PORT = Server.PORT;
     private static final long CONNECT_TIMEOUT = 3 * 1000L; // 3 seconds
@@ -102,11 +102,11 @@ public final class Client {
         
         try {
             ConnectFuture future = m_connector.connect(new InetSocketAddress(m_hostname, m_port));
-            LOG.fine("Client waiting to connect to server");
+            LOG.debug("Client waiting to connect to server");
             future.awaitUninterruptibly();
             m_session = future.getSession();
         } catch (RuntimeIoException e) {
-            LOG.log(Level.FINE, "Failed to connect, retry " + retries + " of ("+m_connectRetries+")", e);
+            LOG.debug("Failed to connect, retry " + retries + " of ("+m_connectRetries+")", e);
         }
         
         if (retries == m_connectRetries) {
@@ -176,7 +176,7 @@ public final class Client {
         try {
             wf.await();
         } catch (InterruptedException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.debug(null, ex);
             throw new PublishException(ex);
         }
         
@@ -196,7 +196,7 @@ public final class Client {
         try {
             wf.await();
         } catch (InterruptedException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.error(null, ex);
             throw new SubscribeException(ex);
         }
         LOG.info("subscribe message sent");

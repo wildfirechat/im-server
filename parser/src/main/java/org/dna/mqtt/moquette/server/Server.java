@@ -2,7 +2,6 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.logging.Logger;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -21,13 +20,15 @@ import org.dna.mqtt.moquette.proto.SubscribeDecoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Launch a  configured version of the server.
  * @author andrea
  */
 public class Server {
     
-    private static final Logger LOG = Logger.getLogger(Server.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
     public static final int PORT = 9191;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;

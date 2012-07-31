@@ -1,6 +1,5 @@
 package org.dna.mqtt.moquette.client;
 
-import java.util.logging.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -8,6 +7,8 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -15,7 +16,7 @@ import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
  */
 public class ClientMQTTHandler extends IoHandlerAdapter {
     
-    private static final Logger LOG = Logger.getLogger(ClientMQTTHandler.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ClientMQTTHandler.class);
     
     Client m_callback;
 
@@ -26,7 +27,7 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.fine("Received a message of type " + msg.getMessageType());
+        LOG.debug("Received a message of type " + msg.getMessageType());
         switch (msg.getMessageType()) {
             case CONNACK:
                 handleConnectAck(session, (ConnAckMessage) msg);

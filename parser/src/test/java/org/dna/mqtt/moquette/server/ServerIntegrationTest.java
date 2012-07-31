@@ -1,7 +1,6 @@
 package org.dna.mqtt.moquette.server;
 
 import java.io.IOException;
-import org.apache.mina.core.service.IoConnector;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
 import org.junit.After;
