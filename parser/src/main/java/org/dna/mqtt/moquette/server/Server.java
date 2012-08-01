@@ -13,6 +13,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.proto.ConnAckEncoder;
 import org.dna.mqtt.moquette.proto.ConnectDecoder;
 import org.dna.mqtt.moquette.proto.DisconnectDecoder;
+import org.dna.mqtt.moquette.proto.MQTTLoggingFilter;
 import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckEncoder;
@@ -54,7 +55,7 @@ public class Server {
         
         m_acceptor = new NioSocketAcceptor();
 
-        m_acceptor.getFilterChain().addLast( "logger", new LoggingFilter("SERVER LOG") );
+        m_acceptor.getFilterChain().addLast( "logger", new MQTTLoggingFilter("SERVER LOG") );
         m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
         MQTTHandler handler = new MQTTHandler();
