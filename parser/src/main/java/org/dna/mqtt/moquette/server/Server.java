@@ -7,7 +7,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.proto.ConnAckEncoder;
@@ -71,11 +70,19 @@ public class Server {
         m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
         m_acceptor.bind( new InetSocketAddress(PORT) );
         LOG.info("Server binded");
+        
+        //Bind  a shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                stopServer();
+            }
+        });
     }
     
     protected void stopServer() {
         m_acceptor.unbind();
         LOG.info("Server unbinded");
     }
-    
+
 }
