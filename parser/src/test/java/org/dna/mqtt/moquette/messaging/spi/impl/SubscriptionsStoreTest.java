@@ -39,6 +39,26 @@ public class SubscriptionsStoreTest {
         store.splitTopic("/finance//stock/ibm");
     }
     
+    @Test
+    public void testSplitTopicMultiValid() throws ParseException {
+        List tokens = store.splitTopic("finance/stock/#");
+        assertEqualsSeq(asArray("finance", "stock", Token.MULTI), tokens);
+        
+        tokens = store.splitTopic("#");
+        assertEqualsSeq(asArray(Token.MULTI), tokens);
+    }
+    
+    
+    @Test(expected = ParseException.class)
+    public void testSplitTopicMultiInTheMiddleNotValid() throws ParseException {
+        store.splitTopic("finance/#/closingprice");
+    }
+    
+    @Test(expected = ParseException.class)
+    public void testSplitTopicMultiNotAferSeparatorNotValid() throws ParseException {
+        store.splitTopic("finance#");
+    }
+    
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];
         for (int i = 0; i < l.length; i++) {

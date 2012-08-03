@@ -85,10 +85,18 @@ public class SubscriptionsStore {
             String s = splitted[i];
             if (s.isEmpty()) {
                 if (i != 0){
-                    throw new ParseException("Bad format of topic, expetec toppic name between separators", i);
+                    throw new ParseException("Bad format of topic, expetec topic name between separators", i);
                 }
                 res.add(Token.EMPTY);
-            } else {
+            } else if (s.equals("#")) {
+                //check that multi is the last symbol
+                if (i != splitted.length - 1 ) {
+                    throw new ParseException("Bad format of topic, the multi symbol (#) has to be the last one after a separator", i);
+                }
+                res.add(Token.MULTI);
+            } else if (s.contains("#")) {
+                throw new ParseException("Bad format of topic, invalid subtopic name: " + s, i);
+            }else {
                 res.add(new Token(s));
             }
         }
