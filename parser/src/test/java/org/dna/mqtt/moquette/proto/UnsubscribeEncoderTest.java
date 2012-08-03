@@ -1,8 +1,7 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.SubscribeEncoder;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage.Couple;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.proto.UnsubscribeEncoder;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,64 +13,58 @@ import static org.dna.mqtt.moquette.proto.TestUtils.*;
  * @author andrea
  */
 public class UnsubscribeEncoderTest {
-
-    SubscribeEncoder m_encoder;
+    UnsubscribeMessage m_msg;
+    UnsubscribeEncoder m_encoder;
     TestUtils.MockProtocolEncoderOutput m_mockProtoEncoder;
 
     @Before
     public void setUp() {
-        m_encoder = new SubscribeEncoder();
+        m_encoder = new UnsubscribeEncoder();
         m_mockProtoEncoder = new TestUtils.MockProtocolEncoderOutput();
+        m_msg = new UnsubscribeMessage();
+        m_msg.setMessageID(0xAABB);
     }
 
     @Test
     public void testEncodeWithMultiTopic() throws Exception {
-        SubscribeMessage msg = new SubscribeMessage();
-        msg.setQos(QOSType.LEAST_ONE);
-        msg.setMessageID(0xAABB);
+        m_msg.setQos(QOSType.LEAST_ONE);
         
         //variable part
-        Couple c1 = new Couple((byte)1, "a/b");
-        Couple c2 = new Couple((byte)0, "a/b/c");
-        msg.addSubscription(c1);
-        msg.addSubscription(c2);
+        String topic1 = "a/b";
+        String topic2 = "a/b/c";
+        m_msg.addTopic(topic1);
+        m_msg.addTopic(topic2);
 
         //Exercise
-        m_encoder.encode(null, msg, m_mockProtoEncoder);
+        m_encoder.encode(null, m_msg, m_mockProtoEncoder);
 
         //Verify
-        assertEquals((byte)0x82, (byte)m_mockProtoEncoder.getBuffer().get()); //1 byte
-        assertEquals(20, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        assertEquals((byte)0xA2, (byte)m_mockProtoEncoder.getBuffer().get()); //1 byte
+        assertEquals(18, m_mockProtoEncoder.getBuffer().get()); //remaining length
         
         //verify M1ssageID
         assertEquals((byte)0xAA, m_mockProtoEncoder.getBuffer().get());
         assertEquals((byte)0xBB, m_mockProtoEncoder.getBuffer().get());
         
         //Variable part
-        verifyString(c1.getTopic(), m_mockProtoEncoder.getBuffer());
-        assertEquals(c1.getQos(), m_mockProtoEncoder.getBuffer().get());
-        verifyString(c2.getTopic(), m_mockProtoEncoder.getBuffer());
-        assertEquals(c2.getQos(), m_mockProtoEncoder.getBuffer().get());
+        verifyString(topic1, m_mockProtoEncoder.getBuffer());
+        verifyString(topic2, m_mockProtoEncoder.getBuffer());
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void testEncode_empty_subscription() throws Exception {
-        SubscribeMessage msg = new SubscribeMessage();
-        msg.setQos(QOSType.LEAST_ONE);
-        msg.setMessageID(0xAABB);
+    public void testEncode_empty_topics() throws Exception {
+        m_msg.setQos(QOSType.LEAST_ONE);
 
         //Exercise
-        m_encoder.encode(null, msg, m_mockProtoEncoder);
+        m_encoder.encode(null, m_msg, m_mockProtoEncoder);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void testEncode_badQos() throws Exception {
-        SubscribeMessage msg = new SubscribeMessage();
-        msg.setQos(QOSType.EXACTLY_ONCE);
-        msg.setMessageID(0xAABB);
+        m_msg.setQos(QOSType.EXACTLY_ONCE);
 
         //Exercise
-        m_encoder.encode(null, msg, m_mockProtoEncoder);
+        m_encoder.encode(null, m_msg, m_mockProtoEncoder);
     }
 
 }
