@@ -16,7 +16,7 @@ public class SimpleMessaging implements IMessaging {
     //TODO is poorly performace on concurrent load, use at least ReadWriteLock
     
     private ReadWriteLock rwLock = new ReentrantReadWriteLock();
-    private List<Subscription> subscriptions = new ArrayList<Subscription>();
+    private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
     private INotifier m_notifier;
     
@@ -31,10 +31,8 @@ public class SimpleMessaging implements IMessaging {
         
         rwLock.readLock().lock();
         try {
-            for (Subscription sub : subscriptions) {
-                if (sub.match(topic)) {
-                    m_notifier.notify(sub.clientId, topic, defQos, message);
-                }
+            for (Subscription sub : subscriptions.matches(topic)) {
+                m_notifier.notify(sub.clientId, topic, defQos, message);
             }
         } finally {
             rwLock.readLock().unlock();
@@ -44,15 +42,11 @@ public class SimpleMessaging implements IMessaging {
     public void subscribe(String clientId, String topic, QOSType qos) {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         rwLock.writeLock().lock();
-        if (subscriptions.contains(newSubscription)) {
-            rwLock.writeLock().unlock();
-            return;
-        }
         subscriptions.add(newSubscription);
         rwLock.writeLock().unlock();
     }
     
-    protected List<Subscription> getSubscriptions() {
+    protected SubscriptionsStore getSubscriptions() {
         return subscriptions;
     }
 }

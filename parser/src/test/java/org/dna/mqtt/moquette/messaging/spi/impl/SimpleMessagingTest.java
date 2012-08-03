@@ -1,12 +1,11 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import org.junit.Before;
-import org.mockito.ArgumentCaptor;
-import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,17 +42,7 @@ public class SimpleMessagingTest {
 
         //Verify
         Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
-        assertEquals(1, countMatchingSubscriptions(messaging.getSubscriptions(), subscription));
-    }
-
-    private int countMatchingSubscriptions(List<Subscription> l, Subscription matchingSub) {
-        int count = 0;
-        for (Subscription s : l) {
-            if (s.equals(matchingSub)) {
-                count++;
-            }
-        }
-        return count;
+        assertEquals(1, messaging.getSubscriptions().size());
     }
 
     @Test
