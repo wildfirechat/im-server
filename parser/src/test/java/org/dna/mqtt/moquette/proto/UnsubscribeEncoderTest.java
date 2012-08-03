@@ -41,7 +41,7 @@ public class UnsubscribeEncoderTest {
 
         //Verify
         assertEquals((byte)0x82, (byte)m_mockProtoEncoder.getBuffer().get()); //1 byte
-        assertEquals(20, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        assertEquals(16, m_mockProtoEncoder.getBuffer().get()); //remaining length
         
         //verify M1ssageID
         assertEquals((byte)0xAA, m_mockProtoEncoder.getBuffer().get());
