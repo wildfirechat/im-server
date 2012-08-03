@@ -1,13 +1,12 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.SubscribeEncoder;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage.Couple;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import static org.dna.mqtt.moquette.proto.TestUtils.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage.Couple;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.dna.mqtt.moquette.proto.TestUtils.*;
 
 /**
  *
