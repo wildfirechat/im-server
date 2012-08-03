@@ -1,11 +1,12 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -24,9 +25,18 @@ public class SubscriptionsStoreTest {
     }
 
     @Test
-    public void testSplitTopic() {
-        List<Token> result = store.splitTopic("finance/stock/ibm");
-        assertEqualsSeq(asArray("finance", "stock", "ibm"), result);
+    public void testSplitTopic() throws ParseException {
+        List tokens = store.splitTopic("finance/stock/ibm");
+        assertEqualsSeq(asArray("finance", "stock", "ibm"), tokens);
+        
+        tokens = store.splitTopic("/finance/stock/ibm");
+        assertEqualsSeq(asArray(Token.EMPTY, "finance", "stock", "ibm"), tokens);
+    }
+    
+    
+    @Test(expected = ParseException.class)
+    public void testSplitTopicTwinsSlashAvoided() throws ParseException {
+        store.splitTopic("/finance//stock/ibm");
     }
     
     private static Token[] asArray(Object... l) {

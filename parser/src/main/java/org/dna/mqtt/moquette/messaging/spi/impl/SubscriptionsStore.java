@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,21 @@ import java.util.List;
 public class SubscriptionsStore {
     
     protected static class Token {
-
+    
+        static final Token EMPTY = new Token("");
+        static final Token MULTI = new Token("#");
+        static final Token SINGLE = new Token("+");
+        
+        String name;
+        
+        protected Token(String s) {
+            name = s;
+        }
+        
+        protected String name() {
+            return name;
+        }
+        
         @Override
         public int hashCode() {
             int hash = 7;
@@ -32,14 +47,6 @@ public class SubscriptionsStore {
                 return false;
             }
             return true;
-        }
-        String name;
-        protected Token(String s) {
-            name = s;
-        }
-        
-        protected String name() {
-            return name;
         }
     }
 
@@ -70,10 +77,20 @@ public class SubscriptionsStore {
         return subscriptions.size();
     }
     
-    protected List<Token> splitTopic(String topic) {
+    protected List<Token> splitTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
-        for (String s : topic.split("/")) {
-            res.add(new Token(s));
+        String[] splitted = topic.split("/");
+        
+        for (int i=0; i<splitted.length; i++) {
+            String s = splitted[i];
+            if (s.isEmpty()) {
+                if (i != 0){
+                    throw new ParseException("Bad format of topic, expetec toppic name between separators", i);
+                }
+                res.add(Token.EMPTY);
+            } else {
+                res.add(new Token(s));
+            }
         }
         
         return res;
