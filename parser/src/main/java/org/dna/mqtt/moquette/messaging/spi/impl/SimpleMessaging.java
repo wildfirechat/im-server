@@ -45,6 +45,7 @@ public class SimpleMessaging implements IMessaging {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         rwLock.writeLock().lock();
         if (subscriptions.contains(newSubscription)) {
+            rwLock.writeLock().unlock();
             return;
         }
         subscriptions.add(newSubscription);
