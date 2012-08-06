@@ -96,7 +96,11 @@ public class SubscriptionsStore {
                 res.add(Token.MULTI);
             } else if (s.contains("#")) {
                 throw new ParseException("Bad format of topic, invalid subtopic name: " + s, i);
-            }else {
+            } else if (s.equals("+")) {
+                res.add(Token.SINGLE);
+            } else if (s.contains("+")) {
+                throw new ParseException("Bad format of topic, invalid subtopic name: " + s, i);
+            } else {
                 res.add(new Token(s));
             }
         }

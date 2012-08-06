@@ -59,6 +59,25 @@ public class SubscriptionsStoreTest {
         store.splitTopic("finance#");
     }
     
+    
+    @Test
+    public void testSplitTopicSingleValid() throws ParseException {
+        List tokens = store.splitTopic("finance/stock/+");
+        assertEqualsSeq(asArray("finance", "stock", Token.SINGLE), tokens);
+        
+        tokens = store.splitTopic("+");
+        assertEqualsSeq(asArray(Token.SINGLE), tokens);
+        
+        tokens = store.splitTopic("finance/+/ibm");
+        assertEqualsSeq(asArray("finance", Token.SINGLE, "ibm"), tokens);
+    }
+    
+    @Test(expected = ParseException.class)
+    public void testSplitTopicSingleNotAferSeparatorNotValid() throws ParseException {
+        store.splitTopic("finance+");
+    }
+    
+    
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];
         for (int i = 0; i < l.length; i++) {
