@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,9 @@ public class SubscriptionsStoreTest {
         
         tokens = store.splitTopic("/finance/stock/ibm");
         assertEqualsSeq(asArray(Token.EMPTY, "finance", "stock", "ibm"), tokens);
+        
+        tokens = store.splitTopic("/");
+        assertEqualsSeq(asArray(Token.EMPTY), tokens);
     }
     
     
@@ -75,6 +79,24 @@ public class SubscriptionsStoreTest {
     @Test(expected = ParseException.class)
     public void testSplitTopicSingleNotAferSeparatorNotValid() throws ParseException {
         store.splitTopic("finance+");
+    }
+    
+    @Test
+    public void testMatchSimple() {
+        store.add(new Subscription(null, "/", AbstractMessage.QOSType.MOST_ONE));
+        assertTrue(store.matches("finance").isEmpty());
+        
+        store.add(new Subscription(null, "/finance", AbstractMessage.QOSType.MOST_ONE));
+        assertTrue(store.matches("finance").isEmpty());
+    }
+    
+    @Test
+    public void testMatchSimpleMulti() {
+        store.add(new Subscription(null, "#", AbstractMessage.QOSType.MOST_ONE));
+        assertFalse(store.matches("finance").isEmpty());
+        
+        store.add(new Subscription(null, "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        assertFalse(store.matches("finance").isEmpty());
     }
     
     

@@ -2,7 +2,10 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a tree of published topics
@@ -10,6 +13,88 @@ import java.util.List;
  * @author andrea
  */
 public class SubscriptionsStore {
+    
+    private class TreeNode {
+        TreeNode m_parent;
+        Token m_token;
+        List<TreeNode> m_children = new ArrayList<TreeNode>();
+        List<Subscription> m_subscriptions = new ArrayList<Subscription>();
+        
+        TreeNode(TreeNode parent) {
+            this.m_parent = parent;
+        }
+        
+        Token getToken() {
+            return m_token;
+        }
+
+        void setToken(Token topic) {
+            this.m_token = topic;
+        }
+        
+        void addSubcription(Subscription s) {
+            //avoid double registering
+            if (m_subscriptions.contains(s)) {
+                return;
+            }
+            m_subscriptions.add(s);
+        }
+        
+        void addChild(TreeNode child) {
+            m_children.add(child);
+        }
+        
+        boolean isLeaf() {
+            return m_children.isEmpty();
+        }
+        
+        
+        /**
+         * Search for children that has the specified token, if not found return
+         * null;
+         */
+        TreeNode childWithToken(Token token) {
+            for (TreeNode child : m_children) {
+                if (child.getToken().equals(token)) {
+                    return child;
+                }
+            }
+            
+            return null;
+        }
+        
+        List<Subscription> subscriptions() {
+            return m_subscriptions;
+        }
+        
+        
+        /**
+         * Return next matching node on the tree path, or null if not found any 
+         * match.
+         */
+        TreeNode matchNext(Token token) {
+            //quite similar to childWithToken
+            //TODO this should take care of # and + management
+            for (TreeNode child : m_children) {
+                if (child.getToken().equals(token)) {
+                    return child;
+                }
+            }
+            
+            return null;
+        }
+        
+        /**
+         * Return the number of registered subscriptions
+         */
+        int size() {
+            int res = m_subscriptions.size();
+            for (TreeNode child : m_children) {
+                res += child.size();
+            }
+            return res;
+        }
+    }
     
     protected static class Token {
     
@@ -50,29 +135,61 @@ public class SubscriptionsStore {
         }
     }
 
-    private List<Subscription> subscriptions = new ArrayList<Subscription>();
+//    private List<Subscription> subscriptions = new ArrayList<Subscription>();
+    private TreeNode subscriptions = new TreeNode(null);
 
     public void add(Subscription newSubscription) {
-        if (subscriptions.contains(newSubscription)) {
-            return;
+        List<Token> tokens = new ArrayList<Token>();
+        try {
+            tokens = splitTopic(newSubscription.topic);
+        } catch (ParseException ex) {
+            //TODO handle the parse exception
+            Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
-        subscriptions.add(newSubscription);
+        
+        TreeNode current = subscriptions;
+        for (Token token : tokens) {
+            TreeNode matchingChildren;
+            
+            //check if a children with the same token already exists
+            if ((matchingChildren = current.childWithToken(token)) != null) {
+                current = matchingChildren;
+            } else {
+                //create a new node for the newly inserted token
+                matchingChildren = new TreeNode(current);
+                matchingChildren.setToken(token);
+                current = matchingChildren;
+            }
+        }
+        current.addSubcription(newSubscription);
     }
 
     public List<Subscription> matches(String topic) {
-        List<Subscription> m = new ArrayList<Subscription>();
-        for (Subscription sub : subscriptions) {
-            if (sub.match(topic)) {
-                m.add(sub);
+        List<Token> tokens = new ArrayList<Token>();
+        try {
+            tokens = splitTopic(topic);
+        } catch (ParseException ex) {
+            //TODO handle the parse exception
+            Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        TreeNode current = subscriptions;
+        for (Token token : tokens) {
+            current = current.matchNext(token);
+            if (current == null) {
+                break;
             }
         }
-        return m;
+        if (current != null) {
+            return current.subscriptions();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
 
     public boolean contains(Subscription sub) {
-        return subscriptions.contains(sub);
+        return !matches(sub.topic).isEmpty();
     }
-
+    
     public int size() {
         return subscriptions.size();
     }
@@ -80,6 +197,10 @@ public class SubscriptionsStore {
     protected List<Token> splitTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
         String[] splitted = topic.split("/");
+        
+        if (splitted.length == 0) {
+            res.add(Token.EMPTY);
+        }
         
         for (int i=0; i<splitted.length; i++) {
             String s = splitted[i];
