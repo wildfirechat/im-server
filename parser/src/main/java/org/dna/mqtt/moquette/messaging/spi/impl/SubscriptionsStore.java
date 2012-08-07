@@ -2,8 +2,9 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,21 +69,32 @@ public class SubscriptionsStore {
         }
         
         
-        /**
-         * Return next matching node on the tree path, or null if not found any 
-         * match.
-         */
-        TreeNode matchNext(Token token) {
-            //quite similar to childWithToken
-            //TODO this should take care of # and + management
+        void matches(Queue<Token> tokens, List<Subscription> matchingSubs) {
+            Token t = tokens.poll();
+            if (t == null) {
+                matchingSubs.addAll(m_subscriptions);
+                return;
+            }
+            
+            //check the matching of the current token
+            //TODO take care of MULTI and SINGLE
+            
+            List<TreeNode> matchingChildren = new ArrayList<TreeNode>();
             for (TreeNode child : m_children) {
-                if (child.getToken().equals(token)) {
-                    return child;
+                if (child.getToken().match(t)) {
+                    matchingChildren.add(child);
                 }
             }
             
-            return null;
+            if (matchingChildren.isEmpty()) {
+                return;
+            }
+            
+            for (TreeNode child : matchingChildren) {
+                child.matches(tokens, matchingSubs);
+            }
         }
+        
         
         /**
          * Return the number of registered subscriptions
@@ -110,6 +122,26 @@ public class SubscriptionsStore {
         
         protected String name() {
             return name;
+        }
+        
+        /**
+         * Return true iff the current token is compatible with t.
+         * 
+         * TODO define the rules of compatibility
+         * if this is a MULTI or SINGLE and the other is any string => match
+         * of this is a normal token and also the other, and they are equals => match
+         * if the other is not normal token => don't match
+         */
+        protected boolean match(Token t) {
+            if (t == MULTI || t == SINGLE) {
+                return false;
+            }
+            
+            if (this == MULTI || this == SINGLE) {
+                return true;
+            } else {
+                return equals(t);
+            }
         }
         
         @Override
@@ -147,6 +179,7 @@ public class SubscriptionsStore {
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        //Deep into the tree creating missing nodes where necessary
         TreeNode current = subscriptionsRoot;
         for (Token token : tokens) {
             TreeNode matchingChildren;
@@ -158,6 +191,7 @@ public class SubscriptionsStore {
                 //create a new node for the newly inserted token
                 matchingChildren = new TreeNode(current);
                 matchingChildren.setToken(token);
+                current.addChild(matchingChildren);
                 current = matchingChildren;
             }
         }
@@ -172,18 +206,21 @@ public class SubscriptionsStore {
             //TODO handle the parse exception
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
-        TreeNode current = subscriptionsRoot;
-        for (Token token : tokens) {
-            current = current.matchNext(token);
-            if (current == null) {
-                break;
-            }
-        }
-        if (current != null) {
-            return current.subscriptions();
-        } else {
-            return Collections.EMPTY_LIST;
-        }
+//        TreeNode current = subscriptionsRoot;
+        List<Subscription> matchingSubscriptions = new ArrayList<Subscription>();
+        subscriptionsRoot.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubscriptions);
+        return matchingSubscriptions;
+//        for (Token token : tokens) {
+//            current = current.matchNext(token);
+//            if (current == null) {
+//                break;
+//            }
+//        }
+//        if (current != null) {
+//            return current.subscriptions();
+//        } else {
+//            return Collections.EMPTY_LIST;
+//        }
     }
 
     public boolean contains(Subscription sub) {
