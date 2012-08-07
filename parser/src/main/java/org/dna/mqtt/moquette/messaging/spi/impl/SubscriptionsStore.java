@@ -136,7 +136,7 @@ public class SubscriptionsStore {
     }
 
 //    private List<Subscription> subscriptions = new ArrayList<Subscription>();
-    private TreeNode subscriptions = new TreeNode(null);
+    private TreeNode subscriptionsRoot = new TreeNode(null);
 
     public void add(Subscription newSubscription) {
         List<Token> tokens = new ArrayList<Token>();
@@ -147,7 +147,7 @@ public class SubscriptionsStore {
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        TreeNode current = subscriptions;
+        TreeNode current = subscriptionsRoot;
         for (Token token : tokens) {
             TreeNode matchingChildren;
             
@@ -172,7 +172,7 @@ public class SubscriptionsStore {
             //TODO handle the parse exception
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
-        TreeNode current = subscriptions;
+        TreeNode current = subscriptionsRoot;
         for (Token token : tokens) {
             current = current.matchNext(token);
             if (current == null) {
@@ -191,7 +191,7 @@ public class SubscriptionsStore {
     }
     
     public int size() {
-        return subscriptions.size();
+        return subscriptionsRoot.size();
     }
     
     protected List<Token> splitTopic(String topic) throws ParseException {
