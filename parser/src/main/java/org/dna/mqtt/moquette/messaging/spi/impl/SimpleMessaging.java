@@ -1,7 +1,5 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
