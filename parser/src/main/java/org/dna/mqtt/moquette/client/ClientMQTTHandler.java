@@ -41,6 +41,8 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
             case PUBLISH:
                 handlePublish(session, (PublishMessage) msg);
                 break;
+            case PINGRESP:    
+                break;
         }
     }
 

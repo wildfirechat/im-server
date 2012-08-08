@@ -4,6 +4,9 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
@@ -22,6 +25,7 @@ import org.dna.mqtt.moquette.SubscribeException;
 import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
+import org.dna.mqtt.moquette.proto.PingReqEncoder;
 import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckDecoder;
@@ -30,6 +34,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
+import org.dna.mqtt.moquette.proto.messages.PingReqMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.Server;
@@ -52,6 +57,8 @@ public final class Client {
 //    private static final int PORT = Server.PORT;
     private static final long CONNECT_TIMEOUT = 3 * 1000L; // 3 seconds
     private static final long SUBACK_TIMEOUT = 4 * 1000L;
+    private static final int KEEPALIVE_SECS = 3;
+    private static final int NUM_SCHEDULER_TIMER_THREAD = 1;
     final static int DEFAULT_RETRIES = 3;
     private int m_connectRetries = DEFAULT_RETRIES;
     
@@ -68,6 +75,9 @@ public final class Client {
     //TODO synchronize the access
     //Refact the da model should be a list of callback for each topic
     private Map<String, IPublishCallback> m_subscribersList = new HashMap<String, IPublishCallback>();
+    private ScheduledExecutorService m_scheduler;
+    private ScheduledFuture m_pingerHandler;
+    private boolean m_executedOperation;
 
     public Client(String host, int port) {
         m_hostname = host;
@@ -86,7 +96,8 @@ public final class Client {
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(SubscribeMessage.class, new SubscribeEncoder());
         encoder.addMessageEncoder(DisconnectMessage.class, new DisconnectEncoder());
-
+        encoder.addMessageEncoder(PingReqMessage.class, new PingReqEncoder());
+           
         m_connector = new NioSocketConnector();
 
 //        m_connector.getFilterChain().addLast("logger", new LoggingFilter());
@@ -95,6 +106,8 @@ public final class Client {
         m_connector.setHandler(new ClientMQTTHandler(this));
         m_connector.getSessionConfig().setReadBufferSize(2048);
         m_connector.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, Server.DEFAULT_CONNECT_TIMEOUT);
+        
+        m_scheduler = Executors.newScheduledThreadPool(NUM_SCHEDULER_TIMER_THREAD);
     }
 
     public void connect() throws MQTTException {
@@ -117,7 +130,7 @@ public final class Client {
         
         //send a message over the session
         ConnectMessage connMsg = new ConnectMessage();
-        connMsg.setKeepAlive(3);
+        connMsg.setKeepAlive(KEEPALIVE_SECS);
         connMsg.setClientID("FAKE_MSG_ID1"); //TODO create a generator for the ID
         m_session.write(connMsg);
         
@@ -158,6 +171,19 @@ public final class Client {
             }
             throw new ConnectionException(errMsg);
         }
+        
+        m_executedOperation = true;
+        final Runnable pingerDeamon = new Runnable() {
+            public void run() { 
+                if (!m_executedOperation) {
+                    //send a ping req
+                    PingReqMessage msg = new PingReqMessage();
+                    m_session.write(msg);
+                } 
+                m_executedOperation = false;
+            }
+        };
+        m_pingerHandler = m_scheduler.scheduleWithFixedDelay(pingerDeamon, KEEPALIVE_SECS, KEEPALIVE_SECS, TimeUnit.SECONDS);
     }
     
     /**
@@ -184,6 +210,8 @@ public final class Client {
         if (ex != null) {
             throw new PublishException(ex);
         }
+        
+        m_executedOperation = true;
     }
     
     public void subscribe(String topic, IPublishCallback publishCallback) {
@@ -226,6 +254,8 @@ public final class Client {
             throw new SubscribeException("Subscribe timeout elapsed unless server responded with a SUB_ACK");
         }
         
+        m_executedOperation = true;
+        
         //TODO check the ACK messageID
     }
     
@@ -252,6 +282,9 @@ public final class Client {
     
     
     public void close() {
+        //stop the pinger
+        m_pingerHandler.cancel(false);
+        
         //send the CLOSE message
         m_session.write(new DisconnectMessage());
         
