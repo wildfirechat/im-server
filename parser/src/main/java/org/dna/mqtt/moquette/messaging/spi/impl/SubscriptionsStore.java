@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,38 +72,34 @@ public class SubscriptionsStore {
         
         void matches(Queue<Token> tokens, List<Subscription> matchingSubs) {
             Token t = tokens.poll();
+            
+            //check if t is null <=> tokens finished
             if (t == null) {
                 matchingSubs.addAll(m_subscriptions);
+                //check if it has got a MULTI child and add its subscriptions
+                for (TreeNode n : m_children) {
+                    if (n.getToken() == Token.MULTI) {
+                        matchingSubs.addAll(n.subscriptions());
+                    }
+                }
+                
                 return;
             }
             
-            //check the matching of the current token
-            //TODO take care of MULTI and SINGLE
-//            if (m_token == Token.MULTI) {
-//                matchingSubs.addAll(m_subscriptions);
-//                return;
-//            }
-            
-            List<TreeNode> matchingChildren = new ArrayList<TreeNode>();
-            for (TreeNode child : m_children) {
-                if (child.getToken().match(t)) {
-                    matchingChildren.add(child);
-                }
+            //we are on MULTI, than add subscriptions and return
+            if (m_token == Token.MULTI) {
+               matchingSubs.addAll(m_subscriptions);
+               return;
             }
             
-//            if (matchingChildren.isEmpty()) {
-//                return;
-//            }
-            
-            for (TreeNode child : matchingChildren) {
-                if (child.getToken() == Token.MULTI) {
-                    matchingSubs.addAll(m_subscriptions);
-                } else {
-                    child.matches(tokens, matchingSubs);
+            for (TreeNode n : m_children) {
+                if (n.getToken().match(t)) {
+                    //Create a copy of token, alse if navigate 2 sibling it 
+                    //consumes 2 elements on the queue instead of one
+                    n.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubs);
                 }
             }
         }
-        
         
         /**
          * Return the number of registered subscriptions
@@ -132,14 +129,6 @@ public class SubscriptionsStore {
             return name;
         }
         
-        /**
-         * Return true iff the current token is compatible with t.
-         * 
-         * TODO define the rules of compatibility
-         * if this is a MULTI or SINGLE and the other is any string => match
-         * of this is a normal token and also the other, and they are equals => match
-         * if the other is not normal token => don't match
-         */
         protected boolean match(Token t) {
             if (t == MULTI || t == SINGLE) {
                 return false;
@@ -147,9 +136,9 @@ public class SubscriptionsStore {
             
             if (this == MULTI || this == SINGLE) {
                 return true;
-            } else {
-                return equals(t);
             }
+            
+            return equals(t);
         }
         
         @Override
@@ -181,7 +170,7 @@ public class SubscriptionsStore {
     }
 
 //    private List<Subscription> subscriptions = new ArrayList<Subscription>();
-    private TreeNode subscriptionsRoot = new TreeNode(null);
+    private TreeNode subscriptions = new TreeNode(null);
 
     public void add(Subscription newSubscription) {
         List<Token> tokens = new ArrayList<Token>();
@@ -192,8 +181,7 @@ public class SubscriptionsStore {
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        //Deep into the tree creating missing nodes where necessary
-        TreeNode current = subscriptionsRoot;
+        TreeNode current = subscriptions;
         for (Token token : tokens) {
             TreeNode matchingChildren;
             
@@ -219,21 +207,11 @@ public class SubscriptionsStore {
             //TODO handle the parse exception
             Logger.getLogger(SubscriptionsStore.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        TreeNode current = subscriptionsRoot;
-        List<Subscription> matchingSubscriptions = new ArrayList<Subscription>();
-        subscriptionsRoot.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubscriptions);
-        return matchingSubscriptions;
-//        for (Token token : tokens) {
-//            current = current.matchNext(token);
-//            if (current == null) {
-//                break;
-//            }
-//        }
-//        if (current != null) {
-//            return current.subscriptions();
-//        } else {
-//            return Collections.EMPTY_LIST;
-//        }
+        
+        Queue<Token> tokenQueue = new LinkedBlockingDeque<Token>(tokens);
+        List<Subscription> matchingSubs = new ArrayList<Subscription>();
+        subscriptions.matches(tokenQueue, matchingSubs);
+        return matchingSubs;
     }
 
     public boolean contains(Subscription sub) {
@@ -241,7 +219,7 @@ public class SubscriptionsStore {
     }
     
     public int size() {
-        return subscriptionsRoot.size();
+        return subscriptions.size();
     }
     
     protected List<Token> splitTopic(String topic) throws ParseException {
