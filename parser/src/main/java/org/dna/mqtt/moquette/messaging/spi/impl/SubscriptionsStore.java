@@ -78,6 +78,10 @@ public class SubscriptionsStore {
             
             //check the matching of the current token
             //TODO take care of MULTI and SINGLE
+//            if (m_token == Token.MULTI) {
+//                matchingSubs.addAll(m_subscriptions);
+//                return;
+//            }
             
             List<TreeNode> matchingChildren = new ArrayList<TreeNode>();
             for (TreeNode child : m_children) {
@@ -86,12 +90,16 @@ public class SubscriptionsStore {
                 }
             }
             
-            if (matchingChildren.isEmpty()) {
-                return;
-            }
+//            if (matchingChildren.isEmpty()) {
+//                return;
+//            }
             
             for (TreeNode child : matchingChildren) {
-                child.matches(tokens, matchingSubs);
+                if (child.getToken() == Token.MULTI) {
+                    matchingSubs.addAll(m_subscriptions);
+                } else {
+                    child.matches(tokens, matchingSubs);
+                }
             }
         }
         
@@ -164,6 +172,11 @@ public class SubscriptionsStore {
                 return false;
             }
             return true;
+        }
+        
+        @Override
+        public String toString() {
+            return name;
         }
     }
 
