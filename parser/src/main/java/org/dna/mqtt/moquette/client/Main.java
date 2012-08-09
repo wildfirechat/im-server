@@ -1,7 +1,6 @@
 package org.dna.mqtt.moquette.client;
 
 import java.io.IOException;
-import org.dna.mqtt.moquette.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,24 +13,22 @@ public class Main {
     
     static boolean received;
     
-    public static void main(String[] args) throws IOException {
-        Client client = new Client("localhost", Server.PORT);
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
-        
         
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
-                LOG.info("Received publush notification");
                 received = true;
             }
         });
         
+        Thread.sleep(5000);
+        
         client.publish("/topic", "Test my payload".getBytes());
+        
         client.close();
-        
-        
-        assert received;
     }
     
 }

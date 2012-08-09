@@ -26,6 +26,7 @@ import org.dna.mqtt.moquette.proto.ConnAckDecoder;
 import org.dna.mqtt.moquette.proto.ConnectEncoder;
 import org.dna.mqtt.moquette.proto.DisconnectEncoder;
 import org.dna.mqtt.moquette.proto.PingReqEncoder;
+import org.dna.mqtt.moquette.proto.PingRespDecoder;
 import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckDecoder;
@@ -77,7 +78,13 @@ public final class Client {
     private Map<String, IPublishCallback> m_subscribersList = new HashMap<String, IPublishCallback>();
     private ScheduledExecutorService m_scheduler;
     private ScheduledFuture m_pingerHandler;
-    private boolean m_executedOperation;
+    final Runnable pingerDeamon = new Runnable() {
+            public void run() { 
+                LOG.debug("Pingreq sent");
+                //send a ping req
+                m_session.write(new PingReqMessage());
+            }
+        };
 
     public Client(String host, int port) {
         m_hostname = host;
@@ -90,6 +97,7 @@ public final class Client {
         decoder.addMessageDecoder(new ConnAckDecoder());
         decoder.addMessageDecoder(new SubAckDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
+        decoder.addMessageDecoder(new PingRespDecoder());
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
@@ -172,18 +180,7 @@ public final class Client {
             throw new ConnectionException(errMsg);
         }
         
-        m_executedOperation = true;
-        final Runnable pingerDeamon = new Runnable() {
-            public void run() { 
-                if (!m_executedOperation) {
-                    //send a ping req
-                    PingReqMessage msg = new PingReqMessage();
-                    m_session.write(msg);
-                } 
-                m_executedOperation = false;
-            }
-        };
-        m_pingerHandler = m_scheduler.scheduleWithFixedDelay(pingerDeamon, KEEPALIVE_SECS, KEEPALIVE_SECS, TimeUnit.SECONDS);
+        updatePinger();
     }
     
     /**
@@ -211,7 +208,7 @@ public final class Client {
             throw new PublishException(ex);
         }
         
-        m_executedOperation = true;
+        updatePinger();
     }
     
     public void subscribe(String topic, IPublishCallback publishCallback) {
@@ -254,7 +251,7 @@ public final class Client {
             throw new SubscribeException("Subscribe timeout elapsed unless server responded with a SUB_ACK");
         }
         
-        m_executedOperation = true;
+        updatePinger();
         
         //TODO check the ACK messageID
     }
@@ -278,6 +275,18 @@ public final class Client {
     
     protected void publishCallback(String topic, byte[] payload) {
         m_subscribersList.get(topic).published(topic, payload);
+    }
+    
+    
+    /**
+     * In the current pinger is not ye executed, then cancel it and schedule 
+     * another by KEEPALIVE_SECS
+     */
+    private void updatePinger() {
+        if (m_pingerHandler != null) {
+            m_pingerHandler.cancel(false);
+        }
+        m_pingerHandler = m_scheduler.scheduleWithFixedDelay(pingerDeamon, KEEPALIVE_SECS, KEEPALIVE_SECS, TimeUnit.SECONDS);
     }
     
     

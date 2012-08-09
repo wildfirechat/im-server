@@ -37,6 +37,7 @@ public class ServerIntegrationTest {
     public void testSubscribe() throws IOException, InterruptedException {
 //        startServer();
         Client client = new Client("localhost", Server.PORT);
+//        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
         
         
@@ -49,9 +50,7 @@ public class ServerIntegrationTest {
         
         client.publish("/topic", "Test my payload".getBytes());
         
-        
         client.close();
-        
         
         assertTrue(received);
     }
