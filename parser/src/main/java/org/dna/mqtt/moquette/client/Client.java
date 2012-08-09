@@ -233,7 +233,7 @@ public final class Client {
             throw new SubscribeException(ex);
         }
 
-        //TODO register the publishCallback in some registry to be notified
+        //register the publishCallback in some registry to be notified
         m_subscribersList.put(topic, publishCallback);
 
         //wait for the SubAck
@@ -255,7 +255,7 @@ public final class Client {
 
         updatePinger();
 
-        //TODO check the ACK messageID
+        //TODO check the ACK messageID only for QoS 1 and 2
     }
 
     /**
