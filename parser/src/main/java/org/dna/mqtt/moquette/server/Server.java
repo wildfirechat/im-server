@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
@@ -53,7 +54,7 @@ public class Server {
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         
         m_acceptor = new NioSocketAcceptor();
-
+        
         m_acceptor.getFilterChain().addLast( "logger", new MQTTLoggingFilter("SERVER LOG") );
         m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
@@ -65,6 +66,7 @@ public class Server {
         
         
         m_acceptor.setHandler(handler);
+        ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
         ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);
         m_acceptor.getSessionConfig().setReadBufferSize( 2048 );
         m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
@@ -81,8 +83,16 @@ public class Server {
     }
     
     protected void stopServer() {
+        LOG.info("Server stopping...");
+        for(IoSession session: m_acceptor.getManagedSessions().values()) {
+            if(session.isConnected() && !session.isClosing()){
+                session.close(false);
+            }
+        }
+        
         m_acceptor.unbind();
-        LOG.info("Server unbinded");
+        m_acceptor.dispose();
+        LOG.info("Server stopped");
     }
 
 }
