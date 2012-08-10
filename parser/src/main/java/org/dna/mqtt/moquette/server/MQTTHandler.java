@@ -79,7 +79,14 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
 
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
-            //TODO also clean the subscriptions if it was in cleanSession = true
+            //clean the subscriptions if the old used a cleanSession = true
+            IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
+            boolean cleanSession = (Boolean) oldSession.getAttribute("cleanSession");
+            if (cleanSession) {
+                //cleanup topic subscriptions
+                m_messaging.removeSubscriptions(msg.getClientID());
+            }
+            
             m_clientIDs.get(msg.getClientID()).getSession().close(false);
         }
         
