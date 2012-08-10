@@ -2,6 +2,8 @@ package org.dna.mqtt.moquette.server;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -25,11 +27,13 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class MQTTHandler extends IoHandlerAdapter implements INotifier {
-    protected static final String ATTR_CLIENTID = "ClientID";
 
+    protected static final String ATTR_CLIENTID = "ClientID";
     private static final Logger LOG = LoggerFactory.getLogger(MQTTHandler.class);
-    
-    /** Maps CLIENT_ID to the IoSession that represents the connection*/
+    /**
+     * Maps CLIENT_ID to the IoSession that represents the connection
+     */
+    Lock m_clientIDsLock = new ReentrantLock();
     Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private IMessaging m_messaging;
     private IAuthenticator m_authenticator;
@@ -51,9 +55,10 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                     break;
                 case PINGREQ:
                     session.write(new PingRespMessage());
+                    break;
                 case DISCONNECT:
                     handleDisconnect(session, (DisconnectMessage) msg);
-                    
+
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
@@ -77,21 +82,26 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             return;
         }
 
-        //if an old client with the same ID already exists close its session.
-        if (m_clientIDs.containsKey(msg.getClientID())) {
-            //clean the subscriptions if the old used a cleanSession = true
-            IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
-            boolean cleanSession = (Boolean) oldSession.getAttribute("cleanSession");
-            if (cleanSession) {
-                //cleanup topic subscriptions
-                m_messaging.removeSubscriptions(msg.getClientID());
+        m_clientIDsLock.lock();
+        try {
+            //if an old client with the same ID already exists close its session.
+            if (m_clientIDs.containsKey(msg.getClientID())) {
+                //clean the subscriptions if the old used a cleanSession = true
+                IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
+                boolean cleanSession = (Boolean) oldSession.getAttribute("cleanSession");
+                if (cleanSession) {
+                    //cleanup topic subscriptions
+                    m_messaging.removeSubscriptions(msg.getClientID());
+                }
+
+                m_clientIDs.get(msg.getClientID()).getSession().close(false);
             }
-            
-            m_clientIDs.get(msg.getClientID()).getSession().close(false);
+
+            ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());
+            m_clientIDs.put(msg.getClientID(), connDescr);
+        } finally {
+            m_clientIDsLock.unlock();
         }
-        
-        ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());
-        m_clientIDs.put(msg.getClientID(), connDescr);
 
         int keepAlive = msg.getKeepAlive();
         session.setAttribute("keepAlive", keepAlive);
@@ -104,7 +114,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         //Handle will flag
         if (msg.isWillFlag()) {
             QOSType willQos = QOSType.values()[msg.getWillQos()];
-            m_messaging.publish(msg.getWillTopic(), msg.getWillMessage().getBytes(), 
+            m_messaging.publish(msg.getWillTopic(), msg.getWillMessage().getBytes(),
                     willQos, msg.isWillRetain());
         }
 
@@ -135,42 +145,47 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
         session.write(okResp);
     }
-    
+
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
         LOG.info("registering the subscriptions");
-        for(SubscribeMessage.Couple req : msg.subscriptions()) {
-            m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID), 
+        for (SubscribeMessage.Couple req : msg.subscriptions()) {
+            m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID),
                     req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
         }
-        
+
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
-        
+
         //TODO by now it handles only QoS 0 messages
-        for (int i=0; i < msg.subscriptions().size(); i++) {
+        for (int i = 0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(QOSType.MOST_ONE);
         }
         LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
-    
+
     protected void handlePublish(IoSession session, PublishMessage message) {
-        m_messaging.publish(message.getTopicName(), message.getPayload(), 
+        m_messaging.publish(message.getTopicName(), message.getPayload(),
                 message.getQos(), message.isRetainFlag());
     }
-    
+
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
         String clientID = (String) session.getAttribute(ATTR_CLIENTID);
         //remove from clientIDs
-        m_clientIDs.remove(clientID);
+        m_clientIDsLock.lock();
+        try {
+            m_clientIDs.remove(clientID);
+        } finally {
+            m_clientIDsLock.unlock();
+        }
         boolean cleanSession = (Boolean) session.getAttribute("cleanSession");
         if (cleanSession) {
             //cleanup topic subscriptions
             m_messaging.removeSubscriptions(clientID);
         }
     }
-    
+
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) {
         session.close(false);
