@@ -155,40 +155,40 @@ public class ServerIntegrationTest {
     }    
     
     
-//    @Test
-//    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws IOException {
-//        Client client = new Client("localhost", Server.PORT, "CLID_123");
-//        client.connect(false); //without session cleanup
-//        
-//        client.subscribe("/topic", new IPublishCallback() {
-//
-//            public void published(String topic, byte[] message) {
-//                received = true;
-//            }
-//        });
-//        client.close();
-//        client.shutdown();
-//        server.stopServer();
-//        
-//        server.startServer();
-//        
-//        //Exercise that the client maintain the subscriptions
-//        client = new Client("localhost", Server.PORT, "CLID_123");
-//        client.register("/topic", new IPublishCallback() {
-//
-//            public void published(String topic, byte[] message) {
-//                received = true;
-//            }
-//        });
-//        client.connect(false); 
-//        client.publish("/topic", "Test my payload".getBytes());
-//        client.close();
-//        
-//        //Verify
-//        assertTrue(received);
-//        
-//        //TearDown 
-//        client.shutdown();
-//    }
+    @Test
+    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws IOException {
+        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        client.connect(false); //without session cleanup
+        
+        client.subscribe("/topic", new IPublishCallback() {
+
+            public void published(String topic, byte[] message) {
+                received = true;
+            }
+        });
+        client.close();
+        client.shutdown();
+        server.stopServer();
+        
+        server.startServer();
+        
+        //Exercise that the client maintain the subscriptions
+        client = new Client("localhost", Server.PORT, "CLID_123");
+        client.register("/topic", new IPublishCallback() {
+
+            public void published(String topic, byte[] message) {
+                received = true;
+            }
+        });
+        client.connect(false); 
+        client.publish("/topic", "Test my payload".getBytes());
+        client.close();
+        
+        //Verify
+        assertTrue(received);
+        
+        //TearDown 
+        client.shutdown();
+    }
     
 }

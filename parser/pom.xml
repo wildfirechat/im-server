@@ -1,6 +1,6 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <relativePath>../pom.xml</relativePath>
@@ -25,7 +25,7 @@
             <version>2.0.4</version>
         </dependency>
         
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.6.4</version>
@@ -36,6 +36,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.6.4</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.fusesource.hawtdb</groupId>
+            <artifactId>hawtdb</artifactId>
+            <version>1.6</version>
         </dependency>
                 
         <dependency>
@@ -77,4 +83,11 @@
             </plugin>
         </plugins>
     </build>
+    
+    <!--    <repositories>
+        <repository>
+            <id>Fusesource Releases</id>
+            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
+        </repository>
+    </repositories>-->
 </project>

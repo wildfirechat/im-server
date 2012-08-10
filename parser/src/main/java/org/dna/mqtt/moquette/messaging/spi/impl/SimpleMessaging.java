@@ -18,6 +18,11 @@ public class SimpleMessaging implements IMessaging {
     
     private INotifier m_notifier;
     
+    
+    public SimpleMessaging() {
+        subscriptions.init();
+    }
+    
     public void setNotifier(INotifier notifier) {
         m_notifier = notifier;
     }
