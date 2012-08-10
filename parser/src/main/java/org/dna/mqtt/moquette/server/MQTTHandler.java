@@ -13,6 +13,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
+import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
@@ -48,6 +49,8 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                 case PUBLISH:
                     handlePublish(session, (PublishMessage) msg);
                     break;
+                case PINGREQ:
+                    session.write(new PingRespMessage());
                 case DISCONNECT:
                     handleDisconnect(session, (DisconnectMessage) msg);
                     
