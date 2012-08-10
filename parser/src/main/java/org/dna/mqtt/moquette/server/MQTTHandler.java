@@ -122,7 +122,14 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             }
         }
 
-        //TODO handle clean session flag once the QoS1 and QoS2
+        //TODO for QoS1 and QoS remember to store all the messages arrived to
+        //the dormat subscriptionsonce the QoS1 and QoS2
+        //handle clean session flag
+        if (msg.isCleanSession()) {
+            //remove all prev subscriptions
+            //cleanup topic subscriptions
+            m_messaging.removeSubscriptions(msg.getClientID());
+        }
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
