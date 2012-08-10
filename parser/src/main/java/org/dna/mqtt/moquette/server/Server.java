@@ -14,11 +14,14 @@ import org.dna.mqtt.moquette.proto.ConnAckEncoder;
 import org.dna.mqtt.moquette.proto.ConnectDecoder;
 import org.dna.mqtt.moquette.proto.DisconnectDecoder;
 import org.dna.mqtt.moquette.proto.MQTTLoggingFilter;
+import org.dna.mqtt.moquette.proto.PingReqDecoder;
+import org.dna.mqtt.moquette.proto.PingRespEncoder;
 import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckEncoder;
 import org.dna.mqtt.moquette.proto.SubscribeDecoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.slf4j.Logger;
@@ -46,12 +49,14 @@ public class Server {
         decoder.addMessageDecoder(new PublishDecoder());
         decoder.addMessageDecoder(new SubscribeDecoder());
         decoder.addMessageDecoder(new DisconnectDecoder());
+        decoder.addMessageDecoder(new PingReqDecoder());
         
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
 //        encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
         encoder.addMessageEncoder(ConnAckMessage.class, new ConnAckEncoder());
         encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
+        encoder.addMessageEncoder(PingRespMessage.class, new PingRespEncoder());
         
         m_acceptor = new NioSocketAcceptor();
         
