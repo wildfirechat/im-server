@@ -78,6 +78,9 @@ public final class Client {
     private ScheduledExecutorService m_scheduler;
     private ScheduledFuture m_pingerHandler;
     private String m_macAddress;
+    
+    private String m_clientID;
+    
     final Runnable pingerDeamon = new Runnable() {
         public void run() {
             LOG.debug("Pingreq sent");
@@ -90,6 +93,14 @@ public final class Client {
         m_hostname = host;
         m_port = port;
         init();
+    }
+    
+    /**
+     * Constructor in which the user could provide it's own ClientID
+     */
+    public Client(String host, int port, String clientID) {
+        this(host, port);
+        m_clientID = clientID;
     }
 
     protected void init() {
@@ -120,7 +131,16 @@ public final class Client {
         m_macAddress = readMACAddress();
     }
 
+    /**
+     * Connects to the server with clean session set to true, do not maintains
+     * client topic subscriptions
+     */
     public void connect() throws MQTTException {
+        connect(true);
+    }
+    
+    
+    public void connect(boolean cleanSession) throws MQTTException {
         int retries = 0;
 
         try {
@@ -141,7 +161,12 @@ public final class Client {
         //send a message over the session
         ConnectMessage connMsg = new ConnectMessage();
         connMsg.setKeepAlive(KEEPALIVE_SECS);
-        connMsg.setClientID(generateClientID());
+        if (m_clientID == null) {
+            m_clientID = generateClientID();
+        }
+        connMsg.setClientID(m_clientID);
+        connMsg.setCleanSession(cleanSession);
+        
         m_session.write(connMsg);
 
         //suspend until the server respond with CONN_ACK
@@ -233,8 +258,7 @@ public final class Client {
             throw new SubscribeException(ex);
         }
 
-        //register the publishCallback in some registry to be notified
-        m_subscribersList.put(topic, publishCallback);
+        register(topic, publishCallback);
 
         //wait for the SubAck
         m_subscribeBarrier = new CountDownLatch(1);
@@ -295,7 +319,7 @@ public final class Client {
 
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mac.length; i++) {
-                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+                sb.append(String.format("%02X%s", mac[i], ""));
             }
             return sb.toString();
         } catch (Exception ex) {
@@ -305,7 +329,9 @@ public final class Client {
     
     private String generateClientID() {
         double rnd = Math.random();
-        return "Moquette-client_" + m_macAddress + Math.round(rnd*1000);
+        String id =  "Moque" + m_macAddress + Math.round(rnd*1000);
+        LOG.debug("Generated ClientID " + id);
+        return id;
     }
 
     public void close() {
@@ -317,7 +343,21 @@ public final class Client {
 
         // wait until the summation is done
         m_session.getCloseFuture().awaitUninterruptibly();
+//        m_connector.dispose();
+    }
+    
+    
+    public void shutdown() {
         m_connector.dispose();
     }
 
+    /**
+     * Used only to re-register the callback with the topic, not to send any
+     * subscription message to the server, used when a client reconnect to an 
+     * existing session on the server
+     */
+    public void register(String topic, IPublishCallback publishCallback) {
+        //register the publishCallback in some registry to be notified
+        m_subscribersList.put(topic, publishCallback);
+    }
 }
