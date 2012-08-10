@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * @author andrea
  */
 public class SubscriptionsStore {
-    
+
     private class TreeNode {
         TreeNode m_parent;
         Token m_token;
@@ -111,6 +111,25 @@ public class SubscriptionsStore {
             }
             return res;
         }
+
+        void removeClientSubscriptions(String clientID) {
+            //collect what to delete and then delete to avoid ConcurrentModification
+            List<Subscription> subsToRemove = new ArrayList<Subscription>();
+            for(Subscription s : m_subscriptions) {
+                if (s.clientId.equals(clientID)) {
+                    subsToRemove.add(s);
+                }
+            }
+            
+            for (Subscription s : subsToRemove) {
+               m_subscriptions.remove(s); 
+            }
+            
+            //go deep
+            for (TreeNode child : m_children) {
+                child.removeClientSubscriptions(clientID);
+            }
+        }
     }
     
     protected static class Token {
@@ -197,6 +216,13 @@ public class SubscriptionsStore {
             }
         }
         current.addSubcription(newSubscription);
+    }
+    
+    /**
+     * Visit the topics tree to remove matching subscriptions with clientID
+     */
+    public void removeForClient(String clientID) {
+        subscriptions.removeClientSubscriptions(clientID);
     }
 
     public List<Subscription> matches(String topic) {

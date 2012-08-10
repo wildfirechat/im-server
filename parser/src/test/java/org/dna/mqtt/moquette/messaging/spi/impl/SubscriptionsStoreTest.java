@@ -185,6 +185,31 @@ public class SubscriptionsStoreTest {
         store.add(new Subscription(null, "finance/#", AbstractMessage.QOSType.MOST_ONE));
         assertFalse(store.matches("finance").isEmpty());
     }
+    
+    
+    @Test
+    public void testRemoveClientSubscriptions_existingClientID() {
+        String cliendID = "FAKE_CLID_1";
+        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        
+        //Exercise
+        store.removeForClient(cliendID);
+        
+        //Verify
+        assertEquals(0, store.size());
+    }
+    
+    @Test
+    public void testRemoveClientSubscriptions_notexistingClientID() {
+        String cliendID = "FAKE_CLID_1";
+        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        
+        //Exercise
+        store.removeForClient("FAKE_CLID_2");
+        
+        //Verify
+        assertEquals(1, store.size());
+    }
 
 
     private static Token[] asArray(Object... l) {

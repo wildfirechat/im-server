@@ -47,4 +47,10 @@ public class SimpleMessaging implements IMessaging {
     protected SubscriptionsStore getSubscriptions() {
         return subscriptions;
     }
+
+    public void removeSubscriptions(String clientID) {
+        rwLock.writeLock().lock();
+        subscriptions.removeForClient(clientID);
+        rwLock.writeLock().unlock();
+    }
 }

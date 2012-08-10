@@ -21,4 +21,10 @@ public interface IMessaging {
      * Subscribe a client to a specified topic with a defined level
      */
     void subscribe(String clientId, String topic, QOSType qos);
+
+    /**
+     * Remove all subscription to any topic the client (identified by clientID)
+     * was subscribed
+     */
+    void removeSubscriptions(String clientID);
 }
