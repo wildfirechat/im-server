@@ -12,6 +12,7 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
@@ -47,6 +48,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                 case PUBLISH:
                     handlePublish(session, (PublishMessage) msg);
                     break;
+                case DISCONNECT:
+                    handleDisconnect(session, (DisconnectMessage) msg);
+                    
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
@@ -72,6 +76,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
 
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
+            //TODO also clean the subscriptions if it was in cleanSession = true
             m_clientIDs.get(msg.getClientID()).getSession().close(false);
         }
         
@@ -136,6 +141,17 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected void handlePublish(IoSession session, PublishMessage message) {
         m_messaging.publish(message.getTopicName(), message.getPayload(), 
                 message.getQos(), message.isRetainFlag());
+    }
+    
+    protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
+        String clientID = (String) session.getAttribute(ATTR_CLIENTID);
+        //remove from clientIDs
+        m_clientIDs.remove(clientID);
+        boolean cleanSession = (Boolean) session.getAttribute("cleanSession");
+        if (cleanSession) {
+            //cleanup topic subscriptions
+            m_messaging.removeSubscriptions(clientID);
+        }
     }
     
     @Override
