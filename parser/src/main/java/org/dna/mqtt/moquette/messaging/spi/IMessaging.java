@@ -27,4 +27,6 @@ public interface IMessaging {
      * was subscribed
      */
     void removeSubscriptions(String clientID);
+    
+    void close();
 }

@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import org.apache.mina.core.service.IoAcceptor;
@@ -36,7 +37,10 @@ public class Server {
     
     public static final int PORT = 9191;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;
+    public static final String STORAGE_FILE_PATH = System.getProperty("user.home") + 
+            File.separator + "moquette_store.hawtdb";
     private IoAcceptor m_acceptor;
+    SimpleMessaging messaging;
     
     public static void main(String[] args) throws IOException {
         new Server().startServer();
@@ -64,7 +68,7 @@ public class Server {
         m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
         MQTTHandler handler = new MQTTHandler();
-        SimpleMessaging messaging = new SimpleMessaging();
+        messaging = new SimpleMessaging();
         //TODO fix this hugly wiring
         handler.setMessaging(messaging);
         messaging.setNotifier(handler);
@@ -89,6 +93,9 @@ public class Server {
     
     protected void stopServer() {
         LOG.info("Server stopping...");
+        
+        messaging.close();
+        
         for(IoSession session: m_acceptor.getManagedSessions().values()) {
             if(session.isConnected() && !session.isClosing()){
                 session.close(false);

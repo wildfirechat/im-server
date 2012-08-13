@@ -58,4 +58,10 @@ public class SimpleMessaging implements IMessaging {
         subscriptions.removeForClient(clientID);
         rwLock.writeLock().unlock();
     }
+
+    public void close() {
+        rwLock.writeLock().lock();
+        subscriptions.close();
+        rwLock.writeLock().unlock();
+    }
 }

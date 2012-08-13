@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.server;
 
+import java.io.File;
 import java.io.IOException;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
@@ -30,6 +31,10 @@ public class ServerIntegrationTest {
     @After
     public void tearDown() {
         server.stopServer();
+        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        if (dbFile.exists()) {
+            dbFile.delete();
+        }
     }
     
     

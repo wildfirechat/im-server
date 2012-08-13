@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.io.Serializable;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 /**
@@ -9,7 +10,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
  * 
  * @author andrea
  */
-public class Subscription {
+public class Subscription implements Serializable {
     
     QOSType requestedQos;
     String clientId;

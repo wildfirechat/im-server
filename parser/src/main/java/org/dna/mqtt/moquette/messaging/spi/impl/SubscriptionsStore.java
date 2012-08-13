@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.server.MQTTHandler;
+import org.dna.mqtt.moquette.server.Server;
 import org.fusesource.hawtbuf.codec.StringCodec;
 import org.fusesource.hawtdb.api.BTreeIndexFactory;
 import org.fusesource.hawtdb.api.PageFile;
@@ -197,41 +199,46 @@ public class SubscriptionsStore {
     }
 //    private List<Subscription> subscriptions = new ArrayList<Subscription>();
     private TreeNode subscriptions = new TreeNode(null);
-    
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
-    
     //pesistent Map of clientID, list of Subscriptions
     private SortedIndex<String, List<Subscription>> m_persistent;
-    private PageFile pageFile;
+//    private PageFile pageFile;
+    private PageFileFactory factory;
 
     /**
      * Initialize basic store structures, like the FS storage to maintain
      * client's topics subscriptions
      */
     public void init() {
-        PageFileFactory factory = new PageFileFactory();
+        /*StringBuilder storeFile = new StringBuilder();
+        storeFile.append(System.getProperty("user.home"))
+                .append(File.separator).append("moquette_store.hawtdb");*/
+        String storeFile = Server.STORAGE_FILE_PATH;
+
+        factory = new PageFileFactory();
         File tmpFile;
         try {
-            tmpFile = File.createTempFile("hawtdb", "test");
+            tmpFile = new File(storeFile.toString());
+            tmpFile.createNewFile();
         } catch (IOException ex) {
             LOG.error(null, ex);
-            throw new MQTTException("Can't create temp file for subscriptions storage", ex);
+            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
         }
         factory.setFile(/*new File("mydb.dat")*/tmpFile);
         factory.open();
-        pageFile = factory.getPageFile();
+        PageFile pageFile = factory.getPageFile();
 
 //        HashIndexFactory<String, List<Subscription>> indexFactory = 
 //                new HashIndexFactory<String, List<Subscription>>();
-        BTreeIndexFactory<String, List<Subscription>> indexFactory = 
+        BTreeIndexFactory<String, List<Subscription>> indexFactory =
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
-        
+
         m_persistent = indexFactory.openOrCreate(pageFile);
-        
+
         //reaload any subscriptions persisted
         LOG.debug("Reloading all stored subscriptions...");
-        for(Map.Entry<String, List<Subscription>> entry: m_persistent) {
+        for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
             for (Subscription subscription : entry.getValue()) {
                 addDirect(subscription);
             }
@@ -239,7 +246,15 @@ public class SubscriptionsStore {
         LOG.debug("Finished loading");
     }
     
-    
+    public void close() {
+        try {
+            factory.close();
+        } catch (IOException ex) {
+            //TODO handle probably firing
+            LOG.error(null, ex);
+        }
+    }
+
     protected void addDirect(Subscription newSubscription) {
         List<Token> tokens = new ArrayList<Token>();
         try {
@@ -275,10 +290,11 @@ public class SubscriptionsStore {
         if (!m_persistent.containsKey(clientID)) {
             m_persistent.put(clientID, new ArrayList<Subscription>());
         }
-        
+
         List<Subscription> subs = m_persistent.get(clientID);
         subs.add(newSubscription);
-        pageFile.flush();
+        m_persistent.put(clientID, subs);
+//        pageFile.flush();
     }
 
     /**
@@ -286,7 +302,7 @@ public class SubscriptionsStore {
      */
     public void removeForClient(String clientID) {
         subscriptions.removeClientSubscriptions(clientID);
-        
+
         //remove from log all subscriptions
         m_persistent.remove(clientID);
     }
