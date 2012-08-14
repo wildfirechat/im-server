@@ -1,6 +1,5 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -9,14 +8,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import org.dna.mqtt.moquette.MQTTException;
-import org.dna.mqtt.moquette.server.MQTTHandler;
-import org.dna.mqtt.moquette.server.Server;
 import org.fusesource.hawtbuf.codec.StringCodec;
 import org.fusesource.hawtdb.api.BTreeIndexFactory;
-import org.fusesource.hawtdb.api.PageFile;
-import org.fusesource.hawtdb.api.PageFileFactory;
+import org.fusesource.hawtdb.api.MultiIndexFactory;
 import org.fusesource.hawtdb.api.SortedIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,30 +197,30 @@ public class SubscriptionsStore {
     //pesistent Map of clientID, list of Subscriptions
     private SortedIndex<String, List<Subscription>> m_persistent;
 //    private PageFile pageFile;
-    private PageFileFactory factory;
+//    private PageFileFactory factory;
 
     /**
      * Initialize basic store structures, like the FS storage to maintain
      * client's topics subscriptions
      */
-    public void init() {
+    public void init(MultiIndexFactory multiFactory) {
         /*StringBuilder storeFile = new StringBuilder();
         storeFile.append(System.getProperty("user.home"))
                 .append(File.separator).append("moquette_store.hawtdb");*/
-        String storeFile = Server.STORAGE_FILE_PATH;
+//        String storeFile = Server.STORAGE_FILE_PATH;
 
-        factory = new PageFileFactory();
-        File tmpFile;
-        try {
-            tmpFile = new File(storeFile.toString());
-            tmpFile.createNewFile();
-        } catch (IOException ex) {
-            LOG.error(null, ex);
-            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
-        }
-        factory.setFile(/*new File("mydb.dat")*/tmpFile);
-        factory.open();
-        PageFile pageFile = factory.getPageFile();
+//        factory = new PageFileFactory();
+//        File tmpFile;
+//        try {
+//            tmpFile = new File(storeFile.toString());
+//            tmpFile.createNewFile();
+//        } catch (IOException ex) {
+//            LOG.error(null, ex);
+//            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
+//        }
+//        factory.setFile(/*new File("mydb.dat")*/tmpFile);
+//        factory.open();
+//        PageFile pageFile = factory.getPageFile();
 
 //        HashIndexFactory<String, List<Subscription>> indexFactory = 
 //                new HashIndexFactory<String, List<Subscription>>();
@@ -234,7 +228,8 @@ public class SubscriptionsStore {
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_persistent = indexFactory.openOrCreate(pageFile);
+//        m_persistent = indexFactory.openOrCreate(pageFile);
+        m_persistent = (SortedIndex<String, List<Subscription>>) multiFactory.openOrCreate("subscriptions", indexFactory);
 
         //reaload any subscriptions persisted
         LOG.debug("Reloading all stored subscriptions...");
@@ -246,15 +241,6 @@ public class SubscriptionsStore {
         LOG.debug("Finished loading");
     }
     
-    public void close() {
-        try {
-            factory.close();
-        } catch (IOException ex) {
-            //TODO handle probably firing
-            LOG.error(null, ex);
-        }
-    }
-
     protected void addDirect(Subscription newSubscription) {
         List<Token> tokens = new ArrayList<Token>();
         try {
@@ -330,7 +316,9 @@ public class SubscriptionsStore {
         return subscriptions.size();
     }
 
-    protected List<Token> splitTopic(String topic) throws ParseException {
+    
+    //TODO this should be static
+    protected static List<Token> splitTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
         String[] splitted = topic.split("/");
 
