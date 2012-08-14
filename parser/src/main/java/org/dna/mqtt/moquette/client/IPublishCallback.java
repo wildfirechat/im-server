@@ -6,5 +6,5 @@ package org.dna.mqtt.moquette.client;
  */
 public interface IPublishCallback {
 
-    void published(String topic, byte[] message);
+    void published(String topic, byte[] message/*, boolean retained*/);
 }

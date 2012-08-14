@@ -196,4 +196,33 @@ public class ServerIntegrationTest {
         client.shutdown();
     }
     
+    
+    
+//    @Test
+//    public void testRetain_maintainMessage_againstClientDestruction() {
+//        Client client = new Client("localhost", Server.PORT, "CLID_123");
+//        client.connect(false); //without session cleanup
+//        
+//        client.publish("/topic", "Test my payload".getBytes(), true);
+//        client.close();
+//        client.shutdown();
+//        
+//        //Exercise that the client maintain the subscriptions
+//        client = new Client("localhost", Server.PORT, "CLID_123");
+//        client.connect(false); 
+//        client.subscribe("/topic", new IPublishCallback() {
+//
+//            public void published(String topic, byte[] message) {
+//                received = true;
+//            }
+//        });
+//        client.close();
+//        
+//        //Verify
+//        assertTrue(received);
+//        
+//        //TearDown 
+//        client.shutdown();
+//    } 
+    
 }

@@ -215,7 +215,12 @@ public final class Client {
      * It's admitted to publish a 0 -length payload.
      */
     public void publish(String topic, byte[] payload) throws PublishException {
+        publish(topic, payload, false);
+    }
+    
+    public void publish(String topic, byte[] payload, boolean retain) throws PublishException {
         PublishMessage msg = new PublishMessage();
+        msg.setRetainFlag(retain);
         msg.setTopicName(topic);
         msg.setPayload(payload);
 

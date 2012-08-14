@@ -199,8 +199,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         m_authenticator = authenticator;
     }
 
-    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload) {
+    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload, boolean retained) {
         PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qOSType);
         pubMessage.setPayload(payload);
