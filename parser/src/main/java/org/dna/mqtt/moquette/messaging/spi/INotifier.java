@@ -8,6 +8,6 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
  */
 public interface INotifier {
 
-    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload);
+    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload, boolean retained);
     
 }

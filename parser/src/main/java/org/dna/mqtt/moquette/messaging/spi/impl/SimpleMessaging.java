@@ -102,6 +102,15 @@ public class SimpleMessaging implements IMessaging {
             for (Subscription sub : subscriptions.matches(topic)) {
                 m_notifier.notify(sub.clientId, topic, defQos, message, false);
             }
+            if (retain) {
+                if (message.length == 0) {
+                    //clean the message from topic
+                    m_retainedStore.remove(topic);
+                } else {    
+                    //store the message to the topic
+                    m_retainedStore.put(topic, new StoredMessage(message, qos));
+                }
+            }
         } finally {
             rwLock.readLock().unlock();
         }
@@ -111,6 +120,18 @@ public class SimpleMessaging implements IMessaging {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         rwLock.writeLock().lock();
         subscriptions.add(newSubscription);
+        
+        //scans reatained messages to be published to the new subscription
+        LOG.debug("Scanning all retained messages...");
+        for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
+            StoredMessage storedMsg = entry.getValue();
+            if (matchTopics(entry.getKey(), topic)) {
+                //fire the as retained the message
+                m_notifier.notify(newSubscription.clientId, topic, storedMsg.getQos(), 
+                        storedMsg.getPayload(), true);
+            }
+        }
+        LOG.debug("Finished firing retained messages");
         rwLock.writeLock().unlock();
     }
     
