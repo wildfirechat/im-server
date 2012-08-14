@@ -132,9 +132,12 @@ public class Utils {
     }
     
     static byte encodeFlags(AbstractMessage message) {
-         byte flags = 0;
+        byte flags = 0;
         if (message.isDupFlag()) {
             flags |= 0x08;
+        }
+        if (message.isRetainFlag()) {
+            flags |= 0x01;
         }
         
         flags |= ((message.getQos().ordinal() & 0x03) << 1);
