@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleMessaging implements IMessaging {
     
-    private static class StoredMessage {
+    private static class StoredMessage implements Serializable {
         QOSType m_qos;
         byte[] m_payload;
 
