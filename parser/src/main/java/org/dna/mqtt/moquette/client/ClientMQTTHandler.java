@@ -51,7 +51,7 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
     }
 
     private void handleSubscribeAck(IoSession session, SubAckMessage subAckMessage) {
-        m_callback.subscribeAckCallback();
+        m_callback.subscribeAckCallback(subAckMessage.getMessageID());
     }
     
     private void handlePublish(IoSession session, PublishMessage pubMessage) {

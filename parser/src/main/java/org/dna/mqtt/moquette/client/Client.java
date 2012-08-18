@@ -1,10 +1,11 @@
 package org.dna.mqtt.moquette.client;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,6 +21,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.dna.mqtt.commons.MessageIDGenerator;
 import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.PublishException;
@@ -50,11 +52,15 @@ import org.slf4j.LoggerFactory;
  * Pass to the constructor the host and port to connect, invoke the connect
  * message, invoke publish to send notifications messages, invoke subscribe with
  * a callback to be notified when something happen on the desired topic.
+ * 
+ * NB this class is not thread safe so MUST be used by only one thread at time.
  *
  * @author andrea
  */
 public final class Client {
 
+    final static int DEFAULT_RETRIES = 3;
+    final static int RETRIES_QOS_GT0 = 3;
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 //    private static final String HOSTNAME = /*"localhost"*/ "127.0.0.1";
 //    private static final int PORT = Server.PORT;
@@ -62,7 +68,6 @@ public final class Client {
     private static final long SUBACK_TIMEOUT = 4 * 1000L;
     private static final int KEEPALIVE_SECS = 3;
     private static final int NUM_SCHEDULER_TIMER_THREAD = 1;
-    final static int DEFAULT_RETRIES = 3;
     private int m_connectRetries = DEFAULT_RETRIES;
     private String m_hostname;
     private int m_port;
@@ -71,6 +76,7 @@ public final class Client {
     private IoSession m_session;
     private CountDownLatch m_connectBarrier;
     private CountDownLatch m_subscribeBarrier;
+    private int m_receivedSubAckMessageID;
     private byte m_returnCode;
     //TODO synchronize the access
     //Refact the da model should be a list of callback for each topic
@@ -78,6 +84,9 @@ public final class Client {
     private ScheduledExecutorService m_scheduler;
     private ScheduledFuture m_pingerHandler;
     private String m_macAddress;
+    private MessageIDGenerator m_messageIDGenerator = new MessageIDGenerator();
+    /**Maintain the list of in flight messages for QoS > 0*/
+//    private Set<Integer> m_inflightIDs = new HashSet<Integer>();
     
     private String m_clientID;
     
@@ -248,43 +257,66 @@ public final class Client {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), topic));
         msg.setQos(AbstractMessage.QOSType.LEAST_ONE);
-
-        WriteFuture wf = m_session.write(msg);
-        try {
-            wf.await();
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-            throw new SubscribeException(ex);
-        }
-        LOG.info("subscribe message sent");
-
-        Throwable ex = wf.getException();
-        if (ex != null) {
-            throw new SubscribeException(ex);
-        }
-
+        int messageID = m_messageIDGenerator.next();
+        msg.setMessageID(messageID);
+//        m_inflightIDs.add(messageID);
         register(topic, publishCallback);
-
-        //wait for the SubAck
-        m_subscribeBarrier = new CountDownLatch(1);
-
-        //suspend until the server respond with CONN_ACK
-        boolean unlocked = false;
+        
+        boolean unlocked = false; //true when a SUBACK is received
         try {
-            LOG.info("subscribe waiting for suback");
-            unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
-        } catch (InterruptedException iex) {
-            throw new SubscribeException(iex);
+            for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
+                if (retries > 0) {
+                    msg.setDupFlag(true);
+                }
+                
+                WriteFuture wf = m_session.write(msg);
+                try {
+                    wf.await();
+                } catch (InterruptedException ex) {
+                    LOG.error(null, ex);
+                    throw new SubscribeException(ex);
+                }
+                LOG.info("subscribe message sent");
+
+                Throwable ex = wf.getException();
+                if (ex != null) {
+                    throw new SubscribeException(ex);
+                }
+
+                //wait for the SubAck
+                m_subscribeBarrier = new CountDownLatch(1);
+
+                //suspend until the server respond with CONN_ACK
+                try {
+                    LOG.info("subscribe waiting for suback");
+                    unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
+                } catch (InterruptedException iex) {
+                    throw new SubscribeException(iex);
+                }
+            }
+
+            //if not arrive into certain limit, raise an error
+            if (!unlocked) {
+                throw new SubscribeException(String.format("Server doesn't replyed with a SUB_ACK after %d replies", RETRIES_QOS_GT0));
+            } else {
+                //check if message ID match
+                if (m_receivedSubAckMessageID != messageID) {
+                    throw new SubscribeException(String.format("Server replyed with "
+                    + "a broken MessageID in SUB_ACK, expected %d but received %d", 
+                    messageID, m_receivedSubAckMessageID));
+                }
+            }
+        } catch(Exception ex) {
+            //in case errors arise, remove the registration because the subscription
+            // hasn't get well
+            unregister(topic);
+            throw new MQTTException(ex);
         }
 
-        //if not arrive into certain limit, raise an error
-        if (!unlocked) {
-            throw new SubscribeException("Subscribe timeout elapsed unless server responded with a SUB_ACK");
-        }
-
+//        register(topic, publishCallback);
         updatePinger();
 
-        //TODO check the ACK messageID only for QoS 1 and 2
+        //TODO check the ACK messageID
     }
 
     /**
@@ -296,13 +328,20 @@ public final class Client {
         m_connectBarrier.countDown();
     }
 
-    protected void subscribeAckCallback() {
+    protected void subscribeAckCallback(int messageID) {
         LOG.info("subscribeAckCallback invoked");
         m_subscribeBarrier.countDown();
+        m_receivedSubAckMessageID = messageID;
     }
 
     protected void publishCallback(String topic, byte[] payload) {
-        m_subscribersList.get(topic).published(topic, payload);
+        IPublishCallback callback = m_subscribersList.get(topic);
+        if (callback == null) {
+            String msg = String.format("Can't find any publish callback fr topic %s", topic);
+            LOG.error(msg);
+            throw new MQTTException(msg);
+        }
+        callback.published(topic, payload);
     }
 
     /**
@@ -364,5 +403,11 @@ public final class Client {
     public void register(String topic, IPublishCallback publishCallback) {
         //register the publishCallback in some registry to be notified
         m_subscribersList.put(topic, publishCallback);
+    }
+    
+    
+    //Remove the registration of the callback from the topic
+    private void unregister(String topic) {
+        m_subscribersList.remove(topic);
     }
 }

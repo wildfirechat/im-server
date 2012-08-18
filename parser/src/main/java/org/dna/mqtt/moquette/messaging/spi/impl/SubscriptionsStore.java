@@ -1,6 +1,5 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a tree of published topics
+ * Represents a tree of topics subscriptions.
  *
  * @author andrea
  */
