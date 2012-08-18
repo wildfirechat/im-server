@@ -190,44 +190,20 @@ public class SubscriptionsStore {
             return name;
         }
     }
-//    private List<Subscription> subscriptions = new ArrayList<Subscription>();
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
     //pesistent Map of clientID, list of Subscriptions
     private SortedIndex<String, List<Subscription>> m_persistent;
-//    private PageFile pageFile;
-//    private PageFileFactory factory;
 
     /**
      * Initialize basic store structures, like the FS storage to maintain
      * client's topics subscriptions
      */
     public void init(MultiIndexFactory multiFactory) {
-        /*StringBuilder storeFile = new StringBuilder();
-        storeFile.append(System.getProperty("user.home"))
-                .append(File.separator).append("moquette_store.hawtdb");*/
-//        String storeFile = Server.STORAGE_FILE_PATH;
-
-//        factory = new PageFileFactory();
-//        File tmpFile;
-//        try {
-//            tmpFile = new File(storeFile.toString());
-//            tmpFile.createNewFile();
-//        } catch (IOException ex) {
-//            LOG.error(null, ex);
-//            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
-//        }
-//        factory.setFile(/*new File("mydb.dat")*/tmpFile);
-//        factory.open();
-//        PageFile pageFile = factory.getPageFile();
-
-//        HashIndexFactory<String, List<Subscription>> indexFactory = 
-//                new HashIndexFactory<String, List<Subscription>>();
         BTreeIndexFactory<String, List<Subscription>> indexFactory =
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-//        m_persistent = indexFactory.openOrCreate(pageFile);
         m_persistent = (SortedIndex<String, List<Subscription>>) multiFactory.openOrCreate("subscriptions", indexFactory);
 
         //reaload any subscriptions persisted
@@ -316,7 +292,6 @@ public class SubscriptionsStore {
     }
 
     
-    //TODO this should be static
     protected static List<Token> splitTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
         String[] splitted = topic.split("/");
