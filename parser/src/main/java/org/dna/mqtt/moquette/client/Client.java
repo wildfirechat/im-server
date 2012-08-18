@@ -37,6 +37,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
+import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
 import org.dna.mqtt.moquette.proto.messages.PingReqMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
@@ -262,49 +263,50 @@ public final class Client {
         
         boolean unlocked = false; //true when a SUBACK is received
         try {
-            for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
-                if (retries > 0) {
-                    msg.setDupFlag(true);
-                }
-                
-                WriteFuture wf = m_session.write(msg);
-                try {
-                    wf.await();
-                } catch (InterruptedException ex) {
-                    LOG.error(null, ex);
-                    throw new SubscribeException(ex);
-                }
-                LOG.info("subscribe message sent");
-
-                Throwable ex = wf.getException();
-                if (ex != null) {
-                    throw new SubscribeException(ex);
-                }
-
-                //wait for the SubAck
-                m_subscribeBarrier = new CountDownLatch(1);
-
-                //suspend until the server respond with CONN_ACK
-                try {
-                    LOG.info("subscribe waiting for suback");
-                    unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
-                } catch (InterruptedException iex) {
-                    throw new SubscribeException(iex);
-                }
-            }
-
-            //if not arrive into certain limit, raise an error
-            if (!unlocked) {
-                throw new SubscribeException(String.format("Server doesn't replyed with a SUB_ACK after %d replies", RETRIES_QOS_GT0));
-            } else {
-                //check if message ID match
-                if (m_receivedSubAckMessageID != messageID) {
-                    throw new SubscribeException(String.format("Server replyed with "
-                    + "a broken MessageID in SUB_ACK, expected %d but received %d", 
-                    messageID, m_receivedSubAckMessageID));
-                }
-            }
-        } catch(Exception ex) {
+            manageSendQoS1(msg);
+//            for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
+//                if (retries > 0) {
+//                    msg.setDupFlag(true);
+//                }
+//                
+//                WriteFuture wf = m_session.write(msg);
+//                try {
+//                    wf.await();
+//                } catch (InterruptedException ex) {
+//                    LOG.error(null, ex);
+//                    throw new SubscribeException(ex);
+//                }
+//                LOG.info("subscribe message sent");
+//
+//                Throwable ex = wf.getException();
+//                if (ex != null) {
+//                    throw new SubscribeException(ex);
+//                }
+//
+//                //wait for the SubAck
+//                m_subscribeBarrier = new CountDownLatch(1);
+//
+//                //suspend until the server respond with CONN_ACK
+//                try {
+//                    LOG.info("subscribe waiting for suback");
+//                    unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
+//                } catch (InterruptedException iex) {
+//                    throw new SubscribeException(iex);
+//                }
+//            }
+//
+//            //if not arrive into certain limit, raise an error
+//            if (!unlocked) {
+//                throw new SubscribeException(String.format("Server doesn't replyed with a SUB_ACK after %d replies", RETRIES_QOS_GT0));
+//            } else {
+//                //check if message ID match
+//                if (m_receivedSubAckMessageID != messageID) {
+//                    throw new SubscribeException(String.format("Server replyed with "
+//                    + "a broken MessageID in SUB_ACK, expected %d but received %d", 
+//                    messageID, m_receivedSubAckMessageID));
+//                }
+//            }
+        } catch(Throwable ex) {
             //in case errors arise, remove the registration because the subscription
             // hasn't get well
             unregister(topic);
@@ -315,6 +317,44 @@ public final class Client {
         updatePinger();
 
         //TODO check the ACK messageID
+    }
+    
+    private void manageSendQoS1(MessageIDMessage msg) throws Throwable{
+        int messageID = msg.getMessageID();
+        boolean unlocked = false;
+        for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
+            if (retries > 0) {
+                msg.setDupFlag(true);
+            }
+
+            WriteFuture wf = m_session.write(msg);
+            wf.await();
+            LOG.info("message sent");
+
+            Throwable ex = wf.getException();
+            if (ex != null) {
+                throw ex;
+            }
+
+            //wait for the SubAck
+            m_subscribeBarrier = new CountDownLatch(1);
+
+            //suspend until the server respond with CONN_ACK
+            LOG.info("subscribe waiting for suback");
+            unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
+        }
+
+        //if not arrive into certain limit, raise an error
+        if (!unlocked) {
+            throw new SubscribeException(String.format("Server doesn't replyed with a SUB_ACK after %d replies", RETRIES_QOS_GT0));
+        } else {
+            //check if message ID match
+            if (m_receivedSubAckMessageID != messageID) {
+                throw new SubscribeException(String.format("Server replyed with "
+                + "a broken MessageID in SUB_ACK, expected %d but received %d", 
+                messageID, m_receivedSubAckMessageID));
+            }
+        }
     }
 
     /**
