@@ -7,7 +7,7 @@
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
     <name>Moquette MQTT library</name>
     <url>http://code.google.com/p/moquette-mqtt/</url>
 
