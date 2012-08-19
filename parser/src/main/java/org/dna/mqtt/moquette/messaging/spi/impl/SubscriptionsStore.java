@@ -217,12 +217,42 @@ public class SubscriptionsStore {
     }
     
     protected void addDirect(Subscription newSubscription) {
+//        List<Token> tokens = new ArrayList<Token>();
+//        try {
+//            tokens = splitTopic(newSubscription.topic);
+//        } catch (ParseException ex) {
+//            //TODO handle the parse exception
+//            LOG.error(null, ex);
+////            return;
+//        }
+//
+//        TreeNode current = subscriptions;
+//        for (Token token : tokens) {
+//            TreeNode matchingChildren;
+//
+//            //check if a children with the same token already exists
+//            if ((matchingChildren = current.childWithToken(token)) != null) {
+//                current = matchingChildren;
+//            } else {
+//                //create a new node for the newly inserted token
+//                matchingChildren = new TreeNode(current);
+//                matchingChildren.setToken(token);
+//                current.addChild(matchingChildren);
+//                current = matchingChildren;
+//            }
+//        }
+        TreeNode current = findMatchingNode(newSubscription.topic);
+        current.addSubcription(newSubscription);
+    }
+    
+    private TreeNode findMatchingNode(String topic) {
         List<Token> tokens = new ArrayList<Token>();
         try {
-            tokens = splitTopic(newSubscription.topic);
+            tokens = splitTopic(topic);
         } catch (ParseException ex) {
             //TODO handle the parse exception
             LOG.error(null, ex);
+//            return;
         }
 
         TreeNode current = subscriptions;
@@ -240,7 +270,7 @@ public class SubscriptionsStore {
                 current = matchingChildren;
             }
         }
-        current.addSubcription(newSubscription);
+        return current;
     }
 
     public void add(Subscription newSubscription) {
@@ -256,6 +286,23 @@ public class SubscriptionsStore {
         subs.add(newSubscription);
         m_persistent.put(clientID, subs);
 //        pageFile.flush();
+    }
+    
+    public void removeSubscription(String topic, String clientID) {
+        TreeNode matchNode = findMatchingNode(topic);
+        
+        //search fr the subscription to remove
+        Subscription toBeRemoved = null;
+        for (Subscription sub : matchNode.subscriptions()) {
+            if (sub.topic.equals(topic)) {
+                toBeRemoved = sub;
+                break;
+            }
+        }
+        
+        if (toBeRemoved != null) {
+            matchNode.subscriptions().remove(toBeRemoved);
+        }
     }
 
     /**

@@ -19,6 +19,8 @@ import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                 case SUBSCRIBE:
                     handleSubscribe(session, (SubscribeMessage) msg);
                     break;
+                case UNSUBSCRIBE:
+                    handleUnsubscribe(session, (UnsubscribeMessage) msg);
+                    break;    
                 case PUBLISH:
                     handlePublish(session, (PublishMessage) msg);
                     break;
@@ -164,6 +169,19 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
+    
+    private void handleUnsubscribe(IoSession session, UnsubscribeMessage msg) {
+        LOG.info("unregistering the subscriptions");
+        for (String topic : msg.topics()) {
+            m_messaging.unsubscribe(topic, (String) session.getAttribute(ATTR_CLIENTID));
+        }
+        //ack the client
+        UnsubAckMessage ackMessage = new UnsubAckMessage();
+        ackMessage.setMessageID(msg.getMessageID());
+
+        LOG.info("replying with UnsubAct to MSG ID {0}", msg.getMessageID());
+        session.write(ackMessage);
+    }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
         m_messaging.publish(message.getTopicName(), message.getPayload(),
@@ -205,6 +223,8 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qOSType);
         pubMessage.setPayload(payload);
+        assert m_clientIDs != null;
+        assert m_clientIDs.get(clientId) != null;
         m_clientIDs.get(clientId).getSession().write(pubMessage);
     }
 }

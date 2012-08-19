@@ -29,4 +29,10 @@ public interface IMessaging {
     void removeSubscriptions(String clientID);
     
     void close();
+
+    /**
+     * Remove the clientID from topic subscription, if not previously subscribed,
+     * doesn't reply any error
+     */
+    void unsubscribe(String topic, String clientID);
 }

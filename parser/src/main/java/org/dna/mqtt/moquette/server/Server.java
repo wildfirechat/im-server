@@ -21,10 +21,13 @@ import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckEncoder;
 import org.dna.mqtt.moquette.proto.SubscribeDecoder;
+import org.dna.mqtt.moquette.proto.UnsubAckEncoder;
+import org.dna.mqtt.moquette.proto.UnsubscribeDecoder;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -52,6 +55,7 @@ public class Server {
         decoder.addMessageDecoder(new ConnectDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
         decoder.addMessageDecoder(new SubscribeDecoder());
+        decoder.addMessageDecoder(new UnsubscribeDecoder());
         decoder.addMessageDecoder(new DisconnectDecoder());
         decoder.addMessageDecoder(new PingReqDecoder());
         
@@ -59,6 +63,7 @@ public class Server {
 //        encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
         encoder.addMessageEncoder(ConnAckMessage.class, new ConnAckEncoder());
         encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
+        encoder.addMessageEncoder(UnsubAckMessage.class, new UnsubAckEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(PingRespMessage.class, new PingRespEncoder());
         

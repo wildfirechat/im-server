@@ -119,20 +119,33 @@ public class SimpleMessaging implements IMessaging {
     public void subscribe(String clientId, String topic, QOSType qos) {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         rwLock.writeLock().lock();
-        subscriptions.add(newSubscription);
-        
-        //scans reatained messages to be published to the new subscription
-        LOG.debug("Scanning all retained messages...");
-        for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
-            StoredMessage storedMsg = entry.getValue();
-            if (matchTopics(entry.getKey(), topic)) {
-                //fire the as retained the message
-                m_notifier.notify(newSubscription.clientId, topic, storedMsg.getQos(), 
-                        storedMsg.getPayload(), true);
+        try {
+            subscriptions.add(newSubscription);
+
+            //scans retained messages to be published to the new subscription
+            LOG.debug("Scanning all retained messages...");
+            for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
+                StoredMessage storedMsg = entry.getValue();
+                if (matchTopics(entry.getKey(), topic)) {
+                    //fire the as retained the message
+                    m_notifier.notify(newSubscription.clientId, topic, storedMsg.getQos(), 
+                            storedMsg.getPayload(), true);
+                }
             }
+        } finally {
+            LOG.debug("Finished firing retained messages");
+            rwLock.writeLock().unlock();
         }
-        LOG.debug("Finished firing retained messages");
-        rwLock.writeLock().unlock();
+    }
+    
+    
+    public void unsubscribe(String topic, String clientID) {
+        rwLock.writeLock().lock();
+        try {
+            subscriptions.removeSubscription(topic, clientID);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
     
     
