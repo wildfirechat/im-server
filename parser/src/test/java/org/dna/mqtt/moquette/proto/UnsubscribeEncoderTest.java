@@ -24,6 +24,30 @@ public class UnsubscribeEncoderTest {
         m_msg = new UnsubscribeMessage();
         m_msg.setMessageID(0xAABB);
     }
+    
+    @Test
+    public void testEncodeWithSingleTopic() throws Exception {
+        m_msg.setQos(QOSType.LEAST_ONE);
+        
+        //variable part
+        String topic1 = "/topic";
+        m_msg.addTopic(topic1);
+
+        //Exercise
+        m_encoder.encode(null, m_msg, m_mockProtoEncoder);
+        
+        //Verify
+        assertEquals((byte)0xA2, (byte)m_mockProtoEncoder.getBuffer().get()); //1 byte
+        assertEquals(12, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        
+        //verify M1ssageID
+        assertEquals((byte)0xAA, m_mockProtoEncoder.getBuffer().get());
+        assertEquals((byte)0xBB, m_mockProtoEncoder.getBuffer().get());
+        
+        //Variable part
+        verifyString(topic1, m_mockProtoEncoder.getBuffer());
+    }
+    
 
     @Test
     public void testEncodeWithMultiTopic() throws Exception {
@@ -40,7 +64,7 @@ public class UnsubscribeEncoderTest {
 
         //Verify
         assertEquals((byte)0xA2, (byte)m_mockProtoEncoder.getBuffer().get()); //1 byte
-        assertEquals(18, m_mockProtoEncoder.getBuffer().get()); //remaining length
+        assertEquals(16, m_mockProtoEncoder.getBuffer().get()); //remaining length
         
         //verify M1ssageID
         assertEquals((byte)0xAA, m_mockProtoEncoder.getBuffer().get());

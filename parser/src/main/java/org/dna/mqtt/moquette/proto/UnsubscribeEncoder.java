@@ -32,10 +32,10 @@ public class UnsubscribeEncoder implements MessageEncoder<UnsubscribeMessage> {
         variableHeaderBuff.flip();
         int variableHeaderSize = variableHeaderBuff.remaining();
         byte flags = Utils.encodeFlags(message);
-        IoBuffer buff = IoBuffer.allocate(4 + variableHeaderSize);
+        IoBuffer buff = IoBuffer.allocate(2 + variableHeaderSize);
 
         buff.put((byte) (AbstractMessage.UNSUBSCRIBE << 4 | flags));
-        buff.put(Utils.encodeRemainingLength(4 + variableHeaderSize));
+        buff.put(Utils.encodeRemainingLength(2 + variableHeaderSize));
         buff.put(variableHeaderBuff).flip();
 
         out.write(buff);
