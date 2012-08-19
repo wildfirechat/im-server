@@ -2,6 +2,8 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
 import org.junit.After;
@@ -223,5 +225,87 @@ public class ServerIntegrationTest {
         //TearDown 
         client.shutdown();
     } 
+    
+    
+    @Test
+    public void testUnsubscribe_do_not_notify_anymore_same_session() throws InterruptedException {
+        Client client = new Client("localhost", Server.PORT, "CLID_123");
+//        Client client = new Client("test.mosquitto.org", 1883);
+        client.connect();
+        
+        final CountDownLatch barrier = new CountDownLatch(1);
+        
+        client.subscribe("/topic", new IPublishCallback() {
+
+            public void published(String topic, byte[] message) {
+                received = true;
+                barrier.countDown();
+            }
+        });
+        
+        client.publish("/topic", "Test my payload".getBytes());
+
+        //wait 1 second to receive the published message
+        boolean unlocked = barrier.await(1000, TimeUnit.MILLISECONDS);
+        assertTrue(unlocked); //we were unlocked by the message reception
+        assertTrue(received);
+        
+        //reinit the flag
+        received = false;
+        //unsubscrbe and republish to check no notification is raised up
+        client.unsubscribe("/topic");
+        client.publish("/topic", "Test my payload".getBytes());
+        assertFalse(received);
+        
+        client.close();
+        client.shutdown();
+    }
+    
+    @Test
+    public void testUnsubscribe_do_not_notify_anymore_new_session() throws InterruptedException {
+        Client client = new Client("localhost", Server.PORT, "CLID_123");
+//        Client client = new Client("test.mosquitto.org", 1883);
+        client.connect();
+        
+        final CountDownLatch barrier = new CountDownLatch(1);
+        
+        client.subscribe("/topic", new IPublishCallback() {
+
+            public void published(String topic, byte[] message) {
+                received = true;
+                barrier.countDown();
+            }
+        });
+        
+        client.publish("/topic", "Test my payload".getBytes());
+
+        //wait 1 second to receive the published message
+        boolean unlocked = barrier.await(1000, TimeUnit.MILLISECONDS);
+        assertTrue(unlocked); //we were unlocked by the message reception
+        assertTrue(received);
+        
+        //unsubscrbe and republish to check no notification is raised up
+        client.unsubscribe("/topic");
+        
+        client.close();
+        client.shutdown();
+        
+        //Exercise that the client maintain the subscriptions
+        client = new Client("localhost", Server.PORT, "CLID_123");
+        client.connect(); 
+        
+        //reinit the flag
+        received = false;
+        final CountDownLatch barrier2 = new CountDownLatch(1);
+        
+        client.publish("/topic", "Test my payload".getBytes());
+        unlocked = barrier2.await(1000, TimeUnit.MILLISECONDS);
+        assertFalse(unlocked); //we were unlocked by the timeout exipration, no message received
+        assertFalse(received);
+        
+        client.close();
+        client.shutdown();
+        
+    }
     
 }
