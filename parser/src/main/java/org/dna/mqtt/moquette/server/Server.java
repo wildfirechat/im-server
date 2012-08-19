@@ -38,7 +38,7 @@ public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
-    public static final int PORT = 9191;
+    public static final int PORT = 1883;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;
     public static final String STORAGE_FILE_PATH = System.getProperty("user.home") + 
             File.separator + "moquette_store.hawtdb";
