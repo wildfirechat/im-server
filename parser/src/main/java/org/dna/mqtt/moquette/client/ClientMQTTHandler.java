@@ -7,6 +7,7 @@ import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
             case SUBACK:
                 handleSubscribeAck(session, (SubAckMessage) msg);
                 break;
+            case UNSUBACK:
+                handleUnsubscribeAck(session, (UnsubAckMessage) msg);
+                break;
 //            case SUBSCRIBE:
 //                handleSubscribe(session, (SubscribeMessage) msg);
 //        break;
@@ -56,5 +60,9 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
     
     private void handlePublish(IoSession session, PublishMessage pubMessage) {
         m_callback.publishCallback(pubMessage.getTopicName(), pubMessage.getPayload());
+    }
+
+    private void handleUnsubscribeAck(IoSession session, UnsubAckMessage unsubAckMessage) {
+        m_callback.unsubscribeAckCallback(unsubAckMessage.getMessageID());
     }
 }

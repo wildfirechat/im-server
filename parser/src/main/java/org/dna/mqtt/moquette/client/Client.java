@@ -33,6 +33,8 @@ import org.dna.mqtt.moquette.proto.PublishDecoder;
 import org.dna.mqtt.moquette.proto.PublishEncoder;
 import org.dna.mqtt.moquette.proto.SubAckDecoder;
 import org.dna.mqtt.moquette.proto.SubscribeEncoder;
+import org.dna.mqtt.moquette.proto.UnsubAckDecoder;
+import org.dna.mqtt.moquette.proto.UnsubscribeEncoder;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
@@ -41,6 +43,7 @@ import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
 import org.dna.mqtt.moquette.proto.messages.PingReqMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.dna.mqtt.moquette.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +118,7 @@ public final class Client {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnAckDecoder());
         decoder.addMessageDecoder(new SubAckDecoder());
+        decoder.addMessageDecoder(new UnsubAckDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
         decoder.addMessageDecoder(new PingRespDecoder());
 
@@ -122,6 +126,7 @@ public final class Client {
         encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(SubscribeMessage.class, new SubscribeEncoder());
+        encoder.addMessageEncoder(UnsubscribeMessage.class, new UnsubscribeEncoder());
         encoder.addMessageEncoder(DisconnectMessage.class, new DisconnectEncoder());
         encoder.addMessageEncoder(PingReqMessage.class, new PingReqEncoder());
 
@@ -261,7 +266,7 @@ public final class Client {
 //        m_inflightIDs.add(messageID);
         register(topic, publishCallback);
         
-        boolean unlocked = false; //true when a SUBACK is received
+//        boolean unlocked = false; //true when a SUBACK is received
         try {
             manageSendQoS1(msg);
 //            for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
@@ -315,8 +320,35 @@ public final class Client {
 
 //        register(topic, publishCallback);
         updatePinger();
+    }
+    
+    
+    public void unsubscribe(String... topics) {
+        LOG.info("unsubscribe invoked");
+        UnsubscribeMessage msg = new UnsubscribeMessage();
+        for (String topic : topics) {
+            msg.addTopic(topic);
+        }
+        msg.setQos(AbstractMessage.QOSType.LEAST_ONE);
+        int messageID = m_messageIDGenerator.next();
+        msg.setMessageID(messageID);
+//        m_inflightIDs.add(messageID);
+//        register(topic, publishCallback);
+        try {
+            manageSendQoS1(msg);
+        } catch(Throwable ex) {
+            //in case errors arise, remove the registration because the subscription
+            // hasn't get well
+//            unregister(topic);
+            throw new MQTTException(ex);
+        }
+        
+        for (String topic : topics) {
+            unregister(topic);
+        }
 
-        //TODO check the ACK messageID
+//        register(topic, publishCallback);
+        updatePinger();
     }
     
     private void manageSendQoS1(MessageIDMessage msg) throws Throwable{
@@ -368,6 +400,13 @@ public final class Client {
 
     protected void subscribeAckCallback(int messageID) {
         LOG.info("subscribeAckCallback invoked");
+        m_subscribeBarrier.countDown();
+        m_receivedSubAckMessageID = messageID;
+    }
+    
+    void unsubscribeAckCallback(int messageID) {
+        LOG.info("unsubscribeAckCallback invoked");
+        //NB we share the barrier because in futur will be a single barrier for all
         m_subscribeBarrier.countDown();
         m_receivedSubAckMessageID = messageID;
     }
