@@ -58,6 +58,47 @@ public class UnsubscribeDecoderTest {
         assertEquals(AbstractMessage.UNSUBSCRIBE, m_mockProtoDecoder.getMessage().getMessageType());
     }
     
+    
+    @Test
+    public void testDecodeSingleTopic_bug() throws Exception {
+        //A2 0C 00 01 00 06 2F 74 6F 70 69 63 //12 byte
+        byte[] overallMessage = new byte[] {(byte)0xA2, 0x0A, //fixed header
+             0x00, 0x01, //MSG ID
+             0x00, 0x06, 0x2F, 0x74, 0x6F, 0x70, 0x69, 0x63}; //"/topic" string
+        m_buff = IoBuffer.allocate(overallMessage.length).setAutoExpand(true);
+        m_buff.put(overallMessage);
+        m_buff.flip();
+         
+        MessageDecoderResult res = m_msgdec.decode(null, m_buff, m_mockProtoDecoder);
+
+        assertNotNull(m_mockProtoDecoder.getMessage());
+        UnsubscribeMessage message = (UnsubscribeMessage) m_mockProtoDecoder.getMessage();
+//        assertEquals(0x0A, message.getMessageID());
+//        assertEquals(1, message.types().size());
+//        assertEquals(AbstractMessage.QOSType.LEAST_ONE, message.types().get(0));
+        
+    }
+    
+//    @Test
+//    public void testDecodeSingleTopic_BadFormat() throws Exception {
+//        //A2 0C 00 01 00 06 2F 74 6F 70 69 63 //10 byte of content, but lenght says 12!!
+//        byte[] overallMessage = new byte[] {(byte)0xA2, 0x0C, //fixed header
+//             0x00, 0x01, //MSG ID
+//             0x00, 0x06, 0x2F, 0x74, 0x6F, 0x70, 0x69, 0x63}; //"/topic" string
+//        m_buff = IoBuffer.allocate(overallMessage.length).setAutoExpand(true);
+//        m_buff.put(overallMessage);
+//        m_buff.flip();
+//         
+//        MessageDecoderResult res = m_msgdec.decode(null, m_buff, m_mockProtoDecoder);
+//
+//        assertNotNull(m_mockProtoDecoder.getMessage());
+//        UnsubscribeMessage message = (UnsubscribeMessage) m_mockProtoDecoder.getMessage();
+////        assertEquals(0x0A, message.getMessageID());
+////        assertEquals(1, message.types().size());
+////        assertEquals(AbstractMessage.QOSType.LEAST_ONE, message.types().get(0));
+//        
+//    }
+    
     private void initHeaderBadQos(IoBuffer buff) {
         buff.clear().put((byte)(AbstractMessage.UNSUBSCRIBE << 4)).put((byte)0);
     }
