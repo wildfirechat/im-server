@@ -202,6 +202,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             //cleanup topic subscriptions
             m_messaging.removeSubscriptions(clientID);
         }
+        
+        //close the TCP connection
+        session.close(true);
     }
 
     @Override
