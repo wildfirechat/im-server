@@ -228,6 +228,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         pubMessage.setPayload(payload);
         assert m_clientIDs != null;
         assert m_clientIDs.get(clientId) != null;
+        LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
         m_clientIDs.get(clientId).getSession().write(pubMessage);
     }
 }
