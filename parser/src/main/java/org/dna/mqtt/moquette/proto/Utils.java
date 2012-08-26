@@ -37,7 +37,7 @@ public class Utils {
      * Decode the variable remaining lenght as defined in MQTT v3.1 specification 
      * (section 2.1).
      * 
-     * @return the decoded length or -1 if needed more data to decode.
+     * @return the decoded length or -1 if needed more data to decode the length field.
      */
     static int decodeRemainingLenght(IoBuffer in) {
         int multiplier = 1;
@@ -87,6 +87,17 @@ public class Utils {
         }
         byte h1 = in.get();
         byte messageType = (byte) ((h1 & 0x00F0) >> 4);
+        
+        int remainingLength = Utils.decodeRemainingLenght(in);
+        if (remainingLength == -1) {
+            return MessageDecoderResult.NEED_DATA;
+        }
+        
+        //check remaining length
+        if (in.remaining() < remainingLength) {
+            return MessageDecoderResult.NEED_DATA;
+        }
+        
         return messageType == type ? MessageDecoderResult.OK : MessageDecoderResult.NOT_OK;
     }
     

@@ -26,13 +26,17 @@ public class ConnectDecoderTest {
     
     @Test
     public void testDecodable_OK() {
-        m_buff.put((byte)(AbstractMessage.CONNECT << 4)).flip();
+        m_buff.put((byte)(AbstractMessage.CONNECT << 4))
+                .put((byte)0) //0 length
+                .flip();
         assertEquals(MessageDecoder.OK , m_msgdec.decodable(null, m_buff));
     }
     
     @Test
     public void testDecodable_NOT_OK() {
-        m_buff.put((byte)(AbstractMessage.CONNACK << 4)).flip();
+        m_buff.put((byte)(AbstractMessage.CONNACK << 4))
+                .put((byte)0) //0 length
+                .flip();
         assertEquals(MessageDecoder.NOT_OK , m_msgdec.decodable(null, m_buff));
     }
 
