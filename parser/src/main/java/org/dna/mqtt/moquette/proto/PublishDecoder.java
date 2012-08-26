@@ -5,8 +5,8 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 
 /**
  *
@@ -20,7 +20,7 @@ public class PublishDecoder extends MqttDecoder {
 
     public MessageDecoderResult decode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception {
         int startPos = in.position();
-        
+
         //Common decoding part
         PublishMessage message = new PublishMessage();
         if (decodeCommonHeader(message, in) == NEED_DATA) {
