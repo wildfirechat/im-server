@@ -6,9 +6,9 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
 import org.apache.mina.filter.logging.LogLevel;
 import org.apache.mina.filter.logging.LoggingFilter;
+import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 
 /**
  * Apache MINA logging filter that pretty prints the header of messages
