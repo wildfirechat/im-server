@@ -1,11 +1,16 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.SubscribeEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -26,7 +31,8 @@ public class SimpleMessagingTest {
     @Test
     public void testSubscribe() {
         //Exercise
-        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        messaging.processSubscribe(evt);
 
         //Verify
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
@@ -35,10 +41,11 @@ public class SimpleMessagingTest {
 
     @Test
     public void testDoubleSubscribe() {
-        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        messaging.processSubscribe(evt);
 
         //Exercise
-        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        messaging.processSubscribe(evt);
 
         //Verify
         Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
@@ -47,12 +54,14 @@ public class SimpleMessagingTest {
 
     @Test
     public void testPublish() {
-        messaging.subscribe(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        messaging.processSubscribe(evt);
         INotifier notifier = mock(INotifier.class);
         messaging.setNotifier(notifier);
 
         //Exercise
-        messaging.publish(FAKE_TOPIC, "Hello".getBytes(), QOSType.MOST_ONE, false);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false);
+        messaging.processPublish(pubEvt);
 
         //Verify
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
