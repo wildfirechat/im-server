@@ -4,13 +4,10 @@ import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.SubscribeEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
