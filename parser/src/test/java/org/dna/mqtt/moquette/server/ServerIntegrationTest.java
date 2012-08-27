@@ -163,7 +163,8 @@ public class ServerIntegrationTest {
     
     
     @Test
-    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws IOException {
+    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws IOException, InterruptedException {
+        final CountDownLatch barrier = new CountDownLatch(1);
         Client client = new Client("localhost", Server.PORT, "CLID_123");
         client.connect(false); //without session cleanup
         
@@ -185,6 +186,7 @@ public class ServerIntegrationTest {
 
             public void published(String topic, byte[] message) {
                 received = true;
+                barrier.countDown();
             }
         });
         client.connect(false); 
@@ -192,6 +194,7 @@ public class ServerIntegrationTest {
         client.close();
         
         //Verify
+        barrier.await(1, TimeUnit.SECONDS);
         assertTrue(received);
         
         //TearDown 
