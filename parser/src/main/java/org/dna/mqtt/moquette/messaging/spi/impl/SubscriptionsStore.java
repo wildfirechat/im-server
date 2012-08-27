@@ -219,30 +219,6 @@ public class SubscriptionsStore {
     }
     
     protected void addDirect(Subscription newSubscription) {
-//        List<Token> tokens = new ArrayList<Token>();
-//        try {
-//            tokens = splitTopic(newSubscription.topic);
-//        } catch (ParseException ex) {
-//            //TODO handle the parse exception
-//            LOG.error(null, ex);
-////            return;
-//        }
-//
-//        TreeNode current = subscriptions;
-//        for (Token token : tokens) {
-//            TreeNode matchingChildren;
-//
-//            //check if a children with the same token already exists
-//            if ((matchingChildren = current.childWithToken(token)) != null) {
-//                current = matchingChildren;
-//            } else {
-//                //create a new node for the newly inserted token
-//                matchingChildren = new TreeNode(current);
-//                matchingChildren.setToken(token);
-//                current.addChild(matchingChildren);
-//                current = matchingChildren;
-//            }
-//        }
         TreeNode current = findMatchingNode(newSubscription.topic);
         current.addSubcription(newSubscription);
     }
