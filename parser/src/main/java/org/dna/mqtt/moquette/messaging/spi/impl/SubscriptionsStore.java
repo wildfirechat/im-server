@@ -200,6 +200,7 @@ public class SubscriptionsStore {
      * client's topics subscriptions
      */
     public void init(MultiIndexFactory multiFactory) {
+        LOG.debug("init invoked");
         BTreeIndexFactory<String, List<Subscription>> indexFactory =
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
@@ -210,6 +211,7 @@ public class SubscriptionsStore {
         LOG.debug("Reloading all stored subscriptions...");
         for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
             for (Subscription subscription : entry.getValue()) {
+                LOG.debug("Re-subscribing " + subscription.getClientId() + " to topic " + subscription.getTopic());
                 addDirect(subscription);
             }
         }
