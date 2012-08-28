@@ -266,51 +266,8 @@ public final class Client {
 //        m_inflightIDs.add(messageID);
         register(topic, publishCallback);
         
-//        boolean unlocked = false; //true when a SUBACK is received
         try {
             manageSendQoS1(msg);
-//            for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
-//                if (retries > 0) {
-//                    msg.setDupFlag(true);
-//                }
-//                
-//                WriteFuture wf = m_session.write(msg);
-//                try {
-//                    wf.await();
-//                } catch (InterruptedException ex) {
-//                    LOG.error(null, ex);
-//                    throw new SubscribeException(ex);
-//                }
-//                LOG.info("subscribe message sent");
-//
-//                Throwable ex = wf.getException();
-//                if (ex != null) {
-//                    throw new SubscribeException(ex);
-//                }
-//
-//                //wait for the SubAck
-//                m_subscribeBarrier = new CountDownLatch(1);
-//
-//                //suspend until the server respond with CONN_ACK
-//                try {
-//                    LOG.info("subscribe waiting for suback");
-//                    unlocked = m_subscribeBarrier.await(SUBACK_TIMEOUT, TimeUnit.MILLISECONDS); //TODO parametrize
-//                } catch (InterruptedException iex) {
-//                    throw new SubscribeException(iex);
-//                }
-//            }
-//
-//            //if not arrive into certain limit, raise an error
-//            if (!unlocked) {
-//                throw new SubscribeException(String.format("Server doesn't replyed with a SUB_ACK after %d replies", RETRIES_QOS_GT0));
-//            } else {
-//                //check if message ID match
-//                if (m_receivedSubAckMessageID != messageID) {
-//                    throw new SubscribeException(String.format("Server replyed with "
-//                    + "a broken MessageID in SUB_ACK, expected %d but received %d", 
-//                    messageID, m_receivedSubAckMessageID));
-//                }
-//            }
         } catch(Throwable ex) {
             //in case errors arise, remove the registration because the subscription
             // hasn't get well
@@ -318,7 +275,6 @@ public final class Client {
             throw new MQTTException(ex);
         }
 
-//        register(topic, publishCallback);
         updatePinger();
     }
     
