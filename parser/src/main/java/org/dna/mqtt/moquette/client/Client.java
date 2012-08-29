@@ -311,6 +311,7 @@ public final class Client {
         int messageID = msg.getMessageID();
         boolean unlocked = false;
         for (int retries = 0; retries < RETRIES_QOS_GT0 || !unlocked; retries++) {
+            LOG.debug("manageSendQoS1 retry " + retries);
             if (retries > 0) {
                 msg.setDupFlag(true);
             }
