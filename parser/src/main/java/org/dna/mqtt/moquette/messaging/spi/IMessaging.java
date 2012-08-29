@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
+import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 /**
@@ -35,4 +36,6 @@ public interface IMessaging {
      * doesn't reply any error
      */
     void unsubscribe(String topic, String clientID);
+
+    void disconnect(IoSession session);
 }

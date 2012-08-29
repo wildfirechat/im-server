@@ -200,6 +200,7 @@ public class SubscriptionsStore {
      * client's topics subscriptions
      */
     public void init(MultiIndexFactory multiFactory) {
+        LOG.debug("init invoked");
         BTreeIndexFactory<String, List<Subscription>> indexFactory =
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
@@ -210,6 +211,7 @@ public class SubscriptionsStore {
         LOG.debug("Reloading all stored subscriptions...");
         for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
             for (Subscription subscription : entry.getValue()) {
+                LOG.debug("Re-subscribing " + subscription.getClientId() + " to topic " + subscription.getTopic());
                 addDirect(subscription);
             }
         }
@@ -217,30 +219,6 @@ public class SubscriptionsStore {
     }
     
     protected void addDirect(Subscription newSubscription) {
-//        List<Token> tokens = new ArrayList<Token>();
-//        try {
-//            tokens = splitTopic(newSubscription.topic);
-//        } catch (ParseException ex) {
-//            //TODO handle the parse exception
-//            LOG.error(null, ex);
-////            return;
-//        }
-//
-//        TreeNode current = subscriptions;
-//        for (Token token : tokens) {
-//            TreeNode matchingChildren;
-//
-//            //check if a children with the same token already exists
-//            if ((matchingChildren = current.childWithToken(token)) != null) {
-//                current = matchingChildren;
-//            } else {
-//                //create a new node for the newly inserted token
-//                matchingChildren = new TreeNode(current);
-//                matchingChildren.setToken(token);
-//                current.addChild(matchingChildren);
-//                current = matchingChildren;
-//            }
-//        }
         TreeNode current = findMatchingNode(newSubscription.topic);
         current.addSubcription(newSubscription);
     }
