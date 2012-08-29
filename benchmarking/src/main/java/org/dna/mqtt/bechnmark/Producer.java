@@ -19,7 +19,7 @@ public class Producer implements Runnable {
     
     private String m_clientID;
     
-    static final int PUB_LOOP = 10000;
+    public static final int PUB_LOOP = 1000000;
     
     public Producer(String clientID) {
         m_clientID = clientID;

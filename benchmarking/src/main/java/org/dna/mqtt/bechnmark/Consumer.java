@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Consumer implements Runnable {
     
-    static final int PUB_LOOP = 10000;
-    
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
     
     private String m_clientID;
@@ -54,7 +52,7 @@ public class Consumer implements Runnable {
         }
             
         Message message = null;
-        for (int i = 0; i < PUB_LOOP; i++) {
+        for (int i = 0; i < Producer.PUB_LOOP; i++) {
             try {
                 message = connection.receive();
             } catch (Exception ex) {
