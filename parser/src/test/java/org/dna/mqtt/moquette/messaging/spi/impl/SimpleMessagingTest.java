@@ -1,14 +1,14 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
+import java.util.concurrent.BlockingQueue;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.SubscribeEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import static org.mockito.Mockito.*;
 
 /**
  *
@@ -50,20 +50,28 @@ public class SimpleMessagingTest {
     }
 
     @Test
-    public void testPublish() {
+    public void testPublish() throws InterruptedException {
         SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
         messaging.processSubscribe(evt);
-        INotifier notifier = mock(INotifier.class);
-        messaging.setNotifier(notifier);
+//        INotifier notifier = mock(INotifier.class);
+//        messaging.setNotifier(notifier);
 
         //Exercise
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false);
         messaging.processPublish(pubEvt);
 
         //Verify
-        ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-        verify(notifier).notify(eq(FAKE_CLIENT_ID), eq(FAKE_TOPIC), any(QOSType.class), argument.capture(), eq(false));
-        assertEquals("Hello", new String(argument.getValue()));
+        BlockingQueue<MessagingEvent> queue = messaging.getNotifyEventQueue();
+        MessagingEvent msgEvt = queue.take();
+        assertTrue(msgEvt instanceof NotifyEvent);
+        NotifyEvent notifyEvt = (NotifyEvent) msgEvt;
+        assertEquals(FAKE_CLIENT_ID, notifyEvt.getClientId());
+        assertEquals(FAKE_TOPIC, notifyEvt.getTopic());
+        assertFalse(notifyEvt.isRetained());
+        
+//        ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
+//        verify(notifier).notify(eq(FAKE_CLIENT_ID), eq(FAKE_TOPIC), any(QOSType.class), argument.capture(), eq(false));
+        assertEquals("Hello", new String(notifyEvt.getMessage()));
     }
     
     @Test

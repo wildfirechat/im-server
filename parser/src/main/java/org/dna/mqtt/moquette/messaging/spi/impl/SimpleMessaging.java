@@ -1,7 +1,5 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import org.dna.mqtt.moquette.messaging.spi.impl.events.RemoveAllSubscriptionsEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -10,12 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.CloseEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.DisconnectEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.RemoveAllSubscriptionsEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.SubscribeEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.UnsubscribeEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
@@ -58,12 +60,12 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
     private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
+    private BlockingQueue<MessagingEvent> m_outboundQueue = new LinkedBlockingQueue<MessagingEvent>();
     
-    private INotifier m_notifier;
+//    private INotifier m_notifier;
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
     private SortedIndex<String, StoredMessage> m_retainedStore;
-    
     
     public SimpleMessaging() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -98,9 +100,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
         eventLoop();
     }
     
-    public void setNotifier(INotifier notifier) {
-        m_notifier = notifier;
-    }
 
     public void publish(String topic, byte[] message, QOSType qos, boolean retain) {
         //TODO for this moment  no qos > 0 trivial implementation
@@ -116,6 +115,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     public void subscribe(String clientId, String topic, QOSType qos) {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         try {
+            LOG.debug("subscribe invoked for topic: " + topic);
             m_inboundQueue.put(new SubscribeEvent(newSubscription));
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
@@ -126,6 +126,15 @@ public class SimpleMessaging implements IMessaging, Runnable {
     public void unsubscribe(String topic, String clientID) {
         try {
             m_inboundQueue.put(new UnsubscribeEvent(topic, clientID));
+        } catch (InterruptedException ex) {
+            LOG.error(null, ex);
+        }
+    }
+    
+    
+    public void disconnect(IoSession session) {
+        try {
+            m_inboundQueue.put(new DisconnectEvent(session));
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
@@ -183,7 +192,11 @@ public class SimpleMessaging implements IMessaging, Runnable {
             m_inboundQueue.put(new CloseEvent());
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
-        }
+        } 
+    }
+    
+    public BlockingQueue<MessagingEvent> getNotifyEventQueue() {
+        return m_outboundQueue;
     }
     
     
@@ -203,6 +216,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
                     processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
                 } else if (evt instanceof CloseEvent) {
                     processClose();
+                } else if (evt instanceof DisconnectEvent) {
+                    m_outboundQueue.put(evt);
                 }
             } catch (InterruptedException ex) {
                 processClose();
@@ -213,13 +228,17 @@ public class SimpleMessaging implements IMessaging, Runnable {
     
     protected void processPublish(PublishEvent evt) {
         LOG.debug("processPublish invoked");
-        String topic = evt.getTopic();
-        QOSType qos = evt.getQos();
-        byte[] message = evt.getMessage();
+        final String topic = evt.getTopic();
+        final QOSType qos = evt.getQos();
+        final byte[] message = evt.getMessage();
         boolean retain = evt.isRetain();
         
-        for (Subscription sub : subscriptions.matches(topic)) {
-            m_notifier.notify(sub.clientId, topic, qos, message, false);
+        for (final Subscription sub : subscriptions.matches(topic)) {
+            try {
+                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
+            } catch (InterruptedException ex) {
+                LOG.error(null, ex);
+            }
         }
         if (retain) {
             if (message.length == 0) {
@@ -233,7 +252,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
     
     
-    protected void processSubscribe(SubscribeEvent evt) {
+    protected void processSubscribe(SubscribeEvent evt)/* throws InterruptedException*/ {
         LOG.debug("processSubscribe invoked");
         Subscription newSubscription = evt.getSubscription();
         String topic = newSubscription.getTopic();
@@ -241,13 +260,18 @@ public class SimpleMessaging implements IMessaging, Runnable {
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
-        LOG.debug("Scanning all retained messages...");
+        LOG.debug("Scanning all retained messages, presents are " + m_retainedStore.size());
         for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
             StoredMessage storedMsg = entry.getValue();
             if (matchTopics(entry.getKey(), topic)) {
-                //fire the as retained the message
-                m_notifier.notify(newSubscription.clientId, topic, storedMsg.getQos(), 
-                        storedMsg.getPayload(), true);
+                try {
+                    //fire the as retained the message
+                    LOG.debug("Inserting NotifyEvent into outbound for topic " + topic + " entry " + entry.getKey());
+                    m_outboundQueue.put(new NotifyEvent(newSubscription.clientId,
+                            topic, storedMsg.getQos(), storedMsg.getPayload(), true));
+                } catch (InterruptedException ex) {
+                    LOG.error(null, ex);
+                }
             }
         }
     }

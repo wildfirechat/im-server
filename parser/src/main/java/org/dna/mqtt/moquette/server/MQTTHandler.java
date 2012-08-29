@@ -63,7 +63,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
                     break;
                 case DISCONNECT:
                     handleDisconnect(session, (DisconnectMessage) msg);
-
+                    break;
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
@@ -152,7 +152,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     }
 
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
-        LOG.info("registering the subscriptions");
+        LOG.debug("handleSubscribe, registering the subscriptions");
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID),
                     req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
@@ -191,12 +191,12 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
         String clientID = (String) session.getAttribute(ATTR_CLIENTID);
         //remove from clientIDs
-        m_clientIDsLock.lock();
-        try {
-            m_clientIDs.remove(clientID);
-        } finally {
-            m_clientIDsLock.unlock();
-        }
+//        m_clientIDsLock.lock();
+//        try {
+//            m_clientIDs.remove(clientID);
+//        } finally {
+//            m_clientIDsLock.unlock();
+//        }
         boolean cleanSession = (Boolean) session.getAttribute("cleanSession");
         if (cleanSession) {
             //cleanup topic subscriptions
@@ -204,7 +204,8 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         }
         
         //close the TCP connection
-        session.close(true);
+        //session.close(true);
+        m_messaging.disconnect(session);
     }
 
     @Override
@@ -226,9 +227,30 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qOSType);
         pubMessage.setPayload(payload);
-        assert m_clientIDs != null;
-        assert m_clientIDs.get(clientId) != null;
-        LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-        m_clientIDs.get(clientId).getSession().write(pubMessage);
+        
+        LOG.debug("notify invoked");
+        m_clientIDsLock.lock();
+        try {
+            assert m_clientIDs != null;
+            LOG.debug("clientIDs are " + m_clientIDs);
+            assert m_clientIDs.get(clientId) != null;
+            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
+            m_clientIDs.get(clientId).getSession().write(pubMessage);
+        }catch(Throwable t) {
+            LOG.error(null, t);
+        } finally {
+            m_clientIDsLock.unlock();  
+        }
+    }
+
+    public void disconnect(IoSession session) {
+        String clientID = (String) session.getAttribute(ATTR_CLIENTID);
+        m_clientIDsLock.lock();
+        try {
+            m_clientIDs.remove(clientID);
+        } finally {
+            m_clientIDsLock.unlock();
+        }
+        session.close(true);
     }
 }
