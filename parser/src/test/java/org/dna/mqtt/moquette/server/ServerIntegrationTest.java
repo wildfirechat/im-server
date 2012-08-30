@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
+import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -40,6 +41,26 @@ public class ServerIntegrationTest {
         }
     }
     
+    @Ignore
+    public void testSubscribe_FSClient() throws Exception {
+//        startServer();
+        MQTT mqtt = new MQTT();
+//        mqtt.setHost("localhost", Server.PORT);
+        mqtt.setHost("test.mosquitto.org", Server.PORT);
+        mqtt.setClientId("TestClient");
+        FutureConnection connection = mqtt.futureConnection();
+        connection.connect().await();
+
+        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+        Future<byte[]> futSub = connection.subscribe(topics);
+
+        connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
+
+        byte[] qoses = futSub.await();
+        assertEquals(1, qoses.length);
+        connection.disconnect().await();
+    }
+    
     
     @Test
     public void testSubscribe() throws IOException, InterruptedException {
@@ -47,20 +68,20 @@ public class ServerIntegrationTest {
         Client client = new Client("localhost", Server.PORT);
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
-        
-        
+
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
                 received = true;
             }
         });
-        
+
         client.publish("/topic", "Test my payload".getBytes());
-        
+
         client.close();
         client.shutdown();
-        
+
         assertTrue(received);
     }
     

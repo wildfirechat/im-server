@@ -58,6 +58,14 @@
             <version>1.9.0</version> 
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.fusesource.mqtt-client</groupId>
+            <artifactId>mqtt-client</artifactId>
+<!--            <version>1.4-SNAPSHOT</version>-->
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     
     <build>
@@ -101,10 +109,21 @@
         </plugins>
     </build>
     
-    <!--    <repositories>
-        <repository>
+    <repositories>
+<!--        <repository>
             <id>Fusesource Releases</id>
             <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-        </repository>
-    </repositories>-->
+        </repository>-->
+<!--        <repository>
+            <id>fusesource.snapshots</id>
+            <name>FuseSource Snapshot Repository</name>
+            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>-->
+    </repositories>
 </project>
