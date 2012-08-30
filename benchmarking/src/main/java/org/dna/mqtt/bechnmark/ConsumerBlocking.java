@@ -3,33 +3,26 @@ package org.dna.mqtt.bechnmark;
 import java.net.URISyntaxException;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.QoS;
+import org.fusesource.mqtt.client.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class only publish MQTT messages to a define topic with a certain frequency.
- * 
- * 
+ *
  * @author andrea
  */
-public class Producer implements Runnable {
+public class ConsumerBlocking implements Runnable {
     
-    private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConsumerBlocking.class);
     
     private String m_clientID;
-    
-    public static final int PUB_LOOP = 1000000;
-    
-    private static int m_starIndex;
-    private static int m_len;
-    
-    public Producer(String clientID, int start, int len) {
-        m_clientID = clientID;
-        m_starIndex = start;
-        m_len = len;
-    }
 
+    public ConsumerBlocking(String clientID) {
+        m_clientID = clientID;
+    }
+    
     public void run() {
         MQTT mqtt = new MQTT();
         try {
@@ -49,17 +42,29 @@ public class Producer implements Runnable {
             return;
         }
         
-        //TODO loop
-        for (int i = m_starIndex; i < m_starIndex + m_len; i++) {
+        try {
+            Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+            byte[] qoses = connection.subscribe(topics);
+            LOG.info("Subscribed to topic");
+        } catch (Exception ex) {
+            LOG.error("Cant't PUSBLISH to the server", ex);
+            return;
+        }
+            
+        Message message = null;
+        for (int i = 0; i < Producer.PUB_LOOP; i++) {
             try {
-//                LOG.info("Publishing");
-                String payload = "Hello world MQTT!!" + i;
-                connection.publish("/topic", payload.getBytes(), QoS.AT_MOST_ONCE, false);
+                message = connection.receive();
             } catch (Exception ex) {
-                LOG.error("Cant't PUBLISH to the server", ex);
+                LOG.error(null, ex);
                 return;
             }
+            byte[] payload = message.getPayload();
+            StringBuffer sb = new StringBuffer().append("Topic: ").append(message.getTopic())
+                    .append(", payload: ").append(new String(payload));
+            LOG.info(sb.toString());
         }
+            
         try {
             LOG.info("Disconneting");
             connection.disconnect();
@@ -67,6 +72,7 @@ public class Producer implements Runnable {
         } catch (Exception ex) {
             LOG.error("Cant't DISCONNECT to the server", ex);
         }
+        
     }
     
 }

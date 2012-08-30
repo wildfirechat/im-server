@@ -13,17 +13,21 @@ import java.util.concurrent.Executors;
  */
 public class Main {
     private static final int PUBLISHER_POOL_SIZE = 2;
+    private static final int NUM_CONCURRENT_PRODS = 2;
     
     public static void main(String[] args) throws InterruptedException {
-        ExecutorService pool = Executors.newFixedThreadPool(PUBLISHER_POOL_SIZE);
+        ExecutorService consumerPool = Executors.newFixedThreadPool(PUBLISHER_POOL_SIZE);
+        ExecutorService producerPool = Executors.newFixedThreadPool(PUBLISHER_POOL_SIZE);
         
-        pool.submit(new Consumer("Cons1"));
+        consumerPool.submit(new ConsumerBlocking("Cons1"));
         
         //force wait to let the consumer be registered before the producer
         Thread.sleep(1000);
+        int len = Producer.PUB_LOOP / NUM_CONCURRENT_PRODS;
+        producerPool.submit(new Producer("Prod1", 0, len));
+        producerPool.submit(new Producer("Prod2", len, len));
         
-        pool.submit(new Producer("Prod1"));
-        
-        pool.shutdown();
+        consumerPool.shutdown();
+        producerPool.shutdown();
     }
 }
