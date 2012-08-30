@@ -1,5 +1,6 @@
 package org.dna.mqtt.bechnmark;
 
+import java.io.*;
 import java.net.URISyntaxException;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
@@ -16,21 +17,28 @@ import org.slf4j.LoggerFactory;
 public class Producer implements Runnable {
     
     private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
-    
+
     private String m_clientID;
     
-    public static final int PUB_LOOP = 1000000;
+    public static final int PUB_LOOP = 100000;
     
     private static int m_starIndex;
     private static int m_len;
-    
+    private long m_startMillis;
+    private static final String BENCHMARK_FILE = "producer_bechmark.txt";
+    private PrintWriter m_benchMarkOut;
+    private ByteArrayOutputStream m_baos = new ByteArrayOutputStream(1024 * 1024);
+
     public Producer(String clientID, int start, int len) {
         m_clientID = clientID;
         m_starIndex = start;
         m_len = len;
+        m_benchMarkOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(m_baos)));
+        m_benchMarkOut.println("msg ID, ns");
     }
 
     public void run() {
+        m_startMillis = System.currentTimeMillis();
         MQTT mqtt = new MQTT();
         try {
 //            mqtt.setHost("test.mosquitto.org", 1883);
@@ -48,24 +56,45 @@ public class Producer implements Runnable {
             LOG.error("Cant't CONNECT to the server", ex);
             return;
         }
-        
-        //TODO loop
+
+        long time = System.currentTimeMillis() - m_startMillis;
+        LOG.info(String.format("Producer %s connected in %d ms", Thread.currentThread().getName(), time));
+
+        m_startMillis = System.currentTimeMillis();
         for (int i = m_starIndex; i < m_starIndex + m_len; i++) {
             try {
 //                LOG.info("Publishing");
                 String payload = "Hello world MQTT!!" + i;
                 connection.publish("/topic", payload.getBytes(), QoS.AT_MOST_ONCE, false);
+                m_benchMarkOut.println(String.format("%d, %d", i, System.nanoTime()));
             } catch (Exception ex) {
                 LOG.error("Cant't PUBLISH to the server", ex);
                 return;
             }
         }
+
+        time = System.currentTimeMillis() - m_startMillis;
+        LOG.info(String.format("Producer %s published %d messages in %d ms", Thread.currentThread().getName(), m_len, time));
+
+        m_startMillis = System.currentTimeMillis();
         try {
             LOG.info("Disconneting");
             connection.disconnect();
             LOG.info("Disconnected");
         } catch (Exception ex) {
             LOG.error("Cant't DISCONNECT to the server", ex);
+        }
+
+        time = System.currentTimeMillis() - m_startMillis;
+        LOG.info(String.format("Producer %s disconnected in %d ms", Thread.currentThread().getName(), time));
+
+        m_benchMarkOut.close();
+
+        try {
+            FileWriter fw = new FileWriter(BENCHMARK_FILE);
+            fw.write(m_baos.toString());
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
     

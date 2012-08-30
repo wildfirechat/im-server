@@ -19,7 +19,7 @@ public class Main {
         ExecutorService consumerPool = Executors.newFixedThreadPool(PUBLISHER_POOL_SIZE);
         ExecutorService producerPool = Executors.newFixedThreadPool(PUBLISHER_POOL_SIZE);
         
-        consumerPool.submit(new ConsumerBlocking("Cons1"));
+        consumerPool.submit(new ConsumerFuture("Cons1"));
         
         //force wait to let the consumer be registered before the producer
         Thread.sleep(1000);

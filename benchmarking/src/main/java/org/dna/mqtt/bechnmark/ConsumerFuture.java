@@ -1,6 +1,10 @@
 package org.dna.mqtt.bechnmark;
 
+import java.io.*;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
@@ -19,9 +23,14 @@ public class ConsumerFuture implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerFuture.class);
     
     private String m_clientID;
+    private static final String BENCHMARK_FILE = "consumer_bechmark.txt";
+    private PrintWriter m_benchMarkOut;
+    private ByteArrayOutputStream m_baos = new ByteArrayOutputStream(1024 * 1024);
 
     public ConsumerFuture(String clientID) {
         m_clientID = clientID;
+        m_benchMarkOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(m_baos)));
+        m_benchMarkOut.println("msg ID, ns");
     }
     
     public void run() {
@@ -55,12 +64,21 @@ public class ConsumerFuture implements Runnable {
             LOG.error("Cant't PUSBLISH to the server", ex);
             return;
         }
-            
+
+        Pattern p = Pattern.compile(".*!!(\\d+)");
         Message message = null;
+        long startMillis = System.currentTimeMillis();
         for (int i = 0; i < Producer.PUB_LOOP; i++) {
             Future<Message> futReceive = connection.receive();
             try {
                 message = futReceive.await();
+                String content = new String(message.getPayload());
+
+                //metrics part
+                Matcher matcher = p.matcher(content);
+                matcher.matches();
+                String numMsg = matcher.group(1);
+                m_benchMarkOut.println(String.format("%s, %d", numMsg, System.nanoTime()));
             } catch (Exception ex) {
                 LOG.error(null, ex);
                 return;
@@ -68,8 +86,11 @@ public class ConsumerFuture implements Runnable {
             byte[] payload = message.getPayload();
             StringBuffer sb = new StringBuffer().append("Topic: ").append(message.getTopic())
                     .append(", payload: ").append(new String(payload));
-            LOG.info(sb.toString());
+            LOG.debug(sb.toString());
         }
+
+        long time = System.currentTimeMillis() - startMillis;
+        LOG.info(String.format("Consumer %s received %d messages in %d ms", Thread.currentThread().getName(), Producer.PUB_LOOP, time));
             
         Future<Void> f4 =  connection.disconnect();
         try {
@@ -79,7 +100,15 @@ public class ConsumerFuture implements Runnable {
         } catch (Exception ex) {
             LOG.error("Cant't DISCONNECT to the server", ex);
         }
-        
+
+        m_benchMarkOut.close();
+
+        try {
+            FileWriter fw = new FileWriter(BENCHMARK_FILE);
+            fw.write(m_baos.toString());
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
     
 }
