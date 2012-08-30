@@ -41,12 +41,11 @@ public class ServerIntegrationTest {
         }
     }
     
-    @Ignore
+    @Test
     public void testSubscribe_FSClient() throws Exception {
 //        startServer();
         MQTT mqtt = new MQTT();
-//        mqtt.setHost("localhost", Server.PORT);
-        mqtt.setHost("test.mosquitto.org", Server.PORT);
+        mqtt.setHost("localhost", Server.PORT);
         mqtt.setClientId("TestClient");
         FutureConnection connection = mqtt.futureConnection();
         connection.connect().await();
