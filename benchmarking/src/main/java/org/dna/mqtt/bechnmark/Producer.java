@@ -22,12 +22,12 @@ public class Producer implements Runnable {
     
     public static final int PUB_LOOP = 100000;
     
-    private static int m_starIndex;
-    private static int m_len;
+    private int m_starIndex;
+    private int m_len;
     private long m_startMillis;
-    private static final String BENCHMARK_FILE = "producer_bechmark.txt";
+    private static final String BENCHMARK_FILE = "producer_bechmark_%s.txt";
     private PrintWriter m_benchMarkOut;
-    private ByteArrayOutputStream m_baos = new ByteArrayOutputStream(1024 * 1024);
+    private ByteArrayOutputStream m_baos = new ByteArrayOutputStream(1024 * 1024 * 2);
 
     public Producer(String clientID, int start, int len) {
         m_clientID = clientID;
@@ -60,6 +60,7 @@ public class Producer implements Runnable {
         long time = System.currentTimeMillis() - m_startMillis;
         LOG.info(String.format("Producer %s connected in %d ms", Thread.currentThread().getName(), time));
 
+        LOG.info("Starting from index " + m_starIndex + " up to " + (m_starIndex + m_len));
         m_startMillis = System.currentTimeMillis();
         for (int i = m_starIndex; i < m_starIndex + m_len; i++) {
             try {
@@ -88,11 +89,13 @@ public class Producer implements Runnable {
         time = System.currentTimeMillis() - m_startMillis;
         LOG.info(String.format("Producer %s disconnected in %d ms", Thread.currentThread().getName(), time));
 
+        m_benchMarkOut.flush();
         m_benchMarkOut.close();
 
         try {
-            FileWriter fw = new FileWriter(BENCHMARK_FILE);
-            fw.write(m_baos.toString());
+            FileOutputStream fw = new FileOutputStream(String.format(BENCHMARK_FILE, m_clientID));
+            fw.write(m_baos.toByteArray());
+            fw.close();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

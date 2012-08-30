@@ -104,8 +104,9 @@ public class ConsumerFuture implements Runnable {
         m_benchMarkOut.close();
 
         try {
-            FileWriter fw = new FileWriter(BENCHMARK_FILE);
-            fw.write(m_baos.toString());
+            FileOutputStream fw = new FileOutputStream(BENCHMARK_FILE);
+            fw.write(m_baos.toByteArray());
+            fw.close();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
