@@ -38,7 +38,7 @@ public class PubAckDecoderTest {
         
         assertNotNull(m_mockProtoDecoder.getMessage());
         assertEquals(MessageDecoder.OK, res);
-        assertEquals(messageId, m_mockProtoDecoder.getMessage().getMessageID());
+        assertEquals(messageId, m_mockProtoDecoder.getMessage().getMessageID().intValue());
         assertEquals(AbstractMessage.PUBACK, m_mockProtoDecoder.getMessage().getMessageType());
     }
     
