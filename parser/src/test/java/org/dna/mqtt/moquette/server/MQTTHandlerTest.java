@@ -86,7 +86,7 @@ public class MQTTHandlerTest {
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
         verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()), 
-                any(AbstractMessage.QOSType.class), anyBoolean());
+                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"));
     }
     
     
