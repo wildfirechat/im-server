@@ -24,17 +24,7 @@ import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.PublishException;
 import org.dna.mqtt.moquette.SubscribeException;
-import org.dna.mqtt.moquette.proto.ConnAckDecoder;
-import org.dna.mqtt.moquette.proto.ConnectEncoder;
-import org.dna.mqtt.moquette.proto.DisconnectEncoder;
-import org.dna.mqtt.moquette.proto.PingReqEncoder;
-import org.dna.mqtt.moquette.proto.PingRespDecoder;
-import org.dna.mqtt.moquette.proto.PublishDecoder;
-import org.dna.mqtt.moquette.proto.PublishEncoder;
-import org.dna.mqtt.moquette.proto.SubAckDecoder;
-import org.dna.mqtt.moquette.proto.SubscribeEncoder;
-import org.dna.mqtt.moquette.proto.UnsubAckDecoder;
-import org.dna.mqtt.moquette.proto.UnsubscribeEncoder;
+import org.dna.mqtt.moquette.proto.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
@@ -120,6 +110,7 @@ public final class Client {
         decoder.addMessageDecoder(new SubAckDecoder());
         decoder.addMessageDecoder(new UnsubAckDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
+        decoder.addMessageDecoder(new PubAckDecoder());
         decoder.addMessageDecoder(new PingRespDecoder());
 
         DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
@@ -230,27 +221,46 @@ public final class Client {
     public void publish(String topic, byte[] payload) throws PublishException {
         publish(topic, payload, false);
     }
-    
+
+    /**
+     * Publish by default with QoS 0
+     * */
     public void publish(String topic, byte[] payload, boolean retain) throws PublishException {
+        publish(topic, payload, AbstractMessage.QOSType.MOST_ONE, retain);
+    }
+
+    public void publish(String topic, byte[] payload, AbstractMessage.QOSType qos, boolean retain) throws PublishException {
         PublishMessage msg = new PublishMessage();
         msg.setRetainFlag(retain);
         msg.setTopicName(topic);
         msg.setPayload(payload);
 
-        //Untill the server could handle all the Qos levels
-        msg.setQos(AbstractMessage.QOSType.MOST_ONE);
+        //Untill the server could handle all the Qos 2 level
+        if (qos != AbstractMessage.QOSType.MOST_ONE) {
+            msg.setQos(AbstractMessage.QOSType.LEAST_ONE);
+            int messageID = m_messageIDGenerator.next();
+            msg.setMessageID(messageID);
 
-        WriteFuture wf = m_session.write(msg);
-        try {
-            wf.await();
-        } catch (InterruptedException ex) {
-            LOG.debug(null, ex);
-            throw new PublishException(ex);
-        }
+            try {
+                manageSendQoS1(msg);
+            } catch (Throwable ex) {
+                throw new MQTTException(ex);
+            }
+        } else {
+            //QoS 0 case
+            msg.setQos(AbstractMessage.QOSType.MOST_ONE);
+            WriteFuture wf = m_session.write(msg);
+            try {
+                wf.await();
+            } catch (InterruptedException ex) {
+                LOG.debug(null, ex);
+                throw new PublishException(ex);
+            }
 
-        Throwable ex = wf.getException();
-        if (ex != null) {
-            throw new PublishException(ex);
+            Throwable ex = wf.getException();
+            if (ex != null) {
+                throw new PublishException(ex);
+            }
         }
 
         updatePinger();
@@ -364,6 +374,12 @@ public final class Client {
     void unsubscribeAckCallback(int messageID) {
         LOG.info("unsubscribeAckCallback invoked");
         //NB we share the barrier because in futur will be a single barrier for all
+        m_subscribeBarrier.countDown();
+        m_receivedSubAckMessageID = messageID;
+    }
+
+    void publishAckCallback(Integer messageID) {
+        LOG.info("publishAckCallback invoked");
         m_subscribeBarrier.countDown();
         m_receivedSubAckMessageID = messageID;
     }
