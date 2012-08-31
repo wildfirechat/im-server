@@ -9,18 +9,12 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
+import org.dna.mqtt.moquette.proto.messages.*;
+
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
-import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
-import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,14 +173,20 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         UnsubAckMessage ackMessage = new UnsubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
-        LOG.info("replying with UnsubAct to MSG ID {0}", msg.getMessageID());
+        LOG.info("replying with UnsubAck to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
         String clientID = (String) session.getAttribute(ATTR_CLIENTID);
-        m_messaging.publish(message.getTopicName(), message.getPayload(),
-                message.getQos(), message.isRetainFlag(), clientID);
+
+        if (message.getQos() == QOSType.MOST_ONE) {
+            m_messaging.publish(message.getTopicName(), message.getPayload(),
+                    message.getQos(), message.isRetainFlag(), clientID);
+        } else {
+            m_messaging.publish(message.getTopicName(), message.getPayload(),
+                    message.getQos(), message.isRetainFlag(), clientID, message.getMessageID());
+        }
     }
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
@@ -222,12 +222,19 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         m_authenticator = authenticator;
     }
 
-    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload, boolean retained) {
+
+
+    public void notify(NotifyEvent evt) {
+        LOG.debug("notify invoked with event " + evt);
+        String clientId = evt.getClientId();
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(retained);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(qOSType);
-        pubMessage.setPayload(payload);
+        pubMessage.setRetainFlag(evt.isRetained());
+        pubMessage.setTopicName(evt.getTopic());
+        pubMessage.setQos(evt.getQos());
+        pubMessage.setPayload(evt.getMessage());
+        if (pubMessage.getQos() != QOSType.MOST_ONE) {
+            pubMessage.setMessageID(evt.getMessageID());
+        }
         
         LOG.debug("notify invoked");
         m_clientIDsLock.lock();
@@ -253,5 +260,27 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             m_clientIDsLock.unlock();
         }
         session.close(true);
+    }
+
+    public void sendPubAck(PubAckEvent evt) {
+        LOG.debug("sendPubAck invoked");
+
+        String clientId = evt.getClientID();
+
+        PubAckMessage pubAckMessage = new PubAckMessage();
+        pubAckMessage.setMessageID(evt.getMessageId());
+
+        m_clientIDsLock.lock();
+        try {
+            assert m_clientIDs != null;
+            LOG.debug("clientIDs are " + m_clientIDs);
+            assert m_clientIDs.get(clientId) != null;
+            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
+            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+        }catch(Throwable t) {
+            LOG.error(null, t);
+        } finally {
+            m_clientIDsLock.unlock();
+        }
     }
 }

@@ -2,18 +2,20 @@ package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
+import java.io.Serializable;
+
 /**
  *
  * @author andrea
  */
-public class PublishEvent extends MessagingEvent {
+public class PublishEvent extends MessagingEvent implements Serializable {
     String m_topic;
     QOSType m_qos;
     byte[] m_message;
     boolean m_retain;
     String m_clientID;
     //Optional attribute, available only fo QoS 1 and 2
-    String m_msgID;
+    int m_msgID;
     
     public PublishEvent(String topic, QOSType qos, byte[] message, boolean retain,
             String clientID) {
@@ -25,7 +27,7 @@ public class PublishEvent extends MessagingEvent {
     }
 
     public PublishEvent(String topic, QOSType qos, byte[] message, boolean retain,
-                        String clientID, String msgID) {
+                        String clientID, int msgID) {
         this(topic, qos, message, retain, clientID);
         m_msgID = msgID;
     }
@@ -50,7 +52,7 @@ public class PublishEvent extends MessagingEvent {
         return m_clientID;
     }
 
-    public String getMessageID() {
+    public int getMessageID() {
         return m_msgID;
     }
 }

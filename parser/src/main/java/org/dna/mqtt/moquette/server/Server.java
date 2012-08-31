@@ -15,23 +15,8 @@ import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
-import org.dna.mqtt.moquette.proto.ConnAckEncoder;
-import org.dna.mqtt.moquette.proto.ConnectDecoder;
-import org.dna.mqtt.moquette.proto.DisconnectDecoder;
-import org.dna.mqtt.moquette.proto.MQTTLoggingFilter;
-import org.dna.mqtt.moquette.proto.PingReqDecoder;
-import org.dna.mqtt.moquette.proto.PingRespEncoder;
-import org.dna.mqtt.moquette.proto.PublishDecoder;
-import org.dna.mqtt.moquette.proto.PublishEncoder;
-import org.dna.mqtt.moquette.proto.SubAckEncoder;
-import org.dna.mqtt.moquette.proto.SubscribeDecoder;
-import org.dna.mqtt.moquette.proto.UnsubAckEncoder;
-import org.dna.mqtt.moquette.proto.UnsubscribeDecoder;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
+import org.dna.mqtt.moquette.proto.*;
+import org.dna.mqtt.moquette.proto.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -73,6 +58,7 @@ public class Server {
         encoder.addMessageEncoder(ConnAckMessage.class, new ConnAckEncoder());
         encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
         encoder.addMessageEncoder(UnsubAckMessage.class, new UnsubAckEncoder());
+        encoder.addMessageEncoder(PubAckMessage.class, new PubAckEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(PingRespMessage.class, new PingRespEncoder());
         

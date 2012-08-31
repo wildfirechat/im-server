@@ -119,6 +119,14 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
     }
 
+    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID) {
+        try {
+            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, messageID));
+        } catch (InterruptedException ex) {
+            LOG.error(null, ex);
+        }
+    }
+
     public void subscribe(String clientId, String topic, QOSType qos) {
         Subscription newSubscription = new Subscription(clientId, topic, qos);
         try {
@@ -151,8 +159,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     public void refill(MessagingEvent evt) throws InterruptedException {
         m_inboundQueue.put(evt);
     }
-    
-    
+
     /**
      * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
      */
@@ -233,6 +240,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
                 } else if (evt instanceof CleanInFlightEvent) {
                     //remove the message from inflight storage
                     m_inflightStore.remove(((CleanInFlightEvent)evt).getMsgId());
+
                 }
             } catch (InterruptedException ex) {
                 processClose();
@@ -252,17 +260,22 @@ public class SimpleMessaging implements IMessaging, Runnable {
 
         if (qos == QOSType.LEAST_ONE) {
             //store the temporary message
-            String publishKey = evt.getClientID() + evt.getMessageID();
+            String publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
             m_inflightStore.put(publishKey, evt);
             cleanEvt = new CleanInFlightEvent(publishKey);
         }
         
         for (final Subscription sub : subscriptions.matches(topic)) {
-            m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
+            if (qos == QOSType.MOST_ONE) {
+                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
+            } else {
+                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false, evt.getMessageID()));
+            }
         }
 
         if (cleanEvt != null) {
             m_outboundQueue.put(cleanEvt);
+            m_outboundQueue.put(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
         }
 
         if (retain) {

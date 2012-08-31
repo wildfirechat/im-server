@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.messaging.spi;
 
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 /**
@@ -18,6 +19,11 @@ public interface IMessaging {
      * been notified.
      */
     void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID);
+
+    /**
+     * Used to publish messages with QoS > 0
+     * */
+    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID);
     
     /**
      * Subscribe a client to a specified topic with a defined level
