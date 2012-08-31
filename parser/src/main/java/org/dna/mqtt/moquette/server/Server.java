@@ -94,7 +94,8 @@ public class Server {
         
         BlockingQueue<MessagingEvent> notifyQueue = messaging.getNotifyEventQueue();
         for (int i = 0; i < NOTIFIER_POOL_SIZE; i++) {
-            m_notifierPool.submit(new Notifier(notifyQueue, handler));
+            Notifier notifier = new Notifier(notifyQueue, handler, messaging);
+            m_notifierPool.submit(notifier);
         }
         
         m_acceptor.setHandler(handler);

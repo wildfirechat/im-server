@@ -120,7 +120,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         if (msg.isWillFlag()) {
             QOSType willQos = QOSType.values()[msg.getWillQos()];
             m_messaging.publish(msg.getWillTopic(), msg.getWillMessage().getBytes(),
-                    willQos, msg.isWillRetain());
+                    willQos, msg.isWillRetain(), msg.getClientID());
         }
 
         //handle user authentication
@@ -184,8 +184,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
+        String clientID = (String) session.getAttribute(ATTR_CLIENTID);
         m_messaging.publish(message.getTopicName(), message.getPayload(),
-                message.getQos(), message.isRetainFlag());
+                message.getQos(), message.isRetainFlag(), clientID);
     }
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {

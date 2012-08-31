@@ -12,14 +12,7 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.CloseEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.DisconnectEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.RemoveAllSubscriptionsEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.SubscribeEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.UnsubscribeEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.Server;
 import org.fusesource.hawtbuf.codec.StringCodec;
@@ -66,6 +59,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
     private SortedIndex<String, StoredMessage> m_retainedStore;
+    //bind clientID+MsgID -> evt message published
+    private SortedIndex<String, PublishEvent> m_inflightStore;
     
     public SimpleMessaging() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -86,6 +81,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
         
         subscriptions.init(m_multiIndexFactory);
         initRetainedMessageStore();
+        initPersistentMessageStore();
     }
     
     private void initRetainedMessageStore() {
@@ -96,17 +92,28 @@ public class SimpleMessaging implements IMessaging, Runnable {
         m_retainedStore = (SortedIndex<String, StoredMessage>) m_multiIndexFactory.openOrCreate("retained", indexFactory);
     }
     
+    /**
+     * Initialize the message store used to handle the temporary storage of QoS 1,2 
+     * messages.
+     */
+    private void initPersistentMessageStore() {
+        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
+        indexFactory.setKeyCodec(StringCodec.INSTANCE);
+
+        m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
+    }
+    
     public void run() {
         eventLoop();
     }
     
 
-    public void publish(String topic, byte[] message, QOSType qos, boolean retain) {
+    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID) {
         //TODO for this moment  no qos > 0 trivial implementation
-        QOSType defQos = QOSType.MOST_ONE;
+//        QOSType defQos = QOSType.MOST_ONE;
         
         try {
-            m_inboundQueue.put(new PublishEvent(topic, defQos, message, retain));
+            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID));
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
@@ -138,6 +145,11 @@ public class SimpleMessaging implements IMessaging, Runnable {
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
+    }
+
+    //method used by hte Notifier to re-put an event on the inbound queue
+    public void refill(MessagingEvent evt) throws InterruptedException {
+        m_inboundQueue.put(evt);
     }
     
     
@@ -198,8 +210,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
     public BlockingQueue<MessagingEvent> getNotifyEventQueue() {
         return m_outboundQueue;
     }
-    
-    
+
+
     protected void eventLoop() {
         LOG.debug("Started event loop");
         boolean interrupted = false;
@@ -218,6 +230,9 @@ public class SimpleMessaging implements IMessaging, Runnable {
                     processClose();
                 } else if (evt instanceof DisconnectEvent) {
                     m_outboundQueue.put(evt);
+                } else if (evt instanceof CleanInFlightEvent) {
+                    //remove the message from inflight storage
+                    m_inflightStore.remove(((CleanInFlightEvent)evt).getMsgId());
                 }
             } catch (InterruptedException ex) {
                 processClose();
@@ -226,20 +241,30 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
     }
     
-    protected void processPublish(PublishEvent evt) {
+    protected void processPublish(PublishEvent evt) throws InterruptedException {
         LOG.debug("processPublish invoked");
         final String topic = evt.getTopic();
         final QOSType qos = evt.getQos();
         final byte[] message = evt.getMessage();
         boolean retain = evt.isRetain();
+
+        CleanInFlightEvent cleanEvt = null;
+
+        if (qos == QOSType.LEAST_ONE) {
+            //store the temporary message
+            String publishKey = evt.getClientID() + evt.getMessageID();
+            m_inflightStore.put(publishKey, evt);
+            cleanEvt = new CleanInFlightEvent(publishKey);
+        }
         
         for (final Subscription sub : subscriptions.matches(topic)) {
-            try {
-                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
-            } catch (InterruptedException ex) {
-                LOG.error(null, ex);
-            }
+            m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
         }
+
+        if (cleanEvt != null) {
+            m_outboundQueue.put(cleanEvt);
+        }
+
         if (retain) {
             if (message.length == 0) {
                 //clean the message from topic
@@ -250,8 +275,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
             }
         }
     }
-    
-    
+
+
     protected void processSubscribe(SubscribeEvent evt)/* throws InterruptedException*/ {
         LOG.debug("processSubscribe invoked");
         Subscription newSubscription = evt.getSubscription();
