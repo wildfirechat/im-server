@@ -38,8 +38,7 @@ public class HawtDBStorageService implements IStorageService {
     private SortedIndex<String, PublishEvent> m_inflightStore;
 
     //persistent Map of clientID, list of Subscriptions
-    //TODO rename into persistentSubscriptions
-    private SortedIndex<String, List<Subscription>> m_persistent;
+    private SortedIndex<String, List<Subscription>> m_persistentSubscriptions;
 
     public HawtDBStorageService() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -89,7 +88,7 @@ public class HawtDBStorageService implements IStorageService {
                 new BTreeIndexFactory<String, List<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_persistent = (SortedIndex<String, List<Subscription>>) m_multiIndexFactory.openOrCreate("subscriptions", indexFactory);
+        m_persistentSubscriptions = (SortedIndex<String, List<Subscription>>) m_multiIndexFactory.openOrCreate("subscriptions", indexFactory);
     }
 
     /**
@@ -157,22 +156,22 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void addNewSubscription(Subscription newSubscription, String clientID) {
-        if (!m_persistent.containsKey(clientID)) {
-            m_persistent.put(clientID, new ArrayList<Subscription>());
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            m_persistentSubscriptions.put(clientID, new ArrayList<Subscription>());
         }
 
-        List<Subscription> subs = m_persistent.get(clientID);
+        List<Subscription> subs = m_persistentSubscriptions.get(clientID);
         subs.add(newSubscription);
-        m_persistent.put(clientID, subs);
+        m_persistentSubscriptions.put(clientID, subs);
     }
 
     public void removeAllSubscriptions(String clientID) {
-        m_persistent.remove(clientID);
+        m_persistentSubscriptions.remove(clientID);
     }
 
     public List<Subscription> retrieveAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
-        for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
+        for (Map.Entry<String, List<Subscription>> entry : m_persistentSubscriptions) {
             allSubscriptions.addAll(entry.getValue());
         }
         return allSubscriptions;
