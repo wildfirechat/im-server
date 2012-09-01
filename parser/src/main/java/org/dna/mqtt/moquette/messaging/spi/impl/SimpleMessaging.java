@@ -128,8 +128,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
     }
 
-    public void subscribe(String clientId, String topic, QOSType qos) {
-        Subscription newSubscription = new Subscription(clientId, topic, qos);
+    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession) {
+        Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
         try {
             LOG.debug("subscribe invoked for topic: " + topic);
             m_inboundQueue.put(new SubscribeEvent(newSubscription));

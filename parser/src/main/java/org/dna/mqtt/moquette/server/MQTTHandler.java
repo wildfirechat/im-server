@@ -147,8 +147,10 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
         LOG.debug("handleSubscribe, registering the subscriptions");
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            m_messaging.subscribe((String) session.getAttribute(Constants.ATTR_CLIENTID),
-                    req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
+            String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+            boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+            m_messaging.subscribe(clientID, req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()],
+                    cleanSession);
         }
 
         //ack the client
