@@ -28,4 +28,7 @@ public interface IStorageService {
 
     void cleanPersistedPublishes(String clientID);
 
+    void cleanInFlight(String msgID);
+
+    void addInFlight(PublishEvent evt, String publishKey);
 }

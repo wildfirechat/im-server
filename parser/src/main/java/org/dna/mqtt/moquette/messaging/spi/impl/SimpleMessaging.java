@@ -1,15 +1,5 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
@@ -21,14 +11,20 @@ import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.Server;
-import org.fusesource.hawtbuf.codec.StringCodec;
-import org.fusesource.hawtdb.api.BTreeIndexFactory;
 import org.fusesource.hawtdb.api.MultiIndexFactory;
 import org.fusesource.hawtdb.api.PageFile;
 import org.fusesource.hawtdb.api.PageFileFactory;
-import org.fusesource.hawtdb.api.SortedIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  *
@@ -67,9 +63,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
 
-    //bind clientID+MsgID -> evt message published
-    private SortedIndex<String, PublishEvent> m_inflightStore;
-
     private IStorageService m_storageService;
     
     public SimpleMessaging() {
@@ -90,25 +83,12 @@ public class SimpleMessaging implements IMessaging, Runnable {
         m_multiIndexFactory = new MultiIndexFactory(pageFile);
         
         subscriptions.init(m_multiIndexFactory);
-        initInflightMessageStore();
 
         m_storageService = new HawtDBStorageService(m_multiIndexFactory);
         m_storageService.initStore();
     }
 
     
-    /**
-     * Initialize the message store used to handle the temporary storage of QoS 1,2 
-     * messages in flight.
-     */
-    private void initInflightMessageStore() {
-        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
-        indexFactory.setKeyCodec(StringCodec.INSTANCE);
-
-        m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
-    }
-
-
     public void setNotifier(INotifier notifier) {
         m_notifier= notifier;
     }
@@ -251,7 +231,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
                     processDisconnect((DisconnectEvent) evt);
                 } else if (evt instanceof CleanInFlightEvent) {
                     //remove the message from inflight storage
-                    m_inflightStore.remove(((CleanInFlightEvent)evt).getMsgId());
+                    m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
                 } else if (evt instanceof RepublishEvent) {
                     processRepublish((RepublishEvent) evt);
                 }
@@ -274,7 +254,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
         if (qos == QOSType.LEAST_ONE) {
             //store the temporary message
             String publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
-            m_inflightStore.put(publishKey, evt);
+            m_storageService.addInFlight(evt, publishKey);
             cleanEvt = new CleanInFlightEvent(publishKey);
         }
         

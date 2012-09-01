@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.CleanInFlightEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.RemoveAllSubscriptionsEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.RepublishEvent;
@@ -35,6 +36,8 @@ public class HawtDBStorageService implements IStorageService {
     //maps clientID to the list of pending messages stored
     private SortedIndex<String, List<PublishEvent>> m_persistentMessageStore;
     private SortedIndex<String, StoredMessage> m_retainedStore;
+    //bind clientID+MsgID -> evt message published
+    private SortedIndex<String, PublishEvent> m_inflightStore;
 
     public HawtDBStorageService(MultiIndexFactory multiIndexFactory) {
         m_multiIndexFactory =  multiIndexFactory;
@@ -61,6 +64,17 @@ public class HawtDBStorageService implements IStorageService {
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
+    }
+
+    /**
+     * Initialize the message store used to handle the temporary storage of QoS 1,2
+     * messages in flight.
+     */
+    private void initInflightMessageStore() {
+        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
+        indexFactory.setKeyCodec(StringCodec.INSTANCE);
+
+        m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
     }
 
     public void storeRetained(String topic, byte[] message, AbstractMessage.QOSType qos) {
@@ -106,5 +120,13 @@ public class HawtDBStorageService implements IStorageService {
 
     public void cleanPersistedPublishes(String clientID) {
         m_persistentMessageStore.remove(clientID);
+    }
+
+    public void cleanInFlight(String msgID) {
+        m_inflightStore.remove(msgID);
+    }
+
+    public void addInFlight(PublishEvent evt, String publishKey) {
+        m_inflightStore.put(publishKey, evt);
     }
 }
