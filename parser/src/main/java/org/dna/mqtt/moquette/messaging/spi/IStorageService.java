@@ -1,6 +1,7 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
+import org.dna.mqtt.moquette.messaging.spi.impl.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging.StoredMessage;
@@ -31,4 +32,10 @@ public interface IStorageService {
     void cleanInFlight(String msgID);
 
     void addInFlight(PublishEvent evt, String publishKey);
+
+    void addNewSubscription(Subscription newSubscription, String clientID);
+
+    void removeAllSubscriptions(String clientID);
+
+    List<Subscription> retrieveAllSubscriptions();
 }

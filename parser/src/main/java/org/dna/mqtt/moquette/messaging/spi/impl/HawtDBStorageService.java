@@ -39,6 +39,10 @@ public class HawtDBStorageService implements IStorageService {
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
 
+    //persistent Map of clientID, list of Subscriptions
+    //TODO rename into persistentSubscriptions
+    private SortedIndex<String, List<Subscription>> m_persistent;
+
     public HawtDBStorageService(MultiIndexFactory multiIndexFactory) {
         m_multiIndexFactory =  multiIndexFactory;
     }
@@ -49,6 +53,7 @@ public class HawtDBStorageService implements IStorageService {
         //init the message store for QoS 1/2 messages in clean sessions
         initPersistentMessageStore();
         initInflightMessageStore();
+        initPersistentSubscriptions();
     }
 
     private void initRetainedStore() {
@@ -65,6 +70,14 @@ public class HawtDBStorageService implements IStorageService {
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
+    }
+
+    private void initPersistentSubscriptions() {
+        BTreeIndexFactory<String, List<Subscription>> indexFactory =
+                new BTreeIndexFactory<String, List<Subscription>>();
+        indexFactory.setKeyCodec(StringCodec.INSTANCE);
+
+        m_persistent = (SortedIndex<String, List<Subscription>>) m_multiIndexFactory.openOrCreate("subscriptions", indexFactory);
     }
 
     /**
@@ -129,5 +142,27 @@ public class HawtDBStorageService implements IStorageService {
 
     public void addInFlight(PublishEvent evt, String publishKey) {
         m_inflightStore.put(publishKey, evt);
+    }
+
+    public void addNewSubscription(Subscription newSubscription, String clientID) {
+        if (!m_persistent.containsKey(clientID)) {
+            m_persistent.put(clientID, new ArrayList<Subscription>());
+        }
+
+        List<Subscription> subs = m_persistent.get(clientID);
+        subs.add(newSubscription);
+        m_persistent.put(clientID, subs);
+    }
+
+    public void removeAllSubscriptions(String clientID) {
+        m_persistent.remove(clientID);
+    }
+
+    public List<Subscription> retrieveAllSubscriptions() {
+        List<Subscription> allSubscriptions = new ArrayList<Subscription>();
+        for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
+            allSubscriptions.addAll(entry.getValue());
+        }
+        return allSubscriptions;
     }
 }

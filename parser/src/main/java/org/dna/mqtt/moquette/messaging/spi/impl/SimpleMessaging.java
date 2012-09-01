@@ -81,11 +81,12 @@ public class SimpleMessaging implements IMessaging, Runnable {
         pageFactory.open();
         PageFile pageFile = pageFactory.getPageFile();
         m_multiIndexFactory = new MultiIndexFactory(pageFile);
-        
-        subscriptions.init(m_multiIndexFactory);
+
 
         m_storageService = new HawtDBStorageService(m_multiIndexFactory);
         m_storageService.initStore();
+
+        subscriptions.init(m_storageService);
     }
 
     

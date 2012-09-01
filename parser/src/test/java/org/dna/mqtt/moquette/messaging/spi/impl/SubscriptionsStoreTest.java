@@ -40,7 +40,7 @@ public class SubscriptionsStoreTest {
         pageFactory.open();
         PageFile pageFile = pageFactory.getPageFile();
         MultiIndexFactory multiIndexFactory = new MultiIndexFactory(pageFile);
-        store.init(multiIndexFactory);
+        store.init(new DummyStorageService());
     }
     
     @After

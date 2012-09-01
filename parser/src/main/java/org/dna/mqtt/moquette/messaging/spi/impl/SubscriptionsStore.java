@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.fusesource.hawtbuf.codec.StringCodec;
 import org.fusesource.hawtdb.api.BTreeIndexFactory;
 import org.fusesource.hawtdb.api.MultiIndexFactory;
@@ -205,28 +207,23 @@ public class SubscriptionsStore {
     }
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
-    //persistent Map of clientID, list of Subscriptions
-    private SortedIndex<String, List<Subscription>> m_persistent;
+
+    private IStorageService m_storageService;
 
     /**
      * Initialize basic store structures, like the FS storage to maintain
      * client's topics subscriptions
      */
-    public void init(MultiIndexFactory multiFactory) {
+    public void init(IStorageService storageService) {
         LOG.debug("init invoked");
-        BTreeIndexFactory<String, List<Subscription>> indexFactory =
-                new BTreeIndexFactory<String, List<Subscription>>();
-        indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_persistent = (SortedIndex<String, List<Subscription>>) multiFactory.openOrCreate("subscriptions", indexFactory);
+        m_storageService = storageService;
 
         //reload any subscriptions persisted
         LOG.debug("Reloading all stored subscriptions...");
-        for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
-            for (Subscription subscription : entry.getValue()) {
-                LOG.debug("Re-subscribing " + subscription.getClientId() + " to topic " + subscription.getTopic());
-                addDirect(subscription);
-            }
+        for (Subscription subscription : m_storageService.retrieveAllSubscriptions()) {
+            LOG.debug("Re-subscribing " + subscription.getClientId() + " to topic " + subscription.getTopic());
+            addDirect(subscription);
         }
         LOG.debug("Finished loading");
     }
@@ -269,16 +266,11 @@ public class SubscriptionsStore {
 
         //log the subscription
         String clientID = newSubscription.getClientId();
-        if (!m_persistent.containsKey(clientID)) {
-            m_persistent.put(clientID, new ArrayList<Subscription>());
-        }
-
-        List<Subscription> subs = m_persistent.get(clientID);
-        subs.add(newSubscription);
-        m_persistent.put(clientID, subs);
+        m_storageService.addNewSubscription(newSubscription, clientID);
 //        pageFile.flush();
     }
-    
+
+
     public void removeSubscription(String topic, String clientID) {
         TreeNode matchNode = findMatchingNode(topic);
         
@@ -303,7 +295,7 @@ public class SubscriptionsStore {
         subscriptions.removeClientSubscriptions(clientID);
 
         //remove from log all subscriptions
-        m_persistent.remove(clientID);
+        m_storageService.removeAllSubscriptions(clientID);
     }
 
     public void disconnect(String clientID) {
