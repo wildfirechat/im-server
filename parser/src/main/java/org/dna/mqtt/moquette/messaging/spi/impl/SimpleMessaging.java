@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
+import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
@@ -55,9 +56,9 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
     private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
-    private BlockingQueue<MessagingEvent> m_outboundQueue = new LinkedBlockingQueue<MessagingEvent>();
+//    private BlockingQueue<MessagingEvent> m_outboundQueue = new LinkedBlockingQueue<MessagingEvent>();
     
-//    private INotifier m_notifier;
+    private INotifier m_notifier;
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
     private SortedIndex<String, StoredMessage> m_retainedStore;
@@ -114,6 +115,10 @@ public class SimpleMessaging implements IMessaging, Runnable {
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
+    }
+
+    public void setNotifier(INotifier notifier) {
+        m_notifier= notifier;
     }
     
     public void run() {
@@ -233,9 +238,9 @@ public class SimpleMessaging implements IMessaging, Runnable {
         } 
     }
     
-    public BlockingQueue<MessagingEvent> getNotifyEventQueue() {
+    /*public BlockingQueue<MessagingEvent> getNotifyEventQueue() {
         return m_outboundQueue;
-    }
+    }*/
 
 
     protected void eventLoop() {
@@ -288,7 +293,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos == QOSType.MOST_ONE) {
                 //QoS 0
-                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
+                m_notifier.notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
+//                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
@@ -303,13 +309,17 @@ public class SimpleMessaging implements IMessaging, Runnable {
                     storedEvents.add(evt);
                     m_persistentMessageStore.put(clientID, storedEvents);
                 }
-                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false, evt.getMessageID()));
+                m_notifier.notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
+//                m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false, evt.getMessageID()));
             }
         }
 
         if (cleanEvt != null) {
-            m_outboundQueue.put(cleanEvt);
-            m_outboundQueue.put(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
+            refill(cleanEvt);
+            m_notifier.sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
+
+//            m_outboundQueue.put(cleanEvt);
+//            m_outboundQueue.put(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
         }
 
         if (retain) {
@@ -336,14 +346,16 @@ public class SimpleMessaging implements IMessaging, Runnable {
         for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
             StoredMessage storedMsg = entry.getValue();
             if (matchTopics(entry.getKey(), topic)) {
-                try {
+//                try {
                     //fire the as retained the message
                     LOG.debug("Inserting NotifyEvent into outbound for topic " + topic + " entry " + entry.getKey());
-                    m_outboundQueue.put(new NotifyEvent(newSubscription.clientId,
+                    m_notifier.notify(new NotifyEvent(newSubscription.clientId,
                             topic, storedMsg.getQos(), storedMsg.getPayload(), true));
-                } catch (InterruptedException ex) {
-                    LOG.error(null, ex);
-                }
+//                    m_outboundQueue.put(new NotifyEvent(newSubscription.clientId,
+//                            topic, storedMsg.getQos(), storedMsg.getPayload(), true));
+//                } catch (InterruptedException ex) {
+//                    LOG.error(null, ex);
+//                }
             }
         }
     }
@@ -362,7 +374,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
 
     private void processDisconnect(DisconnectEvent evt) throws InterruptedException {
-        m_outboundQueue.put(evt);
+//        m_outboundQueue.put(evt);
+        m_notifier.disconnect(evt.getSession());
 
         //de-activate the subscriptions for this ClientID
         String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
@@ -385,8 +398,11 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
 
         for (PublishEvent pubEvt : publishedEvents) {
-            m_outboundQueue.put(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+            m_notifier.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID()));
+
+//            m_outboundQueue.put(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+//                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
         }
     }
 }
