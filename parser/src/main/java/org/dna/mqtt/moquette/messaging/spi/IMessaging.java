@@ -47,4 +47,6 @@ public interface IMessaging {
     void disconnect(IoSession session);
 
     void refill(MessagingEvent evt) throws InterruptedException;
+
+    void republishStored(String clientID);
 }

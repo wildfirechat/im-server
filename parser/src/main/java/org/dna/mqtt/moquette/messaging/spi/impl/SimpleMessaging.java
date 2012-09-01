@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -62,6 +63,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private SortedIndex<String, StoredMessage> m_retainedStore;
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
+    //maps clientID to the list of pending messages stored
+    private SortedIndex<String, List<PublishEvent>> m_persistentMessageStore;
     
     public SimpleMessaging() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -82,6 +85,8 @@ public class SimpleMessaging implements IMessaging, Runnable {
         
         subscriptions.init(m_multiIndexFactory);
         initRetainedMessageStore();
+        initInflightMessageStore();
+        //init the message store for QoS 1/2 messages in clean sessions
         initPersistentMessageStore();
     }
     
@@ -95,13 +100,20 @@ public class SimpleMessaging implements IMessaging, Runnable {
     
     /**
      * Initialize the message store used to handle the temporary storage of QoS 1,2 
-     * messages.
+     * messages in flight.
      */
-    private void initPersistentMessageStore() {
+    private void initInflightMessageStore() {
         BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
+    }
+
+    private void initPersistentMessageStore() {
+        BTreeIndexFactory<String, List<PublishEvent>> indexFactory = new BTreeIndexFactory<String, List<PublishEvent>>();
+        indexFactory.setKeyCodec(StringCodec.INSTANCE);
+
+        m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
     }
     
     public void run() {
@@ -110,9 +122,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
     
 
     public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session) {
-        //TODO for this moment  no qos > 0 trivial implementation
-//        QOSType defQos = QOSType.MOST_ONE;
-        
         try {
             m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, session));
         } catch (InterruptedException ex) {
@@ -159,6 +168,15 @@ public class SimpleMessaging implements IMessaging, Runnable {
     //method used by hte Notifier to re-put an event on the inbound queue
     public void refill(MessagingEvent evt) throws InterruptedException {
         m_inboundQueue.put(evt);
+    }
+
+    public void republishStored(String clientID) {
+        //create the event to push
+        try {
+            m_inboundQueue.put(new RepublishEvent(clientID));
+        } catch (InterruptedException iex) {
+            LOG.error(null, iex);
+        }
     }
 
     /**
@@ -237,11 +255,12 @@ public class SimpleMessaging implements IMessaging, Runnable {
                 } else if (evt instanceof CloseEvent) {
                     processClose();
                 } else if (evt instanceof DisconnectEvent) {
-                    m_outboundQueue.put(evt);
+                    processDisconnect((DisconnectEvent) evt);
                 } else if (evt instanceof CleanInFlightEvent) {
                     //remove the message from inflight storage
                     m_inflightStore.remove(((CleanInFlightEvent)evt).getMsgId());
-
+                } else if (evt instanceof RepublishEvent) {
+                    processRepublish((RepublishEvent) evt);
                 }
             } catch (InterruptedException ex) {
                 processClose();
@@ -249,7 +268,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
             }
         }
     }
-    
+
     protected void processPublish(PublishEvent evt) throws InterruptedException {
         LOG.debug("processPublish invoked");
         final String topic = evt.getTopic();
@@ -273,6 +292,17 @@ public class SimpleMessaging implements IMessaging, Runnable {
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
+                if (!sub.isCleanSession() && !sub.isActive()) {
+                    List<PublishEvent> storedEvents;
+                    String clientID = evt.getClientID();
+                    if (!m_persistentMessageStore.containsKey(clientID)) {
+                        storedEvents = new ArrayList<PublishEvent>();
+                    } else {
+                        storedEvents = m_persistentMessageStore.get(clientID);
+                    }
+                    storedEvents.add(evt);
+                    m_persistentMessageStore.put(clientID, storedEvents);
+                }
                 m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false, evt.getMessageID()));
             }
         }
@@ -326,6 +356,17 @@ public class SimpleMessaging implements IMessaging, Runnable {
     protected void processRemoveAllSubscriptions(RemoveAllSubscriptionsEvent evt) {
         LOG.debug("processRemoveAllSubscriptions invoked");
         subscriptions.removeForClient(evt.getClientID());
+
+        //remove also the messages stored of type QoS1/2
+        m_persistentMessageStore.remove(evt.getClientID());
+    }
+
+    private void processDisconnect(DisconnectEvent evt) throws InterruptedException {
+        m_outboundQueue.put(evt);
+
+        //de-activate the subscriptions for this ClientID
+        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
+        subscriptions.disconnect(clientID);
     }
     
     private void processClose() {
@@ -334,6 +375,18 @@ public class SimpleMessaging implements IMessaging, Runnable {
             pageFactory.close();
         } catch (IOException ex) {
             LOG.error(null, ex);
+        }
+    }
+
+    private void processRepublish(RepublishEvent evt) throws InterruptedException {
+        List<PublishEvent> publishedEvents = m_persistentMessageStore.get(evt.getClientID());
+        if (publishedEvents == null) {
+            return;
+        }
+
+        for (PublishEvent pubEvt : publishedEvents) {
+            m_outboundQueue.put(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
         }
     }
 }

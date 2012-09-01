@@ -130,13 +130,14 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             }
         }
 
-        //TODO for QoS1 and QoS remember to store all the messages arrived to
-        //the dormat subscriptionsonce the QoS1 and QoS2
         //handle clean session flag
         if (msg.isCleanSession()) {
             //remove all prev subscriptions
             //cleanup topic subscriptions
             m_messaging.removeSubscriptions(msg.getClientID());
+        }  else {
+            //force the republish of stored QoS1 and QoS2
+            m_messaging.republishStored(msg.getClientID());
         }
 
         ConnAckMessage okResp = new ConnAckMessage();
