@@ -18,7 +18,6 @@ import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.Server;
@@ -70,8 +69,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
 
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
-    //maps clientID to the list of pending messages stored
-    private SortedIndex<String, List<PublishEvent>> m_persistentMessageStore;
 
     private IStorageService m_storageService;
     
@@ -94,8 +91,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
         
         subscriptions.init(m_multiIndexFactory);
         initInflightMessageStore();
-        //init the message store for QoS 1/2 messages in clean sessions
-        initPersistentMessageStore();
 
         m_storageService = new HawtDBStorageService(m_multiIndexFactory);
         m_storageService.initStore();
@@ -113,12 +108,6 @@ public class SimpleMessaging implements IMessaging, Runnable {
         m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
     }
 
-    private void initPersistentMessageStore() {
-        BTreeIndexFactory<String, List<PublishEvent>> indexFactory = new BTreeIndexFactory<String, List<PublishEvent>>();
-        indexFactory.setKeyCodec(StringCodec.INSTANCE);
-
-        m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
-    }
 
     public void setNotifier(INotifier notifier) {
         m_notifier= notifier;
@@ -297,15 +286,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
-                    List<PublishEvent> storedEvents;
-                    String clientID = evt.getClientID();
-                    if (!m_persistentMessageStore.containsKey(clientID)) {
-                        storedEvents = new ArrayList<PublishEvent>();
-                    } else {
-                        storedEvents = m_persistentMessageStore.get(clientID);
-                    }
-                    storedEvents.add(evt);
-                    m_persistentMessageStore.put(clientID, storedEvents);
+                    m_storageService.storePublishForFuture(evt);
                 }
                 m_notifier.notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
             }
@@ -354,7 +335,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
         subscriptions.removeForClient(evt.getClientID());
 
         //remove also the messages stored of type QoS1/2
-        m_persistentMessageStore.remove(evt.getClientID());
+        m_storageService.cleanPersistedPublishes(evt.getClientID());
     }
 
     private void processDisconnect(DisconnectEvent evt) throws InterruptedException {
@@ -375,7 +356,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
 
     private void processRepublish(RepublishEvent evt) throws InterruptedException {
-        List<PublishEvent> publishedEvents = m_persistentMessageStore.get(evt.getClientID());
+        List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(evt.getClientID());
         if (publishedEvents == null) {
             return;
         }
