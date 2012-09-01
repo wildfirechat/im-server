@@ -76,14 +76,6 @@ public class Server {
         messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
         messagingEventLoop.start();
         
-        /*m_notifierPool = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE);
-        
-        BlockingQueue<MessagingEvent> notifyQueue = messaging.getNotifyEventQueue();
-        for (int i = 0; i < NOTIFIER_POOL_SIZE; i++) {
-            Notifier notifier = new Notifier(notifyQueue, handler, messaging);
-            m_notifierPool.submit(notifier);
-        }*/
-        
         m_acceptor.setHandler(handler);
         ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
         ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);

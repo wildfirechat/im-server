@@ -65,18 +65,6 @@ public class SimpleMessagingTest {
         messaging.processPublish(pubEvt);
 
         //Verify
-//        BlockingQueue<MessagingEvent> queue = messaging.getNotifyEventQueue();
-//        MessagingEvent msgEvt = queue.take();
-//        assertTrue(msgEvt instanceof NotifyEvent);
-//        NotifyEvent notifyEvt = (NotifyEvent) msgEvt;
-//        assertEquals(FAKE_CLIENT_ID, notifyEvt.getClientId());
-//        assertEquals(FAKE_TOPIC, notifyEvt.getTopic());
-//        assertFalse(notifyEvt.isRetained());
-        
-//        ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-//        verify(notifier).notify(eq(FAKE_CLIENT_ID), eq(FAKE_TOPIC), any(QOSType.class), argument.capture(), eq(false));
-//        assertEquals("Hello", new String(notifyEvt.getMessage()));
-
         ArgumentCaptor<NotifyEvent> argument = ArgumentCaptor.forClass(NotifyEvent.class);
         verify(notifier).notify(argument.capture());
     }
