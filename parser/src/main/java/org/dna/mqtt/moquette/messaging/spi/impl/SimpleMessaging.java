@@ -170,7 +170,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
 
     //method used by hte Notifier to re-put an event on the inbound queue
-    public void refill(MessagingEvent evt) throws InterruptedException {
+    private void refill(MessagingEvent evt) throws InterruptedException {
         m_inboundQueue.put(evt);
     }
 
