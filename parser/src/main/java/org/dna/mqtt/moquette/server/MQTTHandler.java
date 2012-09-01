@@ -9,18 +9,12 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
+import org.dna.mqtt.moquette.proto.messages.*;
+
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
-import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
-import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +24,6 @@ import org.slf4j.LoggerFactory;
  */
 public class MQTTHandler extends IoHandlerAdapter implements INotifier {
 
-    protected static final String ATTR_CLIENTID = "ClientID";
     private static final Logger LOG = LoggerFactory.getLogger(MQTTHandler.class);
     /**
      * Maps CLIENT_ID to the IoSession that represents the connection
@@ -93,7 +86,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             if (m_clientIDs.containsKey(msg.getClientID())) {
                 //clean the subscriptions if the old used a cleanSession = true
                 IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
-                boolean cleanSession = (Boolean) oldSession.getAttribute("cleanSession");
+                boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
                 if (cleanSession) {
                     //cleanup topic subscriptions
                     m_messaging.removeSubscriptions(msg.getClientID());
@@ -110,9 +103,9 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
 
         int keepAlive = msg.getKeepAlive();
         session.setAttribute("keepAlive", keepAlive);
-        session.setAttribute("cleanSession", msg.isCleanSession());
+        session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases. 
-        session.setAttribute(ATTR_CLIENTID, msg.getClientID());
+        session.setAttribute(Constants.ATTR_CLIENTID, msg.getClientID());
 
         session.getConfig().setIdleTime(IdleStatus.READER_IDLE, Math.round(keepAlive * 1.5f));
 
@@ -120,7 +113,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         if (msg.isWillFlag()) {
             QOSType willQos = QOSType.values()[msg.getWillQos()];
             m_messaging.publish(msg.getWillTopic(), msg.getWillMessage().getBytes(),
-                    willQos, msg.isWillRetain());
+                    willQos, msg.isWillRetain(), msg.getClientID(), session);
         }
 
         //handle user authentication
@@ -137,13 +130,14 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             }
         }
 
-        //TODO for QoS1 and QoS remember to store all the messages arrived to
-        //the dormat subscriptionsonce the QoS1 and QoS2
         //handle clean session flag
         if (msg.isCleanSession()) {
             //remove all prev subscriptions
             //cleanup topic subscriptions
             m_messaging.removeSubscriptions(msg.getClientID());
+        }  else {
+            //force the republish of stored QoS1 and QoS2
+            m_messaging.republishStored(msg.getClientID());
         }
 
         ConnAckMessage okResp = new ConnAckMessage();
@@ -154,8 +148,10 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
         LOG.debug("handleSubscribe, registering the subscriptions");
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            m_messaging.subscribe((String) session.getAttribute(ATTR_CLIENTID),
-                    req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()]);
+            String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+            boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+            m_messaging.subscribe(clientID, req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()],
+                    cleanSession);
         }
 
         //ack the client
@@ -173,23 +169,30 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     private void handleUnsubscribe(IoSession session, UnsubscribeMessage msg) {
         LOG.info("unregistering the subscriptions");
         for (String topic : msg.topics()) {
-            m_messaging.unsubscribe(topic, (String) session.getAttribute(ATTR_CLIENTID));
+            m_messaging.unsubscribe(topic, (String) session.getAttribute(Constants.ATTR_CLIENTID));
         }
         //ack the client
         UnsubAckMessage ackMessage = new UnsubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
-        LOG.info("replying with UnsubAct to MSG ID {0}", msg.getMessageID());
+        LOG.info("replying with UnsubAck to MSG ID {0}", msg.getMessageID());
         session.write(ackMessage);
     }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
-        m_messaging.publish(message.getTopicName(), message.getPayload(),
-                message.getQos(), message.isRetainFlag());
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+
+        if (message.getQos() == QOSType.MOST_ONE) {
+            m_messaging.publish(message.getTopicName(), message.getPayload(),
+                    message.getQos(), message.isRetainFlag(), clientID, session);
+        } else {
+            m_messaging.publish(message.getTopicName(), message.getPayload(),
+                    message.getQos(), message.isRetainFlag(), clientID, message.getMessageID(), session);
+        }
     }
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
-        String clientID = (String) session.getAttribute(ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
         //remove from clientIDs
 //        m_clientIDsLock.lock();
 //        try {
@@ -197,7 +200,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
 //        } finally {
 //            m_clientIDsLock.unlock();
 //        }
-        boolean cleanSession = (Boolean) session.getAttribute("cleanSession");
+        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
         if (cleanSession) {
             //cleanup topic subscriptions
             m_messaging.removeSubscriptions(clientID);
@@ -221,12 +224,19 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
         m_authenticator = authenticator;
     }
 
-    public void notify(String clientId, String topic, QOSType qOSType, byte[] payload, boolean retained) {
+
+
+    public void notify(NotifyEvent evt) {
+        LOG.debug("notify invoked with event " + evt);
+        String clientId = evt.getClientId();
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(retained);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(qOSType);
-        pubMessage.setPayload(payload);
+        pubMessage.setRetainFlag(evt.isRetained());
+        pubMessage.setTopicName(evt.getTopic());
+        pubMessage.setQos(evt.getQos());
+        pubMessage.setPayload(evt.getMessage());
+        if (pubMessage.getQos() != QOSType.MOST_ONE) {
+            pubMessage.setMessageID(evt.getMessageID());
+        }
         
         LOG.debug("notify invoked");
         m_clientIDsLock.lock();
@@ -244,7 +254,7 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
     }
 
     public void disconnect(IoSession session) {
-        String clientID = (String) session.getAttribute(ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
         m_clientIDsLock.lock();
         try {
             m_clientIDs.remove(clientID);
@@ -252,5 +262,27 @@ public class MQTTHandler extends IoHandlerAdapter implements INotifier {
             m_clientIDsLock.unlock();
         }
         session.close(true);
+    }
+
+    public void sendPubAck(PubAckEvent evt) {
+        LOG.debug("sendPubAck invoked");
+
+        String clientId = evt.getClientID();
+
+        PubAckMessage pubAckMessage = new PubAckMessage();
+        pubAckMessage.setMessageID(evt.getMessageId());
+
+        m_clientIDsLock.lock();
+        try {
+            assert m_clientIDs != null;
+            LOG.debug("clientIDs are " + m_clientIDs);
+            assert m_clientIDs.get(clientId) != null;
+            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
+            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+        }catch(Throwable t) {
+            LOG.error(null, t);
+        } finally {
+            m_clientIDsLock.unlock();
+        }
     }
 }

@@ -1,6 +1,8 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
 import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 /**
@@ -16,12 +18,17 @@ public interface IMessaging {
      * notification also after all the current subscriber to the given topic has
      * been notified.
      */
-    void publish(String topic, byte[] message, QOSType qos, boolean retain);
+    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session);
+
+    /**
+     * Used to publish messages with QoS > 0
+     * */
+    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session);
     
     /**
      * Subscribe a client to a specified topic with a defined level
      */
-    void subscribe(String clientId, String topic, QOSType qos);
+    void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession);
 
     /**
      * Remove all subscription to any topic the client (identified by clientID)
@@ -38,4 +45,8 @@ public interface IMessaging {
     void unsubscribe(String topic, String clientID);
 
     void disconnect(IoSession session);
+
+    void refill(MessagingEvent evt) throws InterruptedException;
+
+    void republishStored(String clientID);
 }

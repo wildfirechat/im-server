@@ -134,6 +134,19 @@ public class SubscriptionsStore {
                 child.removeClientSubscriptions(clientID);
             }
         }
+
+        void disconnect(String clientID) {
+            for (Subscription s : m_subscriptions) {
+                if (s.clientId.equals(clientID)) {
+                    s.setActive(false);
+                }
+            }
+
+            //go deep
+            for (TreeNode child : m_children) {
+                child.disconnect(clientID);
+            }
+        }
     }
 
     protected static class Token {
@@ -192,7 +205,7 @@ public class SubscriptionsStore {
     }
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
-    //pesistent Map of clientID, list of Subscriptions
+    //persistent Map of clientID, list of Subscriptions
     private SortedIndex<String, List<Subscription>> m_persistent;
 
     /**
@@ -207,7 +220,7 @@ public class SubscriptionsStore {
 
         m_persistent = (SortedIndex<String, List<Subscription>>) multiFactory.openOrCreate("subscriptions", indexFactory);
 
-        //reaload any subscriptions persisted
+        //reload any subscriptions persisted
         LOG.debug("Reloading all stored subscriptions...");
         for (Map.Entry<String, List<Subscription>> entry : m_persistent) {
             for (Subscription subscription : entry.getValue()) {
@@ -291,6 +304,10 @@ public class SubscriptionsStore {
 
         //remove from log all subscriptions
         m_persistent.remove(clientID);
+    }
+
+    public void disconnect(String clientID) {
+        subscriptions.disconnect(clientID);
     }
 
     public List<Subscription> matches(String topic) {

@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -312,6 +313,30 @@ public class ServerIntegrationTest {
         
         client.close();
         client.shutdown();
+    }
+
+    /*-------------- QoS 1 tests ----*/
+    @Test
+    public void testPublishWithQoS1() throws IOException, InterruptedException {
+//        startServer();
+        Client client = new Client("localhost", Server.PORT);
+//        Client client = new Client("test.mosquitto.org", 1883);
+        client.connect();
+
+
+        client.subscribe("/topic", new IPublishCallback() {
+
+            public void published(String topic, byte[] message) {
+                received = true;
+            }
+        });
+
+        client.publish("/topic", "Test my payload".getBytes(), AbstractMessage.QOSType.LEAST_ONE, false);
+
+        client.close();
+        client.shutdown();
+
+        assertTrue(received);
     }
     
 }

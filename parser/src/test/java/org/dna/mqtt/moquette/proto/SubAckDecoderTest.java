@@ -39,7 +39,7 @@ public class SubAckDecoderTest {
 
         //Verify
         assertEquals(MessageDecoderResult.OK, res);
-        assertEquals(0xAABB, m_mockProtoDecoder.getMessage().getMessageID());
+        assertEquals(0xAABB, m_mockProtoDecoder.getMessage().getMessageID().intValue());
         List<QOSType> qoses = m_mockProtoDecoder.getMessage().types();
         assertEquals(3, qoses.size());
         assertEquals(QOSType.LEAST_ONE, qoses.get(0));
@@ -64,7 +64,7 @@ public class SubAckDecoderTest {
         assertNotNull(m_mockProtoDecoder.getMessage());
         assertEquals(MessageDecoder.OK, res);
         SubAckMessage message = (SubAckMessage) m_mockProtoDecoder.getMessage();
-        assertEquals(0x0A, message.getMessageID());
+        assertEquals(0x0A, message.getMessageID().intValue());
         assertEquals(1, message.types().size());
         assertEquals(AbstractMessage.QOSType.LEAST_ONE, message.types().get(0));
     }

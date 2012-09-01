@@ -105,11 +105,11 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testMatchSimple() {
-        Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/", AbstractMessage.QOSType.MOST_ONE);
+        Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashSub);
         assertTrue(store.matches("finance").isEmpty());
         
-        Subscription slashFinanceSub = new Subscription("FAKE_CLI_ID_1", "/finance", AbstractMessage.QOSType.MOST_ONE);
+        Subscription slashFinanceSub = new Subscription("FAKE_CLI_ID_1", "/finance", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashFinanceSub);
         assertTrue(store.matches("finance").isEmpty());
         
@@ -119,19 +119,19 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testMatchSimpleMulti() {
-        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE);
+        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(anySub);
         assertTrue(store.matches("finance").contains(anySub));
         
-        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE);
+        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(financeAnySub);
         assertTrue(store.matches("finance").containsAll(Arrays.asList(financeAnySub, anySub)));
     }
     
     @Test
     public void testMatchingDeepMulti_one_layer() {
-        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE);
-        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE);
+        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(anySub);
         store.add(financeAnySub);
         
@@ -143,7 +143,7 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testMatchingDeepMulti_two_layer() {
-        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/stock/#", AbstractMessage.QOSType.MOST_ONE);
+        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/stock/#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(financeAnySub);
         
         //Verify
@@ -152,18 +152,18 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testMatchSimpleSingle() {
-        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(anySub);
         assertTrue(store.matches("finance").contains(anySub));
         
-        Subscription financeOne = new Subscription("FAKE_CLI_ID_1", "finance/+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription financeOne = new Subscription("FAKE_CLI_ID_1", "finance/+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(financeOne);
         assertTrue(store.matches("finance/stock").contains(financeOne));
     }
     
     @Test
     public void testMatchManySingle() {
-        Subscription manySub = new Subscription("FAKE_CLI_ID_1", "+/+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription manySub = new Subscription("FAKE_CLI_ID_1", "+/+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(manySub);
         
         //verify
@@ -173,9 +173,9 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testMatchSlashSingle() {
-        Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashPlusSub);
-        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(anySub);
         
         //Verify
@@ -187,10 +187,10 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testMatchManyDeepSingle() {
-        Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/finance/+/ibm", AbstractMessage.QOSType.MOST_ONE);
+        Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/finance/+/ibm", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashPlusSub);
         
-        Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_1", "/+/stock/+", AbstractMessage.QOSType.MOST_ONE);
+        Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_1", "/+/stock/+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashPlusDeepSub);
         
         //Verify
@@ -199,7 +199,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testMatchSimpleMulti_allTheTree() {
-        store.add(new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE));
+        store.add(new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false));
         assertFalse(store.matches("finance").isEmpty());
         assertFalse(store.matches("finance/ibm").isEmpty());
     }
@@ -207,7 +207,7 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSimpleMulti_zeroLevel() {
         //check  MULTI in case of zero level match
-        store.add(new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        store.add(new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
         assertFalse(store.matches("finance").isEmpty());
     }
     
@@ -215,7 +215,7 @@ public class SubscriptionsStoreTest {
     @Test
     public void testRemoveClientSubscriptions_existingClientID() {
         String cliendID = "FAKE_CLID_1";
-        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
         
         //Exercise
         store.removeForClient(cliendID);
@@ -227,7 +227,7 @@ public class SubscriptionsStoreTest {
     @Test
     public void testRemoveClientSubscriptions_notexistingClientID() {
         String cliendID = "FAKE_CLID_1";
-        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE));
+        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
         
         //Exercise
         store.removeForClient("FAKE_CLID_2");

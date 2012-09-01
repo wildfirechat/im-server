@@ -28,36 +28,36 @@ public class SimpleMessagingTest {
     @Test
     public void testSubscribe() {
         //Exercise
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
         messaging.processSubscribe(evt);
 
         //Verify
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false);
         assertTrue(messaging.getSubscriptions().contains(expectedSubscription));
     }
 
     @Test
     public void testDoubleSubscribe() {
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
         messaging.processSubscribe(evt);
 
         //Exercise
         messaging.processSubscribe(evt);
 
         //Verify
-        Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE);
+        Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false);
         assertEquals(1, messaging.getSubscriptions().size());
     }
 
     @Test
     public void testPublish() throws InterruptedException {
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
         messaging.processSubscribe(evt);
 //        INotifier notifier = mock(INotifier.class);
 //        messaging.setNotifier(notifier);
 
         //Exercise
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false, "FakeCLI", null);
         messaging.processPublish(pubEvt);
 
         //Verify

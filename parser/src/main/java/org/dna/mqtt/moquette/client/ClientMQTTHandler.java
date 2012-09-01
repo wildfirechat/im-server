@@ -2,12 +2,10 @@ package org.dna.mqtt.moquette.client;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.*;
+
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +43,16 @@ public class ClientMQTTHandler extends IoHandlerAdapter {
             case PUBLISH:
                 handlePublish(session, (PublishMessage) msg);
                 break;
+            case PUBACK:
+                handlePublishAck(session, (PubAckMessage) msg);
+                break;
             case PINGRESP:    
                 break;
         }
+    }
+
+    private void handlePublishAck(IoSession session, PubAckMessage msg) {
+        m_callback.publishAckCallback(msg.getMessageID());
     }
 
     private void handleConnectAck(IoSession session, ConnAckMessage connAckMessage) {

@@ -86,7 +86,7 @@ public class MQTTHandlerTest {
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
         verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()), 
-                any(AbstractMessage.QOSType.class), anyBoolean());
+                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));
     }
     
     
@@ -99,8 +99,8 @@ public class MQTTHandlerTest {
                 (byte)AbstractMessage.QOSType.EXACTLY_ONCE.ordinal(), topicName));
         IMessaging mockedMessaging = mock(IMessaging.class);
         
-        m_session.setAttribute(MQTTHandler.ATTR_CLIENTID, "fakeID");
-        
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "fakeID");
+        m_session.setAttribute(Constants.CLEAN_SESSION, false);
 
         //Exercise
         m_handler.setMessaging(mockedMessaging);
@@ -108,7 +108,7 @@ public class MQTTHandlerTest {
         
         //Verify
         ArgumentCaptor<AbstractMessage.QOSType> argument = ArgumentCaptor.forClass(AbstractMessage.QOSType.class);
-        verify(mockedMessaging).subscribe(eq("fakeID"), eq(topicName), argument.capture());
+        verify(mockedMessaging).subscribe(eq("fakeID"), eq(topicName), argument.capture(), eq(false));
         assertEquals(AbstractMessage.QOSType.EXACTLY_ONCE, argument.getValue());
         //TODO verify the message ACK and corresponding QoS!!
     }
