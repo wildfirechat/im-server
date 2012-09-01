@@ -5,16 +5,20 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.MQTTException;
+import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.INotifier;
+import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.Server;
@@ -33,11 +37,12 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleMessaging implements IMessaging, Runnable {
 
-    private static class StoredMessage implements Serializable {
+    //TODO probably move this
+    public static class StoredMessage implements Serializable {
         QOSType m_qos;
         byte[] m_payload;
 
-        private StoredMessage(byte[] message, QOSType qos) {
+        StoredMessage(byte[] message, QOSType qos) {
             m_qos = qos;
             m_payload = message;
         }
@@ -58,13 +63,17 @@ public class SimpleMessaging implements IMessaging, Runnable {
     private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
 
     private INotifier m_notifier;
+
+    //TODO remove
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
-    private SortedIndex<String, StoredMessage> m_retainedStore;
+
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
     //maps clientID to the list of pending messages stored
     private SortedIndex<String, List<PublishEvent>> m_persistentMessageStore;
+
+    private IStorageService m_storageService;
     
     public SimpleMessaging() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -84,19 +93,14 @@ public class SimpleMessaging implements IMessaging, Runnable {
         m_multiIndexFactory = new MultiIndexFactory(pageFile);
         
         subscriptions.init(m_multiIndexFactory);
-        initRetainedMessageStore();
         initInflightMessageStore();
         //init the message store for QoS 1/2 messages in clean sessions
         initPersistentMessageStore();
-    }
-    
-    private void initRetainedMessageStore() {
-        BTreeIndexFactory<String, StoredMessage> indexFactory = new BTreeIndexFactory<String, StoredMessage>();
-        indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-//        m_persistent = indexFactory.openOrCreate(pageFile);
-        m_retainedStore = (SortedIndex<String, StoredMessage>) m_multiIndexFactory.openOrCreate("retained", indexFactory);
+        m_storageService = new HawtDBStorageService(m_multiIndexFactory);
+        m_storageService.initStore();
     }
+
     
     /**
      * Initialize the message store used to handle the temporary storage of QoS 1,2 
@@ -313,13 +317,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
 
         if (retain) {
-            if (message.length == 0) {
-                //clean the message from topic
-                m_retainedStore.remove(topic);
-            } else {    
-                //store the message to the topic
-                m_retainedStore.put(topic, new StoredMessage(message, qos));
-            }
+            m_storageService.storeRetained(topic, message, qos);
         }
     }
 
@@ -327,20 +325,22 @@ public class SimpleMessaging implements IMessaging, Runnable {
     protected void processSubscribe(SubscribeEvent evt) {
         LOG.debug("processSubscribe invoked");
         Subscription newSubscription = evt.getSubscription();
-        String topic = newSubscription.getTopic();
+        final String topic = newSubscription.getTopic();
         
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
-        LOG.debug("Scanning all retained messages, presents are " + m_retainedStore.size());
-        for (Map.Entry<String, StoredMessage> entry : m_retainedStore) {
-            StoredMessage storedMsg = entry.getValue();
-            if (matchTopics(entry.getKey(), topic)) {
-                //fire the as retained the message
-                LOG.debug("Inserting NotifyEvent into outbound for topic " + topic + " entry " + entry.getKey());
-                m_notifier.notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
-                        storedMsg.getPayload(), true));
+        Collection<StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+            public boolean match(String key) {
+                return matchTopics(key, topic);  //To change body of implemented methods use File | Settings | File Templates.
             }
+        });
+
+        for (StoredMessage storedMsg : messages) {
+            //fire the as retained the message
+            LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
+            m_notifier.notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
+                    storedMsg.getPayload(), true));
         }
     }
     
