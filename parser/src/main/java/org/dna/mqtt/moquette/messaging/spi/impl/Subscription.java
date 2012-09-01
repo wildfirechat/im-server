@@ -16,6 +16,7 @@ public class Subscription implements Serializable {
     String clientId;
     String topic;
     boolean cleanSession;
+    boolean active = true;
     
     public Subscription(String clientId, String topic, QOSType requestedQos, boolean cleanSession) {
         this.requestedQos = requestedQos;
@@ -38,6 +39,14 @@ public class Subscription implements Serializable {
 
     public boolean isCleanSession() {
         return this.cleanSession;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
