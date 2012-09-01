@@ -134,6 +134,19 @@ public class SubscriptionsStore {
                 child.removeClientSubscriptions(clientID);
             }
         }
+
+        void disconnect(String clientID) {
+            for (Subscription s : m_subscriptions) {
+                if (s.clientId.equals(clientID)) {
+                    s.setActive(false);
+                }
+            }
+
+            //go deep
+            for (TreeNode child : m_children) {
+                child.disconnect(clientID);
+            }
+        }
     }
 
     protected static class Token {
@@ -291,6 +304,10 @@ public class SubscriptionsStore {
 
         //remove from log all subscriptions
         m_persistent.remove(clientID);
+    }
+
+    public void disconnect(String clientID) {
+        subscriptions.disconnect(clientID);
     }
 
     public List<Subscription> matches(String topic) {
