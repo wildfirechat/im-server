@@ -38,4 +38,6 @@ public interface IStorageService {
     void removeAllSubscriptions(String clientID);
 
     List<Subscription> retrieveAllSubscriptions();
+
+    void close();
 }

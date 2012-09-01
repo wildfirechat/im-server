@@ -1,26 +1,24 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.CleanInFlightEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.RemoveAllSubscriptionsEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.RepublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.server.Server;
 import org.fusesource.hawtbuf.codec.StringCodec;
-import org.fusesource.hawtdb.api.BTreeIndexFactory;
-import org.fusesource.hawtdb.api.MultiIndexFactory;
-import org.fusesource.hawtdb.api.PageFileFactory;
-import org.fusesource.hawtdb.api.SortedIndex;
+import org.fusesource.hawtdb.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging.StoredMessage;
-
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging.StoredMessage;
 
 
 /**
@@ -43,8 +41,22 @@ public class HawtDBStorageService implements IStorageService {
     //TODO rename into persistentSubscriptions
     private SortedIndex<String, List<Subscription>> m_persistent;
 
-    public HawtDBStorageService(MultiIndexFactory multiIndexFactory) {
-        m_multiIndexFactory =  multiIndexFactory;
+    public HawtDBStorageService() {
+        String storeFile = Server.STORAGE_FILE_PATH;
+
+        pageFactory = new PageFileFactory();
+        File tmpFile;
+        try {
+            tmpFile = new File(storeFile);
+            tmpFile.createNewFile();
+        } catch (IOException ex) {
+            LOG.error(null, ex);
+            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
+        }
+        pageFactory.setFile(tmpFile);
+        pageFactory.open();
+        PageFile pageFile = pageFactory.getPageFile();
+        m_multiIndexFactory = new MultiIndexFactory(pageFile);
     }
 
 
@@ -164,5 +176,13 @@ public class HawtDBStorageService implements IStorageService {
             allSubscriptions.addAll(entry.getValue());
         }
         return allSubscriptions;
+    }
+
+    public void close() {
+        try {
+            pageFactory.close();
+        } catch (IOException ex) {
+            LOG.error(null, ex);
+        }
     }
 }

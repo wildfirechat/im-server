@@ -59,31 +59,10 @@ public class SimpleMessaging implements IMessaging, Runnable {
 
     private INotifier m_notifier;
 
-    //TODO remove
-    private MultiIndexFactory m_multiIndexFactory;
-    private PageFileFactory pageFactory;
-
     private IStorageService m_storageService;
     
     public SimpleMessaging() {
-        String storeFile = Server.STORAGE_FILE_PATH;
-        
-        pageFactory = new PageFileFactory();
-        File tmpFile;
-        try {
-            tmpFile = new File(storeFile);
-            tmpFile.createNewFile();
-        } catch (IOException ex) {
-            LOG.error(null, ex);
-            throw new MQTTException("Can't create temp file for subscriptions storage [" + storeFile + "]", ex);
-        }
-        pageFactory.setFile(tmpFile);
-        pageFactory.open();
-        PageFile pageFile = pageFactory.getPageFile();
-        m_multiIndexFactory = new MultiIndexFactory(pageFile);
-
-
-        m_storageService = new HawtDBStorageService(m_multiIndexFactory);
+        m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
 
         subscriptions.init(m_storageService);
@@ -329,11 +308,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
     
     private void processClose() {
         LOG.debug("processClose invoked");
-        try {
-            pageFactory.close();
-        } catch (IOException ex) {
-            LOG.error(null, ex);
-        }
+        m_storageService.close();
     }
 
     private void processRepublish(RepublishEvent evt) throws InterruptedException {

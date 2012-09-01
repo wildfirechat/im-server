@@ -55,4 +55,8 @@ public class DummyStorageService implements IStorageService {
     public List<Subscription> retrieveAllSubscriptions() {
         return Collections.EMPTY_LIST;
     }
+
+    public void close() {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
