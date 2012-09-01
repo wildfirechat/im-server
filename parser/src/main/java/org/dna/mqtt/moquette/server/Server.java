@@ -33,11 +33,11 @@ public class Server {
             File.separator + "moquette_store.hawtdb";
     
     //TODO one notifier per outbound queue, else no serialization of message flow is granted!!
-    private static final int NOTIFIER_POOL_SIZE = 1; 
+    //private static final int NOTIFIER_POOL_SIZE = 1;
     private IoAcceptor m_acceptor;
     SimpleMessaging messaging;
     Thread messagingEventLoop;
-    private ExecutorService m_notifierPool/* = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE)*/;
+    //private ExecutorService m_notifierPool/* = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE)*/;
     
     public static void main(String[] args) throws IOException {
         new Server().startServer();
@@ -71,18 +71,18 @@ public class Server {
         messaging = new SimpleMessaging();
         //TODO fix this hugly wiring
         handler.setMessaging(messaging);
-//        messaging.setNotifier(handler);
+        messaging.setNotifier(handler);
         messagingEventLoop = new Thread(messaging);
         messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
         messagingEventLoop.start();
         
-        m_notifierPool = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE);
+        /*m_notifierPool = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE);
         
         BlockingQueue<MessagingEvent> notifyQueue = messaging.getNotifyEventQueue();
         for (int i = 0; i < NOTIFIER_POOL_SIZE; i++) {
             Notifier notifier = new Notifier(notifyQueue, handler, messaging);
             m_notifierPool.submit(notifier);
-        }
+        }*/
         
         m_acceptor.setHandler(handler);
         ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
@@ -113,7 +113,7 @@ public class Server {
             LOG.error(null, ex);
         }
         
-        m_notifierPool.shutdown();
+        /*m_notifierPool.shutdown();*/
         
         for(IoSession session: m_acceptor.getManagedSessions().values()) {
             if(session.isConnected() && !session.isClosing()){
