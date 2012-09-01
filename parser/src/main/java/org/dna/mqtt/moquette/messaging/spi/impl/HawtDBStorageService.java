@@ -48,6 +48,7 @@ public class HawtDBStorageService implements IStorageService {
         initRetainedStore();
         //init the message store for QoS 1/2 messages in clean sessions
         initPersistentMessageStore();
+        initInflightMessageStore();
     }
 
     private void initRetainedStore() {
