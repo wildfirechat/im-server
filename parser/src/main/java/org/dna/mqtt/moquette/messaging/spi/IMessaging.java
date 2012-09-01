@@ -18,12 +18,12 @@ public interface IMessaging {
      * notification also after all the current subscriber to the given topic has
      * been notified.
      */
-    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID);
+    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session);
 
     /**
      * Used to publish messages with QoS > 0
      * */
-    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID);
+    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session);
     
     /**
      * Subscribe a client to a specified topic with a defined level

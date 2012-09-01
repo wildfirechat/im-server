@@ -86,7 +86,7 @@ public class MQTTHandlerTest {
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
         verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()), 
-                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"));
+                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));
     }
     
     
@@ -99,7 +99,7 @@ public class MQTTHandlerTest {
                 (byte)AbstractMessage.QOSType.EXACTLY_ONCE.ordinal(), topicName));
         IMessaging mockedMessaging = mock(IMessaging.class);
         
-        m_session.setAttribute(MQTTHandler.ATTR_CLIENTID, "fakeID");
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "fakeID");
         
 
         //Exercise

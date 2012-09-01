@@ -14,6 +14,7 @@ import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.Server;
 import org.fusesource.hawtbuf.codec.StringCodec;
 import org.fusesource.hawtdb.api.BTreeIndexFactory;
@@ -108,20 +109,20 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
     
 
-    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID) {
+    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session) {
         //TODO for this moment  no qos > 0 trivial implementation
 //        QOSType defQos = QOSType.MOST_ONE;
         
         try {
-            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID));
+            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, session));
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
     }
 
-    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID) {
+    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session) {
         try {
-            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, messageID));
+            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
@@ -267,8 +268,11 @@ public class SimpleMessaging implements IMessaging, Runnable {
         
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos == QOSType.MOST_ONE) {
+                //QoS 0
                 m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false));
             } else {
+                //QoS 1 or 2
+                //if the target subscription is not clean session and is not connected => store it
                 m_outboundQueue.put(new NotifyEvent(sub.clientId, topic, qos, message, false, evt.getMessageID()));
             }
         }

@@ -57,7 +57,7 @@ public class SimpleMessagingTest {
 //        messaging.setNotifier(notifier);
 
         //Exercise
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false, "FakeCLI");
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false, "FakeCLI", null);
         messaging.processPublish(pubEvt);
 
         //Verify
