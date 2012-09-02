@@ -36,7 +36,7 @@ public class Server {
     //private static final int NOTIFIER_POOL_SIZE = 1;
     private IoAcceptor m_acceptor;
     SimpleMessaging messaging;
-    Thread messagingEventLoop;
+//    Thread messagingEventLoop;
     //private ExecutorService m_notifierPool/* = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE)*/;
     
     public static void main(String[] args) throws IOException {
@@ -72,9 +72,9 @@ public class Server {
         //TODO fix this hugly wiring
         handler.setMessaging(messaging);
 //        messaging.setNotifier(handler);
-        messagingEventLoop = new Thread(messaging);
-        messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
-        messagingEventLoop.start();
+//        messagingEventLoop = new Thread(messaging);
+//        messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
+//        messagingEventLoop.start();
         
         m_acceptor.setHandler(handler);
         ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
@@ -97,13 +97,14 @@ public class Server {
         LOG.info("Server stopping...");
         
         messaging.close();
-        messagingEventLoop.interrupt();
-        LOG.info("shutting down evet loop");
-        try {
-            messagingEventLoop.join();
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        messaging.stop();
+//        messagingEventLoop.interrupt();
+//        LOG.info("shutting down evet loop");
+//        try {
+//            messagingEventLoop.join();
+//        } catch (InterruptedException ex) {
+//            LOG.error(null, ex);
+//        }
         
         /*m_notifierPool.shutdown();*/
         
