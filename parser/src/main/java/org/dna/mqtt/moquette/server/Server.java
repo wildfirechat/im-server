@@ -71,7 +71,7 @@ public class Server {
         messaging = new SimpleMessaging();
         //TODO fix this hugly wiring
         handler.setMessaging(messaging);
-        messaging.setNotifier(handler);
+//        messaging.setNotifier(handler);
         messagingEventLoop = new Thread(messaging);
         messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
         messagingEventLoop.start();
