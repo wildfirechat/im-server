@@ -56,7 +56,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
-    //private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
     private RingBuffer<ValueEvent> m_ringBuffer;
 
 //    private INotifier m_notifier;
@@ -73,19 +72,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     private static SimpleMessaging INSTANCE;
     
     private SimpleMessaging() {
-        /*m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
-        
-        SequenceBarrier barrier = m_ringBuffer.newBarrier();       
-        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
-        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());  
-        m_executor.submit(m_eventProcessor);
-
-        disruptorPublish(new InitEvent());   */
-        
- /*       m_storageService = new HawtDBStorageService();
-        m_storageService.initStore();
-
-        subscriptions.init(m_storageService); */
     }
 
     public static SimpleMessaging getInstance() {
@@ -113,10 +99,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         m_notifier= notifier;
     }  */
     
-//    public void run() {
-//        eventLoop();
-//    }
-    
+
     private void disruptorPublish(MessagingEvent msgEvent) {
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
@@ -245,38 +228,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         subscriptions.init(m_storageService);
     }
 
-//    protected void eventLoop() {
-//        LOG.debug("Started event loop");
-//        boolean interrupted = false;
-//        while (!interrupted) {
-//            try { 
-//                MessagingEvent evt = m_inboundQueue.take();
-//                if (evt instanceof PublishEvent) {
-//                    processPublish((PublishEvent) evt);
-//                } else if (evt instanceof SubscribeEvent) {
-//                    processSubscribe((SubscribeEvent) evt);
-//                } else if (evt instanceof UnsubscribeEvent) {
-//                    processUnsubscribe((UnsubscribeEvent) evt);
-//                } else if (evt instanceof RemoveAllSubscriptionsEvent) {
-//                    processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
-//                } else if (evt instanceof CloseEvent) {
-//                    processStop();
-//                } else if (evt instanceof DisconnectEvent) {
-//                    processDisconnect((DisconnectEvent) evt);
-//                } else if (evt instanceof CleanInFlightEvent) {
-//                    //remove the message from inflight storage
-//                    m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
-//                } else if (evt instanceof RepublishEvent) {
-//                    processRepublish((RepublishEvent) evt);
-//                } else if (evt instanceof ConnectEvent) {
-//                    processConnect((ConnectEvent) evt);
-//                }
-//            } catch (InterruptedException ex) {
-//                processClose();
-//                interrupted = true;
-//            }
-//        }
-//    }
 
     protected void processConnect(ConnectEvent evt) {
         ConnectMessage msg = evt.getMessage();
