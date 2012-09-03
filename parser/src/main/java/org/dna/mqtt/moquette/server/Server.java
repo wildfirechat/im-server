@@ -3,9 +3,7 @@ package org.dna.mqtt.moquette.server;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoServiceStatistics;
 import org.apache.mina.core.session.IdleStatus;
@@ -97,7 +95,7 @@ public class Server {
     protected void stopServer() {
         LOG.info("Server stopping...");
         
-        messaging.close();
+        messaging.stop();
         //messaging.stop();
 //        messagingEventLoop.interrupt();
 //        LOG.info("shutting down evet loop");

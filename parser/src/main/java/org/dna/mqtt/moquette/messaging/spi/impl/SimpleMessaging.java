@@ -16,7 +16,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
@@ -208,8 +207,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         disruptorPublish(new RemoveAllSubscriptionsEvent(clientID));
     }
 
-    public void close() {
-        disruptorPublish(new CloseEvent());
+    public void stop() {
+        disruptorPublish(new StopEvent());
     }
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
@@ -223,8 +222,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             processUnsubscribe((UnsubscribeEvent) evt);
         } else if (evt instanceof RemoveAllSubscriptionsEvent) {
             processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
-        } else if (evt instanceof CloseEvent) {
-            processClose();
+        } else if (evt instanceof StopEvent) {
+            processStop();
         } else if (evt instanceof DisconnectEvent) {
             processDisconnect((DisconnectEvent) evt);
         } else if (evt instanceof CleanInFlightEvent) {
@@ -261,7 +260,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
 //                } else if (evt instanceof RemoveAllSubscriptionsEvent) {
 //                    processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
 //                } else if (evt instanceof CloseEvent) {
-//                    processClose();
+//                    processStop();
 //                } else if (evt instanceof DisconnectEvent) {
 //                    processDisconnect((DisconnectEvent) evt);
 //                } else if (evt instanceof CleanInFlightEvent) {
@@ -459,8 +458,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         subscriptions.disconnect(clientID);
     }
     
-    private void processClose() {
-        LOG.debug("processClose invoked");
+    private void processStop() {
+        LOG.debug("processStop invoked");
         m_storageService.close();
 
 //        m_eventProcessor.halt();

@@ -1,13 +1,9 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.util.concurrent.BlockingQueue;
-
 import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.session.DummySession;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
-import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
@@ -18,14 +14,11 @@ import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
-import org.dna.mqtt.moquette.server.MQTTHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 /**
  *
@@ -77,7 +70,7 @@ public class SimpleMessagingTest {
     @After
     public void tearDown() {
         m_receivedMessage = null;
-        messaging.close();
+        messaging.stop();
     }
 
     @Test

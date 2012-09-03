@@ -37,7 +37,7 @@ public interface IMessaging {
      */
     void removeSubscriptions(String clientID);
     
-    void close();
+    void stop();
 
     /**
      * Remove the clientID from topic subscription, if not previously subscribed,
