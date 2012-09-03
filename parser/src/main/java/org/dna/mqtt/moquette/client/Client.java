@@ -63,7 +63,7 @@ public final class Client {
     private int m_connectRetries = DEFAULT_RETRIES;
     private String m_hostname;
     private int m_port;
-    //internal mangement used for conversation with the server
+    //internal management used for conversation with the server
     private IoConnector m_connector;
     private IoSession m_session;
     private CountDownLatch m_connectBarrier;
