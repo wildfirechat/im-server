@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging.StoredMessage;
 
@@ -39,7 +36,7 @@ public class HawtDBStorageService implements IStorageService {
 
     //persistent Map of clientID, list of Subscriptions
     //TODO move to Set to avoid double subscriptions
-    private SortedIndex<String, List<Subscription>> m_persistentSubscriptions;
+    private SortedIndex<String, Set<Subscription>> m_persistentSubscriptions;
 
     public HawtDBStorageService() {
         String storeFile = Server.STORAGE_FILE_PATH;
@@ -85,11 +82,10 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     private void initPersistentSubscriptions() {
-        BTreeIndexFactory<String, List<Subscription>> indexFactory =
-                new BTreeIndexFactory<String, List<Subscription>>();
+        BTreeIndexFactory<String, Set<Subscription>> indexFactory = new BTreeIndexFactory<String, Set<Subscription>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_persistentSubscriptions = (SortedIndex<String, List<Subscription>>) m_multiIndexFactory.openOrCreate("subscriptions", indexFactory);
+        m_persistentSubscriptions = (SortedIndex<String, Set<Subscription>>) m_multiIndexFactory.openOrCreate("subscriptions", indexFactory);
     }
 
     /**
@@ -158,10 +154,10 @@ public class HawtDBStorageService implements IStorageService {
 
     public void addNewSubscription(Subscription newSubscription, String clientID) {
         if (!m_persistentSubscriptions.containsKey(clientID)) {
-            m_persistentSubscriptions.put(clientID, new ArrayList<Subscription>());
+            m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
         }
 
-        List<Subscription> subs = m_persistentSubscriptions.get(clientID);
+        Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
         if (!subs.contains(newSubscription)) {
             subs.add(newSubscription);
             m_persistentSubscriptions.put(clientID, subs);
@@ -174,7 +170,7 @@ public class HawtDBStorageService implements IStorageService {
 
     public List<Subscription> retrieveAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
-        for (Map.Entry<String, List<Subscription>> entry : m_persistentSubscriptions) {
+        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions) {
             allSubscriptions.addAll(entry.getValue());
         }
         return allSubscriptions;
