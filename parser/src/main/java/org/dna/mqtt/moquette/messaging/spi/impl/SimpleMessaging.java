@@ -2,6 +2,16 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
@@ -20,17 +30,6 @@ import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.text.ParseException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  *
@@ -254,7 +253,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
 //        }
 //    }
 
-    private void processConnect(ConnectEvent evt) {
+    protected void processConnect(ConnectEvent evt) {
         ConnectMessage msg = evt.getMessage();
         IoSession session = evt.getSession();
 
