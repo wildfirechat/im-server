@@ -45,8 +45,9 @@ public class SimpleMessagingTest {
     AbstractMessage m_receivedMessage;
 
     @Before
-    public void setUp() {
-        messaging = new SimpleMessaging();
+    public void setUp() throws InterruptedException {
+        messaging = SimpleMessaging.getInstance();
+        messaging.init();
         connMsg = new ConnectMessage();
         connMsg.setProcotolVersion((byte) 0x03);
 
@@ -68,17 +69,21 @@ public class SimpleMessagingTest {
                 }
             }
         });
+
+        //sleep to let the messaging batch processor to process the initEvent
+        Thread.sleep(300);
     }
 
     @After
     public void tearDown() {
         m_receivedMessage = null;
+        messaging.close();
     }
 
     @Test
     public void testSubscribe() {
         //Exercise
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
         messaging.processSubscribe(evt);
 
         //Verify
@@ -88,7 +93,7 @@ public class SimpleMessagingTest {
 
     @Test
     public void testDoubleSubscribe() {
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
         messaging.processSubscribe(evt);
 
         //Exercise
@@ -105,7 +110,7 @@ public class SimpleMessagingTest {
         ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, true);
         messaging.m_clientIDs.put(FAKE_CLIENT_ID, connDescr);
 
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false));
+        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
         messaging.processSubscribe(evt);
 
         //Exercise
@@ -116,13 +121,13 @@ public class SimpleMessagingTest {
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
     }
-    
+
     @Test
     public void testMatchTopics_simple() {
         assertTrue(messaging.matchTopics("/", "/"));
         assertTrue(messaging.matchTopics("/finance", "/finance"));
     }
-    
+
     @Test
     public void testMatchTopics_multi() {
         assertTrue(messaging.matchTopics("finance", "#"));
@@ -130,8 +135,8 @@ public class SimpleMessagingTest {
         assertTrue(messaging.matchTopics("finance/stock", "finance/#"));
         assertTrue(messaging.matchTopics("finance/stock/ibm", "finance/#"));
     }
-    
-    
+
+
     @Test
     public void testMatchTopics_single() {
         assertTrue(messaging.matchTopics("finance", "+"));
@@ -203,7 +208,7 @@ public class SimpleMessagingTest {
 
         //Exercise
         //m_handler.setMessaging(mockedMessaging);
-        SubscribeEvent pubEvt = new SubscribeEvent(subscription);
+        SubscribeEvent pubEvt = new SubscribeEvent(subscription, 0);
         messaging.processSubscribe(pubEvt);
 
         //Verify

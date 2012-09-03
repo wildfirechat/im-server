@@ -7,6 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoServiceStatistics;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -14,7 +15,6 @@ import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
 import org.dna.mqtt.moquette.proto.*;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.slf4j.Logger;
@@ -68,7 +68,8 @@ public class Server {
         m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
 
         MQTTHandler handler = new MQTTHandler();
-        messaging = new SimpleMessaging();
+        messaging = SimpleMessaging.getInstance();
+        messaging.init();
         //TODO fix this hugly wiring
         handler.setMessaging(messaging);
 //        messaging.setNotifier(handler);
@@ -97,7 +98,7 @@ public class Server {
         LOG.info("Server stopping...");
         
         messaging.close();
-        messaging.stop();
+        //messaging.stop();
 //        messagingEventLoop.interrupt();
 //        LOG.info("shutting down evet loop");
 //        try {
@@ -113,7 +114,14 @@ public class Server {
                 session.close(false);
             }
         }
-        
+
+        //log statistics
+        IoServiceStatistics statistics  = m_acceptor.getStatistics();
+        statistics.updateThroughput(System.currentTimeMillis());
+        /*System.out.println(String.format("Total read bytes: %d, read throughtput: %f (b//s)", statistics.getReadBytes(), statistics.getReadBytesThroughput()));
+        System.out.println(String.format("Total read msgs: %d, read msg throughtput: %f (msg//s)", statistics.getReadMessages(), statistics.getReadMessagesThroughput()));*/
+
+
         m_acceptor.unbind();
         m_acceptor.dispose();
         LOG.info("Server stopped");

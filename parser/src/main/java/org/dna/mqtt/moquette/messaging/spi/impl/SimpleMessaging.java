@@ -20,11 +20,8 @@ import org.dna.mqtt.moquette.messaging.spi.INotifier;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
-import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
@@ -63,7 +60,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     //private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
     private RingBuffer<ValueEvent> m_ringBuffer;
 
-    private INotifier m_notifier;
+//    private INotifier m_notifier;
 
     private IStorageService m_storageService;
 
@@ -71,27 +68,51 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
 
     private IAuthenticator m_authenticator;
     
-    private ExecutorService m_executor = Executors.newFixedThreadPool(1);
+    private ExecutorService m_executor;
     BatchEventProcessor<ValueEvent> m_eventProcessor;
+
+    private static SimpleMessaging INSTANCE;
     
-    public SimpleMessaging() {
-        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+    private SimpleMessaging() {
+        /*m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
         
         SequenceBarrier barrier = m_ringBuffer.newBarrier();       
         m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());  
         m_executor.submit(m_eventProcessor);
+
+        disruptorPublish(new InitEvent());   */
         
-        m_storageService = new HawtDBStorageService();
+ /*       m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
 
-        subscriptions.init(m_storageService);
+        subscriptions.init(m_storageService); */
+    }
+
+    public static SimpleMessaging getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new SimpleMessaging();
+        }
+        return INSTANCE;
+    }
+
+    public void init() {
+        m_executor = Executors.newFixedThreadPool(1);
+
+        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+
+        SequenceBarrier barrier = m_ringBuffer.newBarrier();
+        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
+        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
+        m_executor.submit(m_eventProcessor);
+
+        disruptorPublish(new InitEvent());
     }
 
     
-    public void setNotifier(INotifier notifier) {
+/*    public void setNotifier(INotifier notifier) {
         m_notifier= notifier;
-    }
+    }  */
     
 //    public void run() {
 //        eventLoop();
@@ -115,10 +136,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
     }
 
-    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession) {
+    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID) {
         Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
         LOG.debug("subscribe invoked for topic: " + topic);
-        disruptorPublish(new SubscribeEvent(newSubscription));
+        disruptorPublish(new SubscribeEvent(newSubscription, messageID));
     }
     
     
@@ -213,11 +234,16 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             processRepublish((RepublishEvent) evt);
         } else if (evt instanceof ConnectEvent) {
             processConnect((ConnectEvent) evt);
+        } else if (evt instanceof InitEvent) {
+            processInit();
         }
     }
-    
-    public void stop() {
-        m_eventProcessor.halt();
+
+    private void processInit() {
+        m_storageService = new HawtDBStorageService();
+        m_storageService.initStore();
+
+        subscriptions.init(m_storageService);
     }
 
 //    protected void eventLoop() {
@@ -383,16 +409,29 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         //scans retained messages to be published to the new subscription
         Collection<StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
-                return matchTopics(key, topic);  //To change body of implemented methods use File | Settings | File Templates.
+                return matchTopics(key, topic);
             }
         });
 
         for (StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            m_notifier.notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
+            notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
                     storedMsg.getPayload(), true));
         }
+
+//        //ack the client
+//        SubAckMessage ackMessage = new SubAckMessage();
+//        ackMessage.setMessageID(evt.getMessageID());
+//
+//        //TODO by now it handles only QoS 0 messages
+//        /*for (int i = 0; i < evt.subscriptions().size(); i++) {
+//            ackMessage.addType(QOSType.MOST_ONE);
+//        } */
+//        LOG.info("replying with SubAct to MSG ID {0}", evt.getMessageID());
+//        //session.write(ackMessage);
+//        IoSession session = m_clientIDs.get(evt.getSubscription().clientId).getSession();
+//        session.write(ackMessage).awaitUninterruptibly();
     }
     
     protected void processUnsubscribe(UnsubscribeEvent evt) {
@@ -423,6 +462,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     private void processClose() {
         LOG.debug("processClose invoked");
         m_storageService.close();
+
+//        m_eventProcessor.halt();
+        m_executor.shutdown();
     }
 
     private void processRepublish(RepublishEvent evt) throws InterruptedException {
@@ -432,7 +474,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         }
 
         for (PublishEvent pubEvt : publishedEvents) {
-            m_notifier.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+            notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID()));
         }
     }

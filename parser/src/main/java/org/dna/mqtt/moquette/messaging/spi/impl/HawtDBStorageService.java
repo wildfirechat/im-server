@@ -38,6 +38,7 @@ public class HawtDBStorageService implements IStorageService {
     private SortedIndex<String, PublishEvent> m_inflightStore;
 
     //persistent Map of clientID, list of Subscriptions
+    //TODO move to Set to avoid double subscriptions
     private SortedIndex<String, List<Subscription>> m_persistentSubscriptions;
 
     public HawtDBStorageService() {
@@ -161,8 +162,10 @@ public class HawtDBStorageService implements IStorageService {
         }
 
         List<Subscription> subs = m_persistentSubscriptions.get(clientID);
-        subs.add(newSubscription);
-        m_persistentSubscriptions.put(clientID, subs);
+        if (!subs.contains(newSubscription)) {
+            subs.add(newSubscription);
+            m_persistentSubscriptions.put(clientID, subs);
+        }
     }
 
     public void removeAllSubscriptions(String clientID) {
