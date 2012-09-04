@@ -1,38 +1,37 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
-import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
-import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.server.ConnectionDescriptor;
-import org.dna.mqtt.moquette.server.Constants;
-import org.dna.mqtt.moquette.server.IAuthenticator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.lmax.disruptor.BatchEventProcessor;
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
+import org.dna.mqtt.moquette.messaging.spi.IMessaging;
+import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.proto.messages.*;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.moquette.server.ConnectionDescriptor;
+import org.dna.mqtt.moquette.server.Constants;
+import org.dna.mqtt.moquette.server.IAuthenticator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author andrea
  */
-public class SimpleMessaging implements IMessaging, Runnable {
+public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, Runnable*/ {
 
     //TODO probably move this
     public static class StoredMessage implements Serializable {
@@ -57,9 +56,9 @@ public class SimpleMessaging implements IMessaging, Runnable {
     
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
-    private BlockingQueue<MessagingEvent> m_inboundQueue = new LinkedBlockingQueue<MessagingEvent>();
+    private RingBuffer<ValueEvent> m_ringBuffer;
 
-    private INotifier m_notifier;
+//    private INotifier m_notifier;
 
     private IStorageService m_storageService;
 
@@ -67,87 +66,86 @@ public class SimpleMessaging implements IMessaging, Runnable {
 
     private IAuthenticator m_authenticator;
     
-    public SimpleMessaging() {
-        m_storageService = new HawtDBStorageService();
-        m_storageService.initStore();
+    private ExecutorService m_executor;
+    BatchEventProcessor<ValueEvent> m_eventProcessor;
 
-        subscriptions.init(m_storageService);
+    private static SimpleMessaging INSTANCE;
+    
+    private SimpleMessaging() {
+    }
+
+    public static SimpleMessaging getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new SimpleMessaging();
+        }
+        return INSTANCE;
+    }
+
+    public void init() {
+        m_executor = Executors.newFixedThreadPool(1);
+
+        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+
+        SequenceBarrier barrier = m_ringBuffer.newBarrier();
+        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
+        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
+        m_executor.submit(m_eventProcessor);
+
+        disruptorPublish(new InitEvent());
     }
 
     
-    public void setNotifier(INotifier notifier) {
+/*    public void setNotifier(INotifier notifier) {
         m_notifier= notifier;
-    }
+    }  */
     
-    public void run() {
-        eventLoop();
+
+    private void disruptorPublish(MessagingEvent msgEvent) {
+        long sequence = m_ringBuffer.next();
+        ValueEvent event = m_ringBuffer.get(sequence);
+
+        event.setEvent(msgEvent);
+        
+        m_ringBuffer.publish(sequence); 
     }
     
 
     public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session) {
-        try {
-            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, session));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, session));
     }
 
     public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session) {
-        try {
-            m_inboundQueue.put(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
     }
 
-    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession) {
+    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID) {
         Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
-        try {
-            LOG.debug("subscribe invoked for topic: " + topic);
-            m_inboundQueue.put(new SubscribeEvent(newSubscription));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        LOG.debug("subscribe invoked for topic: " + topic);
+        disruptorPublish(new SubscribeEvent(newSubscription, messageID));
     }
     
     
     public void unsubscribe(String topic, String clientID) {
-        try {
-            m_inboundQueue.put(new UnsubscribeEvent(topic, clientID));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        disruptorPublish(new UnsubscribeEvent(topic, clientID));
     }
     
     
     public void disconnect(IoSession session) {
-        try {
-            m_inboundQueue.put(new DisconnectEvent(session));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        disruptorPublish(new DisconnectEvent(session));
     }
 
     //method used by hte Notifier to re-put an event on the inbound queue
     private void refill(MessagingEvent evt) throws InterruptedException {
-        m_inboundQueue.put(evt);
+        disruptorPublish(evt);
     }
 
     public void republishStored(String clientID) {
         //create the event to push
-        try {
-            m_inboundQueue.put(new RepublishEvent(clientID));
-        } catch (InterruptedException iex) {
-            LOG.error(null, iex);
-        }
+        disruptorPublish(new RepublishEvent(clientID));
     }
 
     public void connect(IoSession session, ConnectMessage msg) {
-        try {
-            m_inboundQueue.put(new ConnectEvent(session, msg));
-        } catch (InterruptedException iex) {
-            LOG.error(null, iex);
-        }
+        disruptorPublish(new ConnectEvent(session, msg));
     }
 
     /**
@@ -189,56 +187,49 @@ public class SimpleMessaging implements IMessaging, Runnable {
     }
 
     public void removeSubscriptions(String clientID) {
-        try {
-            m_inboundQueue.put(new RemoveAllSubscriptionsEvent(clientID));
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        disruptorPublish(new RemoveAllSubscriptionsEvent(clientID));
     }
 
-    public void close() {
-        try {
-            m_inboundQueue.put(new CloseEvent());
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        } 
+    public void stop() {
+        disruptorPublish(new StopEvent());
     }
     
-
-    protected void eventLoop() {
-        LOG.debug("Started event loop");
-        boolean interrupted = false;
-        while (!interrupted) {
-            try { 
-                MessagingEvent evt = m_inboundQueue.take();
-                if (evt instanceof PublishEvent) {
-                    processPublish((PublishEvent) evt);
-                } else if (evt instanceof SubscribeEvent) {
-                    processSubscribe((SubscribeEvent) evt);
-                } else if (evt instanceof UnsubscribeEvent) {
-                    processUnsubscribe((UnsubscribeEvent) evt);
-                } else if (evt instanceof RemoveAllSubscriptionsEvent) {
-                    processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
-                } else if (evt instanceof CloseEvent) {
-                    processClose();
-                } else if (evt instanceof DisconnectEvent) {
-                    processDisconnect((DisconnectEvent) evt);
-                } else if (evt instanceof CleanInFlightEvent) {
-                    //remove the message from inflight storage
-                    m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
-                } else if (evt instanceof RepublishEvent) {
-                    processRepublish((RepublishEvent) evt);
-                } else if (evt instanceof ConnectEvent) {
-                    processConnect((ConnectEvent) evt);
-                }
-            } catch (InterruptedException ex) {
-                processClose();
-                interrupted = true;
-            }
+    public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
+        LOG.debug("onEvent processing event");
+        MessagingEvent evt = t.getEvent();
+        if (evt instanceof PublishEvent) {
+            processPublish((PublishEvent) evt);
+        } else if (evt instanceof SubscribeEvent) {
+            processSubscribe((SubscribeEvent) evt);
+        } else if (evt instanceof UnsubscribeEvent) {
+            processUnsubscribe((UnsubscribeEvent) evt);
+        } else if (evt instanceof RemoveAllSubscriptionsEvent) {
+            processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
+        } else if (evt instanceof StopEvent) {
+            processStop();
+        } else if (evt instanceof DisconnectEvent) {
+            processDisconnect((DisconnectEvent) evt);
+        } else if (evt instanceof CleanInFlightEvent) {
+            //remove the message from inflight storage
+            m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
+        } else if (evt instanceof RepublishEvent) {
+            processRepublish((RepublishEvent) evt);
+        } else if (evt instanceof ConnectEvent) {
+            processConnect((ConnectEvent) evt);
+        } else if (evt instanceof InitEvent) {
+            processInit();
         }
     }
 
-    private void processConnect(ConnectEvent evt) {
+    private void processInit() {
+        m_storageService = new HawtDBStorageService();
+        m_storageService.initStore();
+
+        subscriptions.init(m_storageService);
+    }
+
+
+    protected void processConnect(ConnectEvent evt) {
         ConnectMessage msg = evt.getMessage();
         IoSession session = evt.getSession();
 
@@ -368,16 +359,29 @@ public class SimpleMessaging implements IMessaging, Runnable {
         //scans retained messages to be published to the new subscription
         Collection<StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
-                return matchTopics(key, topic);  //To change body of implemented methods use File | Settings | File Templates.
+                return matchTopics(key, topic);
             }
         });
 
         for (StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            m_notifier.notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
+            notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
                     storedMsg.getPayload(), true));
         }
+
+//        //ack the client
+//        SubAckMessage ackMessage = new SubAckMessage();
+//        ackMessage.setMessageID(evt.getMessageID());
+//
+//        //TODO by now it handles only QoS 0 messages
+//        /*for (int i = 0; i < evt.subscriptions().size(); i++) {
+//            ackMessage.addType(QOSType.MOST_ONE);
+//        } */
+//        LOG.info("replying with SubAct to MSG ID {0}", evt.getMessageID());
+//        //session.write(ackMessage);
+//        IoSession session = m_clientIDs.get(evt.getSubscription().clientId).getSession();
+//        session.write(ackMessage).awaitUninterruptibly();
     }
     
     protected void processUnsubscribe(UnsubscribeEvent evt) {
@@ -405,9 +409,12 @@ public class SimpleMessaging implements IMessaging, Runnable {
         subscriptions.disconnect(clientID);
     }
     
-    private void processClose() {
-        LOG.debug("processClose invoked");
+    private void processStop() {
+        LOG.debug("processStop invoked");
         m_storageService.close();
+
+//        m_eventProcessor.halt();
+        m_executor.shutdown();
     }
 
     private void processRepublish(RepublishEvent evt) throws InterruptedException {
@@ -417,7 +424,7 @@ public class SimpleMessaging implements IMessaging, Runnable {
         }
 
         for (PublishEvent pubEvt : publishedEvents) {
-            m_notifier.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+            notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID()));
         }
     }

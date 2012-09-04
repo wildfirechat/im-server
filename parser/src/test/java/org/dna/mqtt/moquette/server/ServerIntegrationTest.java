@@ -48,29 +48,29 @@ public class ServerIntegrationTest {
         Client client = new Client("localhost", Server.PORT);
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
-        
-        
+
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
                 received = true;
             }
         });
-        
+
         client.publish("/topic", "Test my payload".getBytes());
-        
+
         client.close();
         client.shutdown();
-        
+
         assertTrue(received);
     }
-    
-    
+
+
     @Test
     public void testCleanSession_maintainClientSubscriptions() {
         Client client = new Client("localhost", Server.PORT/*, "CLID_123"*/);
         client.connect(false); //without session cleanup
-        
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -78,24 +78,24 @@ public class ServerIntegrationTest {
             }
         });
         client.close();
-        
+
         //Exercise that the client maintain the subscriptions
-        client.connect(false); 
+        client.connect(false);
         client.publish("/topic", "Test my payload".getBytes());
         client.close();
-        
+
         //Verify
         assertTrue(received);
-        
-        //TearDown 
+
+        //TearDown
         client.shutdown();
     }
-    
+
     @Test
     public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() {
         Client client = new Client("localhost", Server.PORT, "CLID_123");
         client.connect(false); //without session cleanup
-        
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -104,7 +104,7 @@ public class ServerIntegrationTest {
         });
         client.close();
         client.shutdown();
-        
+
         //Exercise that the client maintain the subscriptions
         client = new Client("localhost", Server.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
@@ -113,20 +113,20 @@ public class ServerIntegrationTest {
                 received = true;
             }
         });
-        client.connect(false); 
+        client.connect(false);
         client.publish("/topic", "Test my payload".getBytes());
         client.close();
-        
+
         //Verify
         assertTrue(received);
-        
-        //TearDown 
+
+        //TearDown
         client.shutdown();
-    } 
-    
-    
+    }
+
+
     /**
-     * Check that after a client has connected with clean session false, subscribed 
+     * Check that after a client has connected with clean session false, subscribed
      * to some topic and exited, if it reconnect with clean session true, the server
      * correctly cleanup every previous subscription
      */
@@ -134,7 +134,7 @@ public class ServerIntegrationTest {
     public void testCleanSession_correctlyClientSubscriptions() {
         Client client = new Client("localhost", Server.PORT, "CLID_123");
         client.connect(false); //without session cleanup
-        
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -143,7 +143,7 @@ public class ServerIntegrationTest {
         });
         client.close();
         client.shutdown();
-        
+
         //Exercise that the client maintain the subscriptions
         client = new Client("localhost", Server.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
@@ -152,16 +152,16 @@ public class ServerIntegrationTest {
                 received = true;
             }
         });
-        client.connect(true); 
+        client.connect(true);
         client.publish("/topic", "Test my payload".getBytes());
         client.close();
-        
+
         //Verify
         assertFalse(received);
-        
-        //TearDown 
+
+        //TearDown
         client.shutdown();
-    }    
+    }
     
     
     @Test
@@ -174,21 +174,27 @@ public class ServerIntegrationTest {
 
             public void published(String topic, byte[] message) {
                 received = true;
+                barrier.countDown();
             }
         });
+        //never called because no notification is pending
+        assertFalse(barrier.await(1, TimeUnit.SECONDS));
+
         client.close();
         client.shutdown();
         server.stopServer();
         
         server.startServer();
-        
+
+        final CountDownLatch barrier2 = new CountDownLatch(1);
+
         //Exercise that the client maintain the subscriptions
         client = new Client("localhost", Server.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
                 received = true;
-                barrier.countDown();
+                barrier2.countDown();
             }
         });
         client.connect(false); 
@@ -196,7 +202,7 @@ public class ServerIntegrationTest {
         client.close();
         
         //Verify
-        barrier.await(1, TimeUnit.SECONDS);
+        assertTrue(barrier2.await(1, TimeUnit.SECONDS));
         assertTrue(received);
         
         //TearDown 
@@ -209,14 +215,14 @@ public class ServerIntegrationTest {
         final CountDownLatch barrier = new CountDownLatch(1);
         Client client = new Client("localhost", Server.PORT, "CLID_123");
         client.connect();
-        
+
         client.publish("/topic", "Test my payload".getBytes(), true);
         client.close();
         client.shutdown();
-        
+
         //Exercise that the client maintain the subscriptions
         client = new Client("localhost", Server.PORT, "CLID_123");
-        client.connect(); 
+        client.connect();
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -225,24 +231,24 @@ public class ServerIntegrationTest {
             }
         });
         client.close();
-        
+
         //Verify
         barrier.await(1, TimeUnit.SECONDS);
         assertTrue(received);
-        
-        //TearDown 
+
+        //TearDown
         client.shutdown();
-    } 
-    
-    
+    }
+
+
     @Ignore
     public void testUnsubscribe_do_not_notify_anymore_same_session() throws InterruptedException {
         Client client = new Client("localhost", Server.PORT, "CLID_123");
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
-        
+
         final CountDownLatch barrier = new CountDownLatch(1);
-        
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -250,33 +256,33 @@ public class ServerIntegrationTest {
                 barrier.countDown();
             }
         });
-        
+
         client.publish("/topic", "Test my payload".getBytes());
 
         //wait 1 second to receive the published message
         boolean unlocked = barrier.await(1000, TimeUnit.MILLISECONDS);
         assertTrue(unlocked); //we were unlocked by the message reception
         assertTrue(received);
-        
+
         //reinit the flag
         received = false;
         //unsubscrbe and republish to check no notification is raised up
         client.unsubscribe("/topic");
         client.publish("/topic", "Test my payload".getBytes());
         assertFalse(received);
-        
+
         client.close();
         client.shutdown();
     }
-    
+
     @Test
     public void testUnsubscribe_do_not_notify_anymore_new_session() throws InterruptedException {
         Client client = new Client("localhost", Server.PORT, "CLID_123");
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
-        
+
         final CountDownLatch barrier = new CountDownLatch(1);
-        
+
         client.subscribe("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -284,33 +290,33 @@ public class ServerIntegrationTest {
                 barrier.countDown();
             }
         });
-        
+
         client.publish("/topic", "Test my payload".getBytes());
 
         //wait 1 second to receive the published message
         boolean unlocked = barrier.await(1000, TimeUnit.MILLISECONDS);
         assertTrue(unlocked); //we were unlocked by the message reception
         assertTrue(received);
-        
+
         //unsubscrbe and republish to check no notification is raised up
         client.unsubscribe("/topic");
-        
+
         client.close();
         client.shutdown();
-        
+
         //Exercise that the client maintain the subscriptions
         client = new Client("localhost", Server.PORT, "CLID_123");
-        client.connect(); 
-        
+        client.connect();
+
         //reinit the flag
         received = false;
         final CountDownLatch barrier2 = new CountDownLatch(1);
-        
+
         client.publish("/topic", "Test my payload".getBytes());
         unlocked = barrier2.await(1000, TimeUnit.MILLISECONDS);
         assertFalse(unlocked); //we were unlocked by the timeout exipration, no message received
         assertFalse(received);
-        
+
         client.close();
         client.shutdown();
     }

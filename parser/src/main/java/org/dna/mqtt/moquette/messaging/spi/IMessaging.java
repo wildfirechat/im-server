@@ -29,7 +29,7 @@ public interface IMessaging {
     /**
      * Subscribe a client to a specified topic with a defined level
      */
-    void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession);
+    void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID);
 
     /**
      * Remove all subscription to any topic the client (identified by clientID)
@@ -37,7 +37,7 @@ public interface IMessaging {
      */
     void removeSubscriptions(String clientID);
     
-    void close();
+    void stop();
 
     /**
      * Remove the clientID from topic subscription, if not previously subscribed,

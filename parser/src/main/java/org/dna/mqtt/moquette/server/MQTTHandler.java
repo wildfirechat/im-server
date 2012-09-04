@@ -75,7 +75,7 @@ public class MQTTHandler extends IoHandlerAdapter/* implements INotifier*/ {
             String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
             boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
             m_messaging.subscribe(clientID, req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()],
-                    cleanSession);
+                    cleanSession, msg.getMessageID());
         }
 
         //ack the client
