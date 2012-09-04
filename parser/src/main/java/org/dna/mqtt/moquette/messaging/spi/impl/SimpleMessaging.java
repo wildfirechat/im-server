@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author andrea
  */
-public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, Runnable*/ {
+public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     //TODO probably move this
     public static class StoredMessage implements Serializable {
@@ -190,9 +190,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         return subscriptions;
     }
 
-    public void removeSubscriptions(String clientID) {
+/*    public void removeSubscriptions(String clientID) {
         disruptorPublish(new RemoveAllSubscriptionsEvent(clientID));
-    }
+    }*/
 
     public void stop() {
         disruptorPublish(new StopEvent());
@@ -207,12 +207,12 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             processSubscribe((SubscribeEvent) evt);
         } else if (evt instanceof UnsubscribeEvent) {
             processUnsubscribe((UnsubscribeEvent) evt);
-        } else if (evt instanceof RemoveAllSubscriptionsEvent) {
-            processRemoveAllSubscriptions((RemoveAllSubscriptionsEvent) evt);
         } else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof DisconnectEvent) {
-            processDisconnect((DisconnectEvent) evt);
+            DisconnectEvent disEvt = (DisconnectEvent) evt;
+            String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
+            processDisconnect(disEvt.getSession(), clientID);
         } else if (evt instanceof CleanInFlightEvent) {
             //remove the message from inflight storage
             m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
@@ -236,6 +236,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
                     pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
                 }
                 processPublish(pubEvt);
+            } else if (message instanceof DisconnectMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+                if (cleanSession) {
+                    //cleanup topic subscriptions
+                    processRemoveAllSubscriptions(clientID);
+                }
+
+                //close the TCP connection
+                //session.close(true);
+                processDisconnect(session, clientID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -276,7 +287,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
             if (cleanSession) {
                 //cleanup topic subscriptions
-                removeSubscriptions(msg.getClientID());
+                processRemoveAllSubscriptions(msg.getClientID());
             }
 
             m_clientIDs.get(msg.getClientID()).getSession().close(false);
@@ -319,7 +330,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         if (msg.isCleanSession()) {
             //remove all prev subscriptions
             //cleanup topic subscriptions
-            removeSubscriptions(msg.getClientID());
+            processRemoveAllSubscriptions(msg.getClientID());
         }  else {
             //force the republish of stored QoS1 and QoS2
             republishStored(msg.getClientID());
@@ -411,18 +422,16 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         subscriptions.removeSubscription(evt.getTopic(), evt.getClientID());
     }
     
-    protected void processRemoveAllSubscriptions(RemoveAllSubscriptionsEvent evt) {
+    protected void processRemoveAllSubscriptions(String clientID) {
         LOG.debug("processRemoveAllSubscriptions invoked");
-        subscriptions.removeForClient(evt.getClientID());
+        subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
-        m_storageService.cleanPersistedPublishes(evt.getClientID());
+        m_storageService.cleanPersistedPublishes(clientID);
     }
 
-    private void processDisconnect(DisconnectEvent evt) throws InterruptedException {
+    private void processDisconnect(IoSession session, String clientID) throws InterruptedException {
 //        m_notifier.disconnect(evt.getSession());
-        IoSession session = evt.getSession();
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
         m_clientIDs.remove(clientID);
         session.close(true);
 

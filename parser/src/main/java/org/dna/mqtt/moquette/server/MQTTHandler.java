@@ -103,16 +103,7 @@ public class MQTTHandler extends IoHandlerAdapter {
     }
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-        if (cleanSession) {
-            //cleanup topic subscriptions
-            m_messaging.removeSubscriptions(clientID);
-        }
-        
-        //close the TCP connection
-        //session.close(true);
-        m_messaging.disconnect(session);
+        m_messaging.handleProtocolMessage(session, disconnectMessage);
     }
 
     @Override

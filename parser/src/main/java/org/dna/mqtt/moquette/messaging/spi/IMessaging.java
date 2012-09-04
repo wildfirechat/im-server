@@ -19,12 +19,6 @@ public interface IMessaging {
      */
     void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID);
 
-    /**
-     * Remove all subscription to any topic the client (identified by clientID)
-     * was subscribed
-     */
-    void removeSubscriptions(String clientID);
-    
     void stop();
 
     /**
