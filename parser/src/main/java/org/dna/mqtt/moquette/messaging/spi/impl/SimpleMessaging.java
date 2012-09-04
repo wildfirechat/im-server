@@ -193,9 +193,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             processPublish((PublishEvent) evt);
         } else if (evt instanceof SubscribeEvent) {
             processSubscribe((SubscribeEvent) evt);
-        } /*else if (evt instanceof UnsubscribeEvent) {
-            processUnsubscribe((UnsubscribeEvent) evt);
-        } */else if (evt instanceof StopEvent) {
+        } else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof DisconnectEvent) {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
