@@ -19,19 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * MINA MQTT Handler used to route messages to protocol logic
  *
  * @author andrea
  */
-public class MQTTHandler extends IoHandlerAdapter/* implements INotifier*/ {
+public class MQTTHandler extends IoHandlerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MQTTHandler.class);
-    /**
-     * Maps CLIENT_ID to the IoSession that represents the connection
-     */
-    Lock m_clientIDsLock = new ReentrantLock();
-//    Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private IMessaging m_messaging;
-//    private IAuthenticator m_authenticator;
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
@@ -117,13 +112,6 @@ public class MQTTHandler extends IoHandlerAdapter/* implements INotifier*/ {
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
         String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-        //remove from clientIDs
-//        m_clientIDsLock.lock();
-//        try {
-//            m_clientIDs.remove(clientID);
-//        } finally {
-//            m_clientIDsLock.unlock();
-//        }
         boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
         if (cleanSession) {
             //cleanup topic subscriptions
@@ -144,69 +132,4 @@ public class MQTTHandler extends IoHandlerAdapter/* implements INotifier*/ {
         m_messaging = messaging;
     }
 
-//    public void setAuthenticator(IAuthenticator authenticator) {
-//        m_authenticator = authenticator;
-//    }
-
-
-
-//    public void notify(NotifyEvent evt) {
-//        LOG.debug("notify invoked with event " + evt);
-//        String clientId = evt.getClientId();
-//        PublishMessage pubMessage = new PublishMessage();
-//        pubMessage.setRetainFlag(evt.isRetained());
-//        pubMessage.setTopicName(evt.getTopic());
-//        pubMessage.setQos(evt.getQos());
-//        pubMessage.setPayload(evt.getMessage());
-//        if (pubMessage.getQos() != QOSType.MOST_ONE) {
-//            pubMessage.setMessageID(evt.getMessageID());
-//        }
-//
-//        LOG.debug("notify invoked");
-//        m_clientIDsLock.lock();
-//        try {
-//            assert m_clientIDs != null;
-//            LOG.debug("clientIDs are " + m_clientIDs);
-//            assert m_clientIDs.get(clientId) != null;
-//            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-//            m_clientIDs.get(clientId).getSession().write(pubMessage);
-//        }catch(Throwable t) {
-//            LOG.error(null, t);
-//        } finally {
-//            m_clientIDsLock.unlock();
-//        }
-//    }
-//
-//    public void disconnect(IoSession session) {
-//        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-//        m_clientIDsLock.lock();
-//        try {
-//            m_clientIDs.remove(clientID);
-//        } finally {
-//            m_clientIDsLock.unlock();
-//        }
-//        session.close(true);
-//    }
-//
-//    public void sendPubAck(PubAckEvent evt) {
-//        LOG.debug("sendPubAck invoked");
-//
-//        String clientId = evt.getClientID();
-//
-//        PubAckMessage pubAckMessage = new PubAckMessage();
-//        pubAckMessage.setMessageID(evt.getMessageId());
-//
-//        m_clientIDsLock.lock();
-//        try {
-//            assert m_clientIDs != null;
-//            LOG.debug("clientIDs are " + m_clientIDs);
-//            assert m_clientIDs.get(clientId) != null;
-//            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-//            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
-//        }catch(Throwable t) {
-//            LOG.error(null, t);
-//        } finally {
-//            m_clientIDsLock.unlock();
-//        }
-//    }
 }
