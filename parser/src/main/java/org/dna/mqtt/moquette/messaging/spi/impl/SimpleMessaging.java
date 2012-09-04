@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.util.SessionAttributeInitializingFilter;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
@@ -115,13 +114,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
     
 
-    public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID) {
-        Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
-        LOG.debug("subscribe invoked for topic: " + topic);
-        disruptorPublish(new SubscribeEvent(newSubscription, messageID));
-    }
-    
-
     public void disconnect(IoSession session) {
         disruptorPublish(new DisconnectEvent(session));
     }
@@ -178,9 +170,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         return subscriptions;
     }
 
-/*    public void removeSubscriptions(String clientID) {
-        disruptorPublish(new RemoveAllSubscriptionsEvent(clientID));
-    }*/
 
     public void stop() {
         disruptorPublish(new StopEvent());
@@ -191,8 +180,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         MessagingEvent evt = t.getEvent();
         if (evt instanceof PublishEvent) {
             processPublish((PublishEvent) evt);
-        } else if (evt instanceof SubscribeEvent) {
-            processSubscribe((SubscribeEvent) evt);
         } else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof DisconnectEvent) {
@@ -237,7 +224,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 processUnsubscribe(session, clientID, unsubMsg.topics(), unsubMsg.getMessageID());
-
+            } else if (message instanceof SubscribeMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+                processSubscribe(session, (SubscribeMessage) message, clientID, cleanSession);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -373,11 +363,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
 
-    protected void processSubscribe(SubscribeEvent evt) {
-        LOG.debug("processSubscribe invoked");
-        Subscription newSubscription = evt.getSubscription();
-        final String topic = newSubscription.getTopic();
-        
+    private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
@@ -390,22 +376,30 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         for (StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(),
-                    storedMsg.getPayload(), true));
+            notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(), storedMsg.getPayload(), true));
+        }
+    }
+
+    protected void processSubscribe(IoSession session, SubscribeMessage msg, String clientID, boolean cleanSession) {
+        LOG.debug("processSubscribe invoked");
+
+        for (SubscribeMessage.Couple req : msg.subscriptions()) {
+            QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
+            Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
+            subscribeSingleTopic(newSubscription, req.getTopic());
         }
 
-//        //ack the client
-//        SubAckMessage ackMessage = new SubAckMessage();
-//        ackMessage.setMessageID(evt.getMessageID());
-//
-//        //TODO by now it handles only QoS 0 messages
-//        /*for (int i = 0; i < evt.subscriptions().size(); i++) {
-//            ackMessage.addType(QOSType.MOST_ONE);
-//        } */
-//        LOG.info("replying with SubAct to MSG ID {0}", evt.getMessageID());
-//        //session.write(ackMessage);
-//        IoSession session = m_clientIDs.get(evt.getSubscription().clientId).getSession();
-//        session.write(ackMessage).awaitUninterruptibly();
+        //ack the client
+        SubAckMessage ackMessage = new SubAckMessage();
+        ackMessage.setMessageID(msg.getMessageID());
+
+        //TODO by now it handles only QoS 0 messages
+        for (int i = 0; i < msg.subscriptions().size(); i++) {
+            ackMessage.addType(QOSType.MOST_ONE);
+        }
+        LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
+        session.write(ackMessage);
+
     }
 
     /**

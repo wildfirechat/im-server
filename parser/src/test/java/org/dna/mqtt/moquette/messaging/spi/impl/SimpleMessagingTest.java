@@ -76,8 +76,9 @@ public class SimpleMessagingTest {
     @Test
     public void testSubscribe() {
         //Exercise
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
-        messaging.processSubscribe(evt);
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
 
         //Verify
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false);
@@ -86,11 +87,14 @@ public class SimpleMessagingTest {
 
     @Test
     public void testDoubleSubscribe() {
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
-        messaging.processSubscribe(evt);
+//        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+
+        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
 
         //Exercise
-        messaging.processSubscribe(evt);
+        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
 
         //Verify
         Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false);
@@ -103,8 +107,11 @@ public class SimpleMessagingTest {
         ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, true);
         messaging.m_clientIDs.put(FAKE_CLIENT_ID, connDescr);
 
-        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
-        messaging.processSubscribe(evt);
+//        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+
+        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
 
         //Exercise
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), false, "FakeCLI", null);
@@ -198,8 +205,10 @@ public class SimpleMessagingTest {
 
         //Exercise
         //m_handler.setMessaging(mockedMessaging);
-        SubscribeEvent pubEvt = new SubscribeEvent(subscription, 0);
-        messaging.processSubscribe(pubEvt);
+//        SubscribeEvent pubEvt = new SubscribeEvent(subscription, 0);
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.EXACTLY_ONCE.ordinal(), "/news"));
+        messaging.processSubscribe(m_session, msg, "fakeID", false);
 
         //Verify
         /*ArgumentCaptor<AbstractMessage.QOSType> argument = ArgumentCaptor.forClass(AbstractMessage.QOSType.class);

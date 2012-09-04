@@ -14,11 +14,6 @@ import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
  */
 public interface IMessaging {
 
-    /**
-     * Subscribe a client to a specified topic with a defined level
-     */
-    void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID);
-
     void stop();
 
     void disconnect(IoSession session);

@@ -66,23 +66,7 @@ public class MQTTHandler extends IoHandlerAdapter {
 
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
         LOG.debug("handleSubscribe, registering the subscriptions");
-        for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-            boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-            m_messaging.subscribe(clientID, req.getTopic(), AbstractMessage.QOSType.values()[req.getQos()],
-                    cleanSession, msg.getMessageID());
-        }
-
-        //ack the client
-        SubAckMessage ackMessage = new SubAckMessage();
-        ackMessage.setMessageID(msg.getMessageID());
-
-        //TODO by now it handles only QoS 0 messages
-        for (int i = 0; i < msg.subscriptions().size(); i++) {
-            ackMessage.addType(QOSType.MOST_ONE);
-        }
-        LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
-        session.write(ackMessage);
+        m_messaging.handleProtocolMessage(session, msg);
     }
     
     private void handleUnsubscribe(IoSession session, UnsubscribeMessage msg) {
