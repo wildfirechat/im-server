@@ -114,14 +114,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_ringBuffer.publish(sequence); 
     }
     
-    /*
-    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session) {
-        disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, session));
-    }
-
-    public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session) {
-        disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
-    }  */
 
     public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID) {
         Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
@@ -129,12 +121,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         disruptorPublish(new SubscribeEvent(newSubscription, messageID));
     }
     
-    
-    /*public void unsubscribe(String topic, String clientID) {
-        disruptorPublish(new UnsubscribeEvent(topic, clientID));
-    } */
-    
-    
+
     public void disconnect(IoSession session) {
         disruptorPublish(new DisconnectEvent(session));
     }
@@ -422,7 +409,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 //        IoSession session = m_clientIDs.get(evt.getSubscription().clientId).getSession();
 //        session.write(ackMessage).awaitUninterruptibly();
     }
-    
+
+    /**
+     * Remove the clientID from topic subscription, if not previously subscribed,
+     * doesn't reply any error
+     */
     protected void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
         LOG.debug("processSubscribe invoked");
 

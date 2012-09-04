@@ -21,12 +21,6 @@ public interface IMessaging {
 
     void stop();
 
-    /**
-     * Remove the clientID from topic subscription, if not previously subscribed,
-     * doesn't reply any error
-     */
-    //void unsubscribe(String topic, String clientID);
-
     void disconnect(IoSession session);
 
     void republishStored(String clientID);
