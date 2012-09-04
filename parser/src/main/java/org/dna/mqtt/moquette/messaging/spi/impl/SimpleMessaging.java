@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.util.SessionAttributeInitializingFilter;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
@@ -129,9 +130,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
     
     
-    public void unsubscribe(String topic, String clientID) {
+    /*public void unsubscribe(String topic, String clientID) {
         disruptorPublish(new UnsubscribeEvent(topic, clientID));
-    }
+    } */
     
     
     public void disconnect(IoSession session) {
@@ -205,9 +206,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             processPublish((PublishEvent) evt);
         } else if (evt instanceof SubscribeEvent) {
             processSubscribe((SubscribeEvent) evt);
-        } else if (evt instanceof UnsubscribeEvent) {
+        } /*else if (evt instanceof UnsubscribeEvent) {
             processUnsubscribe((UnsubscribeEvent) evt);
-        } else if (evt instanceof StopEvent) {
+        } */else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof DisconnectEvent) {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
@@ -247,6 +248,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 //close the TCP connection
                 //session.close(true);
                 processDisconnect(session, clientID);
+            } else if (message instanceof UnsubscribeMessage) {
+                UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                processUnsubscribe(session, clientID, unsubMsg.topics(), unsubMsg.getMessageID());
+
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -417,9 +423,18 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 //        session.write(ackMessage).awaitUninterruptibly();
     }
     
-    protected void processUnsubscribe(UnsubscribeEvent evt) {
+    protected void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
         LOG.debug("processSubscribe invoked");
-        subscriptions.removeSubscription(evt.getTopic(), evt.getClientID());
+
+        for (String topic : topics) {
+            subscriptions.removeSubscription(topic, clientID);
+        }
+        //ack the client
+        UnsubAckMessage ackMessage = new UnsubAckMessage();
+        ackMessage.setMessageID(messageID);
+
+        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
+        session.write(ackMessage);
     }
     
     protected void processRemoveAllSubscriptions(String clientID) {

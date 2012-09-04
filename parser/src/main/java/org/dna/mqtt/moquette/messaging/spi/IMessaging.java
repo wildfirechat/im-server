@@ -25,7 +25,7 @@ public interface IMessaging {
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
      */
-    void unsubscribe(String topic, String clientID);
+    //void unsubscribe(String topic, String clientID);
 
     void disconnect(IoSession session);
 

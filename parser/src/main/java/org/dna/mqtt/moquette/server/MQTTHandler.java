@@ -87,7 +87,10 @@ public class MQTTHandler extends IoHandlerAdapter {
     
     private void handleUnsubscribe(IoSession session, UnsubscribeMessage msg) {
         LOG.info("unregistering the subscriptions");
-        for (String topic : msg.topics()) {
+        m_messaging.handleProtocolMessage(session, msg);
+
+
+        /*for (String topic : msg.topics()) {
             m_messaging.unsubscribe(topic, (String) session.getAttribute(Constants.ATTR_CLIENTID));
         }
         //ack the client
@@ -95,7 +98,7 @@ public class MQTTHandler extends IoHandlerAdapter {
         ackMessage.setMessageID(msg.getMessageID());
 
         LOG.info("replying with UnsubAck to MSG ID {0}", msg.getMessageID());
-        session.write(ackMessage);
+        session.write(ackMessage);   */
     }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
