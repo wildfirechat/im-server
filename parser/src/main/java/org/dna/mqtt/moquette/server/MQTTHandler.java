@@ -35,51 +35,17 @@ public class MQTTHandler extends IoHandlerAdapter {
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
-                    handleConnect(session, (ConnectMessage) msg);
-                    break;
                 case SUBSCRIBE:
-                    handleSubscribe(session, (SubscribeMessage) msg);
-                    break;
                 case UNSUBSCRIBE:
-                    handleUnsubscribe(session, (UnsubscribeMessage) msg);
-                    break;    
                 case PUBLISH:
-                    handlePublish(session, (PublishMessage) msg);
-                    break;
                 case PINGREQ:
-                    session.write(new PingRespMessage());
-                    break;
                 case DISCONNECT:
-                    handleDisconnect(session, (DisconnectMessage) msg);
+                    m_messaging.handleProtocolMessage(session, msg);
                     break;
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
         }
-    }
-
-    protected void handleConnect(IoSession session, ConnectMessage msg) {
-        LOG.info("handleConnect invoked");
-
-        m_messaging.handleProtocolMessage(session, msg);
-    }
-
-    protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
-        LOG.debug("handleSubscribe, registering the subscriptions");
-        m_messaging.handleProtocolMessage(session, msg);
-    }
-    
-    private void handleUnsubscribe(IoSession session, UnsubscribeMessage msg) {
-        LOG.info("unregistering the subscriptions");
-        m_messaging.handleProtocolMessage(session, msg);
-    }
-
-    protected void handlePublish(IoSession session, PublishMessage message) {
-        m_messaging.handleProtocolMessage(session, message);
-    }
-
-    protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {
-        m_messaging.handleProtocolMessage(session, disconnectMessage);
     }
 
     @Override
