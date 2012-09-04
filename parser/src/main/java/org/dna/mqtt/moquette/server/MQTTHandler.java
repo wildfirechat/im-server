@@ -99,15 +99,7 @@ public class MQTTHandler extends IoHandlerAdapter {
     }
 
     protected void handlePublish(IoSession session, PublishMessage message) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-
-        if (message.getQos() == QOSType.MOST_ONE) {
-            m_messaging.publish(message.getTopicName(), message.getPayload(),
-                    message.getQos(), message.isRetainFlag(), clientID, session);
-        } else {
-            m_messaging.publish(message.getTopicName(), message.getPayload(),
-                    message.getQos(), message.isRetainFlag(), clientID, message.getMessageID(), session);
-        }
+        m_messaging.handleProtocolMessage(session, message);
     }
 
     protected void handleDisconnect(IoSession session, DisconnectMessage disconnectMessage) {

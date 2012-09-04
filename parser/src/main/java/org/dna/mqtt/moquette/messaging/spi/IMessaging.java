@@ -15,19 +15,6 @@ import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 public interface IMessaging {
 
     /**
-     * Publish a message on the messaging system. The qos is the level of quality 
-     * the retain flag is true iff the message should be persisted for future 
-     * notification also after all the current subscriber to the given topic has
-     * been notified.
-     */
-    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session);
-
-    /**
-     * Used to publish messages with QoS > 0
-     * */
-    void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session);
-    
-    /**
      * Subscribe a client to a specified topic with a defined level
      */
     void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID);

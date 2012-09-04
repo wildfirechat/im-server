@@ -113,14 +113,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         m_ringBuffer.publish(sequence); 
     }
     
-
+    /*
     public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, IoSession session) {
         disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, session));
     }
 
     public void publish(String topic, byte[] message, QOSType qos, boolean retain, String clientID, int messageID, IoSession session) {
         disruptorPublish(new PublishEvent(topic, qos, message, retain, clientID, messageID, session));
-    }
+    }  */
 
     public void subscribe(String clientId, String topic, QOSType qos, boolean cleanSession, int messageID) {
         Subscription newSubscription = new Subscription(clientId, topic, qos, cleanSession);
@@ -139,7 +139,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     }
 
     //method used by hte Notifier to re-put an event on the inbound queue
-    private void refill(MessagingEvent evt) throws InterruptedException {
+    private void refill(MessagingEvent evt) {
         disruptorPublish(evt);
     }
 
@@ -223,6 +223,19 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage) {
                 processConnect(session, (ConnectMessage) message);
+            } else if (message instanceof  PublishMessage) {
+                PublishMessage pubMsg = (PublishMessage) message;
+                PublishEvent pubEvt;
+
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+
+                if (message.getQos() == QOSType.MOST_ONE) {
+                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
+
+                } else {
+                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
+                }
+                processPublish(pubEvt);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -283,8 +296,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         //Handle will flag
         if (msg.isWillFlag()) {
             QOSType willQos = QOSType.values()[msg.getWillQos()];
-            publish(msg.getWillTopic(), msg.getWillMessage().getBytes(),
-                    willQos, msg.isWillRetain(), msg.getClientID(), session);
+            PublishEvent pubEvt = new PublishEvent(msg.getWillTopic(), willQos, msg.getWillMessage().getBytes(),
+                    msg.isWillRetain(), msg.getClientID(), session);
+            processPublish(pubEvt);
         }
 
         //handle user authentication
@@ -316,7 +330,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         session.write(okResp);
     }
 
-    protected void processPublish(PublishEvent evt) throws InterruptedException {
+    protected void processPublish(PublishEvent evt) {
         LOG.debug("processPublish invoked");
         final String topic = evt.getTopic();
         final QOSType qos = evt.getQos();
