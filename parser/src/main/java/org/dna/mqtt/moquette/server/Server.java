@@ -80,6 +80,8 @@ public class Server {
         ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);
         m_acceptor.getSessionConfig().setReadBufferSize( 2048 );
         m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
+        m_acceptor.getStatistics().setThroughputCalculationInterval(10);
+        m_acceptor.getStatistics().updateThroughput(System.currentTimeMillis());
         m_acceptor.bind( new InetSocketAddress(PORT) );
         LOG.info("Server binded");
         
@@ -107,18 +109,17 @@ public class Server {
         
         /*m_notifierPool.shutdown();*/
         
+        //log statistics
+        IoServiceStatistics statistics  = m_acceptor.getStatistics();
+        statistics.updateThroughput(System.currentTimeMillis());
+        System.out.println(String.format("Total read bytes: %d, read throughtput: %f (b/s)", statistics.getReadBytes(), statistics.getReadBytesThroughput()));
+        System.out.println(String.format("Total read msgs: %d, read msg throughtput: %f (msg/s)", statistics.getReadMessages(), statistics.getReadMessagesThroughput()));
+        
         for(IoSession session: m_acceptor.getManagedSessions().values()) {
             if(session.isConnected() && !session.isClosing()){
                 session.close(false);
             }
         }
-
-        //log statistics
-        IoServiceStatistics statistics  = m_acceptor.getStatistics();
-        statistics.updateThroughput(System.currentTimeMillis());
-        /*System.out.println(String.format("Total read bytes: %d, read throughtput: %f (b//s)", statistics.getReadBytes(), statistics.getReadBytesThroughput()));
-        System.out.println(String.format("Total read msgs: %d, read msg throughtput: %f (msg//s)", statistics.getReadMessages(), statistics.getReadMessagesThroughput()));*/
-
 
         m_acceptor.unbind();
         m_acceptor.dispose();
