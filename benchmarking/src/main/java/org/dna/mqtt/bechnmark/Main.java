@@ -24,9 +24,10 @@ public class Main {
         //force wait to let the consumer be registered before the producer
         Thread.sleep(1000);
         int len = Producer.PUB_LOOP / NUM_CONCURRENT_PRODS;
-        producerPool.submit(new Producer("Prod1", 0, len));
-        producerPool.submit(new Producer("Prod2", len, len));
-        
+        for (int i = 0; i < NUM_CONCURRENT_PRODS; i++) {
+            producerPool.submit(new Producer("Prod " + i, i * len, len));
+        }
+
         consumerPool.shutdown();
         producerPool.shutdown();
     }
