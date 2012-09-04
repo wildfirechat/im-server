@@ -1,22 +1,14 @@
 package org.dna.mqtt.moquette.server;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.INotifier;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
-import org.dna.mqtt.moquette.proto.messages.*;
-
-import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 
 /**
  * MINA MQTT Handler used to route messages to protocol logic
