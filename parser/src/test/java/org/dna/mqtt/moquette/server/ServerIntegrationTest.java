@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -39,6 +40,25 @@ public class ServerIntegrationTest {
         if (dbFile.exists()) {
             dbFile.delete();
         }
+    }
+    
+    @Test
+    public void testSubscribe_FSClient() throws Exception {
+//        startServer();
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", Server.PORT);
+        mqtt.setClientId("TestClient");
+        FutureConnection connection = mqtt.futureConnection();
+        connection.connect().await();
+
+        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+        Future<byte[]> futSub = connection.subscribe(topics);
+
+        connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
+
+        byte[] qoses = futSub.await();
+        assertEquals(1, qoses.length);
+        connection.disconnect().await();
     }
     
     
