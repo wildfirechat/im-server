@@ -29,6 +29,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
+ * Singleton class that orchestrate the execution of the protocol.
+ *
+ * Uses the LMAX Disruptor to serialize the incoming, requests, because it work in a evented fashion.
+ *
  * @author andrea
  */
 public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, Runnable*/ {
@@ -144,8 +148,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
         disruptorPublish(new RepublishEvent(clientID));
     }
 
-    public void connect(IoSession session, ConnectMessage msg) {
-        disruptorPublish(new ConnectEvent(session, msg));
+    public void handleProtocolMessage(IoSession session, AbstractMessage msg) {
+        disruptorPublish(new ProtocolEvent(session, msg));
     }
 
     /**
@@ -214,8 +218,15 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
             m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
         } else if (evt instanceof RepublishEvent) {
             processRepublish((RepublishEvent) evt);
-        } else if (evt instanceof ConnectEvent) {
-            processConnect((ConnectEvent) evt);
+        } else if (evt instanceof ProtocolEvent) {
+            IoSession session = ((ProtocolEvent) evt).getSession();
+            AbstractMessage message = ((ProtocolEvent) evt).getMessage();
+            if (message instanceof ConnectMessage) {
+                processConnect(session, (ConnectMessage) message);
+            } else {
+                throw new RuntimeException("Illegal message received " + message);
+            }
+
         } else if (evt instanceof InitEvent) {
             processInit();
         }
@@ -229,10 +240,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent>/*, 
     }
 
 
-    protected void processConnect(ConnectEvent evt) {
-        ConnectMessage msg = evt.getMessage();
-        IoSession session = evt.getSession();
-
+    protected void processConnect(IoSession session, ConnectMessage msg) {
         if (msg.getProcotolVersion() != 0x03) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);

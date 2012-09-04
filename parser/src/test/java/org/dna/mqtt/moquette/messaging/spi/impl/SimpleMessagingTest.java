@@ -146,8 +146,7 @@ public class SimpleMessagingTest {
         connMsg.setProcotolVersion((byte) 0x02);
 
         //Exercise
-        ConnectEvent pubEvt = new ConnectEvent(m_session, connMsg);
-        messaging.processConnect(pubEvt);
+        messaging.processConnect(m_session, connMsg);
 
         //Verify
         assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_returnCode);
@@ -158,8 +157,7 @@ public class SimpleMessagingTest {
         connMsg.setClientID("extremely_long_clientID_greater_than_23");
 
         //Exercise
-        ConnectEvent pubEvt = new ConnectEvent(m_session, connMsg);
-        messaging.processConnect(pubEvt);
+        messaging.processConnect(m_session, connMsg);
 
         //Verify
         assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, m_returnCode);
@@ -175,8 +173,7 @@ public class SimpleMessagingTest {
 
         //Exercise
         //m_handler.setMessaging(mockedMessaging);
-        ConnectEvent pubEvt = new ConnectEvent(m_session, connMsg);
-        messaging.processConnect(pubEvt);
+        messaging.processConnect(m_session, connMsg);
 
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);

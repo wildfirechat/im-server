@@ -3,6 +3,7 @@ package org.dna.mqtt.moquette.messaging.spi;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 
@@ -49,5 +50,5 @@ public interface IMessaging {
 
     void republishStored(String clientID);
 
-    void connect(IoSession session, ConnectMessage msg);
+    void handleProtocolMessage(IoSession session, AbstractMessage msg);
 }

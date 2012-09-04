@@ -61,7 +61,7 @@ public class MQTTHandler extends IoHandlerAdapter {
     protected void handleConnect(IoSession session, ConnectMessage msg) {
         LOG.info("handleConnect invoked");
 
-        m_messaging.connect(session, msg);
+        m_messaging.handleProtocolMessage(session, msg);
     }
 
     protected void handleSubscribe(IoSession session, SubscribeMessage msg) {
