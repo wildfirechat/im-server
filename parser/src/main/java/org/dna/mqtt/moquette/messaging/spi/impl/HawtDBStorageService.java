@@ -34,8 +34,7 @@ public class HawtDBStorageService implements IStorageService {
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
 
-    //persistent Map of clientID, list of Subscriptions
-    //TODO move to Set to avoid double subscriptions
+    //persistent Map of clientID, set of Subscriptions
     private SortedIndex<String, Set<Subscription>> m_persistentSubscriptions;
 
     public HawtDBStorageService() {

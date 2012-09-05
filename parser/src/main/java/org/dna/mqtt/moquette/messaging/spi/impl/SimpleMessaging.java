@@ -125,6 +125,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     public void republishStored(String clientID) {
         //create the event to push
+        LOG.debug("republishStored invoked to publish soterd messages for clientID " + clientID);
         disruptorPublish(new RepublishEvent(clientID));
     }
 
@@ -176,8 +177,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
-        LOG.debug("onEvent processing event");
         MessagingEvent evt = t.getEvent();
+        LOG.debug("onEvent processing messaging event " + evt);
         if (evt instanceof PublishEvent) {
             processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
@@ -307,6 +308,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             }
         }
 
+        subscriptions.connect(msg.getClientID());
+
         //handle clean session flag
         if (msg.isCleanSession()) {
             //remove all prev subscriptions
@@ -323,7 +326,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     protected void processPublish(PublishEvent evt) {
-        LOG.debug("processPublish invoked");
+        LOG.debug("processPublish invoked with " + evt);
         final String topic = evt.getTopic();
         final QOSType qos = evt.getQos();
         final byte[] message = evt.getMessage();
@@ -346,9 +349,12 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
-                    m_storageService.storePublishForFuture(evt);
+                    //clone the event with matching clientID
+                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), evt.getMessageID(), null);
+                    m_storageService.storePublishForFuture(newPublishEvt);
+                } else  {
+                    notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
                 }
-                notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
             }
         }
 
@@ -396,8 +402,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //TODO by now it handles only QoS 0 messages
         for (int i = 0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(QOSType.MOST_ONE);
+            ackMessage.addType(QOSType.LEAST_ONE);
         }
-        LOG.info("replying with SubAct to MSG ID {0}", msg.getMessageID());
+        LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
         session.write(ackMessage);
 
     }
@@ -447,8 +454,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     private void processRepublish(RepublishEvent evt) throws InterruptedException {
+        LOG.debug("processRepublish invoked");
         List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(evt.getClientID());
         if (publishedEvents == null) {
+            LOG.debug("processRepublish, no stored publish events");
             return;
         }
 
@@ -470,7 +479,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             pubMessage.setMessageID(evt.getMessageID());
         }
 
-        LOG.debug("notify invoked");
         try {
             assert m_clientIDs != null;
             LOG.debug("clientIDs are " + m_clientIDs);
