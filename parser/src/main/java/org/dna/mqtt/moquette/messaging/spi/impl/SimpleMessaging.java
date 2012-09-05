@@ -5,7 +5,6 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -261,7 +260,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             }
         }
 
-        subscriptions.connect(msg.getClientID());
+        subscriptions.activate(msg.getClientID());
 
         //handle clean session flag
         if (msg.isCleanSession()) {
@@ -394,7 +393,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         //de-activate the subscriptions for this ClientID
 //        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
-        subscriptions.disconnect(clientID);
+        subscriptions.deactivate(clientID);
     }
     
     private void processStop() {

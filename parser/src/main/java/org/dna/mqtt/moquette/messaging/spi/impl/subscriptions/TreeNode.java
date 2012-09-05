@@ -122,7 +122,7 @@ class TreeNode {
     /**
      * Deactivate all topic subscriptions for the given clientID.
      * */
-    void disconnect(String clientID) {
+    void deactivate(String clientID) {
         for (Subscription s : m_subscriptions) {
             if (s.clientId.equals(clientID)) {
                 s.setActive(false);
@@ -131,14 +131,14 @@ class TreeNode {
 
         //go deep
         for (TreeNode child : m_children) {
-            child.disconnect(clientID);
+            child.deactivate(clientID);
         }
     }
 
     /**
      * Activate all topic subscriptions for the given clientID.
      * */
-    public void connect(String clientID) {
+    public void activate(String clientID) {
         for (Subscription s : m_subscriptions) {
             if (s.clientId.equals(clientID)) {
                 s.setActive(true);
@@ -147,7 +147,7 @@ class TreeNode {
 
         //go deep
         for (TreeNode child : m_children) {
-            child.disconnect(clientID);
+            child.deactivate(clientID);
         }
 
     }

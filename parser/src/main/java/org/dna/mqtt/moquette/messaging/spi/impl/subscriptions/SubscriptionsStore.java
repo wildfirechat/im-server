@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.slf4j.Logger;
@@ -111,13 +110,13 @@ public class SubscriptionsStore {
         m_storageService.removeAllSubscriptions(clientID);
     }
 
-    public void disconnect(String clientID) {
-        subscriptions.disconnect(clientID);
+    public void deactivate(String clientID) {
+        subscriptions.deactivate(clientID);
     }
 
-    public void connect(String clientID) {
-        LOG.debug("connect re-activating subscriptions for clientID " + clientID);
-        subscriptions.connect(clientID);
+    public void activate(String clientID) {
+        LOG.debug("activate re-activating subscriptions for clientID " + clientID);
+        subscriptions.activate(clientID);
     }
 
     public List<Subscription> matches(String topic) {
