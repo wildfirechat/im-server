@@ -402,7 +402,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //TODO by now it handles only QoS 0 messages
         for (int i = 0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(QOSType.MOST_ONE);
-            ackMessage.addType(QOSType.LEAST_ONE);
         }
         LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
         session.write(ackMessage);
