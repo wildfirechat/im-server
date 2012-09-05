@@ -1,12 +1,8 @@
 package org.dna.mqtt.moquette.server;
 
-import org.dna.mqtt.moquette.client.Client;
-import org.dna.mqtt.moquette.client.IPublishCallback;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -20,22 +16,29 @@ import static org.junit.Assert.*;
  * */
 public class ServerIntegrationFuseTest {
 
-    boolean received;
-    Server server;
+    Server m_server;
+    MQTT m_mqtt;
+    FutureConnection m_connection;
 
     protected void startServer() throws IOException {
-        server = new Server();
-        server.startServer();
+        m_server = new Server();
+        m_server.startServer();
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         startServer();
+
+        m_mqtt = new MQTT();
+        m_mqtt.setHost("localhost", Server.PORT);
+        m_mqtt.setClientId("TestClient");
     }
 
     @After
-    public void tearDown() {
-        server.stopServer();
+    public void tearDown() throws Exception {
+        m_connection.disconnect().await();
+
+        m_server.stopServer();
         File dbFile = new File(Server.STORAGE_FILE_PATH);
         if (dbFile.exists()) {
             dbFile.delete();
@@ -44,82 +47,68 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testSubscribe() throws Exception {
-//        startServer();
-        MQTT mqtt = new MQTT();
-        mqtt.setHost("localhost", Server.PORT);
-        mqtt.setClientId("TestClient");
-        FutureConnection connection = mqtt.futureConnection();
-        connection.connect().await();
+        m_connection = m_mqtt.futureConnection();
+        m_connection.connect().await();
 
         Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
-        Future<byte[]> futSub = connection.subscribe(topics);
+        Future<byte[]> futSub = m_connection.subscribe(topics);
 
-        connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
 
         byte[] qoses = futSub.await();
         assertEquals(1, qoses.length);
-        connection.disconnect().await();
     }
 
     @Test
     public void testPublishWithQoS1() throws Exception {
-        MQTT mqtt = new MQTT();
-        mqtt.setHost("localhost", Server.PORT);
-        mqtt.setClientId("TestClient");
-        FutureConnection connection = mqtt.futureConnection();
-        connection.connect().await();
+        m_mqtt.setClientId("TestClient");
+        m_connection = m_mqtt.futureConnection();
+        m_connection.connect().await();
 
         //subscribe to a QoS 1 topic
         Topic[] topics = {new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        Future<byte[]> subscribeFuture = connection.subscribe(topics);
+        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
         byte[] qoses = subscribeFuture.await();
 
-        Future<Message> receive = connection.receive();
+        Future<Message> receive = m_connection.receive();
 
         //publish a QoS 1 message
-        Future<Void> f3 = connection.publish("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE, false);
+        Future<Void> f3 = m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE, false);
 
         //verify the reception
         Message message = receive.await();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
-
-        connection.disconnect().await();
     }
 
     @Test
     public void testPublishWithQoS1_notCleanSession() throws Exception {
-        MQTT mqtt = new MQTT();
-        mqtt.setHost("localhost", Server.PORT);
-        mqtt.setClientId("TestClient");
-        mqtt.setCleanSession(false);
-        FutureConnection connection = mqtt.futureConnection() ;
-        connection.connect().await();
+        m_mqtt.setCleanSession(false);
+        m_connection = m_mqtt.futureConnection() ;
+        m_connection.connect().await();
 
         //subscribe to a QoS 1 topic
         Topic[] topics = {new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        Future<byte[]> subscribeFuture = connection.subscribe(topics);
+        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
         byte[] qoses = subscribeFuture.await();
 
-        connection.disconnect().await();
+        m_connection.disconnect().await();
 
         //publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE);
 
 
         //Reconnect
-        connection = mqtt.futureConnection();
-        connection.connect().await();
-        Future<Message> receive = connection.receive();
+        m_connection = m_mqtt.futureConnection();
+        m_connection.connect().await();
+        Future<Message> receive = m_connection.receive();
 
         //verify the reception
         Message message = receive.await();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
-
-        connection.disconnect().await();
     }
 
     private void publishFromAnotherClient(String topic, byte[] payload, QoS qos) throws Exception {

@@ -127,7 +127,7 @@ public class ServerIntegrationTest {
 
     /**
      * Check that after a client has connected with clean session false, subscribed
-     * to some topic and exited, if it reconnect with clean session true, the server
+     * to some topic and exited, if it reconnect with clean session true, the m_server
      * correctly cleanup every previous subscription
      */
     @Test
