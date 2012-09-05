@@ -125,6 +125,7 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void storePublishForFuture(PublishEvent evt) {
+        LOG.debug("storePublishForFuture store evt " + evt);
         List<PublishEvent> storedEvents;
         String clientID = evt.getClientID();
         if (!m_persistentMessageStore.containsKey(clientID)) {
