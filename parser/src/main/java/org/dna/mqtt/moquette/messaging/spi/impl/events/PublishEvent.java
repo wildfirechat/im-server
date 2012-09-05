@@ -63,4 +63,15 @@ public class PublishEvent extends MessagingEvent implements Serializable {
     public IoSession getSession() {
         return m_session;
     }
+
+    @Override
+    public String toString() {
+        return "PublishEvent{" +
+                "m_msgID=" + m_msgID +
+                ", m_clientID='" + m_clientID + '\'' +
+                ", m_retain=" + m_retain +
+                ", m_qos=" + m_qos +
+                ", m_topic='" + m_topic + '\'' +
+                '}';
+    }
 }
