@@ -154,4 +154,27 @@ public class Utils {
         flags |= ((message.getQos().ordinal() & 0x03) << 1);
         return flags;
     }
+
+    /**
+     * Converts MQTT message type to a textual description.
+     * */
+    public static String msgType2String(int type) {
+        switch (type) {
+            case AbstractMessage.CONNECT: return "CONNECT";
+            case AbstractMessage.CONNACK: return "CONNACK";
+            case AbstractMessage.PUBLISH: return "PUBLISH";
+            case AbstractMessage.PUBACK: return "PUBACK";
+            case AbstractMessage.PUBREC: return "PUBREC";
+            case AbstractMessage.PUBREL: return "PUBREL";
+            case AbstractMessage.PUBCOMP: return "PUBCOMP";
+            case AbstractMessage.SUBSCRIBE: return "SUBSCRIBE";
+            case AbstractMessage.SUBACK: return "SUBACK";
+            case AbstractMessage.UNSUBSCRIBE: return "UNSUBSCRIBE";
+            case AbstractMessage.UNSUBACK: return "UNSUBACK";
+            case AbstractMessage.PINGREQ: return "PINGREQ";
+            case AbstractMessage.PINGRESP: return "PINGRESP";
+            case AbstractMessage.DISCONNECT: return "DISCONNECT";
+            default: throw  new RuntimeException("Can't decode message type " + type);
+        }
+    }
 }
