@@ -55,5 +55,15 @@ public class NotifyEvent extends MessagingEvent {
     public int getMessageID() {
         return m_msgID;
     }
-    
+
+    @Override
+    public String toString() {
+        return "NotifyEvent{" +
+                "m_retaned=" + m_retaned +
+                ", m_msgID=" + m_msgID +
+                ", m_qos=" + m_qos +
+                ", m_topic='" + m_topic + '\'' +
+                ", m_clientId='" + m_clientId + '\'' +
+                '}';
+    }
 }
