@@ -4,6 +4,7 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
+import org.dna.mqtt.moquette.proto.Utils;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class MQTTHandler extends IoHandlerAdapter {
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.info("Received a message of type {0}", msg.getMessageType());
+        LOG.info(String.format("Received a message of type %s", Utils.msgType2String(msg.getMessageType())));
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
