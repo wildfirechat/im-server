@@ -20,7 +20,7 @@ public class DummyStorageService implements IStorageService {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Collection<SimpleMessaging.StoredMessage> searchMatching(IMatchingCondition condition) {
+    public Collection<HawtDBStorageService.StoredMessage> searchMatching(IMatchingCondition condition) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -13,15 +13,33 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
-
-import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging.StoredMessage;
 
 
 /**
  * Implementation of IStorageService backed by HawtDB
  */
 public class HawtDBStorageService implements IStorageService {
+
+    public static class StoredMessage implements Serializable {
+        AbstractMessage.QOSType m_qos;
+        byte[] m_payload;
+
+        StoredMessage(byte[] message, AbstractMessage.QOSType qos) {
+            m_qos = qos;
+            m_payload = message;
+        }
+
+        AbstractMessage.QOSType getQos() {
+            return m_qos;
+        }
+
+        byte[] getPayload() {
+            return m_payload;
+        }
+    }
+
 
     private static final Logger LOG = LoggerFactory.getLogger(HawtDBStorageService.class);
 

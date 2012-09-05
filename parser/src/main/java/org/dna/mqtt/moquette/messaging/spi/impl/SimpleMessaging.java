@@ -26,6 +26,7 @@ import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
 
 /**
  *
@@ -37,25 +38,6 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
-    //TODO probably move this
-    public static class StoredMessage implements Serializable {
-        QOSType m_qos;
-        byte[] m_payload;
-
-        StoredMessage(byte[] message, QOSType qos) {
-            m_qos = qos;
-            m_payload = message;
-        }
-        
-        QOSType getQos() {
-            return m_qos;
-        }
-        
-        byte[] getPayload() {
-            return m_payload;
-        }
-    }
-    
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMessaging.class);
     
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
