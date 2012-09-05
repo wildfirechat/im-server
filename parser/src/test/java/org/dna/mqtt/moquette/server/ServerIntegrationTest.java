@@ -43,26 +43,6 @@ public class ServerIntegrationTest {
     }
     
     @Test
-    public void testSubscribe_FSClient() throws Exception {
-//        startServer();
-        MQTT mqtt = new MQTT();
-        mqtt.setHost("localhost", Server.PORT);
-        mqtt.setClientId("TestClient");
-        FutureConnection connection = mqtt.futureConnection();
-        connection.connect().await();
-
-        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
-        Future<byte[]> futSub = connection.subscribe(topics);
-
-        connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
-
-        byte[] qoses = futSub.await();
-        assertEquals(1, qoses.length);
-        connection.disconnect().await();
-    }
-    
-    
-    @Test
     public void testSubscribe() throws IOException, InterruptedException {
 //        startServer();
         Client client = new Client("localhost", Server.PORT);

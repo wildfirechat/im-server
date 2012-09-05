@@ -42,7 +42,7 @@ public class ServerIntegrationFuseTest {
         }
     }
 
-    @Ignore
+    @Test
     public void testSubscribe() throws Exception {
 //        startServer();
         MQTT mqtt = new MQTT();
@@ -61,7 +61,7 @@ public class ServerIntegrationFuseTest {
         connection.disconnect().await();
     }
 
-    @Ignore
+    @Test
     public void testPublishWithQoS1() throws Exception {
         MQTT mqtt = new MQTT();
         mqtt.setHost("localhost", Server.PORT);
