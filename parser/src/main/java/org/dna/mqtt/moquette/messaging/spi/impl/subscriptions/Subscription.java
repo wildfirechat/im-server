@@ -1,4 +1,4 @@
-package org.dna.mqtt.moquette.messaging.spi.impl;
+package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.io.Serializable;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;

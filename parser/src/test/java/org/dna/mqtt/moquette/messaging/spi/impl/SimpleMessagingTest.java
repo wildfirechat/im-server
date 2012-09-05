@@ -5,6 +5,7 @@ import org.apache.mina.core.session.DummySession;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import static org.junit.Assert.*;
@@ -120,32 +121,6 @@ public class SimpleMessagingTest {
         //Verify
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
-    }
-
-    @Test
-    public void testMatchTopics_simple() {
-        assertTrue(messaging.matchTopics("/", "/"));
-        assertTrue(messaging.matchTopics("/finance", "/finance"));
-    }
-
-    @Test
-    public void testMatchTopics_multi() {
-        assertTrue(messaging.matchTopics("finance", "#"));
-        assertTrue(messaging.matchTopics("finance", "finance/#"));
-        assertTrue(messaging.matchTopics("finance/stock", "finance/#"));
-        assertTrue(messaging.matchTopics("finance/stock/ibm", "finance/#"));
-    }
-
-
-    @Test
-    public void testMatchTopics_single() {
-        assertTrue(messaging.matchTopics("finance", "+"));
-        assertTrue(messaging.matchTopics("finance/stock", "finance/+"));
-        assertTrue(messaging.matchTopics("/finance", "/+"));
-        assertFalse(messaging.matchTopics("/finance", "+"));
-        assertTrue(messaging.matchTopics("/finance", "+/+"));
-        assertTrue(messaging.matchTopics("/finance/stock/ibm", "/finance/+/ibm"));
-        assertFalse(messaging.matchTopics("/finance/stock", "+"));
     }
 
     @Test

@@ -1,12 +1,15 @@
-package org.dna.mqtt.moquette.messaging.spi.impl;
+package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
-import org.dna.mqtt.moquette.MQTTException;
-import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
+
+import org.dna.mqtt.moquette.messaging.spi.impl.DummyStorageService;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore.Token;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.fusesource.hawtdb.api.MultiIndexFactory;
 import org.fusesource.hawtdb.api.PageFile;
@@ -234,6 +237,32 @@ public class SubscriptionsStoreTest {
         
         //Verify
         assertEquals(1, store.size());
+    }
+
+    @Test
+    public void testMatchTopics_simple() {
+        assertTrue(SubscriptionsStore.matchTopics("/", "/"));
+        assertTrue(SubscriptionsStore.matchTopics("/finance", "/finance"));
+    }
+
+    @Test
+    public void testMatchTopics_multi() {
+        assertTrue(SubscriptionsStore.matchTopics("finance", "#"));
+        assertTrue(SubscriptionsStore.matchTopics("finance", "finance/#"));
+        assertTrue(SubscriptionsStore.matchTopics("finance/stock", "finance/#"));
+        assertTrue(SubscriptionsStore.matchTopics("finance/stock/ibm", "finance/#"));
+    }
+
+
+    @Test
+    public void testMatchTopics_single() {
+        assertTrue(SubscriptionsStore.matchTopics("finance", "+"));
+        assertTrue(SubscriptionsStore.matchTopics("finance/stock", "finance/+"));
+        assertTrue(SubscriptionsStore.matchTopics("/finance", "/+"));
+        assertFalse(SubscriptionsStore.matchTopics("/finance", "+"));
+        assertTrue(SubscriptionsStore.matchTopics("/finance", "+/+"));
+        assertTrue(SubscriptionsStore.matchTopics("/finance/stock/ibm", "/finance/+/ibm"));
+        assertFalse(SubscriptionsStore.matchTopics("/finance/stock", "+"));
     }
 
 

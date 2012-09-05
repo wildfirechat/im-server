@@ -1,7 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
-import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
-import org.dna.mqtt.moquette.messaging.spi.impl.Subscription;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;

@@ -4,7 +4,7 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-import java.io.Serializable;
+
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,8 +17,9 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.SubscriptionsStore.Token;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
@@ -115,37 +116,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         disruptorPublish(new ProtocolEvent(session, msg));
     }
 
-    /**
-     * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
-     */
-    protected boolean matchTopics(String msgTopic, String subscriptionTopic) {
-        try {
-            List<Token> msgTokens = SubscriptionsStore.splitTopic(msgTopic);
-            List<Token> subscriptionTokens = SubscriptionsStore.splitTopic(subscriptionTopic);
-            int i = 0;
-            for (; i< subscriptionTokens.size(); i++) {
-                Token subToken = subscriptionTokens.get(i);
-                if (subToken != Token.MULTI && subToken != Token.SINGLE) {
-                    Token msgToken = msgTokens.get(i);
-                    if (!msgToken.equals(subToken)) {
-                        return false;
-                    }
-                } else {
-                    if (subToken == Token.MULTI) {
-                        return true;
-                    }
-                    if (subToken == Token.SINGLE) {
-                        //skip a step forward
-                    }
-                }
-            }
-            return i == msgTokens.size();
-        } catch (ParseException ex) {
-            LOG.error(null, ex);
-            throw new RuntimeException(ex);
-        }
-    }
-    
+
     /**
      * NOT SAFE Method, to be removed because used only in tests
      */
@@ -326,7 +297,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos == QOSType.MOST_ONE) {
                 //QoS 0
-                notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
+                notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
@@ -335,7 +306,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                     PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), evt.getMessageID(), null);
                     m_storageService.storePublishForFuture(newPublishEvt);
                 } else  {
-                    notify(new NotifyEvent(sub.clientId, topic, qos, message, false));
+                    notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
                 }
             }
         }
@@ -357,14 +328,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //scans retained messages to be published to the new subscription
         Collection<StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
-                return matchTopics(key, topic);
+                return  SubscriptionsStore.matchTopics(key, topic);
             }
         });
 
         for (StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            notify(new NotifyEvent(newSubscription.clientId, topic, storedMsg.getQos(), storedMsg.getPayload(), true));
+            notify(new NotifyEvent(newSubscription.getClientId(), topic, storedMsg.getQos(), storedMsg.getPayload(), true));
         }
     }
 

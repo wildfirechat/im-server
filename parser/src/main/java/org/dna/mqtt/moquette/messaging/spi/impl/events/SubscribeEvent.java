@@ -1,6 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
-import org.dna.mqtt.moquette.messaging.spi.impl.Subscription;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 
 /**
  *

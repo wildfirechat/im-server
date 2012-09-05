@@ -1,18 +1,13 @@
-package org.dna.mqtt.moquette.messaging.spi.impl;
+package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.fusesource.hawtbuf.codec.StringCodec;
-import org.fusesource.hawtdb.api.BTreeIndexFactory;
-import org.fusesource.hawtdb.api.MultiIndexFactory;
-import org.fusesource.hawtdb.api.SortedIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -350,6 +345,36 @@ public class SubscriptionsStore {
         return subscriptions.size();
     }
 
+    /**
+     * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
+     */
+    public static boolean matchTopics(String msgTopic, String subscriptionTopic) {
+        try {
+            List<Token> msgTokens = SubscriptionsStore.splitTopic(msgTopic);
+            List<Token> subscriptionTokens = SubscriptionsStore.splitTopic(subscriptionTopic);
+            int i = 0;
+            for (; i< subscriptionTokens.size(); i++) {
+                Token subToken = subscriptionTokens.get(i);
+                if (subToken != Token.MULTI && subToken != Token.SINGLE) {
+                    Token msgToken = msgTokens.get(i);
+                    if (!msgToken.equals(subToken)) {
+                        return false;
+                    }
+                } else {
+                    if (subToken == Token.MULTI) {
+                        return true;
+                    }
+                    if (subToken == Token.SINGLE) {
+                        //skip a step forward
+                    }
+                }
+            }
+            return i == msgTokens.size();
+        } catch (ParseException ex) {
+            LOG.error(null, ex);
+            throw new RuntimeException(ex);
+        }
+    }
     
     protected static List<Token> splitTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
