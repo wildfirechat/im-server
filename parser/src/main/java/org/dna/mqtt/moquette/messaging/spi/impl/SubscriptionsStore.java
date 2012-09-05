@@ -137,6 +137,9 @@ public class SubscriptionsStore {
             }
         }
 
+        /**
+         * Deactivate all topic subscriptions for the given clientID.
+         * */
         void disconnect(String clientID) {
             for (Subscription s : m_subscriptions) {
                 if (s.clientId.equals(clientID)) {
@@ -148,6 +151,23 @@ public class SubscriptionsStore {
             for (TreeNode child : m_children) {
                 child.disconnect(clientID);
             }
+        }
+
+        /**
+         * Activate all topic subscriptions for the given clientID.
+         * */
+        public void connect(String clientID) {
+            for (Subscription s : m_subscriptions) {
+                if (s.clientId.equals(clientID)) {
+                    s.setActive(true);
+                }
+            }
+
+            //go deep
+            for (TreeNode child : m_children) {
+                child.disconnect(clientID);
+            }
+
         }
     }
 
@@ -300,6 +320,11 @@ public class SubscriptionsStore {
 
     public void disconnect(String clientID) {
         subscriptions.disconnect(clientID);
+    }
+
+    public void connect(String clientID) {
+        LOG.debug("connect re-activating subscriptions for clientID " + clientID);
+        subscriptions.connect(clientID);
     }
 
     public List<Subscription> matches(String topic) {
