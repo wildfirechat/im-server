@@ -139,9 +139,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
             processDisconnect(disEvt.getSession(), clientID);
-        } else if (evt instanceof CleanInFlightEvent) {
-            //remove the message from inflight storage
-            m_storageService.cleanInFlight(((CleanInFlightEvent) evt).getMsgId());
         } else if (evt instanceof RepublishEvent) {
             processRepublish((RepublishEvent) evt);
         } else if (evt instanceof ProtocolEvent) {
@@ -284,13 +281,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         final byte[] message = evt.getMessage();
         boolean retain = evt.isRetain();
 
-        CleanInFlightEvent cleanEvt = null;
-
+        String publishKey = null;
         if (qos == QOSType.LEAST_ONE) {
             //store the temporary message
-            String publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
+            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
             m_storageService.addInFlight(evt, publishKey);
-            cleanEvt = new CleanInFlightEvent(publishKey);
         }
         
         for (final Subscription sub : subscriptions.matches(topic)) {
@@ -310,8 +305,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             }
         }
 
-        if (cleanEvt != null) {
-            refill(cleanEvt);
+        if (qos == QOSType.LEAST_ONE) {
+            assert publishKey != null;
+            m_storageService.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
         }
 
