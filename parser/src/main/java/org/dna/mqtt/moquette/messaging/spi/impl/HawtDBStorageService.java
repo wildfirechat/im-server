@@ -52,6 +52,8 @@ public class HawtDBStorageService implements IStorageService {
     private SortedIndex<String, StoredMessage> m_retainedStore;
     //bind clientID+MsgID -> evt message published
     private SortedIndex<String, PublishEvent> m_inflightStore;
+    //bind clientID+MsgID -> evt message published
+    private SortedIndex<String, PublishEvent> m_qos2Store;
 
     //persistent Map of clientID, set of Subscriptions
     private SortedIndex<String, Set<Subscription>> m_persistentSubscriptions;
@@ -81,6 +83,7 @@ public class HawtDBStorageService implements IStorageService {
         initPersistentMessageStore();
         initInflightMessageStore();
         initPersistentSubscriptions();
+        initPersistentQoS2MessageStore();
     }
 
     private void initRetainedStore() {
@@ -88,7 +91,6 @@ public class HawtDBStorageService implements IStorageService {
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_retainedStore = (SortedIndex<String, StoredMessage>) m_multiIndexFactory.openOrCreate("retained", indexFactory);
-
     }
 
 
@@ -115,6 +117,13 @@ public class HawtDBStorageService implements IStorageService {
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
         m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
+    }
+
+    private void initPersistentQoS2MessageStore() {
+        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
+        indexFactory.setKeyCodec(StringCodec.INSTANCE);
+
+        m_qos2Store = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("qos2Store", indexFactory);
     }
 
     public void storeRetained(String topic, byte[] message, AbstractMessage.QOSType qos) {
@@ -201,5 +210,19 @@ public class HawtDBStorageService implements IStorageService {
         } catch (IOException ex) {
             LOG.error(null, ex);
         }
+    }
+
+    /*-------- QoS 2  storage management --------------*/
+    public void persistQoS2Message(String publishKey, PublishEvent evt) {
+        LOG.debug(String.format("persistQoS2Message store pubKey %s, evt %s", publishKey, evt));
+        m_qos2Store.put(publishKey, evt);
+    }
+
+    public void removeQoS2Message(String publishKey) {
+        m_qos2Store.remove(publishKey);
+    }
+
+    public PublishEvent retrieveQoS2Message(String publishKey) {
+        return m_qos2Store.get(publishKey);
     }
 }

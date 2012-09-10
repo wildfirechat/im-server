@@ -121,4 +121,28 @@ public class ServerIntegrationFuseTest {
         futurePublish.await();
         connectionPub.disconnect().await();
     }
+
+
+    @Test
+    public void testPublishWithQoS2() throws Exception {
+        m_mqtt.setClientId("TestClient");
+        m_connection = m_mqtt.futureConnection();
+        m_connection.connect().await();
+
+        //subscribe to a QoS 2 topic
+        Topic[] topics = {new Topic("/topic", QoS.EXACTLY_ONCE)};
+        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
+        byte[] qoses = subscribeFuture.await();
+
+        Future<Message> receive = m_connection.receive();
+
+        //publish a QoS 2 message
+        Future<Void> f3 = m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.EXACTLY_ONCE, false);
+
+        //verify the reception
+        Message message = receive.await();
+        message.ack();
+
+        assertEquals("Hello MQTT", new String(message.getPayload()));
+    }
 }

@@ -60,4 +60,16 @@ public class DummyStorageService implements IStorageService {
     public void close() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    public void persistQoS2Message(String publishKey, PublishEvent evt) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void removeQoS2Message(String publishKey) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public PublishEvent retrieveQoS2Message(String publishKey) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

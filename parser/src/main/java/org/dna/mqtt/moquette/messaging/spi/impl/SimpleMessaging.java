@@ -19,6 +19,7 @@ import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
+import org.dna.mqtt.moquette.proto.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
@@ -178,6 +179,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
                 processSubscribe(session, (SubscribeMessage) message, clientID, cleanSession);
+            } else if (message instanceof PubRelMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                int messageID = ((PubRelMessage) message).getMessageID();
+                processPubRel(clientID, messageID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -274,6 +279,30 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         session.write(okResp);
     }
 
+    /**
+     * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
+     * to all interested subscribers.
+     * */
+    protected void processPubRel(String clientID, int messageID) {
+        String publishKey = String.format("%s%d", clientID, messageID);
+        PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
+
+        final String topic = evt.getTopic();
+        final QOSType qos = evt.getQos();
+        final byte[] message = evt.getMessage();
+        boolean retain = evt.isRetain();
+
+        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+
+        m_storageService.removeQoS2Message(publishKey);
+
+        if (retain) {
+            m_storageService.storeRetained(topic, message, qos);
+        }
+
+        sendPubComp(clientID, messageID);
+    }
+
     protected void processPublish(PublishEvent evt) {
         LOG.debug("processPublish invoked with " + evt);
         final String topic = evt.getTopic();
@@ -286,24 +315,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             //store the temporary message
             publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
             m_storageService.addInFlight(evt, publishKey);
+        }  else if (qos == QOSType.EXACTLY_ONCE) {
+            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
+            //store the message in temp store
+            m_storageService.persistQoS2Message(publishKey, evt);
+            sendPubRec(evt.getClientID(), evt.getMessageID());
         }
-        
-        for (final Subscription sub : subscriptions.matches(topic)) {
-            if (qos == QOSType.MOST_ONE) {
-                //QoS 0
-                notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
-            } else {
-                //QoS 1 or 2
-                //if the target subscription is not clean session and is not connected => store it
-                if (!sub.isCleanSession() && !sub.isActive()) {
-                    //clone the event with matching clientID
-                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), evt.getMessageID(), null);
-                    m_storageService.storePublishForFuture(newPublishEvt);
-                } else  {
-                    notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
-                }
-            }
-        }
+
+        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
 
         if (qos == QOSType.LEAST_ONE) {
             assert publishKey != null;
@@ -313,6 +332,28 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         if (retain) {
             m_storageService.storeRetained(topic, message, qos);
+        }
+    }
+
+    /**
+     * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
+     * */
+    private void publish2Subscribers(String topic, QOSType qos, byte[] message, boolean retain, Integer messageID) {
+        for (final Subscription sub : subscriptions.matches(topic)) {
+            if (qos == QOSType.MOST_ONE) {
+                //QoS 0
+                notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+            } else {
+                //QoS 1 or 2
+                //if the target subscription is not clean session and is not connected => store it
+                if (!sub.isCleanSession() && !sub.isActive()) {
+                    //clone the event with matching clientID
+                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                    m_storageService.storePublishForFuture(newPublishEvt);
+                } else  {
+                    notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+                }
+            }
         }
     }
 
@@ -454,5 +495,21 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }catch(Throwable t) {
             LOG.error(null, t);
         }
+    }
+
+    private void sendPubRec(String clientID, int messageID) {
+        LOG.debug(String.format("sendPubRec invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubRecMessage pubRecMessage = new PubRecMessage();
+        pubRecMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
+    }
+
+    private void sendPubComp(String clientID, int messageID) {
+        LOG.debug(String.format("sendPubComp invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubCompMessage pubCompMessage = new PubCompMessage();
+        pubCompMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
     }
 }
