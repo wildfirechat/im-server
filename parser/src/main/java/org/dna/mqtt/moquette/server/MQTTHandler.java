@@ -31,6 +31,9 @@ public class MQTTHandler extends IoHandlerAdapter {
                 case SUBSCRIBE:
                 case UNSUBSCRIBE:
                 case PUBLISH:
+                case PUBREC:
+                case PUBCOMP:
+                case PUBREL:
                 case PINGREQ:
                 case DISCONNECT:
                     m_messaging.handleProtocolMessage(session, msg);

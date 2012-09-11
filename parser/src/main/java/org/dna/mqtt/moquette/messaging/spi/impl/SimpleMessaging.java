@@ -183,6 +183,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubRelMessage) message).getMessageID();
                 processPubRel(clientID, messageID);
+            } else if (message instanceof PubRecMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                int messageID = ((PubRecMessage) message).getMessageID();
+                processPubRec(clientID, messageID);
+            } else if (message instanceof PubCompMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                int messageID = ((PubCompMessage) message).getMessageID();
+                processPubComp(clientID, messageID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -351,12 +359,33 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                     PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
                     m_storageService.storePublishForFuture(newPublishEvt);
                 } else  {
+                    //if QoS 2 then store it in temp memory
+                    if (qos ==QOSType.EXACTLY_ONCE) {
+                        String publishKey = String.format("%s%d", sub.getClientId(), messageID);
+                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                        m_storageService.addInFlight(newPublishEvt, publishKey);
+                    }
+                    //publish
                     notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
                 }
             }
         }
     }
 
+    private void processPubRec(String clientID, int messageID) {
+        //once received a PUBREC reply with a PUBREL(messageID)
+        LOG.debug(String.format("processPubRec invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubRelMessage pubRelMessage = new PubRelMessage();
+        pubRelMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
+    }
+
+    private void processPubComp(String clientID, int messageID) {
+        //once received the PUBCOMP then remove the message from the temp memory
+        String publishKey = String.format("%s%d", clientID, messageID);
+        m_storageService.cleanInFlight(publishKey);
+    }
 
     private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
         subscriptions.add(newSubscription);
