@@ -46,6 +46,10 @@ public class Server {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnectDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
+        decoder.addMessageDecoder(new PubAckDecoder());
+        decoder.addMessageDecoder(new PubRelDecoder());
+        decoder.addMessageDecoder(new PubRecDecoder());
+        decoder.addMessageDecoder(new PubCompDecoder());
         decoder.addMessageDecoder(new SubscribeDecoder());
         decoder.addMessageDecoder(new UnsubscribeDecoder());
         decoder.addMessageDecoder(new DisconnectDecoder());
@@ -57,6 +61,9 @@ public class Server {
         encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
         encoder.addMessageEncoder(UnsubAckMessage.class, new UnsubAckEncoder());
         encoder.addMessageEncoder(PubAckMessage.class, new PubAckEncoder());
+        encoder.addMessageEncoder(PubRecMessage.class, new PubRecEncoder());
+        encoder.addMessageEncoder(PubCompMessage.class, new PubCompEncoder());
+        encoder.addMessageEncoder(PubRelMessage.class, new PubRelEncoder());
         encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
         encoder.addMessageEncoder(PingRespMessage.class, new PingRespEncoder());
         
