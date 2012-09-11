@@ -9,7 +9,7 @@
         <version>0.1</version>
     </parent>
 
-    <artifactId>moquette-bechmark</artifactId>
+    <artifactId>moquette-benchmark</artifactId>
     <packaging>jar</packaging>
     <version>0.1</version>
     <name>Moquette - Benchmarking tool</name>
