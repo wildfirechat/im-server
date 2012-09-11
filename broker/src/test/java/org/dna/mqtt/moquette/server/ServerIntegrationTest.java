@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.commons.Constants;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -44,7 +45,7 @@ public class ServerIntegrationTest {
     @Test
     public void testSubscribe() throws IOException, InterruptedException {
 //        startServer();
-        Client client = new Client("localhost", Server.PORT);
+        Client client = new Client("localhost", Constants.PORT);
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
 
@@ -67,7 +68,7 @@ public class ServerIntegrationTest {
 
     @Test
     public void testCleanSession_maintainClientSubscriptions() {
-        Client client = new Client("localhost", Server.PORT/*, "CLID_123"*/);
+        Client client = new Client("localhost", Constants.PORT/*, "CLID_123"*/);
         client.connect(false); //without session cleanup
 
         client.subscribe("/topic", new IPublishCallback() {
@@ -92,7 +93,7 @@ public class ServerIntegrationTest {
 
     @Test
     public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() {
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect(false); //without session cleanup
 
         client.subscribe("/topic", new IPublishCallback() {
@@ -105,7 +106,7 @@ public class ServerIntegrationTest {
         client.shutdown();
 
         //Exercise that the client maintain the subscriptions
-        client = new Client("localhost", Server.PORT, "CLID_123");
+        client = new Client("localhost", Constants.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -131,7 +132,7 @@ public class ServerIntegrationTest {
      */
     @Test
     public void testCleanSession_correctlyClientSubscriptions() {
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect(false); //without session cleanup
 
         client.subscribe("/topic", new IPublishCallback() {
@@ -144,7 +145,7 @@ public class ServerIntegrationTest {
         client.shutdown();
 
         //Exercise that the client maintain the subscriptions
-        client = new Client("localhost", Server.PORT, "CLID_123");
+        client = new Client("localhost", Constants.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -166,7 +167,7 @@ public class ServerIntegrationTest {
     @Test
     public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws IOException, InterruptedException {
         final CountDownLatch barrier = new CountDownLatch(1);
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect(false); //without session cleanup
         
         client.subscribe("/topic", new IPublishCallback() {
@@ -188,7 +189,7 @@ public class ServerIntegrationTest {
         final CountDownLatch barrier2 = new CountDownLatch(1);
 
         //Exercise that the client maintain the subscriptions
-        client = new Client("localhost", Server.PORT, "CLID_123");
+        client = new Client("localhost", Constants.PORT, "CLID_123");
         client.register("/topic", new IPublishCallback() {
 
             public void published(String topic, byte[] message) {
@@ -212,7 +213,7 @@ public class ServerIntegrationTest {
     @Test
     public void testRetain_maintainMessage_againstClientDestruction() throws InterruptedException {
         final CountDownLatch barrier = new CountDownLatch(1);
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect();
 
         client.publish("/topic", "Test my payload".getBytes(), true);
@@ -220,7 +221,7 @@ public class ServerIntegrationTest {
         client.shutdown();
 
         //Exercise that the client maintain the subscriptions
-        client = new Client("localhost", Server.PORT, "CLID_123");
+        client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect();
         client.subscribe("/topic", new IPublishCallback() {
 
@@ -242,7 +243,7 @@ public class ServerIntegrationTest {
 
     @Ignore
     public void testUnsubscribe_do_not_notify_anymore_same_session() throws InterruptedException {
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
 
@@ -276,7 +277,7 @@ public class ServerIntegrationTest {
 
     @Test
     public void testUnsubscribe_do_not_notify_anymore_new_session() throws InterruptedException {
-        Client client = new Client("localhost", Server.PORT, "CLID_123");
+        Client client = new Client("localhost", Constants.PORT, "CLID_123");
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
 
@@ -304,7 +305,7 @@ public class ServerIntegrationTest {
         client.shutdown();
 
         //Exercise that the client maintain the subscriptions
-        client = new Client("localhost", Server.PORT, "CLID_123");
+        client = new Client("localhost", Constants.PORT, "CLID_123");
         client.connect();
 
         //reinit the flag
@@ -324,7 +325,7 @@ public class ServerIntegrationTest {
     @Test
     public void testPublishWithQoS1() throws IOException, InterruptedException {
 //        startServer();
-        Client client = new Client("localhost", Server.PORT);
+        Client client = new Client("localhost", Constants.PORT);
 //        Client client = new Client("test.mosquitto.org", 1883);
         client.connect();
 
