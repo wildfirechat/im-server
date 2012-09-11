@@ -4,3 +4,4 @@
 .idea/
 *.iml
 broker/target/
+client/target/

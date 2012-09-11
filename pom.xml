@@ -14,6 +14,7 @@
     <modules>
         <module>parser</module>
         <module>broker</module>
+        <module>client</module>
         <module>benchmarking</module>
     </modules>
 
