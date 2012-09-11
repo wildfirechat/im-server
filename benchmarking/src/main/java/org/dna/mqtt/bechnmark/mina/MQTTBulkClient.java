@@ -12,11 +12,11 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.PublishException;
 import org.dna.mqtt.moquette.proto.*;
 import org.dna.mqtt.moquette.proto.messages.*;
-import org.dna.mqtt.moquette.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class MQTTBulkClient {
 
         m_connector.setHandler(new DummyClientHandler());
         m_connector.getSessionConfig().setReadBufferSize(2048);
-        m_connector.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, Server.DEFAULT_CONNECT_TIMEOUT);
+        m_connector.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
     
     public void connect() throws MQTTException {

@@ -1,6 +1,7 @@
 package org.dna.mqtt.moquette.server;
 
 import org.fusesource.mqtt.client.*;
+import org.dna.mqtt.commons.Constants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class ServerIntegrationFuseTest {
         startServer();
 
         m_mqtt = new MQTT();
-        m_mqtt.setHost("localhost", Server.PORT);
+        m_mqtt.setHost("localhost", Constants.PORT);
         m_mqtt.setClientId("TestClient");
     }
 
@@ -113,7 +114,7 @@ public class ServerIntegrationFuseTest {
 
     private void publishFromAnotherClient(String topic, byte[] payload, QoS qos) throws Exception {
         MQTT mqttPub = new MQTT();
-        mqttPub.setHost("localhost", Server.PORT);
+        mqttPub.setHost("localhost", Constants.PORT);
         mqttPub.setClientId("TestClientPUB");
         FutureConnection connectionPub = mqttPub.futureConnection();
         connectionPub.connect().await();

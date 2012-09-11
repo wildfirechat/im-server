@@ -19,6 +19,7 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.commons.MessageIDGenerator;
 import org.dna.mqtt.moquette.ConnectionException;
 import org.dna.mqtt.moquette.MQTTException;
@@ -34,7 +35,6 @@ import org.dna.mqtt.moquette.proto.messages.PingReqMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
-import org.dna.mqtt.moquette.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +128,7 @@ public final class Client {
 
         m_connector.setHandler(new ClientMQTTHandler(this));
         m_connector.getSessionConfig().setReadBufferSize(2048);
-        m_connector.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, Server.DEFAULT_CONNECT_TIMEOUT);
+        m_connector.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, Constants.DEFAULT_CONNECT_TIMEOUT);
 
         m_scheduler = Executors.newScheduledThreadPool(NUM_SCHEDULER_TIMER_THREAD);
         

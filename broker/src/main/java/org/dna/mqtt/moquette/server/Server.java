@@ -15,6 +15,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.proto.*;
 import org.dna.mqtt.moquette.proto.messages.*;
+import org.dna.mqtt.commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -25,8 +26,8 @@ public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
-    public static final int PORT = 1883;
-    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
+//    public static final int PORT = 1883;
+//    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
     public static final String STORAGE_FILE_PATH = System.getProperty("user.home") + 
             File.separator + "moquette_store.hawtdb";
     
@@ -86,10 +87,10 @@ public class Server {
         ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
         ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);
         m_acceptor.getSessionConfig().setReadBufferSize( 2048 );
-        m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, DEFAULT_CONNECT_TIMEOUT );
+        m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, Constants.DEFAULT_CONNECT_TIMEOUT );
         m_acceptor.getStatistics().setThroughputCalculationInterval(10);
         m_acceptor.getStatistics().updateThroughput(System.currentTimeMillis());
-        m_acceptor.bind( new InetSocketAddress(PORT) );
+        m_acceptor.bind( new InetSocketAddress(Constants.PORT) );
         LOG.info("Server binded");
         
         //Bind  a shutdown hook
