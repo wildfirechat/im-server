@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.client.Client;
 import org.dna.mqtt.moquette.client.IPublishCallback;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
