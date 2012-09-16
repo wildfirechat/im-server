@@ -1,6 +1,6 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.PublishEncoder;
+import org.apache.mina.core.buffer.IoBuffer;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.junit.Before;
@@ -141,5 +141,27 @@ public class PublishEncoderTest {
         assertEquals(10+payload.length, size);
         assertEquals(0x30, m_mockProtoEncoder.getBuffer().get()); //1 byte
         assertEquals(23, m_mockProtoEncoder.getBuffer().get()); //1 byte the length
+    }
+    
+    @Test
+    public void testEncodeBigMessage() throws Exception {
+        byte[] payload = new byte[256];
+        
+        TestUtils.generateRandomPayload(256).get(payload);
+        
+        String topic = "/topic";
+        PublishMessage msg = new PublishMessage();
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setTopicName(topic);
+
+        //variable part
+        msg.setPayload(payload);
+
+        //Exercise
+        m_encoder.encode(null, msg, m_mockProtoEncoder);
+        
+        int size = m_mockProtoEncoder.getBuffer().remaining();
+        assertEquals(11+payload.length, size);
+        assertEquals(0x30, m_mockProtoEncoder.getBuffer().get()); //1 byte
     }
 }
