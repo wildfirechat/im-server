@@ -3,7 +3,6 @@ package org.dna.mqtt.moquette.server;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoServiceStatistics;
 import org.apache.mina.core.session.IdleStatus;
@@ -12,10 +11,10 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
 import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.proto.*;
 import org.dna.mqtt.moquette.proto.messages.*;
-import org.dna.mqtt.commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
