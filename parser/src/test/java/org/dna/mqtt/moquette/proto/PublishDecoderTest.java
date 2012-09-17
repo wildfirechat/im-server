@@ -1,5 +1,9 @@
 package org.dna.mqtt.moquette.proto;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.filter.codec.demux.MessageDecoder;
 import org.apache.mina.filter.codec.demux.MessageDecoderResult;
@@ -8,6 +12,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -30,7 +35,7 @@ public class PublishDecoderTest {
     @Test
     public void testDecodable_OK() {
         m_buff.put((byte) (AbstractMessage.PUBLISH << 4))
-                .put((byte)0) //0 length
+                .put((byte) 0) //0 length
                 .flip();
         assertEquals(MessageDecoder.OK, m_msgdec.decodable(null, m_buff));
     }
@@ -66,7 +71,7 @@ public class PublishDecoderTest {
         assertEquals("Fake Topic", m_mockProtoDecoder.getMessage().getTopicName());
         assertEquals(messageID, (int) m_mockProtoDecoder.getMessage().getMessageID());
     }
-    
+
     @Test
     public void testHeaderWithMessageID_Payload() throws Exception {
         m_buff = IoBuffer.allocate(14).setAutoExpand(true);
@@ -84,23 +89,50 @@ public class PublishDecoderTest {
         assertEquals(messageID, (int) m_mockProtoDecoder.getMessage().getMessageID());
         TestUtils.verifyEquals(payload, m_mockProtoDecoder.getMessage().getPayload());
     }
-    
-     @Test
-     public void testBugOnRealCase() throws Exception {
-         byte[] overallMessage = new byte[] {0x30, 0x17, //fixed header, 25 byte lenght
-             0x00, 0x06, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, //[/topic] string 2 len + 6 content
-             0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x79, // [Test my payload] encoding
-             0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64};
-         m_buff = IoBuffer.allocate(overallMessage.length).setAutoExpand(true);
-         m_buff.put(overallMessage);
-         m_buff.flip();
-         
-         //Exercise
+
+    @Test
+    public void testBugOnRealCase() throws Exception {
+        byte[] overallMessage = new byte[]{0x30, 0x17, //fixed header, 25 byte lenght
+            0x00, 0x06, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, //[/topic] string 2 len + 6 content
+            0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x79, // [Test my payload] encoding
+            0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64};
+        m_buff = IoBuffer.allocate(overallMessage.length).setAutoExpand(true);
+        m_buff.put(overallMessage);
+        m_buff.flip();
+
+        //Exercise
         MessageDecoderResult res = m_msgdec.decode(null, m_buff, m_mockProtoDecoder);
 
         assertNotNull(m_mockProtoDecoder.getMessage());
         assertEquals(MessageDecoder.OK, res);
-     }
+    }
+
+    @Test
+    public void testDecodeBigContent() throws Exception {
+        int size = 129;
+        IoBuffer payload = TestUtils.generateRandomPayload(size);
+
+        IoBuffer firstPublish = generatePublishQoS0(payload);
+        IoBuffer secondPublish = generatePublishQoS0(TestUtils.generateRandomPayload(size));
+
+        IoBuffer doubleMessageBuf = IoBuffer.allocate(size * 2).setAutoExpand(true);
+        doubleMessageBuf.put(firstPublish).put(secondPublish).flip();
+
+
+        //Exercise
+        MessageDecoderResult res = m_msgdec.decode(null, doubleMessageBuf, m_mockProtoDecoder);
+
+        assertEquals(MessageDecoder.OK, res);
+        PublishMessage pubMsg = m_mockProtoDecoder.getMessage();
+        assertNotNull(pubMsg);
+
+        res = m_msgdec.decode(null, doubleMessageBuf, m_mockProtoDecoder);
+
+        assertNotNull(m_mockProtoDecoder.getMessage());
+        assertEquals(MessageDecoder.OK, res);
+
+        m_buff.flip();
+    }
 
     private void initHeader(IoBuffer buff) throws IllegalAccessException {
         IoBuffer tmp = IoBuffer.allocate(4).setAutoExpand(true).put(Utils.encodeString("Fake Topic")).flip();
@@ -118,7 +150,7 @@ public class PublishDecoderTest {
         //topic name
         buff.put(tmp);
     }
-    
+
     private void initHeaderWithMessageID_Payload(IoBuffer buff, int messageID, byte[] payload) throws IllegalAccessException {
         IoBuffer tmp = IoBuffer.allocate(4).setAutoExpand(true).put(Utils.encodeString("Fake Topic"));
         Utils.writeWord(tmp, messageID);
@@ -128,5 +160,21 @@ public class PublishDecoderTest {
                 .put(Utils.encodeRemainingLength(tmp.remaining()));
         //topic name
         buff.put(tmp);
+    }
+
+    private IoBuffer generatePublishQoS0(IoBuffer payload) throws IllegalAccessException {
+        int size = payload.capacity();
+        IoBuffer messageBody = IoBuffer.allocate(size).setAutoExpand(true);
+        messageBody.put(Utils.encodeString("/topic"));
+
+        //ONLY for QoS > 1 Utils.writeWord(messageBody, messageID);
+        messageBody.put(payload).flip();
+
+        IoBuffer completeMsg = IoBuffer.allocate(size).setAutoExpand(true);
+        completeMsg.clear().put((byte) (AbstractMessage.PUBLISH << 4 | 0x00)) //set Qos to 0
+                .put(Utils.encodeRemainingLength(messageBody.remaining()));
+        completeMsg.put(messageBody).flip();
+
+        return completeMsg;
     }
 }

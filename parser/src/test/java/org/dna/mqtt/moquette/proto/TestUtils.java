@@ -1,5 +1,9 @@
 package org.dna.mqtt.moquette.proto;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.filterchain.IoFilter.NextFilter;
@@ -93,5 +97,28 @@ public class TestUtils {
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], found[i]);
         }
+    }
+    
+    
+    public static IoBuffer generateRandomPayload(int size) {
+        IoBuffer payloadBuffer = IoBuffer.allocate(size);
+        for (int i = 0; i < size; i++) {
+            payloadBuffer.put((byte) (Math.random() * 255));
+        }
+        payloadBuffer.flip();
+        return payloadBuffer;
+    }
+    
+    public static IoBuffer loadFile(String path) throws FileNotFoundException, IOException {
+        File f = new File(path);
+        long size = f.length();
+        byte[] payload = new byte[(int) size];
+
+        FileInputStream fr = new FileInputStream(f);
+        fr.read(payload);
+
+        IoBuffer payloadBuffer = IoBuffer.allocate((int) size);
+        payloadBuffer.put(payload).flip();
+        return payloadBuffer;
     }
 }

@@ -4,7 +4,6 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,9 +15,10 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
@@ -27,7 +27,6 @@ import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
 
 /**
  *
@@ -241,6 +240,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_clientIDs.put(msg.getClientID(), connDescr);
 
         int keepAlive = msg.getKeepAlive();
+        LOG.debug(String.format("Connect with keepAlive %d s",  keepAlive));
         session.setAttribute("keepAlive", keepAlive);
         session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.

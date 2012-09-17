@@ -6,10 +6,10 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.proto.Utils;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
+import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 
 /**
  * MINA MQTT Handler used to route messages to protocol logic
@@ -34,9 +34,12 @@ public class MQTTHandler extends IoHandlerAdapter {
                 case PUBREC:
                 case PUBCOMP:
                 case PUBREL:
-                case PINGREQ:
                 case DISCONNECT:
                     m_messaging.handleProtocolMessage(session, msg);
+                    break;
+                case PINGREQ:
+                    PingRespMessage pingResp = new PingRespMessage();
+                    session.write(pingResp);
                     break;
             }
         } catch (Exception ex) {
@@ -46,7 +49,10 @@ public class MQTTHandler extends IoHandlerAdapter {
 
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) {
-        session.close(false);
+        if (status == IdleStatus.READER_IDLE) {
+            session.close(false);
+            //TODO send a notification to messaging part to remove the bining clientID-ConnConfig
+        }
     }
 
     public void setMessaging(IMessaging messaging) {
