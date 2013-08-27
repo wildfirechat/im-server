@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
@@ -85,7 +86,7 @@ public class SimpleMessagingTest {
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false);
         assertTrue(messaging.getSubscriptions().contains(expectedSubscription));
     }
-
+    
     @Test
     public void testDoubleSubscribe() {
 //        SubscribeEvent evt = new SubscribeEvent(new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, QOSType.MOST_ONE, false), 0);
@@ -122,7 +123,7 @@ public class SimpleMessagingTest {
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
     }
-
+    
     @Test
     public void testHandleConnect_BadProtocol() {
         connMsg.setProcotolVersion((byte) 0x02);
