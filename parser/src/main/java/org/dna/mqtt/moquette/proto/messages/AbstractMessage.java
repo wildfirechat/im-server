@@ -25,6 +25,10 @@ public abstract class AbstractMessage {
     public static enum QOSType {
 
         MOST_ONE, LEAST_ONE, EXACTLY_ONCE, RESERVED;
+        
+        public static QOSType fromByte(byte val) {
+            return AbstractMessage.QOSType.values()[val];
+        }
     }
     //type
     protected boolean m_dupFlag;

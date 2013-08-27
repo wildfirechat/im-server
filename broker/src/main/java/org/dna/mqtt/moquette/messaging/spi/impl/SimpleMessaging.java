@@ -408,7 +408,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         LOG.debug("processSubscribe invoked");
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
+            QOSType qos = AbstractMessage.QOSType.fromByte(req.getQos());
             Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
             subscribeSingleTopic(newSubscription, req.getTopic());
         }
@@ -423,7 +423,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
         LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
         session.write(ackMessage);
-
     }
 
     /**
