@@ -159,6 +159,22 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void testRetain_maintainMessage_againstClientDestruction() throws Exception {
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect(); 
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, true);
+        m_connection.disconnect();
+     
+        BlockingConnection anotherConnection = m_mqtt.blockingConnection();
+        anotherConnection.connect(); 
+        anotherConnection.subscribe(new Topic[] {new Topic("/topic", QoS.AT_MOST_ONCE)});
+        Message msg = anotherConnection.receive();
+        msg.ack();
+        
+        assertEquals("/topic", msg.getTopic());
+    }
+    
+    @Test
     public void testPublishWithQoS1() throws Exception {
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
