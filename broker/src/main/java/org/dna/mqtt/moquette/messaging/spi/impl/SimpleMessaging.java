@@ -400,7 +400,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         for (StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            notify(new NotifyEvent(newSubscription.getClientId(), topic, storedMsg.getQos(), storedMsg.getPayload(), true));
+            notify(new NotifyEvent(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true));
         }
     }
 
@@ -408,7 +408,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         LOG.debug("processSubscribe invoked");
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            QOSType qos = AbstractMessage.QOSType.fromByte(req.getQos());
+            QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
             Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
             subscribeSingleTopic(newSubscription, req.getTopic());
         }

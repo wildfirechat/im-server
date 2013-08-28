@@ -26,10 +26,12 @@ public class HawtDBStorageService implements IStorageService {
     public static class StoredMessage implements Serializable {
         AbstractMessage.QOSType m_qos;
         byte[] m_payload;
+        String m_topic;
 
-        StoredMessage(byte[] message, AbstractMessage.QOSType qos) {
+        StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
             m_qos = qos;
             m_payload = message;
+            m_topic = topic;
         }
 
         AbstractMessage.QOSType getQos() {
@@ -38,6 +40,10 @@ public class HawtDBStorageService implements IStorageService {
 
         byte[] getPayload() {
             return m_payload;
+        }
+        
+        String getTopic() {
+            return m_topic;
         }
     }
 
@@ -132,7 +138,7 @@ public class HawtDBStorageService implements IStorageService {
             m_retainedStore.remove(topic);
         } else {
             //store the message to the topic
-            m_retainedStore.put(topic, new StoredMessage(message, qos));
+            m_retainedStore.put(topic, new StoredMessage(message, qos, topic));
         }
     }
 

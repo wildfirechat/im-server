@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import org.apache.mina.core.filterchain.IoFilter;
 import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.session.DummySession;
 import org.apache.mina.core.session.IoSession;
@@ -122,6 +123,49 @@ public class SimpleMessagingTest {
         //Verify
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
+    }
+    
+    @Test
+    public void testPublishOfRetainedMessage() throws Exception {
+        m_session.getFilterChain().remove("MessageCatcher");
+        m_session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
+
+            @Override
+            public void filterWrite(IoFilter.NextFilter nextFilter, IoSession session,
+                                    WriteRequest writeRequest) throws Exception {
+                try {
+                    System.out.println("filterReceived class " + writeRequest.getMessage().getClass().getName());
+                    if (writeRequest.getMessage() instanceof PublishMessage) {
+                        m_receivedMessage = (AbstractMessage) writeRequest.getMessage();
+                    }
+                    
+                    if (m_receivedMessage instanceof ConnAckMessage) {
+                        ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
+                        m_returnCode = buf.getReturnCode();
+                    }
+                } catch (Exception ex) {
+                    throw new AssertionError("Wrong return code");
+                }
+            }
+        });    
+            
+        //simulate a connect that register a clientID to an IoSession
+        ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, true);
+        messaging.m_clientIDs.put(FAKE_CLIENT_ID, connDescr);
+        
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
+        messaging.processPublish(pubEvt);
+        
+        //Exercise
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
+        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        
+        //Verify
+        assertNotNull(m_receivedMessage); 
+        assertTrue(m_receivedMessage instanceof PublishMessage);
+        PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
+        assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
     }
     
     @Test
