@@ -38,11 +38,19 @@ public class Server {
     //private ExecutorService m_notifierPool/* = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE)*/;
     
     public static void main(String[] args) throws IOException {
-        new Server().startServer();
+        final Server server = new Server();
+        server.startServer();
+        //Bind  a shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                server.stopServer();
+            }
+        });
         
     }
     
-    protected void startServer() throws IOException {
+    public void startServer() throws IOException {
         DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
         decoder.addMessageDecoder(new ConnectDecoder());
         decoder.addMessageDecoder(new PublishDecoder());
@@ -92,16 +100,10 @@ public class Server {
         m_acceptor.bind( new InetSocketAddress(Constants.PORT) );
         LOG.info("Server binded");
         
-        //Bind  a shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                stopServer();
-            }
-        });
+        
     }
     
-    protected void stopServer() {
+    public void stopServer() {
         LOG.info("Server stopping...");
         
         messaging.stop();
