@@ -19,7 +19,7 @@ public class ServerIntegrationFuseTest {
 
     Server m_server;
     MQTT m_mqtt;
-    FutureConnection m_connection;
+    BlockingConnection m_connection;
 
     protected void startServer() throws IOException {
         m_server = new Server();
@@ -37,7 +37,9 @@ public class ServerIntegrationFuseTest {
 
     @After
     public void tearDown() throws Exception {
-        m_connection.disconnect().await();
+        if (m_connection != null && m_connection.isConnected()) {
+            m_connection.disconnect();
+        }
 
         m_server.stopServer();
         File dbFile = new File(Server.STORAGE_FILE_PATH);
@@ -48,36 +50,33 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testSubscribe() throws Exception {
-        m_connection = m_mqtt.futureConnection();
-        m_connection.connect().await();
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect();
 
         Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
-        Future<byte[]> futSub = m_connection.subscribe(topics);
+        byte[] futSub = m_connection.subscribe(topics);
 
-        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false).await();
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
 
-        byte[] qoses = futSub.await();
-        assertEquals(1, qoses.length);
+        Message msg = m_connection.receive();
+        msg.ack();
+        assertEquals("/topic", msg.getTopic());
     }
-
+    
     @Test
     public void testPublishWithQoS1() throws Exception {
-        m_mqtt.setClientId("TestClient");
-        m_connection = m_mqtt.futureConnection();
-        m_connection.connect().await();
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect();
 
         //subscribe to a QoS 1 topic
         Topic[] topics = {new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
-        byte[] qoses = subscribeFuture.await();
-
-        Future<Message> receive = m_connection.receive();
+        byte[] qoses = m_connection.subscribe(topics);
 
         //publish a QoS 1 message
-        Future<Void> f3 = m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE, false);
+        m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE, false);
 
         //verify the reception
-        Message message = receive.await();
+        Message message = m_connection.receive();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
@@ -85,28 +84,26 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testPublishWithQoS1_notCleanSession() throws Exception {
-        m_mqtt.setCleanSession(false);
-        m_connection = m_mqtt.futureConnection() ;
-        m_connection.connect().await();
+        MQTT mqtt = new MQTT(m_mqtt);
+        mqtt.setCleanSession(false);
+        m_connection = mqtt.blockingConnection();
+        m_connection.connect();
 
         //subscribe to a QoS 1 topic
         Topic[] topics = {new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
-        byte[] qoses = subscribeFuture.await();
+        byte[] qoses = m_connection.subscribe(topics);
 
-        m_connection.disconnect().await();
+        m_connection.disconnect();
 
         //publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), QoS.AT_LEAST_ONCE);
 
-
         //Reconnect
-        m_connection = m_mqtt.futureConnection();
-        m_connection.connect().await();
-        Future<Message> receive = m_connection.receive();
+        m_connection = mqtt.blockingConnection();
+        m_connection.connect();
 
         //verify the reception
-        Message message = receive.await();
+        Message message = m_connection.receive();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
@@ -127,21 +124,18 @@ public class ServerIntegrationFuseTest {
     @Test
     public void testPublishWithQoS2() throws Exception {
         m_mqtt.setClientId("TestClient");
-        m_connection = m_mqtt.futureConnection();
-        m_connection.connect().await();
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect();
 
         //subscribe to a QoS 2 topic
         Topic[] topics = {new Topic("/topic", QoS.EXACTLY_ONCE)};
-        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
-        byte[] qoses = subscribeFuture.await();
-
-        Future<Message> receive = m_connection.receive();
+        byte[] qoses = m_connection.subscribe(topics);
 
         //publish a QoS 2 message
-        Future<Void> f3 = m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.EXACTLY_ONCE, false);
+        m_connection.publish("/topic", "Hello MQTT".getBytes(), QoS.EXACTLY_ONCE, false);
 
         //verify the reception
-        Message message = receive.await();
+        Message message = m_connection.receive();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
@@ -150,13 +144,12 @@ public class ServerIntegrationFuseTest {
     @Test
     public void testPublishReceiveWithQoS2() throws Exception {
         m_mqtt.setCleanSession(false);
-        m_connection = m_mqtt.futureConnection();
-        m_connection.connect().await();
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect();
 
         //subscribe to a QoS 2 topic
         Topic[] topics = {new Topic("/topic", QoS.EXACTLY_ONCE)};
-        Future<byte[]> subscribeFuture = m_connection.subscribe(topics);
-        byte[] qoses = subscribeFuture.await();
+        byte[] qoses = m_connection.subscribe(topics);
 
 //        m_connection.disconnect().await();
 
@@ -167,10 +160,9 @@ public class ServerIntegrationFuseTest {
         //Reconnect
         /*m_connection = m_mqtt.futureConnection();
         m_connection.connect().await();*/
-        Future<Message> receive = m_connection.receive();
 
         //verify the reception
-        Message message = receive.await();
+        Message message = m_connection.receive();
         message.ack();
 
         assertEquals("Hello MQTT", new String(message.getPayload()));
