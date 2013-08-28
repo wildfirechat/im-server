@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -104,6 +105,31 @@ public class ServerIntegrationFuseTest {
         Message msg = connection.receive();
         msg.ack();
         assertEquals("/topic", msg.getTopic());
+    }
+    
+    /**
+     * Check that after a client has connected with clean session false, subscribed
+     * to some topic and exited, if it reconnect with clean session true, the m_server
+     * correctly cleanup every previous subscription
+     */
+    @Test
+    public void testCleanSession_correctlyClientSubscriptions() throws Exception {
+        MQTT localMqtt = new MQTT(m_mqtt);
+        localMqtt.setCleanSession(false);
+        BlockingConnection connection = localMqtt.blockingConnection();
+        connection.connect();
+        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+        connection.subscribe(topics);
+        connection.disconnect();
+        
+        //the client reconnects but with cleanSession = true and publish
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect();
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
+        
+        //Verify that no publish reach the previous subscription
+        Message msg = m_connection.receive(1, TimeUnit.SECONDS);
+        assertNull(msg);
     }
     
     @Test
