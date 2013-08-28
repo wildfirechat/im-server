@@ -16,6 +16,43 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class SubscriptionsStore {
+    
+    public static interface IVisitor<T> {
+        void visit(TreeNode node);
+        
+        T getResult();
+    }
+    
+    private class DumpTreeVisitor implements IVisitor<String> {
+        
+        String s = "";
+
+        public void visit(TreeNode node) {
+            String subScriptionsStr = "";
+            for (Subscription sub : node.m_subscriptions) {
+                subScriptionsStr += sub.toString();
+            }
+            s += node.getToken() == null ? "" : node.getToken().toString();
+            s += subScriptionsStr + "\n";
+        }
+        
+        public String getResult() {
+            return s;
+        }
+    }
+    
+    private class SubscriptionTreeCollector implements IVisitor<List<Subscription>> {
+        
+        private List<Subscription> m_allSubscriptions = new ArrayList<Subscription>();
+
+        public void visit(TreeNode node) {
+            m_allSubscriptions.addAll(node.subscriptions());
+        }
+        
+        public List<Subscription> getResult() {
+            return m_allSubscriptions;
+        }
+    }
 
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
@@ -99,6 +136,19 @@ public class SubscriptionsStore {
             matchNode.subscriptions().remove(toBeRemoved);
         }
     }
+    
+    /**
+     * TODO implement testing
+     */
+    public void clearAllSubscriptions() {
+        SubscriptionTreeCollector subsCollector = new SubscriptionTreeCollector();
+        bfsVisit(subscriptions, subsCollector);
+        
+        List<Subscription> allSubscriptions = subsCollector.getResult();
+        for (Subscription subscription : allSubscriptions) {
+            removeSubscription(subscription.getTopic(), subscription.getClientId());
+        }
+    }
 
     /**
      * Visit the topics tree to remove matching subscriptions with clientID
@@ -119,6 +169,11 @@ public class SubscriptionsStore {
         subscriptions.activate(clientID);
     }
 
+    /**
+     * Given a topic string return the clients subscriptions that matches it.
+     * Topic string can't contain character # and + because they are reserved to
+     * listeners subscriptions, and not topic publishing.
+     */
     public List<Subscription> matches(String topic) {
         List<Token> tokens = new ArrayList<Token>();
         try {
@@ -141,7 +196,23 @@ public class SubscriptionsStore {
     public int size() {
         return subscriptions.size();
     }
-
+    
+    public String dumpTree() {
+        DumpTreeVisitor visitor = new DumpTreeVisitor();
+        bfsVisit(subscriptions, visitor);
+        return visitor.getResult();
+    }
+    
+    private void bfsVisit(TreeNode node, IVisitor visitor) {
+        if (node == null) {
+            return;
+        }
+        visitor.visit(node);
+        for (TreeNode child : node.m_children) {
+            bfsVisit(child, visitor);
+        }
+    }
+    
     /**
      * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
      */
