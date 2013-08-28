@@ -133,6 +133,32 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws Exception {
+        MQTT localMqtt = new MQTT(m_mqtt);
+        localMqtt.setCleanSession(false);
+        BlockingConnection connection = localMqtt.blockingConnection();
+        connection.connect();
+        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+        connection.subscribe(topics);
+        connection.disconnect();
+        
+        m_server.stopServer();
+        
+        m_server.startServer();
+        
+        //the client reconnects but with cleanSession = true and publish
+        MQTT anotherLocalMqtt = new MQTT(m_mqtt);
+        anotherLocalMqtt.setCleanSession(false);
+        BlockingConnection anotherconnection = localMqtt.blockingConnection();
+        anotherconnection.connect();
+        anotherconnection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
+        
+        //Verify that the message is published due to prevoius subscription
+        Message msg = anotherconnection.receive(1, TimeUnit.SECONDS);
+        assertEquals("/topic", msg.getTopic());
+    }
+    
+    @Test
     public void testPublishWithQoS1() throws Exception {
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
