@@ -6,12 +6,12 @@
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>0.1</version>
+        <version>0.2</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
     <packaging>jar</packaging>
-    <version>0.1</version>
+    <version>0.2</version>
     <name>Moquette - broker</name>
 
     <properties>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-parser</artifactId>
-            <version>0.1</version>
+            <version>0.2</version>
         </dependency>
 
         <dependency>
