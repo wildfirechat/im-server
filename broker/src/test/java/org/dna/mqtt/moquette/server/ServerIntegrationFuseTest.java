@@ -85,6 +85,28 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() throws Exception {
+        MQTT localMqtt = new MQTT(m_mqtt);
+        localMqtt.setCleanSession(false);
+        BlockingConnection connection = localMqtt.blockingConnection();
+        connection.connect();
+        
+        Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
+        connection.subscribe(topics);
+        connection.disconnect();
+        
+        connection = localMqtt.blockingConnection();
+        connection.connect();
+        
+        connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
+        
+        //Verify
+        Message msg = connection.receive();
+        msg.ack();
+        assertEquals("/topic", msg.getTopic());
+    }
+    
+    @Test
     public void testPublishWithQoS1() throws Exception {
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
