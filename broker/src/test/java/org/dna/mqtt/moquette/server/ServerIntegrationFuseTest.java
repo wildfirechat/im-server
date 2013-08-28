@@ -175,6 +175,25 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void testUnsubscribe_do_not_notify_anymore_same_session() throws Exception {
+        m_connection = m_mqtt.blockingConnection();
+        m_connection.connect(); 
+        m_connection.subscribe(new Topic[] {new Topic("/topic", QoS.AT_MOST_ONCE)});
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
+        //check message received
+        Message msg = m_connection.receive();
+        msg.ack();
+        assertEquals("/topic", msg.getTopic()); 
+        
+        String[] topics = new String[] {"/topic"};
+        m_connection.unsubscribe(topics);
+        
+        m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
+        msg = m_connection.receive(1, TimeUnit.SECONDS);
+        assertNull(msg);
+    }
+    
+    @Test
     public void testUnsubscribe_do_not_notify_anymore_new_session() throws Exception {
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect(); 
