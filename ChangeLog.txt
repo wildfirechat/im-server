@@ -1,0 +1,3 @@
+Version 0.2:
+    Fixed issues (10, 11, 12, 13)
+    Fixed interdependency bug in test
