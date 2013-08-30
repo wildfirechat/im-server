@@ -184,48 +184,6 @@ public class SimpleMessagingTest {
         assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
     }
     
-    @Test
-    public void testHandleConnect_BadProtocol() {
-        connMsg.setProcotolVersion((byte) 0x02);
-
-        //Exercise
-        messaging.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_returnCode);
-    }
-
-    @Test
-    public void testConnect_badClientID() {
-        connMsg.setClientID("extremely_long_clientID_greater_than_23");
-
-        //Exercise
-        messaging.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, m_returnCode);
-    }
-
-    @Test
-    public void testWill() {
-        connMsg.setClientID("123");
-        connMsg.setWillFlag(true);
-        connMsg.setWillTopic("topic");
-        connMsg.setWillMessage("Topic message");
-        //IMessaging mockedMessaging = mock(IMessaging.class);
-
-        //Exercise
-        //m_handler.setMessaging(mockedMessaging);
-        messaging.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-        //TODO verify the call
-        /*verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()),
-                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));*/
-    }
-
-
     @Ignore
     public void testHandleSubscribe() {
         /*String topicName = "/news";

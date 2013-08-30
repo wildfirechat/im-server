@@ -1,0 +1,264 @@
+package org.dna.mqtt.moquette.messaging.spi.impl;
+
+import java.util.Map;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.messaging.spi.IMessaging;
+import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
+import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
+import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.moquette.server.ConnectionDescriptor;
+import org.dna.mqtt.moquette.server.Constants;
+import org.dna.mqtt.moquette.server.IAuthenticator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Class responsible to handle the logic of MQTT protocol it's the director of
+ * the protocol execution. 
+ * 
+ * Used by the front facing class SimpleMessaging.
+ * 
+ * @author andrea
+ */
+class ProtocolProcessor {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
+    
+    private Map<String, ConnectionDescriptor> m_clientIDs;
+    private SubscriptionsStore subscriptions;
+    private IStorageService m_storageService;
+    private IAuthenticator m_authenticator;
+    private IMessaging m_messaging;
+
+    ProtocolProcessor() {
+        
+    }
+    
+    void init(Map<String, ConnectionDescriptor> clientIDs, SubscriptionsStore subscriptions, 
+            IStorageService storageService, IMessaging messaging) {
+        m_clientIDs = clientIDs;
+        this.subscriptions = subscriptions;
+        m_storageService = storageService;
+        m_messaging = messaging;
+    }
+    
+    void processConnect(IoSession session, ConnectMessage msg) {
+        if (msg.getProcotolVersion() != 0x03) {
+            ConnAckMessage badProto = new ConnAckMessage();
+            badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
+            session.write(badProto);
+            session.close(false);
+            return;
+        }
+
+        if (msg.getClientID() == null || msg.getClientID().length() > 23) {
+            ConnAckMessage okResp = new ConnAckMessage();
+            okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
+            session.write(okResp);
+            return;
+        }
+
+        //if an old client with the same ID already exists close its session.
+        if (m_clientIDs.containsKey(msg.getClientID())) {
+            //clean the subscriptions if the old used a cleanSession = true
+            IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
+            boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
+            if (cleanSession) {
+                //cleanup topic subscriptions
+                processRemoveAllSubscriptions(msg.getClientID());
+            }
+
+            m_clientIDs.get(msg.getClientID()).getSession().close(false);
+        }
+
+        ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());
+        m_clientIDs.put(msg.getClientID(), connDescr);
+
+        int keepAlive = msg.getKeepAlive();
+        LOG.debug(String.format("Connect with keepAlive %d s",  keepAlive));
+        session.setAttribute("keepAlive", keepAlive);
+        session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
+        //used to track the client in the subscription and publishing phases.
+        session.setAttribute(Constants.ATTR_CLIENTID, msg.getClientID());
+
+        session.getConfig().setIdleTime(IdleStatus.READER_IDLE, Math.round(keepAlive * 1.5f));
+
+        //Handle will flag
+        if (msg.isWillFlag()) {
+            AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
+            PublishEvent pubEvt = new PublishEvent(msg.getWillTopic(), willQos, msg.getWillMessage().getBytes(),
+                    msg.isWillRetain(), msg.getClientID(), session);
+            processPublish(pubEvt);
+        }
+
+        //handle user authentication
+        if (msg.isUserFlag()) {
+            String pwd = null;
+            if (msg.isPasswordFlag()) {
+                pwd = msg.getPassword();
+            }
+            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
+                ConnAckMessage okResp = new ConnAckMessage();
+                okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
+                session.write(okResp);
+                return;
+            }
+        }
+
+        subscriptions.activate(msg.getClientID());
+
+        //handle clean session flag
+        if (msg.isCleanSession()) {
+            //remove all prev subscriptions
+            //cleanup topic subscriptions
+            processRemoveAllSubscriptions(msg.getClientID());
+        }  else {
+            //force the republish of stored QoS1 and QoS2
+            m_messaging.republishStored(msg.getClientID());
+        }
+
+        ConnAckMessage okResp = new ConnAckMessage();
+        okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
+        session.write(okResp);
+    }
+    
+    void processRemoveAllSubscriptions(String clientID) {
+        LOG.debug("processRemoveAllSubscriptions invoked");
+        subscriptions.removeForClient(clientID);
+
+        //remove also the messages stored of type QoS1/2
+        m_storageService.cleanPersistedPublishes(clientID);
+    }
+    
+    protected void processPublish(PublishEvent evt) {
+        LOG.debug("processPublish invoked with " + evt);
+        final String topic = evt.getTopic();
+        final AbstractMessage.QOSType qos = evt.getQos();
+        final byte[] message = evt.getMessage();
+        boolean retain = evt.isRetain();
+
+        String publishKey = null;
+        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
+            //store the temporary message
+            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
+            m_storageService.addInFlight(evt, publishKey);
+        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
+            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
+            //store the message in temp store
+            m_storageService.persistQoS2Message(publishKey, evt);
+            sendPubRec(evt.getClientID(), evt.getMessageID());
+        }
+
+        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+
+        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
+            if (publishKey == null) {
+                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + evt);
+            }
+            m_storageService.cleanInFlight(publishKey);
+            sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
+        }
+
+        if (retain) {
+            m_storageService.storeRetained(topic, message, qos);
+        }
+    }
+    
+    /**
+     * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
+     * */
+    void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
+        for (final Subscription sub : subscriptions.matches(topic)) {
+            if (qos == AbstractMessage.QOSType.MOST_ONE) {
+                //QoS 0
+                notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+            } else {
+                //QoS 1 or 2
+                //if the target subscription is not clean session and is not connected => store it
+                if (!sub.isCleanSession() && !sub.isActive()) {
+                    //clone the event with matching clientID
+                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                    m_storageService.storePublishForFuture(newPublishEvt);
+                } else  {
+                    //if QoS 2 then store it in temp memory
+                    if (qos ==AbstractMessage.QOSType.EXACTLY_ONCE) {
+                        String publishKey = String.format("%s%d", sub.getClientId(), messageID);
+                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                        m_storageService.addInFlight(newPublishEvt, publishKey);
+                    }
+                    //publish
+                    notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+                }
+            }
+        }
+    }
+    
+    void notify(NotifyEvent evt) {
+        LOG.debug("notify invoked with event " + evt);
+        String clientId = evt.getClientId();
+        PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setRetainFlag(evt.isRetained());
+        pubMessage.setTopicName(evt.getTopic());
+        pubMessage.setQos(evt.getQos());
+        pubMessage.setPayload(evt.getMessage());
+        if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
+            pubMessage.setMessageID(evt.getMessageID());
+        }
+
+        try {
+            if (m_clientIDs == null) {
+                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            }
+            LOG.debug("clientIDs are " + m_clientIDs);
+            if (m_clientIDs.get(clientId) == null) {
+                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+            }
+            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
+            m_clientIDs.get(clientId).getSession().write(pubMessage);
+        }catch(Throwable t) {
+            LOG.error(null, t);
+        }
+    }
+    
+    private void sendPubRec(String clientID, int messageID) {
+        LOG.debug(String.format("sendPubRec invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubRecMessage pubRecMessage = new PubRecMessage();
+        pubRecMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
+    }
+    
+    private void sendPubAck(PubAckEvent evt) {
+        LOG.debug("sendPubAck invoked");
+
+        String clientId = evt.getClientID();
+
+        PubAckMessage pubAckMessage = new PubAckMessage();
+        pubAckMessage.setMessageID(evt.getMessageId());
+
+        try {
+            if (m_clientIDs == null) {
+                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            }
+            LOG.debug("clientIDs are " + m_clientIDs);
+           if (m_clientIDs.get(clientId) == null) {
+                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+            }
+            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
+            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+        }catch(Throwable t) {
+            LOG.error(null, t);
+        }
+    }
+
+}
