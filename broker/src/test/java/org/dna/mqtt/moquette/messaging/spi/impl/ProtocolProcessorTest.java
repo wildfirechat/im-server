@@ -231,7 +231,7 @@ public class ProtocolProcessorTest {
                 }
             }
         };
-        subs.init(m_storageService);
+        subs.init(new DummyStorageService());
         
         //simulate a connect that register a clientID to an IoSession
         IMessaging mockedMessaging = mock(IMessaging.class);
