@@ -81,11 +81,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     
-/*    public void setNotifier(INotifier notifier) {
-        m_notifier= notifier;
-    }  */
-    
-
     private void disruptorPublish(MessagingEvent msgEvent) {
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
@@ -189,7 +184,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof PubCompMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubCompMessage) message).getMessageID();
-                processPubComp(clientID, messageID);
+                m_processor.processPubComp(clientID, messageID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
@@ -210,12 +205,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     protected void processPublish(PublishEvent evt) {
         m_processor.processPublish(evt);
-    }
-
-    private void processPubComp(String clientID, int messageID) {
-        //once received the PUBCOMP then remove the message from the temp memory
-        String publishKey = String.format("%s%d", clientID, messageID);
-        m_storageService.cleanInFlight(publishKey);
     }
 
     private void subscribeSingleTopic(Subscription newSubscription, final String topic) {

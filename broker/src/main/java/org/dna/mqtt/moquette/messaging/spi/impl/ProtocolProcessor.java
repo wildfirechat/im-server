@@ -303,5 +303,11 @@ class ProtocolProcessor {
 
         m_clientIDs.get(clientID).getSession().write(pubRelMessage);
     }
+    
+    void processPubComp(String clientID, int messageID) {
+        //once received the PUBCOMP then remove the message from the temp memory
+        String publishKey = String.format("%s%d", clientID, messageID);
+        m_storageService.cleanInFlight(publishKey);
+    }
 
 }
