@@ -11,14 +11,15 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import static org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessagingTest.FAKE_CLIENT_ID;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.*;
  * @author andrea
  */
 public class ProtocolProcessorTest {
-    
+    final static String FAKE_CLIENT_ID = "FAKE_123";
     final static String FAKE_TOPIC = "/news";
     
     IoSession m_session;
@@ -42,8 +43,9 @@ public class ProtocolProcessorTest {
     ProtocolProcessor m_processor;
     
     IStorageService m_storageService;
-    
+    SubscriptionsStore subscriptions;
     AbstractMessage m_receivedMessage;
+    
     
     @Before
     public void setUp() throws InterruptedException {
@@ -75,7 +77,7 @@ public class ProtocolProcessorTest {
         m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
 
-        SubscriptionsStore subscriptions = new SubscriptionsStore();
+        subscriptions = new SubscriptionsStore();
         subscriptions.init(m_storageService);
         m_processor = new ProtocolProcessor();
         IMessaging mockedMessaging = mock(IMessaging.class);
@@ -156,48 +158,99 @@ public class ProtocolProcessorTest {
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
     }
+    
+    @Test
+    public void testSubscribe() {
+        //Exercise
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+
+        //Verify
+        assertTrue(m_receivedMessage instanceof SubAckMessage);
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        assertTrue(subscriptions.contains(expectedSubscription));
+    }
+    
+    @Test
+    public void testDoubleSubscribe() {
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        
+        subscriptions.clearAllSubscriptions();
+        assertEquals(0, subscriptions.size());
+        
+        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+                
+        //Exercise
+        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+
+        //Verify
+        assertEquals(1, subscriptions.size());
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        assertTrue(subscriptions.contains(expectedSubscription));
+    }
 
     
-    //    @Test
-//    public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
-//        m_session.getFilterChain().remove("MessageCatcher");
-//        m_session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
-//
-//            @Override
-//            public void filterWrite(IoFilter.NextFilter nextFilter, IoSession session,
-//                                    WriteRequest writeRequest) throws Exception {
-//                try {
-//                    System.out.println("filterReceived class " + writeRequest.getMessage().getClass().getName());
-//                    if (writeRequest.getMessage() instanceof PublishMessage) {
-//                        m_receivedMessage = (AbstractMessage) writeRequest.getMessage();
-//                    }
-//                    
-//                    if (m_receivedMessage instanceof ConnAckMessage) {
-//                        ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
-//                        m_returnCode = buf.getReturnCode();
-//                    }
-//                } catch (Exception ex) {
-//                    throw new AssertionError("Wrong return code");
-//                }
-//            }
-//        });    
-//            
+    @Test
+    public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
+        m_session.getFilterChain().remove("MessageCatcher");
+        m_session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
+
+            @Override
+            public void filterWrite(IoFilter.NextFilter nextFilter, IoSession session,
+                                    WriteRequest writeRequest) throws Exception {
+                try {
+                    System.out.println("filterReceived class " + writeRequest.getMessage().getClass().getName());
+                    if (writeRequest.getMessage() instanceof PublishMessage) {
+                        m_receivedMessage = (AbstractMessage) writeRequest.getMessage();
+                    }
+                    
+                    if (m_receivedMessage instanceof ConnAckMessage) {
+                        ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
+                        m_returnCode = buf.getReturnCode();
+                    }
+                } catch (Exception ex) {
+                    throw new AssertionError("Wrong return code");
+                }
+            }
+        });    
+            
 //        //simulate a connect that register a clientID to an IoSession
-//        ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, true);
-//        messaging.m_clientIDs.put(FAKE_CLIENT_ID, connDescr);
-//        
-//        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
-//        messaging.processPublish(pubEvt);
-//        
-//        //Exercise
-//        SubscribeMessage msg = new SubscribeMessage();
-//        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
-//        messaging.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
-//        
-//        //Verify
-//        assertNotNull(m_receivedMessage); 
-//        assertTrue(m_receivedMessage instanceof PublishMessage);
-//        PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
-//        assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
-//    }
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+
+        //subscriptions.matches(topic) redefine the method to return true
+        SubscriptionsStore subs = new SubscriptionsStore() {
+            @Override
+            public List<Subscription> matches(String topic) {
+                if (topic.equals(FAKE_TOPIC)) {
+                    return Arrays.asList(subscription);
+                } else {
+                    throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
+                }
+            }
+        };
+        subs.init(m_storageService);
+        
+        //simulate a connect that register a clientID to an IoSession
+        IMessaging mockedMessaging = mock(IMessaging.class);
+        Map<String, ConnectionDescriptor> connectionsMap = new HashMap<String, ConnectionDescriptor>();
+        ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, subscription.isCleanSession());
+        connectionsMap.put(FAKE_CLIENT_ID, connDescr);
+        m_processor.init(connectionsMap, subs, m_storageService, mockedMessaging);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
+        m_processor.processPublish(pubEvt);
+        
+        //Exercise
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
+        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        
+        //Verify
+        assertNotNull(m_receivedMessage); 
+        assertTrue(m_receivedMessage instanceof PublishMessage);
+        PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
+        assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
+    }
 }

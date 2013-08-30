@@ -4,27 +4,21 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
-import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
-import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +37,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private SubscriptionsStore subscriptions = new SubscriptionsStore();
     
     private RingBuffer<ValueEvent> m_ringBuffer;
-
-//    private INotifier m_notifier;
 
     private IStorageService m_storageService;
 
@@ -172,7 +164,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof SubscribeMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-                processSubscribe(session, (SubscribeMessage) message, clientID, cleanSession);
+                m_processor.processSubscribe(session, (SubscribeMessage) message, clientID, cleanSession);
             } else if (message instanceof PubRelMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubRelMessage) message).getMessageID();
@@ -203,62 +195,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
 
-    private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
-        subscriptions.add(newSubscription);
-
-        //scans retained messages to be published to the new subscription
-        Collection<StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
-            public boolean match(String key) {
-                return  SubscriptionsStore.matchTopics(key, topic);
-            }
-        });
-
-        for (StoredMessage storedMsg : messages) {
-            //fire the as retained the message
-            LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            m_processor.notify(new NotifyEvent(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true));
-        }
-    }
-
-    protected void processSubscribe(IoSession session, SubscribeMessage msg, String clientID, boolean cleanSession) {
-        LOG.debug("processSubscribe invoked");
-
-        for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
-            Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
-            subscribeSingleTopic(newSubscription, req.getTopic());
-        }
-
-        //ack the client
-        SubAckMessage ackMessage = new SubAckMessage();
-        ackMessage.setMessageID(msg.getMessageID());
-
-        //TODO by now it handles only QoS 0 messages
-        for (int i = 0; i < msg.subscriptions().size(); i++) {
-            ackMessage.addType(QOSType.MOST_ONE);
-        }
-        LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
-        session.write(ackMessage);
-    }
-
-//    /**
-//     * Remove the clientID from topic subscription, if not previously subscribed,
-//     * doesn't reply any error
-//     */
-//    protected void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
-//        LOG.debug("processSubscribe invoked");
-//
-//        for (String topic : topics) {
-//            subscriptions.removeSubscription(topic, clientID);
-//        }
-//        //ack the client
-//        UnsubAckMessage ackMessage = new UnsubAckMessage();
-//        ackMessage.setMessageID(messageID);
-//
-//        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
-//        session.write(ackMessage);
-//    }
-    
     private void processStop() {
         LOG.debug("processStop invoked");
         m_storageService.close();

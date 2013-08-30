@@ -1,9 +1,11 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
@@ -19,6 +21,8 @@ import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
@@ -338,6 +342,45 @@ class ProtocolProcessor {
 
         LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
         session.write(ackMessage);
+    }
+    
+    
+    void processSubscribe(IoSession session, SubscribeMessage msg, String clientID, boolean cleanSession) {
+        LOG.debug("processSubscribe invoked");
+
+        for (SubscribeMessage.Couple req : msg.subscriptions()) {
+            AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
+            Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
+            subscribeSingleTopic(newSubscription, req.getTopic());
+        }
+
+        //ack the client
+        SubAckMessage ackMessage = new SubAckMessage();
+        ackMessage.setMessageID(msg.getMessageID());
+
+        //TODO by now it handles only QoS 0 messages
+        for (int i = 0; i < msg.subscriptions().size(); i++) {
+            ackMessage.addType(AbstractMessage.QOSType.MOST_ONE);
+        }
+        LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
+        session.write(ackMessage);
+    }
+    
+    private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
+        subscriptions.add(newSubscription);
+
+        //scans retained messages to be published to the new subscription
+        Collection<HawtDBStorageService.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+            public boolean match(String key) {
+                return  SubscriptionsStore.matchTopics(key, topic);
+            }
+        });
+
+        for (HawtDBStorageService.StoredMessage storedMsg : messages) {
+            //fire the as retained the message
+            LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
+            notify(new NotifyEvent(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true));
+        }
     }
 
 }
