@@ -333,7 +333,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
 
         if (qos == QOSType.LEAST_ONE) {
-            assert publishKey != null;
+            if (publishKey == null) {
+                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + evt);
+            }
             m_storageService.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
         }
@@ -496,9 +498,13 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
 
         try {
-            assert m_clientIDs != null;
+            if (m_clientIDs == null) {
+                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            }
             LOG.debug("clientIDs are " + m_clientIDs);
-            assert m_clientIDs.get(clientId) != null;
+            if (m_clientIDs.get(clientId) == null) {
+                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+            }
             LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
             m_clientIDs.get(clientId).getSession().write(pubMessage);
         }catch(Throwable t) {
@@ -515,9 +521,13 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         pubAckMessage.setMessageID(evt.getMessageId());
 
         try {
-            assert m_clientIDs != null;
+            if (m_clientIDs == null) {
+                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            }
             LOG.debug("clientIDs are " + m_clientIDs);
-            assert m_clientIDs.get(clientId) != null;
+           if (m_clientIDs.get(clientId) == null) {
+                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+            }
             LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
             m_clientIDs.get(clientId).getSession().write(pubAckMessage);
         }catch(Throwable t) {
