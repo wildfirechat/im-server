@@ -127,7 +127,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         MessagingEvent evt = t.getEvent();
         LOG.debug("onEvent processing messaging event " + evt);
         if (evt instanceof PublishEvent) {
-            processPublish((PublishEvent) evt);
+            m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof DisconnectEvent) {
@@ -153,7 +153,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 } else {
                     pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
                 }
-                processPublish(pubEvt);
+                m_processor.processPublish(pubEvt);
             } else if (message instanceof DisconnectMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
@@ -202,10 +202,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_processor.init(m_clientIDs, subscriptions, m_storageService, this);
     }
 
-
-    protected void processPublish(PublishEvent evt) {
-        m_processor.processPublish(evt);
-    }
 
     private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
         subscriptions.add(newSubscription);
