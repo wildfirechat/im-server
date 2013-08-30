@@ -140,7 +140,7 @@ class ProtocolProcessor {
         session.write(okResp);
     }
     
-    void processRemoveAllSubscriptions(String clientID) {
+    private void processRemoveAllSubscriptions(String clientID) {
         LOG.debug("processRemoveAllSubscriptions invoked");
         subscriptions.removeForClient(clientID);
 
@@ -185,7 +185,7 @@ class ProtocolProcessor {
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
+    private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
@@ -316,7 +316,11 @@ class ProtocolProcessor {
         m_storageService.cleanInFlight(publishKey);
     }
     
-    void processDisconnect(IoSession session, String clientID) throws InterruptedException {
+    void processDisconnect(IoSession session, String clientID, boolean cleanSession) throws InterruptedException {
+        if (cleanSession) {
+            //cleanup topic subscriptions
+            processRemoveAllSubscriptions(clientID);
+        }
 //        m_notifier.disconnect(evt.getSession());
         m_clientIDs.remove(clientID);
         session.close(true);

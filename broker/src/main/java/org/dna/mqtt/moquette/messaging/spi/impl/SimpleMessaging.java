@@ -88,9 +88,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     //method used by hte Notifier to re-put an event on the inbound queue
-    private void refill(MessagingEvent evt) {
-        disruptorPublish(evt);
-    }
+//    private void refill(MessagingEvent evt) {
+//        disruptorPublish(evt);
+//    }
 
     public void republishStored(String clientID) {
         //create the event to push
@@ -101,15 +101,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void handleProtocolMessage(IoSession session, AbstractMessage msg) {
         disruptorPublish(new ProtocolEvent(session, msg));
     }
-
-
-    /**
-     * NOT SAFE Method, to be removed because used only in tests
-     */
-    protected SubscriptionsStore getSubscriptions() {
-        return subscriptions;
-    }
-
 
     public void stop() {
         disruptorPublish(new StopEvent());
@@ -125,7 +116,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         } else if (evt instanceof DisconnectEvent) {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
-            m_processor.processDisconnect(disEvt.getSession(), clientID);
+            m_processor.processDisconnect(disEvt.getSession(), clientID, false);
         } else if (evt instanceof RepublishEvent) {
             processRepublish((RepublishEvent) evt);
         } else if (evt instanceof ProtocolEvent) {
@@ -149,14 +140,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof DisconnectMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-                if (cleanSession) {
-                    //cleanup topic subscriptions
-                    m_processor.processRemoveAllSubscriptions(clientID);
-                }
 
                 //close the TCP connection
                 //session.close(true);
-                m_processor.processDisconnect(session, clientID);
+                m_processor.processDisconnect(session, clientID, cleanSession);
             } else if (message instanceof UnsubscribeMessage) {
                 UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
