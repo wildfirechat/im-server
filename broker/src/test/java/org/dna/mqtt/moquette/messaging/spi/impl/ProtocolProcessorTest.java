@@ -74,7 +74,7 @@ public class ProtocolProcessorTest {
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
         
-        m_storageService = new DummyStorageService();
+        m_storageService = new MemoryStorageService();
         //m_storageService.initStore();
 
         subscriptions = new SubscriptionsStore();
@@ -231,7 +231,7 @@ public class ProtocolProcessorTest {
                 }
             }
         };
-        subs.init(new DummyStorageService());
+        subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
         IMessaging mockedMessaging = mock(IMessaging.class);

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  */
-public class DummyStorageService implements IStorageService {
+public class MemoryStorageService implements IStorageService {
     
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<String, Set<Subscription>>();
     private Map<String, HawtDBStorageService.StoredMessage> m_retainedStore = new HashMap<String, HawtDBStorageService.StoredMessage>();
@@ -27,7 +27,7 @@ public class DummyStorageService implements IStorageService {
     private Map<String, PublishEvent> m_inflightStore = new HashMap<String, PublishEvent>();
     private Map<String, PublishEvent> m_qos2Store = new HashMap<String, PublishEvent>();
     
-    private static final Logger LOG = LoggerFactory.getLogger(DummyStorageService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MemoryStorageService.class);
     
     public void initStore() {
         //To change body of implemented methods use File | Settings | File Templates.
