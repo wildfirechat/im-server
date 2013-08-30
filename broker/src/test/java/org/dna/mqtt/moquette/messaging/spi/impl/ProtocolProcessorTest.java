@@ -74,8 +74,8 @@ public class ProtocolProcessorTest {
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
         
-        m_storageService = new HawtDBStorageService();
-        m_storageService.initStore();
+        m_storageService = new DummyStorageService();
+        //m_storageService.initStore();
 
         subscriptions = new SubscriptionsStore();
         subscriptions.init(m_storageService);
