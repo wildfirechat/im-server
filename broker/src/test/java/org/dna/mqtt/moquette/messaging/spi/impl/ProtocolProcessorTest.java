@@ -9,7 +9,6 @@ import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.session.DummySession;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
-import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 
 /**
  *
