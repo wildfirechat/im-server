@@ -168,7 +168,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof UnsubscribeMessage) {
                 UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                processUnsubscribe(session, clientID, unsubMsg.topics(), unsubMsg.getMessageID());
+                m_processor.processUnsubscribe(session, clientID, unsubMsg.topics(), unsubMsg.getMessageID());
             } else if (message instanceof SubscribeMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
@@ -245,23 +245,23 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         session.write(ackMessage);
     }
 
-    /**
-     * Remove the clientID from topic subscription, if not previously subscribed,
-     * doesn't reply any error
-     */
-    protected void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
-        LOG.debug("processSubscribe invoked");
-
-        for (String topic : topics) {
-            subscriptions.removeSubscription(topic, clientID);
-        }
-        //ack the client
-        UnsubAckMessage ackMessage = new UnsubAckMessage();
-        ackMessage.setMessageID(messageID);
-
-        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
-        session.write(ackMessage);
-    }
+//    /**
+//     * Remove the clientID from topic subscription, if not previously subscribed,
+//     * doesn't reply any error
+//     */
+//    protected void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
+//        LOG.debug("processSubscribe invoked");
+//
+//        for (String topic : topics) {
+//            subscriptions.removeSubscription(topic, clientID);
+//        }
+//        //ack the client
+//        UnsubAckMessage ackMessage = new UnsubAckMessage();
+//        ackMessage.setMessageID(messageID);
+//
+//        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
+//        session.write(ackMessage);
+//    }
     
     private void processStop() {
         LOG.debug("processStop invoked");

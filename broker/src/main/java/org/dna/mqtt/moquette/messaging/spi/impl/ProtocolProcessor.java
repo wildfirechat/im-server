@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.util.List;
 import java.util.Map;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -18,6 +19,7 @@ import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
@@ -318,6 +320,24 @@ class ProtocolProcessor {
         //de-activate the subscriptions for this ClientID
 //        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
         subscriptions.deactivate(clientID);
+    }
+    
+    /**
+     * Remove the clientID from topic subscription, if not previously subscribed,
+     * doesn't reply any error
+     */
+    void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
+        LOG.debug("processSubscribe invoked");
+
+        for (String topic : topics) {
+            subscriptions.removeSubscription(topic, clientID);
+        }
+        //ack the client
+        UnsubAckMessage ackMessage = new UnsubAckMessage();
+        ackMessage.setMessageID(messageID);
+
+        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
+        session.write(ackMessage);
     }
 
 }
