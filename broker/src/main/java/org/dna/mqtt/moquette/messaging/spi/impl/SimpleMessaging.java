@@ -92,11 +92,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 //        disruptorPublish(evt);
 //    }
 
-    public void republishStored(String clientID) {
+    /*public void republishStored(String clientID) {
         //create the event to push
         LOG.debug("republishStored invoked to publish soterd messages for clientID " + clientID);
         disruptorPublish(new RepublishEvent(clientID));
-    }
+    }*/
 
     public void handleProtocolMessage(IoSession session, AbstractMessage msg) {
         disruptorPublish(new ProtocolEvent(session, msg));
@@ -117,9 +117,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
             m_processor.processDisconnect(disEvt.getSession(), clientID, false);
-        } else if (evt instanceof RepublishEvent) {
+        } /*else if (evt instanceof RepublishEvent) {
             processRepublish((RepublishEvent) evt);
-        } else if (evt instanceof ProtocolEvent) {
+        } */else if (evt instanceof ProtocolEvent) {
             IoSession session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage) {
@@ -190,17 +190,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_executor.shutdown();
     }
 
-    private void processRepublish(RepublishEvent evt) throws InterruptedException {
-        LOG.debug("processRepublish invoked");
-        List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(evt.getClientID());
-        if (publishedEvents == null) {
-            LOG.debug("processRepublish, no stored publish events");
-            return;
-        }
-
-        for (PublishEvent pubEvt : publishedEvents) {
-            m_processor.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
-                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
-        }
-    }
+//    private void processRepublish(RepublishEvent evt) throws InterruptedException {
+//        LOG.debug("processRepublish invoked");
+//        List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(evt.getClientID());
+//        if (publishedEvents == null) {
+//            LOG.debug("processRepublish, no stored publish events");
+//            return;
+//        }
+//
+//        for (PublishEvent pubEvt : publishedEvents) {
+//            m_processor.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+//                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
+//        }
+//    }
 }

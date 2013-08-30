@@ -11,6 +11,7 @@ import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.RepublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.PubCompMessage;
@@ -130,14 +131,30 @@ class ProtocolProcessor {
             //remove all prev subscriptions
             //cleanup topic subscriptions
             processRemoveAllSubscriptions(msg.getClientID());
-        }  else {
-            //force the republish of stored QoS1 and QoS2
-            m_messaging.republishStored(msg.getClientID());
         }
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
         session.write(okResp);
+        
+        if (!msg.isCleanSession()) {
+            //force the republish of stored QoS1 and QoS2
+            republishStored(msg.getClientID());
+        }
+    }
+    
+    private void republishStored(String clientID) {
+        LOG.debug("republishStored invoked");
+        List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(clientID);
+        if (publishedEvents == null) {
+            LOG.debug("republishStored, no stored publish events");
+            return;
+        }
+
+        for (PublishEvent pubEvt : publishedEvents) {
+            notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
+        }
     }
     
     private void processRemoveAllSubscriptions(String clientID) {
@@ -211,7 +228,7 @@ class ProtocolProcessor {
         }
     }
     
-    void notify(NotifyEvent evt) {
+    private void notify(NotifyEvent evt) {
         LOG.debug("notify invoked with event " + evt);
         String clientId = evt.getClientId();
         PublishMessage pubMessage = new PublishMessage();
