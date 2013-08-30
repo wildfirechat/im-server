@@ -16,6 +16,7 @@ import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
+import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
@@ -266,7 +267,7 @@ class ProtocolProcessor {
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
      * */
-    protected void processPubRel(String clientID, int messageID) {
+    void processPubRel(String clientID, int messageID) {
         String publishKey = String.format("%s%d", clientID, messageID);
         PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
 
@@ -292,6 +293,15 @@ class ProtocolProcessor {
         pubCompMessage.setMessageID(messageID);
 
         m_clientIDs.get(clientID).getSession().write(pubCompMessage);
+    }
+    
+    void processPubRec(String clientID, int messageID) {
+        //once received a PUBREC reply with a PUBREL(messageID)
+        LOG.debug(String.format("processPubRec invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubRelMessage pubRelMessage = new PubRelMessage();
+        pubRelMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
     }
 
 }

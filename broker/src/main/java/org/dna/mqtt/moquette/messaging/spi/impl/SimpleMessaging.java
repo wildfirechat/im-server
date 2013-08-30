@@ -185,7 +185,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof PubRecMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubRecMessage) message).getMessageID();
-                processPubRec(clientID, messageID);
+                m_processor.processPubRec(clientID, messageID);
             } else if (message instanceof PubCompMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubCompMessage) message).getMessageID();
@@ -210,15 +210,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     protected void processPublish(PublishEvent evt) {
         m_processor.processPublish(evt);
-    }
-
-    private void processPubRec(String clientID, int messageID) {
-        //once received a PUBREC reply with a PUBREL(messageID)
-        LOG.debug(String.format("processPubRec invoked for clientID %s ad messageID %d", clientID, messageID));
-        PubRelMessage pubRelMessage = new PubRelMessage();
-        pubRelMessage.setMessageID(messageID);
-
-        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
     }
 
     private void processPubComp(String clientID, int messageID) {
