@@ -8,10 +8,8 @@ import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.NotifyEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.RepublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.PubCompMessage;
@@ -47,18 +45,16 @@ class ProtocolProcessor {
     private SubscriptionsStore subscriptions;
     private IStorageService m_storageService;
     private IAuthenticator m_authenticator;
-    private IMessaging m_messaging;
 
     ProtocolProcessor() {
         
     }
     
     void init(Map<String, ConnectionDescriptor> clientIDs, SubscriptionsStore subscriptions, 
-            IStorageService storageService, IMessaging messaging) {
+            IStorageService storageService) {
         m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_storageService = storageService;
-        m_messaging = messaging;
     }
     
     void processConnect(IoSession session, ConnectMessage msg) {
@@ -152,8 +148,8 @@ class ProtocolProcessor {
         }
 
         for (PublishEvent pubEvt : publishedEvents) {
-            notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
-                    pubEvt.getMessage(), false, pubEvt.getMessageID()));
+            sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+                   pubEvt.getMessage(), false, pubEvt.getMessageID());
         }
     }
     
@@ -206,7 +202,7 @@ class ProtocolProcessor {
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
-                notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+                sendPublish(sub.getClientId(), topic, qos, message, false);
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
@@ -222,22 +218,25 @@ class ProtocolProcessor {
                         m_storageService.addInFlight(newPublishEvt, publishKey);
                     }
                     //publish
-                    notify(new NotifyEvent(sub.getClientId(), topic, qos, message, false));
+                    sendPublish(sub.getClientId(), topic, qos, message, false);
                 }
             }
         }
     }
     
-    private void notify(NotifyEvent evt) {
-        LOG.debug("notify invoked with event " + evt);
-        String clientId = evt.getClientId();
+    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, byte[] message, boolean retained) {
+        sendPublish(clientId, topic, qos, message, retained, 0);
+    }
+    
+    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, byte[] message, boolean retained, int messageID) {
+        LOG.debug("notify invoked with event ");
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(evt.isRetained());
-        pubMessage.setTopicName(evt.getTopic());
-        pubMessage.setQos(evt.getQos());
-        pubMessage.setPayload(evt.getMessage());
+        pubMessage.setRetainFlag(retained);
+        pubMessage.setTopicName(topic);
+        pubMessage.setQos(qos);
+        pubMessage.setPayload(message);
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
-            pubMessage.setMessageID(evt.getMessageID());
+            pubMessage.setMessageID(messageID);
         }
 
         try {
@@ -399,8 +398,8 @@ class ProtocolProcessor {
 
         for (HawtDBStorageService.StoredMessage storedMsg : messages) {
             //fire the as retained the message
-            LOG.debug("Inserting NotifyEvent into outbound for topic " + topic);
-            notify(new NotifyEvent(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true));
+            LOG.debug("send publish message for topic " + topic);
+            sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
         }
     }
 

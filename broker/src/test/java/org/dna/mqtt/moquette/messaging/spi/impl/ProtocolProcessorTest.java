@@ -80,8 +80,7 @@ public class ProtocolProcessorTest {
         subscriptions = new SubscriptionsStore();
         subscriptions.init(m_storageService);
         m_processor = new ProtocolProcessor();
-        IMessaging mockedMessaging = mock(IMessaging.class);
-        m_processor.init(new HashMap<String, ConnectionDescriptor>(), subscriptions, m_storageService, mockedMessaging);
+        m_processor.init(new HashMap<String, ConnectionDescriptor>(), subscriptions, m_storageService);
     }
     
     @Test
@@ -143,11 +142,10 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        IMessaging mockedMessaging = mock(IMessaging.class);
         Map<String, ConnectionDescriptor> connectionsMap = new HashMap<String, ConnectionDescriptor>();
         ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, subscription.isCleanSession());
         connectionsMap.put(FAKE_CLIENT_ID, connDescr);
-        m_processor.init(connectionsMap, subs, m_storageService, mockedMessaging);
+        m_processor.init(connectionsMap, subs, m_storageService);
         
         
         //Exercise
@@ -234,11 +232,10 @@ public class ProtocolProcessorTest {
         subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
-        IMessaging mockedMessaging = mock(IMessaging.class);
         Map<String, ConnectionDescriptor> connectionsMap = new HashMap<String, ConnectionDescriptor>();
         ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, subscription.isCleanSession());
         connectionsMap.put(FAKE_CLIENT_ID, connDescr);
-        m_processor.init(connectionsMap, subs, m_storageService, mockedMessaging);
+        m_processor.init(connectionsMap, subs, m_storageService);
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
         m_processor.processPublish(pubEvt);
         

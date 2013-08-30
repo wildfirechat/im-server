@@ -14,7 +14,5 @@ public interface IMessaging {
 
     void disconnect(IoSession session);
 
-//    void republishStored(String clientID);
-
     void handleProtocolMessage(IoSession session, AbstractMessage msg);
 }
