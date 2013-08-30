@@ -309,5 +309,15 @@ class ProtocolProcessor {
         String publishKey = String.format("%s%d", clientID, messageID);
         m_storageService.cleanInFlight(publishKey);
     }
+    
+    void processDisconnect(IoSession session, String clientID) throws InterruptedException {
+//        m_notifier.disconnect(evt.getSession());
+        m_clientIDs.remove(clientID);
+        session.close(true);
+
+        //de-activate the subscriptions for this ClientID
+//        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
+        subscriptions.deactivate(clientID);
+    }
 
 }

@@ -133,7 +133,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         } else if (evt instanceof DisconnectEvent) {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
-            processDisconnect(disEvt.getSession(), clientID);
+            m_processor.processDisconnect(disEvt.getSession(), clientID);
         } else if (evt instanceof RepublishEvent) {
             processRepublish((RepublishEvent) evt);
         } else if (evt instanceof ProtocolEvent) {
@@ -164,7 +164,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
                 //close the TCP connection
                 //session.close(true);
-                processDisconnect(session, clientID);
+                m_processor.processDisconnect(session, clientID);
             } else if (message instanceof UnsubscribeMessage) {
                 UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
@@ -261,16 +261,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
         session.write(ackMessage);
-    }
-    
-    private void processDisconnect(IoSession session, String clientID) throws InterruptedException {
-//        m_notifier.disconnect(evt.getSession());
-        m_clientIDs.remove(clientID);
-        session.close(true);
-
-        //de-activate the subscriptions for this ClientID
-//        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
-        subscriptions.deactivate(clientID);
     }
     
     private void processStop() {
