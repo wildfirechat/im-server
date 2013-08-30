@@ -10,6 +10,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import org.dna.mqtt.moquette.proto.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
@@ -259,6 +260,38 @@ class ProtocolProcessor {
         }catch(Throwable t) {
             LOG.error(null, t);
         }
+    }
+    
+    /**
+     * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
+     * to all interested subscribers.
+     * */
+    protected void processPubRel(String clientID, int messageID) {
+        String publishKey = String.format("%s%d", clientID, messageID);
+        PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
+
+        final String topic = evt.getTopic();
+        final AbstractMessage.QOSType qos = evt.getQos();
+        final byte[] message = evt.getMessage();
+        boolean retain = evt.isRetain();
+
+        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+
+        m_storageService.removeQoS2Message(publishKey);
+
+        if (retain) {
+            m_storageService.storeRetained(topic, message, qos);
+        }
+
+        sendPubComp(clientID, messageID);
+    }
+    
+    private void sendPubComp(String clientID, int messageID) {
+        LOG.debug(String.format("sendPubComp invoked for clientID %s ad messageID %d", clientID, messageID));
+        PubCompMessage pubCompMessage = new PubCompMessage();
+        pubCompMessage.setMessageID(messageID);
+
+        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
     }
 
 }

@@ -181,7 +181,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof PubRelMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubRelMessage) message).getMessageID();
-                processPubRel(clientID, messageID);
+                m_processor.processPubRel(clientID, messageID);
             } else if (message instanceof PubRecMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubRecMessage) message).getMessageID();
@@ -207,34 +207,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_processor.init(m_clientIDs, subscriptions, m_storageService, this);
     }
 
-
-//    protected void processConnect(IoSession session, ConnectMessage msg) {
-//        m_processor.processConnect(session, msg);
-//    }
-
-    /**
-     * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
-     * to all interested subscribers.
-     * */
-    protected void processPubRel(String clientID, int messageID) {
-        String publishKey = String.format("%s%d", clientID, messageID);
-        PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
-
-        final String topic = evt.getTopic();
-        final QOSType qos = evt.getQos();
-        final byte[] message = evt.getMessage();
-        boolean retain = evt.isRetain();
-
-        m_processor.publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
-
-        m_storageService.removeQoS2Message(publishKey);
-
-        if (retain) {
-            m_storageService.storeRetained(topic, message, qos);
-        }
-
-        sendPubComp(clientID, messageID);
-    }
 
     protected void processPublish(PublishEvent evt) {
         m_processor.processPublish(evt);
@@ -341,13 +313,5 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             m_processor.notify(new NotifyEvent(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID()));
         }
-    }
-
-    private void sendPubComp(String clientID, int messageID) {
-        LOG.debug(String.format("sendPubComp invoked for clientID %s ad messageID %d", clientID, messageID));
-        PubCompMessage pubCompMessage = new PubCompMessage();
-        pubCompMessage.setMessageID(messageID);
-
-        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
     }
 }
