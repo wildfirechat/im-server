@@ -9,10 +9,10 @@
         <version>0.2</version>
     </parent>
 
-    <artifactId>moquette-mina-parser</artifactId>
+    <artifactId>moquette-netty-parser</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
-    <name>Moquette - MINA Parser</name>
+    <name>Moquette - Netty Parser</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,10 +20,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
-            <version>2.0.4</version>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.8.Final</version>
         </dependency>
+            
         
         <!--dependency>
             <groupId>com.googlecode.disruptor</groupId>
