@@ -9,7 +9,7 @@
         <version>0.2</version>
     </parent>
 
-    <artifactId>moquette-parser</artifactId>
+    <artifactId>moquette-mina-parser</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
     <name>Moquette - Parser</name>

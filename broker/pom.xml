@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dna.mqtt</groupId>
-            <artifactId>moquette-parser</artifactId>
+            <artifactId>moquette-mina-parser</artifactId>
             <version>0.2</version>
         </dependency>
 
