@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.CorruptedFrameException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,6 @@ public class MQTTDecoderTest {
     public void testBaseHeader() throws Exception {
         m_buff = Unpooled.buffer(14);
         initBaseHeader(m_buff);
-        //m_buff.flip();
         List<Object> results = new ArrayList<Object >();
         
         //Excercise
@@ -38,6 +38,72 @@ public class MQTTDecoderTest {
         //Verify
         assertFalse(results.isEmpty());
         verifyBaseHeader((ConnectMessage)results.get(0));
+    }
+    
+    @Test
+    public void testBaseHeader_ClientID() throws UnsupportedEncodingException, Exception {
+        m_buff = Unpooled.buffer(40);
+        initHeader(m_buff, (byte) 38);
+        encodeString(m_buff, "ABCDEFGH");
+        encodeString(m_buff, "Topic");
+        encodeString(m_buff, "Message");
+        List<Object> results = new ArrayList<Object >();
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, results);
+        
+        //Verify
+        assertFalse(results.isEmpty());
+        ConnectMessage message = (ConnectMessage)results.get(0); 
+        verifyBaseHeader(message);
+        assertEquals("ABCDEFGH", message.getClientID());
+        assertEquals("Topic", message.getWillTopic());
+        assertEquals("Message", message.getWillMessage());
+    }
+    
+    
+    @Test
+    public void testBaseHeader_extra_with_user_pwd() throws UnsupportedEncodingException, Exception {
+        m_buff = Unpooled.buffer(55);
+        initHeader(m_buff, (byte) 53);
+        encodeString(m_buff, "ABCDEFGH");
+        encodeString(m_buff, "Topic");
+        encodeString(m_buff, "Message");
+        encodeString(m_buff, "Fakeuser");
+        encodeString(m_buff, "pwd");
+        List<Object> results = new ArrayList<Object >();
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, results);
+        
+        //Verify
+        assertFalse(results.isEmpty());
+        ConnectMessage message = (ConnectMessage)results.get(0); 
+        verifyBaseHeader(message);
+        assertEquals(AbstractMessage.CONNECT, message.getMessageType());
+        assertEquals("ABCDEFGH", message.getClientID());
+        assertEquals("Topic", message.getWillTopic());
+        assertEquals("Message", message.getWillMessage());
+        assertEquals("Fakeuser", message.getUsername());
+        assertEquals("pwd", message.getPassword());
+    }
+    
+    @Test(expected = CorruptedFrameException.class)
+    public void testBadFlagUserPwd() throws UnsupportedEncodingException, Exception {
+        m_buff = Unpooled.buffer(14);
+        m_buff.writeByte((AbstractMessage.CONNECT << 4)).writeByte(12);
+        //Proto name
+        encodeString(m_buff, "MQIsdp");
+        //version
+        m_buff.writeByte(3);
+        //conn flags
+        m_buff.writeByte(0x4E); //sets user to false and password to true
+        //keepAlive
+        m_buff.writeByte(0).writeByte(0x0A);
+        List<Object> results = new ArrayList<Object >();
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, results);
     }
     
     
