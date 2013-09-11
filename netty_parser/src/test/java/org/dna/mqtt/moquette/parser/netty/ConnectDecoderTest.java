@@ -16,14 +16,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-public class MQTTDecoderTest {
+public class ConnectDecoderTest {
     
     ByteBuf m_buff;
-    MQTTDecoder m_msgdec;
+    ConnectDecoder m_msgdec;
     
     @Before
     public void setUp() {
-        m_msgdec = new MQTTDecoder();
+        m_msgdec = new ConnectDecoder();
     }
     
     @Test
