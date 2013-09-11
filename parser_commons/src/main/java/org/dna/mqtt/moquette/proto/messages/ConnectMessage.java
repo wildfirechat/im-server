@@ -24,6 +24,10 @@ public class ConnectMessage extends AbstractMessage {
     String m_clientID;
     String m_willtopic;
     String m_willMessage;
+    
+    public ConnectMessage() {
+        m_messageType = AbstractMessage.CONNECT;
+    }
 
     public boolean isCleanSession() {
         return m_cleanSession;

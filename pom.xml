@@ -21,7 +21,6 @@
         <module>netty_parser</module>
         <module>broker</module>
         <module>benchmarking</module>
-        <module>parser_commons</module>
     </modules>
 
 </project>
