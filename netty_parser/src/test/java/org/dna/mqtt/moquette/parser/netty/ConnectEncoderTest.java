@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.junit.Test;
 import org.junit.Before;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
 

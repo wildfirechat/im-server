@@ -19,6 +19,7 @@ public class MQTTDecoder extends ByteToMessageDecoder {
     
     MQTTDecoder() {
        m_decoderMap.put(AbstractMessage.CONNECT, new ConnectDecoder());
+       m_decoderMap.put(AbstractMessage.CONNACK, new ConnAckDecoder());
     }
 
     @Override
