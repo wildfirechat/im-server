@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.server;
 
+import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;

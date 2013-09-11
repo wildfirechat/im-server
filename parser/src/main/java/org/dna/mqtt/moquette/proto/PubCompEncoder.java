@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.proto;
 
+import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
