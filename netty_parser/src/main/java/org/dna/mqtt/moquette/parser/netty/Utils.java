@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.CorruptedFrameException;
 import java.io.UnsupportedEncodingException;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class Utils {
+    
+    public static final int MAX_LENGTH_LIMIT = 268435455;
     
     static byte readMessageType(ByteBuf in) {
         byte h1 = in.readByte();
@@ -58,6 +61,32 @@ public class Utils {
             multiplier *= 128;
         } while ((digit & 0x80) != 0);
         return value;
+    }
+    
+    /**
+     * Encode the value in the format defined in specification as variable length
+     * array.
+     * 
+     * @throws IllegalArgumentException if the value is not in the specification bounds
+     *  [0..268435455].
+     */
+    static ByteBuf encodeRemainingLength(int value) throws CorruptedFrameException {
+        if (value > MAX_LENGTH_LIMIT || value < 0) {
+            throw new CorruptedFrameException("Value should in range 0.." + MAX_LENGTH_LIMIT + " found " + value);
+        }
+
+        ByteBuf encoded = Unpooled.buffer(4);
+        byte digit;
+        do {
+            digit = (byte) (value % 128);
+            value = value / 128;
+            // if there are more digits to encode, set the top bit of this digit
+            if (value > 0) {
+                digit = (byte) (digit | 0x80);
+            }
+            encoded.writeByte(digit);
+        } while (value > 0);
+        return encoded;
     }
     
     /**

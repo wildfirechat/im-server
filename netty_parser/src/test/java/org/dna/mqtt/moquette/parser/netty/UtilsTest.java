@@ -2,9 +2,11 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import static org.junit.Assert.assertEquals;
+import io.netty.handler.codec.CorruptedFrameException;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
 
 /**
  *
@@ -46,5 +48,34 @@ public class UtilsTest {
         assertEquals(2097152, Utils.decodeRemainingLenght(m_buff));
         m_buff.clear().writeBytes(new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0x7F});
         assertEquals(268435455, Utils.decodeRemainingLenght(m_buff));
+    }
+    
+    @Test(expected=CorruptedFrameException.class)
+    public void testEncodeRemainingLength_invalid_upper() {
+        Utils.encodeRemainingLength(Utils.MAX_LENGTH_LIMIT + 1);
+    }
+    
+    @Test(expected=CorruptedFrameException.class)
+    public void testEncodeRemainingLength_invalid_lower() {
+        Utils.encodeRemainingLength(-1);
+    }
+    
+    @Test
+    public void testEncodeRemainingLenght() {
+        //1 byte length
+        verifyBuff(1, new byte[]{0}, Utils.encodeRemainingLength(0));
+        verifyBuff(1, new byte[]{0x7F}, Utils.encodeRemainingLength(127));
+        
+        //2 byte length
+        verifyBuff(2, new byte[]{(byte)0x80, 0x01}, Utils.encodeRemainingLength(128));
+        verifyBuff(2, new byte[]{(byte)0xFF, 0x7F}, Utils.encodeRemainingLength(16383));
+        
+        //3 byte length
+        verifyBuff(3, new byte[]{(byte)0x80, (byte)0x80, 0x01}, Utils.encodeRemainingLength(16384));
+        verifyBuff(3, new byte[]{(byte)0xFF, (byte)0xFF, 0x7F}, Utils.encodeRemainingLength(2097151));
+        
+        //4 byte length
+        verifyBuff(4, new byte[]{(byte)0x80, (byte)0x80, (byte)0x80, 0x01}, Utils.encodeRemainingLength(2097152));
+        verifyBuff(4, new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF, 0x7F}, Utils.encodeRemainingLength(268435455));
     }
 }
