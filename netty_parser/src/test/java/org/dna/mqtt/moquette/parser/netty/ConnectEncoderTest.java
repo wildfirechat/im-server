@@ -17,8 +17,8 @@ import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
  *
  * @author andrea
  */
-public class MQTTEncoderTest {
-    MQTTEncoder m_encoder = new MQTTEncoder();
+public class ConnectEncoderTest {
+    ConnectEncoder m_encoder = new ConnectEncoder();
     ChannelHandlerContext m_mockedContext;
          
     @Before
