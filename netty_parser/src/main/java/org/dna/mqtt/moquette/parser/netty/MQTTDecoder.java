@@ -25,6 +25,8 @@ public class MQTTDecoder extends ByteToMessageDecoder {
        m_decoderMap.put(AbstractMessage.SUBSCRIBE, new SubscribeDecoder());
        m_decoderMap.put(AbstractMessage.SUBACK, new SubAckDecoder());
        m_decoderMap.put(AbstractMessage.UNSUBSCRIBE, new UnsubscribeDecoder());
+       m_decoderMap.put(AbstractMessage.DISCONNECT, new DisconnectDecoder());
+       m_decoderMap.put(AbstractMessage.PINGREQ, new PingReqDecoder());
     }
 
     @Override
