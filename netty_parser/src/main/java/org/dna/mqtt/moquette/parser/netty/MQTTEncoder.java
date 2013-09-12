@@ -21,6 +21,7 @@ public class MQTTEncoder extends MessageToByteEncoder<AbstractMessage> {
        m_encoderMap.put(AbstractMessage.CONNACK, new ConnAckEncoder());
        m_encoderMap.put(AbstractMessage.PUBLISH, new PublishEncoder());
        m_encoderMap.put(AbstractMessage.PUBACK, new PubAckEncoder());
+       m_encoderMap.put(AbstractMessage.SUBSCRIBE, new SubscribeEncoder());
     }
     
     @Override
