@@ -32,10 +32,6 @@ public class ConnectEncoderTest {
         msg.setWillFlag(false);
         msg.setCleanSession(true);
         msg.setKeepAlive(512);
-        //mock the ChannelHandlerContext to return an UnpooledAllocator
-        /*ChannelHandlerContext mockedContext = mock(ChannelHandlerContext.class);
-        ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-        when(mockedContext.alloc()).thenReturn(allocator);*/
         ByteBuf out = Unpooled.buffer();
         
         //Exercise

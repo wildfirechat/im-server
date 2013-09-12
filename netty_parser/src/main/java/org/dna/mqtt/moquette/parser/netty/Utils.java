@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.CorruptedFrameException;
 import java.io.UnsupportedEncodingException;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -130,5 +131,29 @@ public class Utils {
         out.writeShort(raw.length);
         out.writeBytes(raw);
         return out;
+    }
+    
+    /**
+     * Return the number of bytes to encode the given remaining length value
+     */
+    static int numBytesToEncode(int len) {
+        if (0 <= len && len <= 127) return 1;
+        if (128 <= len && len <= 16383) return 2;
+        if (16384 <= len && len <= 2097151) return 3;
+        if (2097152 <= len && len <= 268435455) return 4;
+        throw new IllegalArgumentException("value shoul be in the range [0..268435455]");
+    }
+    
+    static byte encodeFlags(AbstractMessage message) {
+        byte flags = 0;
+        if (message.isDupFlag()) {
+            flags |= 0x08;
+        }
+        if (message.isRetainFlag()) {
+            flags |= 0x01;
+        }
+        
+        flags |= ((message.getQos().ordinal() & 0x03) << 1);
+        return flags;
     }
 }

@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 
 /**
  *
@@ -77,5 +79,15 @@ public class UtilsTest {
         //4 byte length
         verifyBuff(4, new byte[]{(byte)0x80, (byte)0x80, (byte)0x80, 0x01}, Utils.encodeRemainingLength(2097152));
         verifyBuff(4, new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF, 0x7F}, Utils.encodeRemainingLength(268435455));
+    }
+    
+    @Test
+    public void testEncodeFlags() {
+        UnsubscribeMessage msg = new UnsubscribeMessage();
+        msg.setRetainFlag(true);
+        msg.setQos(AbstractMessage.QOSType.MOST_ONE);
+        
+        //Exercise
+        assertEquals(1, Utils.encodeFlags(msg));
     }
 }

@@ -56,4 +56,20 @@ public class TestUtils {
         when(m_mockedContext.alloc()).thenReturn(allocator);
         return m_mockedContext;
     }
+    
+    static void verifyEquals(byte[] expected, byte[] found) {
+        assertEquals(expected.length, found.length);
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], found[i]);
+        }
+    }
+    
+    
+    public static ByteBuf generateRandomPayload(int size) {
+        ByteBuf payloadBuffer = Unpooled.buffer(size);
+        for (int i = 0; i < size; i++) {
+            payloadBuffer.writeByte((byte) (Math.random() * 255));
+        }
+        return payloadBuffer;
+    }
 }
