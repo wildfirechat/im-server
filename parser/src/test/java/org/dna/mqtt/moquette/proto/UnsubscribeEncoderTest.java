@@ -1,6 +1,5 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.UnsubscribeEncoder;
 import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.junit.Before;
