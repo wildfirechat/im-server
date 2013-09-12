@@ -30,6 +30,7 @@ public class MQTTDecoder extends ByteToMessageDecoder {
        m_decoderMap.put(AbstractMessage.PINGRESP, new PingRespDecoder());
        m_decoderMap.put(AbstractMessage.UNSUBACK, new UnsubAckDecoder());
        m_decoderMap.put(AbstractMessage.PUBCOMP, new PubCompDecoder());
+       m_decoderMap.put(AbstractMessage.PUBREC, new PubRecDecoder());
     }
 
     @Override
