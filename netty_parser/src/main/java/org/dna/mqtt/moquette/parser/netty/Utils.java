@@ -101,7 +101,7 @@ public class Utils {
             return null;
         }
         //int strLen = Utils.readWord(in);
-        int strLen = in.readShort();
+        int strLen = in.readUnsignedShort();
         if (in.readableBytes() < strLen) {
             return null;
         }

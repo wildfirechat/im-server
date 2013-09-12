@@ -70,7 +70,7 @@ public class ConnectDecoder extends DemuxDecoder {
 
         //Keep Alive timer 2 bytes
         //int keepAlive = Utils.readWord(in);
-        int keepAlive = in.readShort();
+        int keepAlive = in.readUnsignedShort();
         message.setKeepAlive(keepAlive);
 
         if (remainingLength == 12) {
