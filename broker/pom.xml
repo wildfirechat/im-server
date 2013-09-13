@@ -80,13 +80,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
-            <artifactId>moquette-client</artifactId>
-            <version>0.1</version>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
             <groupId>org.fusesource.hawtbuf</groupId>
             <artifactId>hawtbuf</artifactId>
             <version>1.9</version>
