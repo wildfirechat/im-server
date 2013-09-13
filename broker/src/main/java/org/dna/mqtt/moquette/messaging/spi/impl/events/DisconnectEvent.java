@@ -1,6 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
-import org.apache.mina.core.session.IoSession;
+import org.dna.mqtt.moquette.server.ServerChannel;
 
 /**
  *
@@ -8,13 +8,13 @@ import org.apache.mina.core.session.IoSession;
  */
 public class DisconnectEvent extends MessagingEvent {
     
-    IoSession m_session;
+    ServerChannel m_session;
     
-    public DisconnectEvent(IoSession session) {
+    public DisconnectEvent(ServerChannel session) {
         m_session = session;
     }
 
-    public IoSession getSession() {
+    public ServerChannel getSession() {
         return m_session;
     }
     

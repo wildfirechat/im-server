@@ -21,6 +21,8 @@ import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
+import org.dna.mqtt.moquette.server.ServerChannel;
+import org.dna.mqtt.moquette.server.mina.MinaChannel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +37,7 @@ public class ProtocolProcessorTest {
     final static String FAKE_CLIENT_ID = "FAKE_123";
     final static String FAKE_TOPIC = "/news";
     
-    IoSession m_session;
+    ServerChannel m_session;
     byte m_returnCode;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
@@ -44,15 +46,19 @@ public class ProtocolProcessorTest {
     SubscriptionsStore subscriptions;
     AbstractMessage m_receivedMessage;
     
+    IoSession m_minaSession;
+    
     
     @Before
     public void setUp() throws InterruptedException {
         connMsg = new ConnectMessage();
         connMsg.setProcotolVersion((byte) 0x03);
 
-        m_session = new DummySession();
+        m_minaSession = new DummySession();
+        
+        m_session = new MinaChannel(m_minaSession);
 
-        m_session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
+        m_minaSession.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
 
             @Override
             public void filterWrite(IoFilter.NextFilter nextFilter, IoSession session,
@@ -190,8 +196,8 @@ public class ProtocolProcessorTest {
     
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
-        m_session.getFilterChain().remove("MessageCatcher");
-        m_session.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
+        m_minaSession.getFilterChain().remove("MessageCatcher");
+        m_minaSession.getFilterChain().addFirst("MessageCatcher", new IoFilterAdapter() {
 
             @Override
             public void filterWrite(IoFilter.NextFilter nextFilter, IoSession session,

@@ -1,5 +1,7 @@
 package org.dna.mqtt.moquette.server;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -8,6 +10,7 @@ import org.dna.mqtt.moquette.proto.Utils;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
+import org.dna.mqtt.moquette.server.mina.MinaChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +23,7 @@ public class MQTTHandler extends IoHandlerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(MQTTHandler.class);
     private IMessaging m_messaging;
+    private Map<IoSession, MinaChannel> m_channelMapper = new HashMap<IoSession, MinaChannel>();
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
@@ -35,7 +39,11 @@ public class MQTTHandler extends IoHandlerAdapter {
                 case PUBCOMP:
                 case PUBREL:
                 case DISCONNECT:
-                    m_messaging.handleProtocolMessage(session, msg);
+                    if (!m_channelMapper.containsKey(session)) {
+                        m_channelMapper.put(session, new MinaChannel(session));
+                    }
+                    
+                    m_messaging.handleProtocolMessage(m_channelMapper.get(session), msg);
                     break;
                 case PINGREQ:
                     PingRespMessage pingResp = new PingRespMessage();
@@ -51,6 +59,7 @@ public class MQTTHandler extends IoHandlerAdapter {
     public void sessionIdle(IoSession session, IdleStatus status) {
         if (status == IdleStatus.READER_IDLE) {
             session.close(false);
+            m_channelMapper.remove(session);
             //TODO send a notification to messaging part to remove the bining clientID-ConnConfig
         }
     }

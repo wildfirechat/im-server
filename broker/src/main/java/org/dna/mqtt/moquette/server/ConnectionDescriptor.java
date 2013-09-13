@@ -1,7 +1,5 @@
 package org.dna.mqtt.moquette.server;
 
-import org.apache.mina.core.session.IoSession;
-
 /**
  * Maintains the information of single connection, like ClientID, IoSession,
  * and other connection related flags.
@@ -12,10 +10,10 @@ import org.apache.mina.core.session.IoSession;
 public class ConnectionDescriptor {
     
     private String m_clientID;
-    private IoSession m_session;
+    private ServerChannel m_session;
     private boolean m_cleanSession;
     
-    public ConnectionDescriptor(String clientID, IoSession session, boolean cleanSession) {
+    public ConnectionDescriptor(String clientID, ServerChannel session, boolean cleanSession) {
         this.m_clientID = clientID;
         this.m_session = session;
         this.m_cleanSession = cleanSession;
@@ -29,7 +27,7 @@ public class ConnectionDescriptor {
         return m_clientID;
     }
 
-    public IoSession getSession() {
+    public ServerChannel getSession() {
         return m_session;
     }
 }

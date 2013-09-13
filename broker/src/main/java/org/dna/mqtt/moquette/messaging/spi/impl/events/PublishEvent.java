@@ -1,9 +1,9 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
-import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 import java.io.Serializable;
+import org.dna.mqtt.moquette.server.ServerChannel;
 
 /**
  *
@@ -18,10 +18,10 @@ public class PublishEvent extends MessagingEvent implements Serializable {
     //Optional attribute, available only fo QoS 1 and 2
     int m_msgID;
 
-    transient IoSession m_session;
+    transient ServerChannel m_session;
     
     public PublishEvent(String topic, QOSType qos, byte[] message, boolean retain,
-            String clientID, IoSession session) {
+            String clientID, ServerChannel session) {
         m_topic = topic;
         m_qos = qos;
         m_message = message;
@@ -31,7 +31,7 @@ public class PublishEvent extends MessagingEvent implements Serializable {
     }
 
     public PublishEvent(String topic, QOSType qos, byte[] message, boolean retain,
-                        String clientID, int msgID, IoSession session) {
+                        String clientID, int msgID, ServerChannel session) {
         this(topic, qos, message, retain, clientID, session);
         m_msgID = msgID;
     }
@@ -60,7 +60,7 @@ public class PublishEvent extends MessagingEvent implements Serializable {
         return m_msgID;
     }
 
-    public IoSession getSession() {
+    public ServerChannel getSession() {
         return m_session;
     }
 
