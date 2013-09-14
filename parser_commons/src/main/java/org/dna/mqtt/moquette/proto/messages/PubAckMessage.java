@@ -6,4 +6,8 @@ package org.dna.mqtt.moquette.proto.messages;
  * @author andrea
  */
 public class PubAckMessage extends MessageIDMessage {
+    
+    public PubAckMessage() {
+        m_messageType = AbstractMessage.PUBACK;
+    }
 }

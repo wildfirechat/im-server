@@ -6,4 +6,8 @@ package org.dna.mqtt.moquette.proto.messages;
  * @author andrea
  */
 public class DisconnectMessage extends ZeroLengthMessage {
+    
+    public DisconnectMessage() {
+        m_messageType = AbstractMessage.DISCONNECT;
+    }
 }

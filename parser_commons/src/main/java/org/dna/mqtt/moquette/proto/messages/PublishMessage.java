@@ -17,6 +17,10 @@ public class PublishMessage extends MessageIDMessage {
     public void setMessageID(Integer messageID) {
         this.m_messageID = messageID;
     }*/
+    
+    public PublishMessage() {
+        m_messageType = AbstractMessage.PUBLISH;
+    }
 
     public String getTopicName() {
         return m_topicName;

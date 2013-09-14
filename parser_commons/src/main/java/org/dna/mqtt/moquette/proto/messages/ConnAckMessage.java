@@ -14,6 +14,10 @@ public class ConnAckMessage extends AbstractMessage {
     public static final byte NOT_AUTHORIZED = 0x05;
     
     private byte m_returnCode;
+    
+    public ConnAckMessage() {
+        m_messageType = AbstractMessage.CONNACK;
+    }
 
     public byte getReturnCode() {
         return m_returnCode;

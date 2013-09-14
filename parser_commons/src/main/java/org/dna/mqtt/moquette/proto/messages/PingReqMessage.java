@@ -6,4 +6,8 @@ package org.dna.mqtt.moquette.proto.messages;
  * @author andrea
  */
 public class PingReqMessage extends ZeroLengthMessage {
+    
+    public PingReqMessage() {
+        m_messageType = AbstractMessage.PINGREQ;
+    }
 }
