@@ -16,7 +16,7 @@ public class MQTTEncoder extends MessageToByteEncoder<AbstractMessage> {
     
     private Map<Byte, DemuxEncoder> m_encoderMap = new HashMap<Byte, DemuxEncoder>();
     
-    MQTTEncoder() {
+    public MQTTEncoder() {
        m_encoderMap.put(AbstractMessage.CONNECT, new ConnectEncoder());
        m_encoderMap.put(AbstractMessage.CONNACK, new ConnAckEncoder());
        m_encoderMap.put(AbstractMessage.PUBLISH, new PublishEncoder());
