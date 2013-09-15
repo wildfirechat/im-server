@@ -18,9 +18,9 @@ class PublishDecoder extends DemuxDecoder {
 
     @Override
     void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        LOG.debug("decode invoked with buffer " + in);
-        int startPos = in.readerIndex();
+        LOG.info("decode invoked with buffer " + in);
         in.resetReaderIndex();
+        int startPos = in.readerIndex();
 
         //Common decoding part
         PublishMessage message = new PublishMessage();

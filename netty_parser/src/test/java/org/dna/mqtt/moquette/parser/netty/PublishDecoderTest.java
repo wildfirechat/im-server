@@ -123,6 +123,27 @@ public class PublishDecoderTest {
         assertNotNull(message);
     }
     
+    @Test
+    public void testBadClaimMoreData() throws Exception {
+        byte[] rawMessage = new byte[] {
+            0x30, 0x17, 0x00, 0x06, 0x2f, (byte)0x74, 0x6f, (byte)0x70, 0x69, 0x63, 0x54, 0x65, (byte)0x73, 0x74, 0x20, 0x6d,
+            (byte)0x79, 0x20, (byte)0x70, 0x61, (byte)0x79, 0x6c, 0x6f, 0x61, 0x64
+        };
+        
+        ByteBuf msgBuf = Unpooled.buffer(25);
+        msgBuf.writeBytes(rawMessage);
+        msgBuf.readByte();  //to simulate the reading of messageType done by MQTTDecoder dispatcher
+        
+        //Exercise
+        m_msgdec.decode(null, msgBuf, m_results);
+
+        assertFalse(m_results.isEmpty());
+        PublishMessage message = (PublishMessage)m_results.get(0); 
+        assertNotNull(message);
+        assertEquals("/topic", message.getTopicName());
+        assertEquals("Test my payload", new String(message.getPayload()));
+    }
+    
     private void initHeader(ByteBuf buff) throws IllegalAccessException {
         ByteBuf tmp = Unpooled.buffer(4).writeBytes(Utils.encodeString("Fake Topic"));
         buff.clear().writeByte(AbstractMessage.PUBLISH << 4).writeBytes(Utils.encodeRemainingLength(tmp.readableBytes()));
