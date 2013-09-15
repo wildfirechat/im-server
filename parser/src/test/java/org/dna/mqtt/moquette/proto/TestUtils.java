@@ -79,7 +79,7 @@ public class TestUtils {
     }
     
     /**
-     * Verify that the given bytes buffer og the given numBytes length is present
+     * Verify that the given bytes buffer of the given numBytes length is present
      * in the buff starting from the current position.
      */
     static void verifyBuff(int numBytes, byte[] bytes, IoBuffer buff) {

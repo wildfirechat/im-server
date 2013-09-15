@@ -2,19 +2,9 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoServiceStatistics;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.codec.demux.DemuxingProtocolDecoder;
-import org.apache.mina.filter.codec.demux.DemuxingProtocolEncoder;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
-import org.dna.mqtt.moquette.proto.*;
-import org.dna.mqtt.moquette.proto.messages.*;
+import org.dna.mqtt.moquette.server.mina.MinaAcceptor;
+import org.dna.mqtt.moquette.server.netty.NettyAcceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
@@ -25,21 +15,29 @@ public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
-//    public static final int PORT = 1883;
-//    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
     public static final String STORAGE_FILE_PATH = System.getProperty("user.home") + 
             File.separator + "moquette_store.hawtdb";
-    
-    //TODO one notifier per outbound queue, else no serialization of message flow is granted!!
-    //private static final int NOTIFIER_POOL_SIZE = 1;
-    private IoAcceptor m_acceptor;
+    public static String NETTY_NIO_FRAMEWORK = "netty";
+    public static String MINA_NIO_FRAMEWORK = "mina";
+    public static String DEFAULT_NIO_FRAMEWORK = MINA_NIO_FRAMEWORK;
+
+    private ServerAcceptor m_acceptor;
     SimpleMessaging messaging;
-//    Thread messagingEventLoop;
-    //private ExecutorService m_notifierPool/* = Executors.newFixedThreadPool(NOTIFIER_POOL_SIZE)*/;
     
     public static void main(String[] args) throws IOException {
+        String nioFrameworkType = DEFAULT_NIO_FRAMEWORK;
+        if (args.length > 0) {
+            //TODO check the typing and in case print usge message
+            nioFrameworkType = args[1];
+            if (!(nioFrameworkType.equals(DEFAULT_NIO_FRAMEWORK) || 
+                   nioFrameworkType.equals(DEFAULT_NIO_FRAMEWORK))) {
+                printUsage(nioFrameworkType);
+                return;
+            }
+        }
+        
         final Server server = new Server();
-        server.startServer();
+        server.startServer(nioFrameworkType);
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -51,88 +49,34 @@ public class Server {
     }
     
     public void startServer() throws IOException {
-        DemuxingProtocolDecoder decoder = new DemuxingProtocolDecoder();
-        decoder.addMessageDecoder(new ConnectDecoder());
-        decoder.addMessageDecoder(new PublishDecoder());
-        decoder.addMessageDecoder(new PubAckDecoder());
-        decoder.addMessageDecoder(new PubRelDecoder());
-        decoder.addMessageDecoder(new PubRecDecoder());
-        decoder.addMessageDecoder(new PubCompDecoder());
-        decoder.addMessageDecoder(new SubscribeDecoder());
-        decoder.addMessageDecoder(new UnsubscribeDecoder());
-        decoder.addMessageDecoder(new DisconnectDecoder());
-        decoder.addMessageDecoder(new PingReqDecoder());
-        
-        DemuxingProtocolEncoder encoder = new DemuxingProtocolEncoder();
-//        encoder.addMessageEncoder(ConnectMessage.class, new ConnectEncoder());
-        encoder.addMessageEncoder(ConnAckMessage.class, new ConnAckEncoder());
-        encoder.addMessageEncoder(SubAckMessage.class, new SubAckEncoder());
-        encoder.addMessageEncoder(UnsubAckMessage.class, new UnsubAckEncoder());
-        encoder.addMessageEncoder(PubAckMessage.class, new PubAckEncoder());
-        encoder.addMessageEncoder(PubRecMessage.class, new PubRecEncoder());
-        encoder.addMessageEncoder(PubCompMessage.class, new PubCompEncoder());
-        encoder.addMessageEncoder(PubRelMessage.class, new PubRelEncoder());
-        encoder.addMessageEncoder(PublishMessage.class, new PublishEncoder());
-        encoder.addMessageEncoder(PingRespMessage.class, new PingRespEncoder());
-        
-        m_acceptor = new NioSocketAcceptor();
-        
-        m_acceptor.getFilterChain().addLast( "logger", new MQTTLoggingFilter("SERVER LOG") );
-        m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
-
-        MQTTHandler handler = new MQTTHandler();
+        startServer(DEFAULT_NIO_FRAMEWORK);
+    }
+    
+    public void startServer(String nioFrameworkType) throws IOException {
+        LOG.info("Starting server with " + nioFrameworkType + " connectors");
         messaging = SimpleMessaging.getInstance();
         messaging.init();
-        //TODO fix this hugly wiring
-        handler.setMessaging(messaging);
-//        messaging.setNotifier(handler);
-//        messagingEventLoop = new Thread(messaging);
-//        messagingEventLoop.setName("Event Loop" + System.currentTimeMillis());
-//        messagingEventLoop.start();
         
-        m_acceptor.setHandler(handler);
-        ((NioSocketAcceptor)m_acceptor).setReuseAddress(true);
-        ((NioSocketAcceptor)m_acceptor).getSessionConfig().setReuseAddress(true);
-        m_acceptor.getSessionConfig().setReadBufferSize( 2048 );
-        m_acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, Constants.DEFAULT_CONNECT_TIMEOUT );
-        m_acceptor.getStatistics().setThroughputCalculationInterval(10);
-        m_acceptor.getStatistics().updateThroughput(System.currentTimeMillis());
-        m_acceptor.bind( new InetSocketAddress(Constants.PORT) );
-        LOG.info("Server binded");
-        
-        
+        if (nioFrameworkType.equals(MINA_NIO_FRAMEWORK)) {
+            m_acceptor = new MinaAcceptor();
+        } else if (nioFrameworkType.equals(NETTY_NIO_FRAMEWORK)) {
+            m_acceptor = new NettyAcceptor();
+        }
+        m_acceptor.initialize(messaging);
     }
     
     public void stopServer() {
         LOG.info("Server stopping...");
-        
         messaging.stop();
-        //messaging.stop();
-//        messagingEventLoop.interrupt();
-//        LOG.info("shutting down evet loop");
-//        try {
-//            messagingEventLoop.join();
-//        } catch (InterruptedException ex) {
-//            LOG.error(null, ex);
-//        }
-        
-        /*m_notifierPool.shutdown();*/
-        
-        //log statistics
-        IoServiceStatistics statistics  = m_acceptor.getStatistics();
-        statistics.updateThroughput(System.currentTimeMillis());
-        System.out.println(String.format("Total read bytes: %d, read throughtput: %f (b/s)", statistics.getReadBytes(), statistics.getReadBytesThroughput()));
-        System.out.println(String.format("Total read msgs: %d, read msg throughtput: %f (msg/s)", statistics.getReadMessages(), statistics.getReadMessagesThroughput()));
-        
-        for(IoSession session: m_acceptor.getManagedSessions().values()) {
-            if(session.isConnected() && !session.isClosing()){
-                session.close(false);
-            }
-        }
-
-        m_acceptor.unbind();
-        m_acceptor.dispose();
+        m_acceptor.close();
         LOG.info("Server stopped");
+    }
+    
+    
+    private static void printUsage(String nioFrameworkType) {
+        System.out.println("The broker should be invoked with the following command line: \n");
+        System.out.println("> java -jar <broker.jar> [mina|netty]\n");
+        System.out.println("while was invoked with type: " + nioFrameworkType);
     }
 
 }

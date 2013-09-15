@@ -3,15 +3,13 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
-import org.dna.mqtt.moquette.proto.PubCompMessage;
+import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
@@ -25,6 +23,7 @@ import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
+import org.dna.mqtt.moquette.server.ServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,7 @@ class ProtocolProcessor {
         m_storageService = storageService;
     }
     
-    void processConnect(IoSession session, ConnectMessage msg) {
+    void processConnect(ServerChannel session, ConnectMessage msg) {
         if (msg.getProcotolVersion() != 0x03) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
@@ -75,7 +74,7 @@ class ProtocolProcessor {
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
             //clean the subscriptions if the old used a cleanSession = true
-            IoSession oldSession = m_clientIDs.get(msg.getClientID()).getSession();
+            ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).getSession();
             boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
             if (cleanSession) {
                 //cleanup topic subscriptions
@@ -90,12 +89,12 @@ class ProtocolProcessor {
 
         int keepAlive = msg.getKeepAlive();
         LOG.debug(String.format("Connect with keepAlive %d s",  keepAlive));
-        session.setAttribute("keepAlive", keepAlive);
+        session.setAttribute(Constants.KEEP_ALIVE, keepAlive);
         session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
         session.setAttribute(Constants.ATTR_CLIENTID, msg.getClientID());
 
-        session.getConfig().setIdleTime(IdleStatus.READER_IDLE, Math.round(keepAlive * 1.5f));
+        session.setIdleTime(Math.round(keepAlive * 1.5f));
 
         //Handle will flag
         if (msg.isWillFlag()) {
@@ -187,6 +186,7 @@ class ProtocolProcessor {
             }
             m_storageService.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
+            LOG.info("replying with PubAck to MSG ID " + evt.getMessageID());
         }
 
         if (retain) {
@@ -331,7 +331,7 @@ class ProtocolProcessor {
         m_storageService.cleanInFlight(publishKey);
     }
     
-    void processDisconnect(IoSession session, String clientID, boolean cleanSession) throws InterruptedException {
+    void processDisconnect(ServerChannel session, String clientID, boolean cleanSession) throws InterruptedException {
         if (cleanSession) {
             //cleanup topic subscriptions
             processRemoveAllSubscriptions(clientID);
@@ -349,7 +349,7 @@ class ProtocolProcessor {
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
      */
-    void processUnsubscribe(IoSession session, String clientID, List<String> topics, int messageID) {
+    void processUnsubscribe(ServerChannel session, String clientID, List<String> topics, int messageID) {
         LOG.debug("processSubscribe invoked");
 
         for (String topic : topics) {
@@ -364,7 +364,7 @@ class ProtocolProcessor {
     }
     
     
-    void processSubscribe(IoSession session, SubscribeMessage msg, String clientID, boolean cleanSession) {
+    void processSubscribe(ServerChannel session, SubscribeMessage msg, String clientID, boolean cleanSession) {
         LOG.debug("processSubscribe invoked");
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {

@@ -152,7 +152,7 @@ public class ConnectDecoderTest {
     }
     
     /**
-     * Encode and insert the given stirng into the given buff
+     * Encode and insert the given string into the given buff
      */
     private IoBuffer encodeString(IoBuffer buff, String str) throws UnsupportedEncodingException {
         buff.put(Utils.encodeString(str));

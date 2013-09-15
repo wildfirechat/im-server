@@ -21,7 +21,13 @@
     <dependencies>
         <dependency>
             <groupId>org.dna.mqtt</groupId>
-            <artifactId>moquette-parser</artifactId>
+            <artifactId>moquette-mina-parser</artifactId>
+            <version>0.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-netty-parser</artifactId>
             <version>0.2</version>
         </dependency>
 
@@ -79,13 +85,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.dna.mqtt</groupId>
-            <artifactId>moquette-client</artifactId>
-            <version>0.1</version>
-            <scope>test</scope>
-        </dependency>
-        
         <dependency>
             <groupId>org.fusesource.hawtbuf</groupId>
             <artifactId>hawtbuf</artifactId>

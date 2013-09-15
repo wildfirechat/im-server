@@ -1,6 +1,5 @@
 package org.dna.mqtt.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.PubAckEncoder;
 import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
 import org.junit.Test;
 import static org.junit.Assert.*;

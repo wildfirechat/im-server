@@ -5,20 +5,19 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.mina.core.session.IoSession;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
-import org.dna.mqtt.moquette.proto.PubCompMessage;
+import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
+import org.dna.mqtt.moquette.server.ServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +65,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         SequenceBarrier barrier = m_ringBuffer.newBarrier();
         m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
+        //TODO in a presentation is said to don't do the followinf line!!
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
         m_executor.submit(m_eventProcessor);
 
@@ -74,6 +74,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     
     private void disruptorPublish(MessagingEvent msgEvent) {
+        LOG.info("disruptorPublish publishing event " + msgEvent);
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
 
@@ -83,11 +84,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
     
 
-    public void disconnect(IoSession session) {
+    public void disconnect(ServerChannel session) {
         disruptorPublish(new DisconnectEvent(session));
     }
 
-    public void handleProtocolMessage(IoSession session, AbstractMessage msg) {
+    public void handleProtocolMessage(ServerChannel session, AbstractMessage msg) {
         disruptorPublish(new ProtocolEvent(session, msg));
     }
 
@@ -97,7 +98,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
-        LOG.debug("onEvent processing messaging event " + evt);
+        LOG.info("onEvent processing messaging event " + evt);
         if (evt instanceof PublishEvent) {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
@@ -107,7 +108,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
             m_processor.processDisconnect(disEvt.getSession(), clientID, false);
         } else if (evt instanceof ProtocolEvent) {
-            IoSession session = ((ProtocolEvent) evt).getSession();
+            ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage) {
                 m_processor.processConnect(session, (ConnectMessage) message);
