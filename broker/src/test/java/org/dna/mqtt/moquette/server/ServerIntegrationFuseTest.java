@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
  * Test the broker using the widely used FuseSource libraries
  * */
 public class ServerIntegrationFuseTest {
-
+    
     Server m_server;
     MQTT m_mqtt;
     BlockingConnection m_connection;
@@ -57,9 +57,9 @@ public class ServerIntegrationFuseTest {
 
         Topic[] topics = {new Topic("/topic", QoS.AT_MOST_ONCE)};
         byte[] futSub = m_connection.subscribe(topics);
-
+        
         m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, false);
-
+        
         Message msg = m_connection.receive();
         msg.ack();
         assertEquals("/topic", msg.getTopic());

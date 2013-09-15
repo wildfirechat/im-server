@@ -89,7 +89,7 @@ class ProtocolProcessor {
 
         int keepAlive = msg.getKeepAlive();
         LOG.debug(String.format("Connect with keepAlive %d s",  keepAlive));
-        session.setAttribute("keepAlive", keepAlive);
+        session.setAttribute(Constants.KEEP_ALIVE, keepAlive);
         session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
         session.setAttribute(Constants.ATTR_CLIENTID, msg.getClientID());
@@ -186,6 +186,7 @@ class ProtocolProcessor {
             }
             m_storageService.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
+            LOG.info("replying with PubAck to MSG ID " + evt.getMessageID());
         }
 
         if (retain) {

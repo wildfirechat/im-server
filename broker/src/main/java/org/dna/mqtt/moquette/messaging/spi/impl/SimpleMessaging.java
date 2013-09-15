@@ -65,6 +65,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         SequenceBarrier barrier = m_ringBuffer.newBarrier();
         m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
+        //TODO in a presentation is said to don't do the followinf line!!
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
         m_executor.submit(m_eventProcessor);
 
@@ -73,6 +74,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     
     private void disruptorPublish(MessagingEvent msgEvent) {
+        LOG.info("disruptorPublish publishing event " + msgEvent);
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
 
@@ -96,7 +98,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
-        LOG.debug("onEvent processing messaging event " + evt);
+        LOG.info("onEvent processing messaging event " + evt);
         if (evt instanceof PublishEvent) {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {

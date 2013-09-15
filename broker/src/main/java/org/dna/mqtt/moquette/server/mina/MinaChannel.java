@@ -35,6 +35,4 @@ public class MinaChannel implements ServerChannel {
     public void setIdleTime(int idleTime) {
         m_session.getConfig().setIdleTime(IdleStatus.READER_IDLE, idleTime);
     }
-
-    
 }

@@ -41,7 +41,6 @@ import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
-import org.dna.mqtt.moquette.server.MQTTHandler;
 import org.dna.mqtt.moquette.server.ServerAcceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +86,7 @@ public class MinaAcceptor implements ServerAcceptor {
         m_acceptor.getFilterChain().addLast( "logger", new MQTTLoggingFilter("SERVER LOG") );
         m_acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter(encoder, decoder));
         
-        MQTTHandler handler = new MQTTHandler();
+        MinaMQTTHandler handler = new MinaMQTTHandler();
         
         handler.setMessaging(messaging);
         
