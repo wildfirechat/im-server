@@ -39,8 +39,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private IStorageService m_storageService;
 
-    Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
-
     private ExecutorService m_executor;
     BatchEventProcessor<ValueEvent> m_eventProcessor;
 
@@ -166,7 +164,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_storageService.initStore();
 
         subscriptions.init(m_storageService);
-        m_processor.init(m_clientIDs, subscriptions, m_storageService);
+        m_processor.init(subscriptions, m_storageService);
     }
 
 

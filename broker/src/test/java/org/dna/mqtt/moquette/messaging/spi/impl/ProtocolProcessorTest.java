@@ -84,7 +84,7 @@ public class ProtocolProcessorTest {
         subscriptions = new SubscriptionsStore();
         subscriptions.init(m_storageService);
         m_processor = new ProtocolProcessor();
-        m_processor.init(new HashMap<String, ConnectionDescriptor>(), subscriptions, m_storageService);
+        m_processor.init(subscriptions, m_storageService);
     }
     
     @Test
@@ -143,13 +143,18 @@ public class ProtocolProcessorTest {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
                 }
             }
+
+
         };
         
         //simulate a connect that register a clientID to an IoSession
-        Map<String, ConnectionDescriptor> connectionsMap = new HashMap<String, ConnectionDescriptor>();
-        ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, subscription.isCleanSession());
-        connectionsMap.put(FAKE_CLIENT_ID, connDescr);
-        m_processor.init(connectionsMap, subs, m_storageService);
+        subs.init(m_storageService);
+        m_processor.init(subs, m_storageService);
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setClientID(FAKE_CLIENT_ID);
+        connectMessage.setCleanSession(subscription.isCleanSession());
+        m_processor.processConnect(m_session, connectMessage);
         
         
         //Exercise
@@ -236,10 +241,12 @@ public class ProtocolProcessorTest {
         subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
-        Map<String, ConnectionDescriptor> connectionsMap = new HashMap<String, ConnectionDescriptor>();
-        ConnectionDescriptor connDescr = new ConnectionDescriptor(FAKE_CLIENT_ID, m_session, subscription.isCleanSession());
-        connectionsMap.put(FAKE_CLIENT_ID, connDescr);
-        m_processor.init(connectionsMap, subs, m_storageService);
+        m_processor.init(subs, m_storageService);
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setClientID(FAKE_CLIENT_ID);
+        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setCleanSession(subscription.isCleanSession());
+        m_processor.processConnect(m_session, connectMessage);
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
         m_processor.processPublish(pubEvt);
         

@@ -1,6 +1,7 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
@@ -39,7 +40,7 @@ class ProtocolProcessor {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    private Map<String, ConnectionDescriptor> m_clientIDs;
+    private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private SubscriptionsStore subscriptions;
     private IStorageService m_storageService;
     private IAuthenticator m_authenticator;
@@ -48,9 +49,9 @@ class ProtocolProcessor {
         
     }
     
-    void init(Map<String, ConnectionDescriptor> clientIDs, SubscriptionsStore subscriptions, 
+    void init(/*Map<String, ConnectionDescriptor> clientIDs, */SubscriptionsStore subscriptions,
             IStorageService storageService) {
-        m_clientIDs = clientIDs;
+        //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_storageService = storageService;
     }
@@ -244,7 +245,7 @@ class ProtocolProcessor {
             }
             LOG.debug("clientIDs are " + m_clientIDs);
             if (m_clientIDs.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
             LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
             m_clientIDs.get(clientId).getSession().write(pubMessage);
