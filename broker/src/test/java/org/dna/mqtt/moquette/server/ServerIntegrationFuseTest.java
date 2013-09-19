@@ -5,6 +5,8 @@ import org.dna.mqtt.commons.Constants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +19,9 @@ import static org.junit.Assert.*;
  * Test the broker using the widely used FuseSource libraries
  * */
 public class ServerIntegrationFuseTest {
-    
+
+    private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationFuseTest.class);
+
     Server m_server;
     MQTT m_mqtt;
     BlockingConnection m_connection;
@@ -34,6 +38,20 @@ public class ServerIntegrationFuseTest {
         m_mqtt = new MQTT();
         m_mqtt.setHost("localhost", Constants.PORT);
         m_mqtt.setClientId("TestClient");
+        m_mqtt.setTracer(new Tracer() {
+            public void debug(String message, Object...args) {
+                StringBuilder sb = new StringBuilder("[");
+                for (Object o :  args) {
+                    sb.append(o.toString());
+                }
+                sb.append("]");
+                if (args.length > 0) {
+                    LOG.debug(message + sb);
+                } else {
+                    LOG.debug(message);
+                }
+            }
+        });
     }
 
     @After
@@ -51,7 +69,7 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testSubscribe() throws Exception {
-        System.out.println("*** testSubscribe ***");
+        LOG.info("*** testSubscribe ***");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
 
@@ -67,7 +85,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testCleanSession_maintainClientSubscriptions() throws Exception {
-        System.out.println("*** testCleanSession_maintainClientSubscriptions ***");
+        LOG.info("*** testCleanSession_maintainClientSubscriptions ***");
         MQTT localMqtt = new MQTT(m_mqtt);
         localMqtt.setCleanSession(false);
         BlockingConnection connection = localMqtt.blockingConnection();
@@ -89,7 +107,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() throws Exception {
-        System.out.println("*** testCleanSession_maintainClientSubscriptions_againstClientDestruction ***");
+        LOG.info("*** testCleanSession_maintainClientSubscriptions_againstClientDestruction ***");
         MQTT localMqtt = new MQTT(m_mqtt);
         localMqtt.setCleanSession(false);
         BlockingConnection connection = localMqtt.blockingConnection();
@@ -117,7 +135,7 @@ public class ServerIntegrationFuseTest {
      */
     @Test
     public void testCleanSession_correctlyClientSubscriptions() throws Exception {
-        System.out.println("*** testCleanSession_correctlyClientSubscriptions ***");
+        LOG.info("*** testCleanSession_correctlyClientSubscriptions ***");
         MQTT localMqtt = new MQTT(m_mqtt);
         localMqtt.setCleanSession(false);
         BlockingConnection connection = localMqtt.blockingConnection();
@@ -138,7 +156,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws Exception {
-        System.out.println("*** testCleanSession_maintainClientSubscriptions_withServerRestart ***");
+        LOG.info("*** testCleanSession_maintainClientSubscriptions_withServerRestart ***");
         MQTT localMqtt = new MQTT(m_mqtt);
         localMqtt.setCleanSession(false);
         BlockingConnection connection = localMqtt.blockingConnection();
@@ -160,12 +178,13 @@ public class ServerIntegrationFuseTest {
         
         //Verify that the message is published due to prevoius subscription
         Message msg = anotherconnection.receive(1, TimeUnit.SECONDS);
+        msg.ack();
         assertEquals("/topic", msg.getTopic());
     }
     
     @Test
     public void testRetain_maintainMessage_againstClientDestruction() throws Exception {
-        System.out.println("*** testRetain_maintainMessage_againstClientDestruction ***");
+        LOG.info("*** testRetain_maintainMessage_againstClientDestruction ***");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect(); 
         m_connection.publish("/topic", "Test my payload".getBytes(), QoS.AT_MOST_ONCE, true);
@@ -182,7 +201,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testUnsubscribe_do_not_notify_anymore_same_session() throws Exception {
-        System.out.println("*** testUnsubscribe_do_not_notify_anymore_same_session ***");
+        LOG.info("*** testUnsubscribe_do_not_notify_anymore_same_session ***");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect(); 
         m_connection.subscribe(new Topic[] {new Topic("/topic", QoS.AT_MOST_ONCE)});
@@ -202,7 +221,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testUnsubscribe_do_not_notify_anymore_new_session() throws Exception {
-        System.out.println("*** testUnsubscribe_do_not_notify_anymore_new_session ***");
+        LOG.info("*** testUnsubscribe_do_not_notify_anymore_new_session ***");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect(); 
         m_connection.subscribe(new Topic[] {new Topic("/topic", QoS.AT_MOST_ONCE)});
@@ -225,7 +244,7 @@ public class ServerIntegrationFuseTest {
     
     @Test
     public void testPublishWithQoS1() throws Exception {
-        System.out.println("*** testPublishWithQoS1 ***");
+        LOG.info("*** testPublishWithQoS1 ***");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
 
@@ -245,7 +264,7 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testPublishWithQoS1_notCleanSession() throws Exception {
-        System.out.println("*** testPublishWithQoS1_notCleanSession ***");
+        LOG.info("*** testPublishWithQoS1_notCleanSession ***");
         MQTT mqtt = new MQTT(m_mqtt);
         mqtt.setCleanSession(false);
         m_connection = mqtt.blockingConnection();
@@ -285,7 +304,7 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testPublishWithQoS2() throws Exception {
-        System.out.println("*** testPublishWithQoS2 ***");
+        LOG.info("*** testPublishWithQoS2 ***");
         m_mqtt.setClientId("TestClient");
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();
@@ -306,7 +325,7 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void testPublishReceiveWithQoS2() throws Exception {
-        System.out.println("*** testPublishReceiveWithQoS2 ***");
+        LOG.info("*** testPublishReceiveWithQoS2 ***");
         m_mqtt.setCleanSession(false);
         m_connection = m_mqtt.blockingConnection();
         m_connection.connect();

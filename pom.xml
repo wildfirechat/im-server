@@ -4,6 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <moquette.version>0.2</moquette.version>
+        <mina-version>2.0.7</mina-version>
     </properties>
     
     <groupId>org.dna.mqtt</groupId>
@@ -13,7 +14,7 @@
     <version>0.2</version>
     <name>Moquette MQTT library</name>
     <url>http://code.google.com/p/moquette-mqtt/</url>
-    
+
 
     <modules>
         <module>parser_commons</module>
