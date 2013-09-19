@@ -12,6 +12,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import java.io.IOException;
+
+import io.netty.handler.timeout.IdleStateHandler;
 import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.parser.netty.MQTTDecoder;
@@ -46,7 +48,9 @@ public class NettyAcceptor implements ServerAcceptor {
                  @Override
                  public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                    pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                    pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                    //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                     pipeline.addLast("decoder", new MQTTDecoder());
                     pipeline.addLast("encoder", new MQTTEncoder());
                     pipeline.addLast("handler", handler);
