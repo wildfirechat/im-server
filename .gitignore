@@ -5,4 +5,4 @@
 *.iml
 broker/target/
 client/target/
-/parser_commons/target/
+/parser_commons/target/netty_parser/target/
