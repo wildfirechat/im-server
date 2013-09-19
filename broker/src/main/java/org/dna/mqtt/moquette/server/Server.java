@@ -19,7 +19,7 @@ public class Server {
             File.separator + "moquette_store.hawtdb";
     public static String NETTY_NIO_FRAMEWORK = "netty";
     public static String MINA_NIO_FRAMEWORK = "mina";
-    public static String DEFAULT_NIO_FRAMEWORK = MINA_NIO_FRAMEWORK;
+    public static String DEFAULT_NIO_FRAMEWORK = NETTY_NIO_FRAMEWORK;
 
     private ServerAcceptor m_acceptor;
     SimpleMessaging messaging;
