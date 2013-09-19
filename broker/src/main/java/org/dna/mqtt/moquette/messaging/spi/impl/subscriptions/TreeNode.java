@@ -24,7 +24,7 @@ class TreeNode {
         this.m_token = topic;
     }
 
-    void addSubcription(Subscription s) {
+    void addSubscription(Subscription s) {
         //avoid double registering
         if (m_subscriptions.contains(s)) {
             return;
@@ -82,7 +82,7 @@ class TreeNode {
 
         for (TreeNode n : m_children) {
             if (n.getToken().match(t)) {
-                //Create a copy of token, alse if navigate 2 sibling it
+                //Create a copy of token, else if navigate 2 sibling it
                 //consumes 2 elements on the queue instead of one
                 n.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubs);
             }

@@ -72,7 +72,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     
     private void disruptorPublish(MessagingEvent msgEvent) {
-        LOG.info("disruptorPublish publishing event " + msgEvent);
+        LOG.debug("disruptorPublish publishing event " + msgEvent);
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
 

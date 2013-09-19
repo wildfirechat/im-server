@@ -57,9 +57,11 @@ class ProtocolProcessor {
     }
     
     void processConnect(ServerChannel session, ConnectMessage msg) {
+        LOG.info("processConnect for client " + msg.getClientID());
         if (msg.getProcotolVersion() != 0x03) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
+            LOG.info("processConnect sent bad proto ConnAck");
             session.write(badProto);
             session.close(false);
             return;
@@ -130,6 +132,7 @@ class ProtocolProcessor {
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
+        LOG.info("processConnect sent OK ConnAck");
         session.write(okResp);
         
         if (!msg.isCleanSession()) {
@@ -187,7 +190,7 @@ class ProtocolProcessor {
             }
             m_storageService.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
-            LOG.info("replying with PubAck to MSG ID " + evt.getMessageID());
+            LOG.debug("replying with PubAck to MSG ID " + evt.getMessageID());
         }
 
         if (retain) {
@@ -199,7 +202,9 @@ class ProtocolProcessor {
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
+        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic " + topic);
         for (final Subscription sub : subscriptions.matches(topic)) {
+            LOG.debug("found matching subscription on topic " + sub.getTopic());
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
@@ -360,13 +365,13 @@ class ProtocolProcessor {
         UnsubAckMessage ackMessage = new UnsubAckMessage();
         ackMessage.setMessageID(messageID);
 
-        LOG.info("replying with UnsubAck to MSG ID {0}", messageID);
+        LOG.info(String.format("replying with UnsubAck to MSG ID %s", messageID));
         session.write(ackMessage);
     }
     
     
     void processSubscribe(ServerChannel session, SubscribeMessage msg, String clientID, boolean cleanSession) {
-        LOG.debug("processSubscribe invoked");
+        LOG.info(String.format("processSubscribe invoked from client %s with msgID %d", clientID, msg.getMessageID()));
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
@@ -382,7 +387,7 @@ class ProtocolProcessor {
         for (int i = 0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(AbstractMessage.QOSType.MOST_ONE);
         }
-        LOG.info("replying with SubAct to MSG ID " + msg.getMessageID());
+        LOG.info("replying with SubAck to MSG ID " + msg.getMessageID());
         session.write(ackMessage);
     }
     

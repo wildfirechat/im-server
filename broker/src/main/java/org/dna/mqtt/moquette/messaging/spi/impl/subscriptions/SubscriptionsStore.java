@@ -79,7 +79,7 @@ public class SubscriptionsStore {
     
     protected void addDirect(Subscription newSubscription) {
         TreeNode current = findMatchingNode(newSubscription.topic);
-        current.addSubcription(newSubscription);
+        current.addSubscription(newSubscription);
     }
     
     private TreeNode findMatchingNode(String topic) {
