@@ -109,22 +109,25 @@ public class MQTTLoggingFilter extends LoggingFilter {
     }
 
     @Override
-    public void messageReceived(NextFilter nextFilter, IoSession session,
-            Object message) throws Exception {
-
+    public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
         if (message instanceof AbstractIoBuffer) {
             IoBuffer buff = (AbstractIoBuffer) message;
-            log(getMessageReceivedLogLevel(), "RECEIVED: {}", decodeCommonHeader(buff));
+            log(getMessageReceivedLogLevel(), "-> RECEIVED: {}", decodeCommonHeader(buff) + "\n\t" + buff.getHexDump());
         } else {
-            log(getMessageReceivedLogLevel(), "RECEIVED: {}", message);
+            log(getMessageReceivedLogLevel(), "-> RECEIVED: {}", message);
         }
         nextFilter.messageReceived(session, message);
     }
 
     @Override
-    public void messageSent(NextFilter nextFilter, IoSession session,
-            WriteRequest writeRequest) throws Exception {
-        log(getMessageSentLogLevel(), "SENT: {}", writeRequest.getMessage());
+    public void messageSent(NextFilter nextFilter, IoSession session, WriteRequest writeRequest) throws Exception {
+        Object message = writeRequest.getMessage();
+        if (message instanceof AbstractIoBuffer) {
+            IoBuffer buff = (AbstractIoBuffer) message;
+            log(getMessageReceivedLogLevel(), "<- SENT: {}", buff.getHexDump());
+        } else {
+            log(getMessageReceivedLogLevel(), "<- SENT: {}", message);
+        }
         nextFilter.messageSent(session, writeRequest);
     }
 
