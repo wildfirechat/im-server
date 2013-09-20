@@ -78,20 +78,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.fusesource.mqtt-client</groupId>
-            <artifactId>mqtt-client</artifactId>
-<!--            <version>1.4-SNAPSHOT</version>-->
-            <version>1.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.fusesource.hawtbuf</groupId>
-            <artifactId>hawtbuf</artifactId>
-            <version>1.9</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>mqtt-client</artifactId>
             <version>0.4.0</version>
