@@ -1,3 +1,7 @@
 Version 0.2:
     Fixed issues (10, 11, 12, 13)
     Fixed interdependency bug in test
+    
+Version 0.3:
+    Added Netty IO connectors
+    Dropped tests based on Fuse source client lib moving to Paho java client

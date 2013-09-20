@@ -22,6 +22,30 @@
         <module>netty_parser</module>
         <module>broker</module>
         <module>benchmarking</module>
+        <!--module>distribution</module-->
     </modules>
+
+
+    <!--build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>org.dna.mqtt.moquette.server.Server</mainClass>
+                            </manifest>
+                        </archive>
+
+                        <descriptors>
+                            <descriptor>assembly/broker.xml</descriptor>
+                        </descriptors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build-->
 
 </project>
