@@ -6,12 +6,12 @@
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>0.2</version>
+        <version>${moquette-version}</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>${moquette-version}</version>
     <name>Moquette - broker</name>
 
     <properties>
@@ -22,13 +22,13 @@
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-mina-parser</artifactId>
-            <version>0.2</version>
+            <version>${moquette-version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-netty-parser</artifactId>
-            <version>0.2</version>
+            <version>${moquette-version}</version>
         </dependency>
 
         <dependency>
@@ -42,13 +42,6 @@
             <artifactId>disruptor</artifactId>
             <version>2.7.1</version>
         </dependency>
-        
-        <!--        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.6.4</version>
-        </dependency>-->
-        
         
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -82,9 +75,6 @@
             <artifactId>mqtt-client</artifactId>
             <version>0.4.0</version>
         </dependency>
-
-
-
     </dependencies>
     
     <build>
@@ -129,21 +119,6 @@
     </build>
     
     <repositories>
-<!--        <repository>
-            <id>Fusesource Releases</id>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-        </repository>-->
-<!--        <repository>
-            <id>fusesource.snapshots</id>
-            <name>FuseSource Snapshot Repository</name>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>-->
         <repository>
             <id>Paho Releases</id>
             <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>

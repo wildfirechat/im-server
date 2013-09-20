@@ -6,12 +6,12 @@
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>0.2</version>
+        <version>${moquette-version}</version>
     </parent>
 
     <artifactId>moquette-mina-parser</artifactId>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>${moquette-version}</version>
     <name>Moquette - MINA Parser</name>
 
     <properties>
@@ -28,21 +28,8 @@
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-parser-commons</artifactId>
-            <version>0.2</version>
+            <version>${moquette-version}</version>
         </dependency>
-        
-        <!--dependency>
-            <groupId>com.googlecode.disruptor</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>2.7.1</version>
-        </dependency -->
-        
-        <!--        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.6.4</version>
-        </dependency>-->
-        
         
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -50,12 +37,6 @@
             <version>1.6.4</version>
         </dependency>
         
-        <!--dependency>
-            <groupId>org.fusesource.hawtdb</groupId>
-            <artifactId>hawtdb</artifactId>
-            <version>1.6</version>
-        </dependency-->
-                
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -71,18 +52,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!--dependency>
-            <groupId>org.fusesource.mqtt-client</groupId>
-            <artifactId>mqtt-client</artifactId>
-            <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.fusesource.hawtbuf</groupId>
-            <artifactId>hawtbuf</artifactId>
-            <version>1.9</version>
-        </dependency-->
     </dependencies>
     
     <build>
@@ -111,20 +80,5 @@
     </build>
     
     <repositories>
-<!--        <repository>
-            <id>Fusesource Releases</id>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-        </repository>-->
-<!--        <repository>
-            <id>fusesource.snapshots</id>
-            <name>FuseSource Snapshot Repository</name>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>-->
     </repositories>
 </project>

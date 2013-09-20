@@ -6,12 +6,12 @@
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>0.2</version>
+        <version>${moquette-version}</version>
     </parent>
 
     <artifactId>moquette-parser-commons</artifactId>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>${moquette-version}</version>
     <name>Moquette - Parser Commons</name>
 
     <properties>
@@ -67,20 +67,5 @@
     </build>
     
     <repositories>
-<!--        <repository>
-            <id>Fusesource Releases</id>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-        </repository>-->
-<!--        <repository>
-            <id>fusesource.snapshots</id>
-            <name>FuseSource Snapshot Repository</name>
-            <url>http://repo.fusesource.com/nexus/content/repositories/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>-->
     </repositories>
 </project>
