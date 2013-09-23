@@ -53,7 +53,7 @@ public class Server {
     }
     
     public void startServer(String nioFrameworkType) throws IOException {
-        LOG.info("Starting server with " + nioFrameworkType + " connectors");
+        System.out.println("Starting server with " + nioFrameworkType + " connectors");
         messaging = SimpleMessaging.getInstance();
         messaging.init();
         
@@ -66,10 +66,10 @@ public class Server {
     }
     
     public void stopServer() {
-        LOG.info("Server stopping...");
+        System.out.println("Server stopping...");
         messaging.stop();
         m_acceptor.close();
-        LOG.info("Server stopped");
+        System.out.println("Server stopped");
     }
     
     
