@@ -301,7 +301,29 @@ public class SubscriptionsStoreTest {
         assertTrue(SubscriptionsStore.matchTopics("/finance/stock/ibm", "/finance/+/ibm"));
         assertFalse(SubscriptionsStore.matchTopics("/finance/stock", "+"));
     }
-
+    
+    @Test
+    public void rogerLightMatchTopics() {
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar", "foo/bar"));
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar", "foo/+"));
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+/baz"));
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+/#"));
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "#"));
+        
+        assertFalse(SubscriptionsStore.matchTopics("foo", "foo/bar"));
+        assertFalse(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+"));
+        assertFalse(SubscriptionsStore.matchTopics("foo/bar/bar", "foo/+/baz"));
+        assertFalse(SubscriptionsStore.matchTopics("fo2/bar/baz", "foo/+/#"));
+        
+        assertTrue(SubscriptionsStore.matchTopics("/foo/bar", "#"));
+        assertTrue(SubscriptionsStore.matchTopics("/foo/bar", "/#"));
+        assertFalse(SubscriptionsStore.matchTopics("foo/bar", "/#"));
+        
+        assertTrue(SubscriptionsStore.matchTopics("foo//bar", "foo//bar"));
+        assertTrue(SubscriptionsStore.matchTopics("foo//bar", "foo//+"));
+        assertTrue(SubscriptionsStore.matchTopics("foo///baz", "foo/+/+/baz"));
+        assertTrue(SubscriptionsStore.matchTopics("foo/bar/", "foo/bar/+"));
+    }
 
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];
