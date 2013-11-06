@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -181,6 +182,7 @@ public class SubscriptionsStore {
         } catch (ParseException ex) {
             //TODO handle the parse exception
             LOG.error(null, ex);
+            return Collections.EMPTY_LIST;
         }
 
         Queue<Token> tokenQueue = new LinkedBlockingDeque<Token>(tokens);
@@ -255,9 +257,9 @@ public class SubscriptionsStore {
         for (int i = 0; i < splitted.length; i++) {
             String s = splitted[i];
             if (s.isEmpty()) {
-                if (i != 0) {
-                    throw new ParseException("Bad format of topic, expetec topic name between separators", i);
-                }
+//                if (i != 0) {
+//                    throw new ParseException("Bad format of topic, expetec topic name between separators", i);
+//                }
                 res.add(Token.EMPTY);
             } else if (s.equals("#")) {
                 //check that multi is the last symbol

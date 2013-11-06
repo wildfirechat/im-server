@@ -66,7 +66,7 @@ class TreeNode {
             matchingSubs.addAll(m_subscriptions);
             //check if it has got a MULTI child and add its subscriptions
             for (TreeNode n : m_children) {
-                if (n.getToken() == Token.MULTI) {
+                if (n.getToken() == Token.MULTI || n.getToken() == Token.SINGLE) {
                     matchingSubs.addAll(n.subscriptions());
                 }
             }
@@ -85,6 +85,7 @@ class TreeNode {
                 //Create a copy of token, else if navigate 2 sibling it
                 //consumes 2 elements on the queue instead of one
                 n.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubs);
+                //TODO don't create a copy n.matches(tokens, matchingSubs);
             }
         }
     }

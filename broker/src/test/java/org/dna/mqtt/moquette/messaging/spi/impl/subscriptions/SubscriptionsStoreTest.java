@@ -62,10 +62,10 @@ public class SubscriptionsStoreTest {
         assertEqualsSeq(asArray(Token.EMPTY), tokens);
     }
 
-    @Test(expected = ParseException.class)
-    public void testSplitTopicTwinsSlashAvoided() throws ParseException {
-        store.splitTopic("/finance//stock/ibm");
-    }
+//    @Test(expected = ParseException.class)
+//    public void testSplitTopicTwinsSlashAvoided() throws ParseException {
+//        store.splitTopic("/finance//stock/ibm");
+//    }
 
     @Test
     public void testSplitTopicMultiValid() throws ParseException {
@@ -209,6 +209,46 @@ public class SubscriptionsStoreTest {
         //check  MULTI in case of zero level match
         store.add(new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
         assertFalse(store.matches("finance").isEmpty());
+    }
+    
+    @Test
+    public void rogerLightTopicMatches() {
+        assertMatch("foo/bar", "foo/bar");
+        assertMatch("foo/bar", "foo/bar");
+        assertMatch("foo/+", "foo/bar");
+        assertMatch("foo/+/baz", "foo/bar/baz");
+        assertMatch("foo/+/#", "foo/bar/baz");
+        assertMatch("#", "foo/bar/baz");
+
+        assertNotMatch("foo/bar", "foo");
+        assertNotMatch("foo/+", "foo/bar/baz");
+        assertNotMatch("foo/+/baz", "foo/bar/bar");
+        assertNotMatch("foo/+/#", "fo2/bar/baz");
+
+        assertMatch("#", "/foo/bar");
+        assertMatch("/#", "/foo/bar");
+        assertNotMatch("/#", "foo/bar");
+
+        assertMatch("foo//bar", "foo//bar");
+        assertMatch("foo//+", "foo//bar");
+        assertMatch("foo/+/+/baz", "foo///baz");
+        assertMatch("foo/bar/+", "foo/bar/");
+    }
+    
+    private void assertMatch(String subscription, String topic) {
+        store = new SubscriptionsStore();
+        store.init(new MemoryStorageService());
+        Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
+        store.add(sub);
+        assertFalse(store.matches(topic).isEmpty());
+    }
+    
+    private void assertNotMatch(String subscription, String topic) {
+        store = new SubscriptionsStore();
+        store.init(new MemoryStorageService());
+        Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
+        store.add(sub);
+        assertTrue(store.matches(topic).isEmpty());
     }
     
     
