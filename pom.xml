@@ -3,7 +3,6 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <moquette-version>0.3</moquette-version>
         <mina-version>2.0.7</mina-version>
     </properties>
     
@@ -11,7 +10,7 @@
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>${moquette-version}</version>
+    <version>0.4-SNAPSHOT</version>
     <name>Moquette MQTT library</name>
     <url>http://code.google.com/p/moquette-mqtt/</url>
 
@@ -22,7 +21,6 @@
         <module>netty_parser</module>
         <module>broker</module>
         <module>benchmarking</module>
-        <!--module>distribution</module-->
     </modules>
 
 

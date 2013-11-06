@@ -3,15 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../</relativePath>
+        <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>${moquette-version}</version>
+        <version>0.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
     <packaging>jar</packaging>
-    <version>${moquette-version}</version>
+    <!--<version>${moquette-version}</version>-->
     <name>Moquette - broker</name>
 
     <properties>
@@ -22,13 +23,13 @@
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-mina-parser</artifactId>
-            <version>${moquette-version}</version>
+            <version>${project.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-netty-parser</artifactId>
-            <version>${moquette-version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
