@@ -16,13 +16,8 @@ client.connect()
 MqttMessage message = new MqttMessage('Hello world!!'.bytes)
 message.setQos(0)
 print "publishing.."
-long startTime = System.currentTimeMillis()
-(1..100000).each {
-    client.publish('topic', 'Hello world!!'.bytes, 0, false)
-}
+client.publish('log', 'Hello world!!'.bytes, 0, false)
+
 client.publish('/exit', 'Exit'.bytes, 0, false)
-long stopTime = System.currentTimeMillis()
-long spentTime = stopTime -startTime
-println "published in ${spentTime} ms"
 client.disconnect()
 println "disconnected"

@@ -17,9 +17,9 @@ class SubscriberCallback implements MqttCallback {
     int m_numReceived = 0
     long m_startTime
     boolean firstMessageReceived = false
-    
+
     private CountDownLatch m_latch = new CountDownLatch(1)
-    
+
     void waitFinish() {
         m_latch.await()
     }
@@ -42,6 +42,7 @@ class SubscriberCallback implements MqttCallback {
             client.disconnect()
             m_latch.countDown()
         } else {
+            println "Received $message on topic $topic"
             m_numReceived++
         }
     }
@@ -52,6 +53,7 @@ class SubscriberCallback implements MqttCallback {
 }
 
 String host = args[0]
+String topicSubscription = args[1]
 String tmpDir = System.getProperty("java.io.tmpdir")
 MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir)
 
@@ -59,8 +61,8 @@ MqttClient client = new MqttClient("tcp://${host}:1883", "SubscriberClient", dat
 def callback = new SubscriberCallback()
 client.callback = callback
 client.connect()
-client.subscribe("topic", 0)
-println "subscribed to topic"
+client.subscribe(topicSubscription, 0)
+println "subscribed to $topicSubscription"
 client.subscribe("/exit", 0)
 println "subscribed to /exit"
 
