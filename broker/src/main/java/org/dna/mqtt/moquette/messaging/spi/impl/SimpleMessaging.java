@@ -4,8 +4,6 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
@@ -15,7 +13,6 @@ import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import org.slf4j.Logger;
@@ -96,7 +93,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
-        LOG.info("onEvent processing messaging event " + evt);
+        LOG.info("onEvent processing messaging event from input ringbuffer" + evt);
         if (evt instanceof PublishEvent) {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {

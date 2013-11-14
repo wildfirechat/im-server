@@ -1,11 +1,19 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import com.lmax.disruptor.BatchEventProcessor;
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.events.OutputMessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
@@ -36,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author andrea
  */
-class ProtocolProcessor {
+class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
@@ -44,16 +52,29 @@ class ProtocolProcessor {
     private SubscriptionsStore subscriptions;
     private IStorageService m_storageService;
     private IAuthenticator m_authenticator;
+    
+    private ExecutorService m_executor;
+    BatchEventProcessor<ValueEvent> m_eventProcessor;
+    private RingBuffer<ValueEvent> m_ringBuffer;
 
-    ProtocolProcessor() {
-        
-    }
+    ProtocolProcessor() {}
     
     void init(/*Map<String, ConnectionDescriptor> clientIDs, */SubscriptionsStore subscriptions,
             IStorageService storageService) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_storageService = storageService;
+        
+        //init the output ringbuffer
+        m_executor = Executors.newFixedThreadPool(1);
+
+        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+
+        SequenceBarrier barrier = m_ringBuffer.newBarrier();
+        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
+        //TODO in a presentation is said to don't do the followinf line!!
+        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
+        m_executor.submit(m_eventProcessor);
     }
     
     void processConnect(ServerChannel session, ConnectMessage msg) {
@@ -253,7 +274,8 @@ class ProtocolProcessor {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
             LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-            m_clientIDs.get(clientId).getSession().write(pubMessage);
+//            m_clientIDs.get(clientId).getSession().write(pubMessage);
+            disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubMessage));
         }catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -264,7 +286,8 @@ class ProtocolProcessor {
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
+//        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
+        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRecMessage));
     }
     
     private void sendPubAck(PubAckEvent evt) {
@@ -284,7 +307,8 @@ class ProtocolProcessor {
                 throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
             }
             LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+//            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+            disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubAckMessage));
         }catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -319,7 +343,8 @@ class ProtocolProcessor {
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
+//        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
+        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubCompMessage));
     }
     
     void processPubRec(String clientID, int messageID) {
@@ -328,7 +353,8 @@ class ProtocolProcessor {
         PubRelMessage pubRelMessage = new PubRelMessage();
         pubRelMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
+//        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
+        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRelMessage));
     }
     
     void processPubComp(String clientID, int messageID) {
@@ -406,6 +432,23 @@ class ProtocolProcessor {
             LOG.debug("send publish message for topic " + topic);
             sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
         }
+    }
+    
+    private void disruptorPublish(OutputMessagingEvent msgEvent) {
+        LOG.debug("disruptorPublish publishing event on output " + msgEvent);
+        long sequence = m_ringBuffer.next();
+        ValueEvent event = m_ringBuffer.get(sequence);
+
+        event.setEvent(msgEvent);
+        
+        m_ringBuffer.publish(sequence); 
+    }
+
+    public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
+        MessagingEvent evt = t.getEvent();
+        //It's always of type OutputMessagingEvent
+        OutputMessagingEvent outEvent = (OutputMessagingEvent) evt;
+        outEvent.getChannel().write(outEvent.getMessage());
     }
 
 }

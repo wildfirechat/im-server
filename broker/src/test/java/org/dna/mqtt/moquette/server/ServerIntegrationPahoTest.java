@@ -315,6 +315,8 @@ public class ServerIntegrationPahoTest {
 
         m_client.connect(options);
 
+        assertNotNull(m_callback);
+        assertNotNull(m_callback.getMessage());
         assertEquals("Hello MQTT", m_callback.getMessage().toString());
     }
 
