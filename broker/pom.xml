@@ -22,7 +22,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dna.mqtt</groupId>
-            <artifactId>moquette-mina-parser</artifactId>
+            <artifactId>moquette-parser-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         
@@ -30,12 +30,6 @@
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-netty-parser</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
-            <version>${mina-version}</version>
         </dependency>
         
         <dependency>

@@ -17,10 +17,8 @@
 
     <modules>
         <module>parser_commons</module>
-        <module>parser</module>
         <module>netty_parser</module>
         <module>broker</module>
-        <module>benchmarking</module>
     </modules>
 
 

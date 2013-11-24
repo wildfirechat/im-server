@@ -1,7 +1,7 @@
 package org.dna.mqtt.commons;
 
 /**
- * Contains some usefull constants.
+ * Contains some useful constants.
  */
 public class Constants {
     public static final int PORT = 1883;
