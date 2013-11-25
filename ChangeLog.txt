@@ -8,3 +8,4 @@ Version 0.3:
 
 Version 0.4:
     Dropped support for MINA
+    Fix Issue 15 (bad re-activation of client's subscriptions after a recconection)
