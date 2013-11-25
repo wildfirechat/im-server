@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 
@@ -38,8 +39,8 @@ public class HawtDBStorageService implements IStorageService {
             return m_qos;
         }
 
-        byte[] getPayload() {
-            return m_payload;
+        ByteBuffer getPayload() {
+            return (ByteBuffer) ByteBuffer.allocate(m_payload.length).put(m_payload).flip();
         }
         
         String getTopic() {
@@ -132,7 +133,7 @@ public class HawtDBStorageService implements IStorageService {
         m_qos2Store = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("qos2Store", indexFactory);
     }
 
-    public void storeRetained(String topic, byte[] message, AbstractMessage.QOSType qos) {
+    public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
         if (message.length == 0) {
             //clean the message from topic
             m_retainedStore.remove(topic);

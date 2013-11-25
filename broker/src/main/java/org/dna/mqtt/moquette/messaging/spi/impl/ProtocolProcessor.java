@@ -4,6 +4,7 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -123,8 +124,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //Handle will flag
         if (msg.isWillFlag()) {
             AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
-            PublishEvent pubEvt = new PublishEvent(msg.getWillTopic(), willQos, msg.getWillMessage().getBytes(),
-                    msg.isWillRetain(), msg.getClientID(), session);
+            byte[] willPayload = msg.getWillMessage().getBytes();
+            ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
+            PublishEvent pubEvt = new PublishEvent(msg.getWillTopic(), willQos, 
+                    bb, msg.isWillRetain(), msg.getClientID(), session);
             processPublish(pubEvt);
         }
 
@@ -188,7 +191,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("processPublish invoked with " + evt);
         final String topic = evt.getTopic();
         final AbstractMessage.QOSType qos = evt.getQos();
-        final byte[] message = evt.getMessage();
+        final ByteBuffer message = evt.getMessage();
         boolean retain = evt.isRetain();
 
         String publishKey = null;
@@ -222,7 +225,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
+    private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retain, Integer messageID) {
         LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic " + topic);
         for (final Subscription sub : subscriptions.matches(topic)) {
             LOG.debug("found matching subscription on topic " + sub.getTopic());
@@ -250,11 +253,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
     
-    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, byte[] message, boolean retained) {
+    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {
         sendPublish(clientId, topic, qos, message, retained, 0);
     }
     
-    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, byte[] message, boolean retained, int messageID) {
+    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, int messageID) {
         LOG.debug("notify invoked with event ");
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
@@ -324,15 +327,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         final String topic = evt.getTopic();
         final AbstractMessage.QOSType qos = evt.getQos();
-        final byte[] message = evt.getMessage();
-        boolean retain = evt.isRetain();
 
-        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+        publish2Subscribers(topic, qos, evt.getMessage(), evt.isRetain(), evt.getMessageID());
 
         m_storageService.removeQoS2Message(publishKey);
 
-        if (retain) {
-            m_storageService.storeRetained(topic, message, qos);
+        if (evt.isRetain()) {
+            m_storageService.storeRetained(topic, evt.getMessage(), qos);
         }
 
         sendPubComp(clientID, messageID);

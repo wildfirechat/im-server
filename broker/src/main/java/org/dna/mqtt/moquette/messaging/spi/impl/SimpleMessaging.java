@@ -108,17 +108,15 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             if (message instanceof ConnectMessage) {
                 m_processor.processConnect(session, (ConnectMessage) message);
             } else if (message instanceof  PublishMessage) {
-                PublishMessage pubMsg = (PublishMessage) message;
                 PublishEvent pubEvt;
-
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-
-                if (message.getQos() == QOSType.MOST_ONE) {
-                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
-
-                } else {
-                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
-                }
+                pubEvt = new PublishEvent((PublishMessage) message, clientID, session);
+//                if (message.getQos() == QOSType.MOST_ONE) {
+//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
+//
+//                } else {
+//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
+//                }
                 m_processor.processPublish(pubEvt);
             } else if (message instanceof DisconnectMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
