@@ -193,8 +193,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final byte[] message = evt.getMessage();
         boolean retain = evt.isRetain();
         
-        LOG.info(String.format("Publish recieved from clientID <%s> on topic <%s> with QoS %s, content [%s]", 
-                evt.getClientID(), evt.getTopic(), evt.getQos(), new String(evt.getMessage())));
+        LOG.info(String.format("Publish recieved from clientID <%s> on topic <%s> with QoS %s", 
+                evt.getClientID(), evt.getTopic(), evt.getQos()));
 
         String publishKey = null;
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
@@ -230,8 +230,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
         LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic " + topic);
         for (final Subscription sub : subscriptions.matches(topic)) {
-            LOG.debug(String.format("Broker publishing to client <%s> topic <%s> qos <%s> content [%s]", 
-                    sub.getClientId(), sub.getTopic(), qos, new String(message)));
+            LOG.debug(String.format("Broker publishing to client <%s> topic <%s> qos <%s>", 
+                    sub.getClientId(), sub.getTopic(), qos));
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
