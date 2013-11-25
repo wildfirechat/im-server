@@ -62,6 +62,8 @@ public class ServerIntegrationPahoTest {
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationPahoTest.class);
 
     static MqttClientPersistence s_dataStore;
+    static MqttClientPersistence s_pubDataStore;
+    
 
     Server m_server;
     IMqttClient m_client;
@@ -71,6 +73,7 @@ public class ServerIntegrationPahoTest {
     public static void beforeTests() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         s_dataStore = new MqttDefaultFilePersistence(tmpDir);
+        s_pubDataStore = new MqttDefaultFilePersistence(tmpDir + File.separator + "publisher");
     }
 
     protected void startServer() throws IOException {
@@ -275,9 +278,29 @@ public class ServerIntegrationPahoTest {
 
         assertEquals("Hello MQTT", m_callback.getMessage().toString());
     }
-
+    
+    @Test
+    public void checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession() throws Exception {
+        LOG.info("*** checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession ***");
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+        m_client.disconnect();
+        
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+        
+        //publish a QoS 1 message another client publish a message on the topic
+        publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1); 
+        
+        //Verify that after a reconnection the client receive the message
+        assertNotNull(m_callback.getMessage());
+        assertEquals("Hello MQTT", m_callback.getMessage().toString());
+    }
+ 
     private void publishFromAnotherClient(String topic, byte[] payload, int qos) throws Exception {
-        IMqttClient anotherClient = new MqttClient("tcp://localhost:1883", "TestClientPUB", s_dataStore);
+        IMqttClient anotherClient = new MqttClient("tcp://localhost:1883", "TestClientPUB", s_pubDataStore);
         anotherClient.connect();
         anotherClient.publish(topic, payload, qos, false);
         anotherClient.disconnect();

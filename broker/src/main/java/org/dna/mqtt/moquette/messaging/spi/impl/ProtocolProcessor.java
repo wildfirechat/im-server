@@ -79,11 +79,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     void processConnect(ServerChannel session, ConnectMessage msg) {
-        LOG.info("processConnect for client " + msg.getClientID());
+        LOG.debug("processConnect for client " + msg.getClientID());
         if (msg.getProcotolVersion() != 0x03) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
-            LOG.info("processConnect sent bad proto ConnAck");
+            LOG.warn("processConnect sent bad proto ConnAck");
             session.write(badProto);
             session.close(false);
             return;
@@ -156,8 +156,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
-        LOG.info("processConnect sent OK ConnAck");
+        LOG.debug("processConnect sent OK ConnAck");
         session.write(okResp);
+        LOG.info(String.format("Connected client ID <%s> with clean session %s", msg.getClientID(), msg.isCleanSession()));
         
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2
@@ -169,10 +170,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("republishStored invoked");
         List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(clientID);
         if (publishedEvents == null) {
-            LOG.debug("republishStored, no stored publish events");
+            LOG.info(String.format("No stored messages for client <%s>", clientID));
             return;
         }
 
+        LOG.info(String.format("republishing stored messages to client <%s>", clientID));
         for (PublishEvent pubEvt : publishedEvents) {
             sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                    pubEvt.getMessage(), false, pubEvt.getMessageID());
@@ -180,7 +182,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void processRemoveAllSubscriptions(String clientID) {
-        LOG.debug("processRemoveAllSubscriptions invoked");
+        LOG.info(String.format("cleaning old saved subscriptions for client <%s>", clientID));
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
@@ -193,6 +195,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final AbstractMessage.QOSType qos = evt.getQos();
         final ByteBuffer message = evt.getMessage();
         boolean retain = evt.isRetain();
+        
+        LOG.info(String.format("Publish recieved from clientID <%s> on topic <%s> with QoS %s", 
+                evt.getClientID(), evt.getTopic(), evt.getQos()));
 
         String publishKey = null;
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
@@ -228,7 +233,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retain, Integer messageID) {
         LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic " + topic);
         for (final Subscription sub : subscriptions.matches(topic)) {
-            LOG.debug("found matching subscription on topic " + sub.getTopic());
+            LOG.debug(String.format("Broker publishing to client <%s> topic <%s> qos <%s>", 
+                    sub.getClientId(), sub.getTopic(), qos));
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
@@ -264,6 +270,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
+        LOG.info(String.format("send publish message to <%s> on topic <%s>, message is [%s]", 
+                clientId, topic, new String(message)));
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
             pubMessage.setMessageID(messageID);
         }
@@ -376,6 +384,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //de-activate the subscriptions for this ClientID
 //        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
         subscriptions.deactivate(clientID);
+        LOG.info(String.format("Disconnected client <%s> with clean session %s", clientID, cleanSession));
+    }
+    
+    void proccessConnectionLost(String clientID) {
+        //If already removed a disconnect message was already processed for this clientID
+        if (m_clientIDs.remove(clientID) != null) {
+
+            //de-activate the subscriptions for this ClientID
+            subscriptions.deactivate(clientID);
+            LOG.info(String.format("Lost connection with client <%s>", clientID));
+        }
     }
     
     /**
@@ -398,7 +417,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     
     void processSubscribe(ServerChannel session, SubscribeMessage msg, String clientID, boolean cleanSession) {
-        LOG.info(String.format("processSubscribe invoked from client %s with msgID %d", clientID, msg.getMessageID()));
+        LOG.debug(String.format("processSubscribe invoked from client %s with msgID %d", clientID, msg.getMessageID()));
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
@@ -414,11 +433,14 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (int i = 0; i < msg.subscriptions().size(); i++) {
             ackMessage.addType(AbstractMessage.QOSType.MOST_ONE);
         }
-        LOG.info("replying with SubAck to MSG ID " + msg.getMessageID());
+        LOG.debug("replying with SubAck to MSG ID " + msg.getMessageID());
         session.write(ackMessage);
     }
     
     private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
+        LOG.info(String.format("<%s> subscribed to topic <%s> with QoS %s", 
+                newSubscription.getClientId(), topic, 
+                AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos())));
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription

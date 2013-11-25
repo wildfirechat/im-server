@@ -24,6 +24,10 @@ public abstract class AbstractMessage {
 
     public static enum QOSType {
         MOST_ONE, LEAST_ONE, EXACTLY_ONCE, RESERVED;
+        
+        public static String formatQoS(QOSType qos) {
+            return String.format("%d - %s", qos.ordinal(), qos.name());
+        }
     }
     //type
     protected boolean m_dupFlag;
