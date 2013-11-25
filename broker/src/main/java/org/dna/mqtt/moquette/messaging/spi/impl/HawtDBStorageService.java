@@ -158,7 +158,6 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void storePublishForFuture(PublishEvent evt) {
-        LOG.debug("storePublishForFuture store evt " + evt);
         List<PublishEvent> storedEvents;
         String clientID = evt.getClientID();
         if (!m_persistentMessageStore.containsKey(clientID)) {
@@ -168,6 +167,8 @@ public class HawtDBStorageService implements IStorageService {
         }
         storedEvents.add(evt);
         m_persistentMessageStore.put(clientID, storedEvents);
+        LOG.debug(String.format("Stored published message for client <%s> on topic <%s>, content %s", 
+                clientID, evt.getTopic(), new String(evt.getMessage())));
     }
 
     public List<PublishEvent> retrivePersistedPublishes(String clientID) {

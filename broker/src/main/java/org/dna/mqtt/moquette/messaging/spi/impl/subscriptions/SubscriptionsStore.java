@@ -166,7 +166,7 @@ public class SubscriptionsStore {
     }
 
     public void activate(String clientID) {
-        LOG.debug("activate re-activating subscriptions for clientID " + clientID);
+        LOG.debug(String.format("Activating subscriptions for clientID <%s>", clientID));
         subscriptions.activate(clientID);
     }
 
