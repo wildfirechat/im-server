@@ -82,6 +82,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void disconnect(ServerChannel session) {
         disruptorPublish(new DisconnectEvent(session));
     }
+    
+    public void lostConnection(String clientID) {
+        disruptorPublish(new LostConnectionEvent(clientID));
+    }
 
     public void handleProtocolMessage(ServerChannel session, AbstractMessage msg) {
         disruptorPublish(new ProtocolEvent(session, msg));
@@ -153,6 +157,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         } else if (evt instanceof InitEvent) {
             processInit();
+        } else if (evt instanceof LostConnectionEvent) {
+            LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
+            m_processor.proccessConnectionLost(lostEvt.getClientID());
         }
     }
 

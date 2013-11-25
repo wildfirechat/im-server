@@ -10,6 +10,7 @@ import org.dna.mqtt.moquette.proto.Utils;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.proto.messages.AbstractMessage.*;
 import org.dna.mqtt.moquette.proto.messages.PingRespMessage;
+import org.dna.mqtt.moquette.server.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,9 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx)throws Exception {
+        NettyChannel channel = m_channelMapper.get(ctx);
+        String clientID = (String) channel.getAttribute(Constants.ATTR_CLIENTID);
+        m_messaging.lostConnection(clientID);
         ctx.close(/*false*/);
         synchronized(m_channelMapper) {
             m_channelMapper.remove(ctx);

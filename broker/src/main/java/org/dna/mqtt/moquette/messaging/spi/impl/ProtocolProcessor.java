@@ -192,6 +192,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final AbstractMessage.QOSType qos = evt.getQos();
         final byte[] message = evt.getMessage();
         boolean retain = evt.isRetain();
+        
+        LOG.info(String.format("Publish recieved from clientID <%s> on topic <%s> with QoS %s, content [%s]", 
+                evt.getClientID(), evt.getTopic(), evt.getQos(), new String(evt.getMessage())));
 
         String publishKey = null;
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
@@ -227,7 +230,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, byte[] message, boolean retain, Integer messageID) {
         LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic " + topic);
         for (final Subscription sub : subscriptions.matches(topic)) {
-            LOG.debug("found matching subscription on topic " + sub.getTopic());
+            LOG.debug(String.format("Broker publishing to client <%s> topic <%s> qos <%s> content [%s]", 
+                    sub.getClientId(), sub.getTopic(), qos, new String(message)));
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
@@ -263,6 +267,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
+        LOG.info(String.format("send publish message to <%s> on topic <%s>, message is [%s]", 
+                clientId, topic, new String(message)));
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
             pubMessage.setMessageID(messageID);
         }
@@ -377,7 +383,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //de-activate the subscriptions for this ClientID
 //        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
         subscriptions.deactivate(clientID);
-        LOG.info(String.format("Disconnected client <%s>", clientID));
+        LOG.info(String.format("Disconnected client <%s> with clean session %s", clientID, cleanSession));
+    }
+    
+    void proccessConnectionLost(String clientID) {
+        //If already removed a disconnect message was already processed for this clientID
+        if (m_clientIDs.remove(clientID) != null) {
+
+            //de-activate the subscriptions for this ClientID
+            subscriptions.deactivate(clientID);
+            LOG.info(String.format("Lost connection with client <%s>", clientID));
+        }
     }
     
     /**
