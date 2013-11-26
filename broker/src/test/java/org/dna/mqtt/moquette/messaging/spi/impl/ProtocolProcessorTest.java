@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -168,7 +169,8 @@ public class ProtocolProcessorTest {
         
         
         //Exercise
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, "Hello".getBytes(), false, "FakeCLI", null);
+        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI", null);
         m_processor.processPublish(pubEvt);
 
         //Verify
@@ -254,7 +256,8 @@ public class ProtocolProcessorTest {
         connectMessage.setProcotolVersion((byte)3);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, "Hello".getBytes(), true, "FakeCLI", null);
+        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "FakeCLI", null);
         m_processor.processPublish(pubEvt);
         
         //Exercise
