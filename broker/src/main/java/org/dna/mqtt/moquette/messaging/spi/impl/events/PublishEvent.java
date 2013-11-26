@@ -2,7 +2,6 @@ package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
@@ -11,7 +10,7 @@ import org.dna.mqtt.moquette.server.ServerChannel;
  *
  * @author andrea
  */
-public class PublishEvent extends MessagingEvent implements Serializable {
+public class PublishEvent extends MessagingEvent {
     String m_topic;
     QOSType m_qos;
     //byte[] m_message;

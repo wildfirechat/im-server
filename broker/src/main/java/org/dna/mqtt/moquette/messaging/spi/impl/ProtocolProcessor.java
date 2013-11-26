@@ -270,8 +270,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
-        LOG.info(String.format("send publish message to <%s> on topic <%s>, message is [%s]", 
-                clientId, topic, new String(message)));
+        
+        LOG.info(String.format("send publish message to <%s> on topic <%s>", clientId, topic));
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
             pubMessage.setMessageID(messageID);
         }

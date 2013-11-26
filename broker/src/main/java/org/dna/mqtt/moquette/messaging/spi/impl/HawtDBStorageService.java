@@ -1,9 +1,15 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.*;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
+import org.dna.mqtt.moquette.messaging.spi.impl.storage.StoredPublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.Server;
@@ -11,12 +17,6 @@ import org.fusesource.hawtbuf.codec.StringCodec;
 import org.fusesource.hawtdb.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.*;
 
 
 /**
@@ -55,12 +55,12 @@ public class HawtDBStorageService implements IStorageService {
     private PageFileFactory pageFactory;
 
     //maps clientID to the list of pending messages stored
-    private SortedIndex<String, List<PublishEvent>> m_persistentMessageStore;
+    private SortedIndex<String, List<StoredPublishEvent>> m_persistentMessageStore;
     private SortedIndex<String, StoredMessage> m_retainedStore;
     //bind clientID+MsgID -> evt message published
-    private SortedIndex<String, PublishEvent> m_inflightStore;
+    private SortedIndex<String, StoredPublishEvent> m_inflightStore;
     //bind clientID+MsgID -> evt message published
-    private SortedIndex<String, PublishEvent> m_qos2Store;
+    private SortedIndex<String, StoredPublishEvent> m_qos2Store;
 
     //persistent Map of clientID, set of Subscriptions
     private SortedIndex<String, Set<Subscription>> m_persistentSubscriptions;
@@ -102,10 +102,10 @@ public class HawtDBStorageService implements IStorageService {
 
 
     private void initPersistentMessageStore() {
-        BTreeIndexFactory<String, List<PublishEvent>> indexFactory = new BTreeIndexFactory<String, List<PublishEvent>>();
+        BTreeIndexFactory<String, List<StoredPublishEvent>> indexFactory = new BTreeIndexFactory<String, List<StoredPublishEvent>>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_persistentMessageStore = (SortedIndex<String, List<PublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
+        m_persistentMessageStore = (SortedIndex<String, List<StoredPublishEvent>>) m_multiIndexFactory.openOrCreate("persistedMessages", indexFactory);
     }
 
     private void initPersistentSubscriptions() {
@@ -120,26 +120,28 @@ public class HawtDBStorageService implements IStorageService {
      * messages in flight.
      */
     private void initInflightMessageStore() {
-        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
+        BTreeIndexFactory<String, StoredPublishEvent> indexFactory = new BTreeIndexFactory<String, StoredPublishEvent>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_inflightStore = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
+        m_inflightStore = (SortedIndex<String, StoredPublishEvent>) m_multiIndexFactory.openOrCreate("inflight", indexFactory);
     }
 
     private void initPersistentQoS2MessageStore() {
-        BTreeIndexFactory<String, PublishEvent> indexFactory = new BTreeIndexFactory<String, PublishEvent>();
+        BTreeIndexFactory<String, StoredPublishEvent> indexFactory = new BTreeIndexFactory<String, StoredPublishEvent>();
         indexFactory.setKeyCodec(StringCodec.INSTANCE);
 
-        m_qos2Store = (SortedIndex<String, PublishEvent>) m_multiIndexFactory.openOrCreate("qos2Store", indexFactory);
+        m_qos2Store = (SortedIndex<String, StoredPublishEvent>) m_multiIndexFactory.openOrCreate("qos2Store", indexFactory);
     }
 
     public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
-        if (message.length == 0) {
+        if (!message.hasRemaining()) {
             //clean the message from topic
             m_retainedStore.remove(topic);
         } else {
             //store the message to the topic
-            m_retainedStore.put(topic, new StoredMessage(message, qos, topic));
+            byte[] raw = new byte[message.remaining()];
+            message.get(raw);
+            m_retainedStore.put(topic, new StoredMessage(raw, qos, topic));
         }
     }
 
@@ -159,21 +161,29 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void storePublishForFuture(PublishEvent evt) {
-        List<PublishEvent> storedEvents;
+        List<StoredPublishEvent> storedEvents;
         String clientID = evt.getClientID();
         if (!m_persistentMessageStore.containsKey(clientID)) {
-            storedEvents = new ArrayList<PublishEvent>();
+            storedEvents = new ArrayList<StoredPublishEvent>();
         } else {
             storedEvents = m_persistentMessageStore.get(clientID);
         }
-        storedEvents.add(evt);
+        storedEvents.add(convertToStored(evt));
         m_persistentMessageStore.put(clientID, storedEvents);
-        LOG.debug(String.format("Stored published message for client <%s> on topic <%s>, content %s", 
-                clientID, evt.getTopic(), new String(evt.getMessage())));
+        //NB rewind the evt message content
+        LOG.debug(String.format("Stored published message for client <%s> on topic <%s>", clientID, evt.getTopic()));
     }
 
     public List<PublishEvent> retrivePersistedPublishes(String clientID) {
-        return m_persistentMessageStore.get(clientID);
+        List<StoredPublishEvent> storedEvts = m_persistentMessageStore.get(clientID);
+        if (storedEvts == null) {
+            return null;
+        }
+        List<PublishEvent> liveEvts = new ArrayList<PublishEvent>();
+        for (StoredPublishEvent storedEvt : storedEvts) {
+            liveEvts.add(convertFromStored(storedEvt));
+        }
+        return liveEvts;
     }
 
     public void cleanPersistedPublishes(String clientID) {
@@ -185,7 +195,8 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void addInFlight(PublishEvent evt, String publishKey) {
-        m_inflightStore.put(publishKey, evt);
+        StoredPublishEvent storedEvt = convertToStored(evt);
+        m_inflightStore.put(publishKey, storedEvt);
     }
 
     public void addNewSubscription(Subscription newSubscription, String clientID) {
@@ -223,7 +234,7 @@ public class HawtDBStorageService implements IStorageService {
     /*-------- QoS 2  storage management --------------*/
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
         LOG.debug(String.format("persistQoS2Message store pubKey %s, evt %s", publishKey, evt));
-        m_qos2Store.put(publishKey, evt);
+        m_qos2Store.put(publishKey, convertToStored(evt));
     }
 
     public void removeQoS2Message(String publishKey) {
@@ -231,6 +242,21 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public PublishEvent retrieveQoS2Message(String publishKey) {
-        return m_qos2Store.get(publishKey);
+        StoredPublishEvent storedEvt = m_qos2Store.get(publishKey);
+        return convertFromStored(storedEvt);
+    }
+    
+    private StoredPublishEvent convertToStored(PublishEvent evt) {
+        StoredPublishEvent storedEvt = new StoredPublishEvent(evt);
+        return storedEvt;
+    }
+    
+    private PublishEvent convertFromStored(StoredPublishEvent evt) {
+        byte[] message = evt.getMessage();
+        ByteBuffer bbmessage = ByteBuffer.wrap(message);
+        //bbmessage.flip();
+        PublishEvent liveEvt = new PublishEvent(evt.getTopic(), evt.getQos(), 
+                bbmessage, evt.isRetain(), evt.getClientID(), evt.getMessageID(), null);
+        return liveEvt;
     }
 }

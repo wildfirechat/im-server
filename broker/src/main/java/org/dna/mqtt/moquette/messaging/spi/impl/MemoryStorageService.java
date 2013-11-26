@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
@@ -32,13 +33,15 @@ public class MemoryStorageService implements IStorageService {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void storeRetained(String topic, byte[] message, AbstractMessage.QOSType qos) {
-        if (message.length == 0) {
+    public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
+        if (!message.hasRemaining()) {
             //clean the message from topic
             m_retainedStore.remove(topic);
         } else {
             //store the message to the topic
-            m_retainedStore.put(topic, new HawtDBStorageService.StoredMessage(message, qos, topic));
+            byte[] raw = new byte[message.remaining()];
+            message.get(raw);
+            m_retainedStore.put(topic, new HawtDBStorageService.StoredMessage(raw, qos, topic));
         }
     }
 
