@@ -334,7 +334,7 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 2);
         m_client.disconnect();
 
-        //publish a QoS 1 message another client publish a message on the topic
+        //publish a QoS 2 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
         m_callback.reinit();
         m_client.connect(options);
@@ -343,7 +343,34 @@ public class ServerIntegrationPahoTest {
         assertNotNull(m_callback.getMessage());
         assertEquals("Hello MQTT", m_callback.getMessage().toString());
     }
-
+    
+    @Test
+    public void avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1() throws Exception {
+        LOG.info("*** avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1, issue #16 ***");
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+        m_client.disconnect();
+        
+        publishFromAnotherClient("/topic", "Hello MQTT 1".getBytes(), 1);
+        m_callback.reinit();
+        m_client.connect(options);
+        
+        assertNotNull(m_callback);
+        assertNotNull(m_callback.getMessage());
+        assertEquals("Hello MQTT 1", m_callback.getMessage().toString());
+        m_client.disconnect();
+        
+        //publish other message
+        publishFromAnotherClient("/topic", "Hello MQTT 2".getBytes(), 1);
+        
+        //reconnect the second time
+        m_callback.reinit();
+        m_client.connect(options);
+        assertNotNull(m_callback);
+        assertNotNull(m_callback.getMessage());
+        assertEquals("Hello MQTT 2", m_callback.getMessage().toString());
+    }
 
 }
-
