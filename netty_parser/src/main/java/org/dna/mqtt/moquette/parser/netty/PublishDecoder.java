@@ -1,6 +1,7 @@
 package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -18,14 +19,14 @@ class PublishDecoder extends DemuxDecoder {
 
     @Override
     void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        LOG.info("decode invoked with buffer " + in);
+        LOG.info("decode invoked with buffer {}", in);
         in.resetReaderIndex();
         int startPos = in.readerIndex();
 
         //Common decoding part
         PublishMessage message = new PublishMessage();
         if (!decodeCommonHeader(message, in)) {
-            LOG.info("decode ask for more data after " + in);
+            LOG.info("decode ask for more data after {}", in);
             in.resetReaderIndex();
             return;
         }
@@ -51,9 +52,10 @@ class PublishDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
-        byte[] b = new byte[payloadSize];
-        in.readBytes(b);
-        message.setPayload(b);
+//        byte[] b = new byte[payloadSize];
+        ByteBuf bb = Unpooled.buffer(payloadSize);
+        in.readBytes(bb);
+        message.setPayload(bb.nioBuffer());
         
         out.add(message);
     }

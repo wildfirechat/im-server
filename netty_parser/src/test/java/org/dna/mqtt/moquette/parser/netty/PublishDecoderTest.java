@@ -2,6 +2,8 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
@@ -65,7 +67,8 @@ public class PublishDecoderTest {
     public void testHeaderWithMessageID_Payload() throws Exception {
         m_buff = Unpooled.buffer(14);
         int messageID = 123;
-        byte[] payload = new byte[]{0x0A, 0x0B, 0x0C};
+//        byte[] payload = new byte[]{0x0A, 0x0B, 0x0C};
+        ByteBuffer payload = ByteBuffer.allocate(3).put(new byte[]{0x0A, 0x0B, 0x0C});
         initHeaderWithMessageID_Payload(m_buff, messageID, payload);
 
         //Exercise
@@ -76,7 +79,8 @@ public class PublishDecoderTest {
         assertNotNull(message);
         assertEquals("Fake Topic", message.getTopicName());
         assertEquals(messageID, (int) message.getMessageID());
-        TestUtils.verifyEquals(payload, message.getPayload());
+//        TestUtils.verifyEquals(payload, message.getPayload());
+        assertEquals(payload, message.getPayload());
     }
     
     @Test
@@ -141,7 +145,9 @@ public class PublishDecoderTest {
         PublishMessage message = (PublishMessage)m_results.get(0); 
         assertNotNull(message);
         assertEquals("/topic", message.getTopicName());
-        assertEquals("Test my payload", new String(message.getPayload()));
+//        assertEquals("Test my payload", new String(message.getPayload()));
+        Buffer expectedPayload =  ByteBuffer.allocate(15).put("Test my payload".getBytes()).flip();
+        assertEquals(expectedPayload, message.getPayload());
     }
     
     private void initHeader(ByteBuf buff) throws IllegalAccessException {
@@ -161,6 +167,16 @@ public class PublishDecoderTest {
     }
      
     private void initHeaderWithMessageID_Payload(ByteBuf buff, int messageID, byte[] payload) throws IllegalAccessException {
+        ByteBuf tmp = Unpooled.buffer(4).writeBytes(Utils.encodeString("Fake Topic"));
+        tmp.writeShort(messageID);
+        tmp.writeBytes(payload);
+        buff.clear().writeByte(AbstractMessage.PUBLISH << 4 | 0x02) //set Qos to 1
+                .writeBytes(Utils.encodeRemainingLength(tmp.readableBytes()));
+        //topic name
+        buff.writeBytes(tmp);
+    }
+    
+    private void initHeaderWithMessageID_Payload(ByteBuf buff, int messageID, ByteBuffer payload) throws IllegalAccessException {
         ByteBuf tmp = Unpooled.buffer(4).writeBytes(Utils.encodeString("Fake Topic"));
         tmp.writeShort(messageID);
         tmp.writeBytes(payload);

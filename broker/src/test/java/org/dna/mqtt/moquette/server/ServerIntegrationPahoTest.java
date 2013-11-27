@@ -306,6 +306,7 @@ public class ServerIntegrationPahoTest {
         anotherClient.disconnect();
     }
 
+    //BUG
     @Test
     public void testPublishWithQoS2() throws Exception {
         LOG.info("*** testPublishWithQoS2 ***");
@@ -324,6 +325,7 @@ public class ServerIntegrationPahoTest {
         assertEquals(2, m_callback.getMessage().getQos());
     }
 
+    //BUG
     @Test
     public void testPublishReceiveWithQoS2() throws Exception {
         LOG.info("*** testPublishReceiveWithQoS2 ***");

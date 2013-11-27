@@ -3,6 +3,7 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import java.nio.ByteBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -35,7 +36,8 @@ public class PublishEncoderTest {
         msg.setTopicName(topic);
 
         //variable part
-        byte[] payload = new byte[]{0x0A, 0x0B, 0x0C};
+        byte[] bpayload = new byte[]{0x0A, 0x0B, 0x0C};
+        ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(3).put(bpayload).flip();
         msg.setPayload(payload);
 
         //Exercise
@@ -48,7 +50,8 @@ public class PublishEncoderTest {
 
         //Variable part
         verifyString(topic, m_out);
-        verifyBuff(payload.length, payload, m_out);
+        payload.rewind();
+        verifyBuff(bpayload.length, payload, m_out);
     }
     
     
@@ -61,7 +64,8 @@ public class PublishEncoderTest {
         msg.setTopicName(topic);
 
         //variable part
-        byte[] payload = new byte[]{0x0A, 0x0B, 0x0C};
+        byte[] bpayload = new byte[]{0x0A, 0x0B, 0x0C};
+        ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(3).put(bpayload).flip();
         msg.setPayload(payload);
 
         //Exercise
@@ -76,7 +80,8 @@ public class PublishEncoderTest {
         verifyString(topic, m_out);
         assertEquals(0, m_out.readByte()); //MessageID MSB
         assertEquals(1, m_out.readByte()); //MessageID LSB
-        verifyBuff(payload.length, payload, m_out);
+        payload.rewind();
+        verifyBuff(bpayload.length, payload, m_out);
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -120,7 +125,8 @@ public class PublishEncoderTest {
         msg.setTopicName(null);
 
         //variable part
-        byte[] payload = new byte[]{0x0A, 0x0B, 0x0C};
+        byte[] bpayload = new byte[]{0x0A, 0x0B, 0x0C};
+        ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(3).put(bpayload).flip();
         msg.setPayload(payload);
         ByteBuf out = Unpooled.buffer();
 
@@ -136,7 +142,8 @@ public class PublishEncoderTest {
         msg.setTopicName(topic);
 
         //variable part
-        byte[] payload = "Test my payload".getBytes();
+        byte[] bpayload = "Test my payload".getBytes();
+        ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(bpayload.length).put(bpayload).flip();
         msg.setPayload(payload);
 
         //Exercise
@@ -145,16 +152,17 @@ public class PublishEncoderTest {
         //Verify
         //2 byte header + (2+6) topic name + [2 message ID if QoQ <> 0]+ payload
         int size = m_out.readableBytes();
-        assertEquals(10+payload.length, size);
+        assertEquals(10 + bpayload.length, size);
         assertEquals(0x30, m_out.readByte()); //1 byte
         assertEquals(23, m_out.readByte()); //1 byte the length
     }
     
     @Test
     public void testEncodeBigMessage() throws Exception {
-        byte[] payload = new byte[256];
+        byte[] bpayload = new byte[256];
         
-        TestUtils.generateRandomPayload(256).readBytes(payload);
+        TestUtils.generateRandomPayload(256).readBytes(bpayload);
+        ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(bpayload.length).put(bpayload).flip();
         
         String topic = "/topic";
         PublishMessage msg = new PublishMessage();
@@ -168,7 +176,7 @@ public class PublishEncoderTest {
         m_encoder.encode(m_mockedContext, msg, m_out);
         
         int size = m_out.readableBytes();
-        assertEquals(11+payload.length, size);
+        assertEquals(11 + bpayload.length, size);
         assertEquals(0x30, m_out.readByte()); //1 byte
     }
     

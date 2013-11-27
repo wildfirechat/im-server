@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-parser-commons</artifactId>
-            <version>0.2</version>
+            <version>${project.version}</version>
         </dependency>
         
         <dependency>

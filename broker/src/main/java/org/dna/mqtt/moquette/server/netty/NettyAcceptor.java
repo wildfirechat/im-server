@@ -85,7 +85,7 @@ public class NettyAcceptor implements ServerAcceptor {
 
         MessageMetrics metrics = m_metricsCollector.computeMetrics();
         //LOG.info(String.format("Bytes read: %d, bytes wrote: %d", metrics.readBytes(), metrics.wroteBytes()));
-        LOG.info(String.format("Msg read: %d, msg wrote: %d", metrics.messagesRead(), metrics.messagesWrote()));
+        LOG.info("Msg read: {}, msg wrote: {}", metrics.messagesRead(), metrics.messagesWrote());
     }
     
 }

@@ -1,5 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
@@ -32,18 +33,20 @@ public class MemoryStorageService implements IStorageService {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void storeRetained(String topic, byte[] message, AbstractMessage.QOSType qos) {
-        if (message.length == 0) {
+    public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
+        if (!message.hasRemaining()) {
             //clean the message from topic
             m_retainedStore.remove(topic);
         } else {
             //store the message to the topic
-            m_retainedStore.put(topic, new HawtDBStorageService.StoredMessage(message, qos, topic));
+            byte[] raw = new byte[message.remaining()];
+            message.get(raw);
+            m_retainedStore.put(topic, new HawtDBStorageService.StoredMessage(raw, qos, topic));
         }
     }
 
     public Collection<HawtDBStorageService.StoredMessage> searchMatching(IMatchingCondition condition) {
-        LOG.debug("searchMatching scanning all retained messages, presents are " + m_retainedStore.size());
+        LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
         List<HawtDBStorageService.StoredMessage> results = new ArrayList<HawtDBStorageService.StoredMessage>();
 
@@ -58,7 +61,7 @@ public class MemoryStorageService implements IStorageService {
     }
 
     public void storePublishForFuture(PublishEvent evt) {
-        LOG.debug("storePublishForFuture store evt " + evt);
+        LOG.debug("storePublishForFuture store evt {}", evt);
         List<PublishEvent> storedEvents;
         String clientID = evt.getClientID();
         if (!m_persistentMessageStore.containsKey(clientID)) {
@@ -115,7 +118,7 @@ public class MemoryStorageService implements IStorageService {
     }
 
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
-        LOG.debug(String.format("persistQoS2Message store pubKey %s, evt %s", publishKey, evt));
+        LOG.debug("persistQoS2Message store pubKey {}, evt {}", publishKey, evt);
         m_qos2Store.put(publishKey, evt);
     }
 

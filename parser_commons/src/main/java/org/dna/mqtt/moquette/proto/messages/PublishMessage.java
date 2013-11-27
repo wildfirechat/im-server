@@ -1,5 +1,7 @@
 package org.dna.mqtt.moquette.proto.messages;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  * @author andrea
@@ -8,7 +10,7 @@ public class PublishMessage extends MessageIDMessage {
 
     private String m_topicName;
 //    private Integer m_messageID; //could be null if Qos is == 0
-    private byte[] m_payload;
+    private ByteBuffer m_payload;
 
     /*public Integer getMessageID() {
         return m_messageID;
@@ -30,11 +32,11 @@ public class PublishMessage extends MessageIDMessage {
         this.m_topicName = topicName;
     }
 
-    public byte[] getPayload() {
+    public ByteBuffer getPayload() {
         return m_payload;
     }
 
-    public void setPayload(byte[] payload) {
+    public void setPayload(ByteBuffer payload) {
         this.m_payload = payload;
     }
 }

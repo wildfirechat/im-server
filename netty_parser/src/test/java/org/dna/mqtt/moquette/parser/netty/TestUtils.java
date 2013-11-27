@@ -6,6 +6,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -29,6 +30,11 @@ public class TestUtils {
         for (int i = 0; i < numBytes; i++) {
             assertEquals(bytes[i], toCheck[i]);
         }
+    }
+    
+    static void verifyBuff(int numBytes, ByteBuffer bytes, ByteBuf buff) {
+        assertTrue(numBytes <= buff.readableBytes());
+        assertEquals(bytes, buff.nioBuffer());
     }
     
     /**

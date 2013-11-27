@@ -69,7 +69,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     
     private void disruptorPublish(MessagingEvent msgEvent) {
-        LOG.debug("disruptorPublish publishing event " + msgEvent);
+        LOG.debug("disruptorPublish publishing event {}", msgEvent);
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
 
@@ -97,7 +97,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
-        LOG.info("onEvent processing messaging event from input ringbuffer" + evt);
+        LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
         if (evt instanceof PublishEvent) {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
@@ -112,17 +112,15 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             if (message instanceof ConnectMessage) {
                 m_processor.processConnect(session, (ConnectMessage) message);
             } else if (message instanceof  PublishMessage) {
-                PublishMessage pubMsg = (PublishMessage) message;
                 PublishEvent pubEvt;
-
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-
-                if (message.getQos() == QOSType.MOST_ONE) {
-                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
-
-                } else {
-                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
-                }
+                pubEvt = new PublishEvent((PublishMessage) message, clientID, session);
+//                if (message.getQos() == QOSType.MOST_ONE) {
+//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
+//
+//                } else {
+//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
+//                }
                 m_processor.processPublish(pubEvt);
             } else if (message instanceof DisconnectMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
