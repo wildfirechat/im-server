@@ -318,14 +318,13 @@ public class ServerIntegrationPahoTest {
 
         //publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
-
+        m_callback.reinit();
         m_client.connect(options);
-
+        
         assertEquals("Hello MQTT", m_callback.getMessage().toString());
         assertEquals(2, m_callback.getMessage().getQos());
     }
 
-    //BUG
     @Test
     public void testPublishReceiveWithQoS2() throws Exception {
         LOG.info("*** testPublishReceiveWithQoS2 ***");
@@ -337,9 +336,9 @@ public class ServerIntegrationPahoTest {
 
         //publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
-
+        m_callback.reinit();
         m_client.connect(options);
-
+        
         assertNotNull(m_callback);
         assertNotNull(m_callback.getMessage());
         assertEquals("Hello MQTT", m_callback.getMessage().toString());
