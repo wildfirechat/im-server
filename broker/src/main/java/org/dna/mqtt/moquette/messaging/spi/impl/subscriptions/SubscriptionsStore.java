@@ -72,7 +72,7 @@ public class SubscriptionsStore {
         //reload any subscriptions persisted
         LOG.debug("Reloading all stored subscriptions...");
         for (Subscription subscription : m_storageService.retrieveAllSubscriptions()) {
-            LOG.debug("Re-subscribing " + subscription.getClientId() + " to topic " + subscription.getTopic());
+            LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopic());
             addDirect(subscription);
         }
         LOG.debug("Finished loading");
@@ -166,7 +166,7 @@ public class SubscriptionsStore {
     }
 
     public void activate(String clientID) {
-        LOG.debug(String.format("Activating subscriptions for clientID <%s>", clientID));
+        LOG.debug("Activating subscriptions for clientID <{}>", clientID);
         subscriptions.activate(clientID);
     }
 
@@ -176,7 +176,7 @@ public class SubscriptionsStore {
      * listeners subscriptions, and not topic publishing.
      */
     public List<Subscription> matches(String topic) {
-        List<Token> tokens = new ArrayList<Token>();
+        List<Token> tokens;
         try {
             tokens = splitTopic(topic);
         } catch (ParseException ex) {

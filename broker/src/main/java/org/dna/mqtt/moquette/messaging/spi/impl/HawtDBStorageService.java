@@ -146,7 +146,7 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
-        LOG.debug("searchMatching scanning all retained messages, presents are " + m_retainedStore.size());
+        LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
         List<StoredMessage> results = new ArrayList<StoredMessage>();
 
@@ -171,7 +171,7 @@ public class HawtDBStorageService implements IStorageService {
         storedEvents.add(convertToStored(evt));
         m_persistentMessageStore.put(clientID, storedEvents);
         //NB rewind the evt message content
-        LOG.debug(String.format("Stored published message for client <%s> on topic <%s>", clientID, evt.getTopic()));
+        LOG.debug("Stored published message for client <{}> on topic <{}>", clientID, evt.getTopic());
     }
 
     public List<PublishEvent> retrivePersistedPublishes(String clientID) {
@@ -233,7 +233,7 @@ public class HawtDBStorageService implements IStorageService {
 
     /*-------- QoS 2  storage management --------------*/
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
-        LOG.debug(String.format("persistQoS2Message store pubKey %s, evt %s", publishKey, evt));
+        LOG.debug("persistQoS2Message store pubKey {}, evt {}", publishKey, evt);
         m_qos2Store.put(publishKey, convertToStored(evt));
     }
 

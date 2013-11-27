@@ -69,7 +69,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     
     private void disruptorPublish(MessagingEvent msgEvent) {
-        LOG.debug("disruptorPublish publishing event " + msgEvent);
+        LOG.debug("disruptorPublish publishing event {}", msgEvent);
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
 
@@ -97,7 +97,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
-        LOG.info("onEvent processing messaging event from input ringbuffer" + evt);
+        LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
         if (evt instanceof PublishEvent) {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
