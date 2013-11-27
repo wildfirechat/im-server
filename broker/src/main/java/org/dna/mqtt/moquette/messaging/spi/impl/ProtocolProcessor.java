@@ -167,7 +167,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void republishStored(String clientID) {
-        LOG.debug("republishStored invoked");
+        LOG.trace("republishStored invoked");
         List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(clientID);
         if (publishedEvents == null) {
             LOG.info("No stored messages for client <{}>", clientID);
@@ -181,6 +181,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
     
+    void processPubAck(String clientID, int messageID) {
+        //Remove the message from message store
+        m_storageService.cleanPersistedPublishMessage(clientID, messageID);
+    }
+    
     private void processRemoveAllSubscriptions(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
         subscriptions.removeForClient(clientID);
@@ -190,7 +195,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     protected void processPublish(PublishEvent evt) {
-        LOG.debug("processPublish invoked with " + evt);
+        LOG.trace("processPublish invoked with {}", evt);
         final String topic = evt.getTopic();
         final AbstractMessage.QOSType qos = evt.getQos();
         final ByteBuffer message = evt.getMessage();
@@ -287,13 +292,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.debug("Session for clientId {} is {}", clientId, m_clientIDs.get(clientId).getSession());
 //            m_clientIDs.get(clientId).getSession().write(pubMessage);
             disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubMessage));
-        }catch(Throwable t) {
+        } catch(Throwable t) {
             LOG.error(null, t);
         }
     }
     
     private void sendPubRec(String clientID, int messageID) {
-        LOG.debug("sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
+        LOG.trace("sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
 
@@ -302,7 +307,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPubAck(PubAckEvent evt) {
-        LOG.debug("sendPubAck invoked");
+        LOG.trace("sendPubAck invoked");
 
         String clientId = evt.getClientID();
 

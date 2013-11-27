@@ -148,6 +148,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 int messageID = ((PubCompMessage) message).getMessageID();
                 m_processor.processPubComp(clientID, messageID);
+            } else if (message instanceof PubAckMessage) {
+                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+                int messageID = ((PubAckMessage) message).getMessageID();
+                m_processor.processPubAck(clientID, messageID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }

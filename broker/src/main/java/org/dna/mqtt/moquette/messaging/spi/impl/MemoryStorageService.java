@@ -23,6 +23,7 @@ public class MemoryStorageService implements IStorageService {
     
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<String, Set<Subscription>>();
     private Map<String, HawtDBStorageService.StoredMessage> m_retainedStore = new HashMap<String, HawtDBStorageService.StoredMessage>();
+    //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
     private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<String, List<PublishEvent>>();
     private Map<String, PublishEvent> m_inflightStore = new HashMap<String, PublishEvent>();
     private Map<String, PublishEvent> m_qos2Store = new HashMap<String, PublishEvent>();
@@ -75,6 +76,18 @@ public class MemoryStorageService implements IStorageService {
 
     public List<PublishEvent> retrivePersistedPublishes(String clientID) {
         return m_persistentMessageStore.get(clientID);
+    }
+    
+    public void cleanPersistedPublishMessage(String clientID, int messageID) {
+        List<PublishEvent> events = m_persistentMessageStore.get(clientID);
+        PublishEvent toRemoveEvt = null;
+        for (PublishEvent evt : events) {
+            if (evt.getMessageID() == messageID) {
+                toRemoveEvt = evt;
+            }
+        }
+        events.remove(toRemoveEvt);
+        m_persistentMessageStore.put(clientID, events);
     }
 
     public void cleanPersistedPublishes(String clientID) {

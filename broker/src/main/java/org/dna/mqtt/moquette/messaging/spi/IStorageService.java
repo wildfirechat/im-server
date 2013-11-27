@@ -26,6 +26,8 @@ public interface IStorageService {
     void storePublishForFuture(PublishEvent evt);
 
     List<PublishEvent> retrivePersistedPublishes(String clientID);
+    
+    void cleanPersistedPublishMessage(String clientID, int messageID);
 
     void cleanPersistedPublishes(String clientID);
 

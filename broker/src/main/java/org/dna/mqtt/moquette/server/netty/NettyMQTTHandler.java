@@ -23,7 +23,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
     private IMessaging m_messaging;
-    private Map<ChannelHandlerContext, NettyChannel> m_channelMapper = new HashMap<ChannelHandlerContext, NettyChannel>();
+    private final Map<ChannelHandlerContext, NettyChannel> m_channelMapper = new HashMap<ChannelHandlerContext, NettyChannel>();
     
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
@@ -39,6 +39,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                 case PUBCOMP:
                 case PUBREL:
                 case DISCONNECT:
+                case PUBACK:    
                     NettyChannel channel;
                     synchronized(m_channelMapper) {
                         if (!m_channelMapper.containsKey(ctx)) {

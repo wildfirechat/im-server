@@ -55,6 +55,7 @@ public class HawtDBStorageService implements IStorageService {
     private PageFileFactory pageFactory;
 
     //maps clientID to the list of pending messages stored
+    //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
     private SortedIndex<String, List<StoredPublishEvent>> m_persistentMessageStore;
     private SortedIndex<String, StoredMessage> m_retainedStore;
     //bind clientID+MsgID -> evt message published
@@ -184,6 +185,21 @@ public class HawtDBStorageService implements IStorageService {
             liveEvts.add(convertFromStored(storedEvt));
         }
         return liveEvts;
+    }
+    
+    public void cleanPersistedPublishMessage(String clientID, int messageID) {
+        List<StoredPublishEvent> events = m_persistentMessageStore.get(clientID);
+        if (events == null) {
+            return;
+        }
+        StoredPublishEvent toRemoveEvt = null;
+        for (StoredPublishEvent evt : events) {
+            if (evt.getMessageID() == messageID) {
+                toRemoveEvt = evt;
+            }
+        }
+        events.remove(toRemoveEvt);
+        m_persistentMessageStore.put(clientID, events);
     }
 
     public void cleanPersistedPublishes(String clientID) {
