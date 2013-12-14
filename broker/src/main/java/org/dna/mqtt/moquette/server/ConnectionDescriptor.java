@@ -30,4 +30,9 @@ public class ConnectionDescriptor {
     public ServerChannel getSession() {
         return m_session;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectionDescriptor{" + "m_clientID=" + m_clientID + ", m_cleanSession=" + m_cleanSession + '}';
+    }
 }
