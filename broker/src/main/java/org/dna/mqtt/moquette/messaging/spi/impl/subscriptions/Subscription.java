@@ -88,6 +88,6 @@ public class Subscription implements Serializable {
     
     @Override
     public String toString() {
-        return String.format("[t:%s, cliID: %s, qos: %s]", this.topic, this.clientId, this.requestedQos);
+        return String.format("[t:%s, cliID: %s, qos: %s, active: %s]", this.topic, this.clientId, this.requestedQos, this.active);
     }
 }

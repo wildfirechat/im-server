@@ -237,9 +237,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * */
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retain, Integer messageID) {
         LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("subscription tree {}", subscriptions.dumpTree());
+        }
         for (final Subscription sub : subscriptions.matches(topic)) {
-            LOG.debug("Broker publishing to client <{}> topic <{}> qos <{}>", 
-                    sub.getClientId(), sub.getTopic(), qos);
+            LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}", 
+                    sub.getClientId(), sub.getTopic(), qos, sub.isActive());
+            
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
@@ -269,7 +273,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, int messageID) {
-        LOG.debug("notify invoked with event ");
+        LOG.debug("sendPublish invoked clientId <{}> on topic <{}> QoS {} ratained {} messageID {}", clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
@@ -287,7 +291,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             }
             LOG.debug("clientIDs are {}", m_clientIDs);
             if (m_clientIDs.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
+                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
             }
             LOG.debug("Session for clientId {} is {}", clientId, m_clientIDs.get(clientId).getSession());
 //            m_clientIDs.get(clientId).getSession().write(pubMessage);
@@ -407,7 +411,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * doesn't reply any error
      */
     void processUnsubscribe(ServerChannel session, String clientID, List<String> topics, int messageID) {
-        LOG.debug("processSubscribe invoked");
+        LOG.debug("processUnsubscribe invoked, removing subscription on topics {}, for clientID <{}>", topics, clientID);
 
         for (String topic : topics) {
             subscriptions.removeSubscription(topic, clientID);
