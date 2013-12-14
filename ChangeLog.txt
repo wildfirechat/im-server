@@ -10,3 +10,4 @@ Version 0.4:
     Dropped support for MINA
     Fix Issue 15 (bad re-activation of client's subscriptions after a recconection)
     Fix Issue 16 (bad re-publish of stored messages after a client reconnection)
+    Fixed a bug in unsubscribe due to missed clientID check

@@ -324,6 +324,27 @@ public class SubscriptionsStoreTest {
         assertTrue(SubscriptionsStore.matchTopics("foo///baz", "foo/+/+/baz"));
         assertTrue(SubscriptionsStore.matchTopics("foo/bar/", "foo/bar/+"));
     }
+    
+    @Test
+    public void removeSubscription_withDifferentClients_subscribedSameTopic() {
+        SubscriptionsStore aStore = new SubscriptionsStore();
+        aStore.init(new MemoryStorageService());
+        //subscribe a not active clientID1 to /topic
+        Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
+        aStore.add(slashSub);
+        aStore.deactivate(slashSub.getClientId());
+        
+        //subscribe an active clientID2 to /topic
+        Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
+        aStore.add(slashSub2);
+        
+        //Exercise
+        aStore.removeSubscription("/topic", slashSub2.getClientId());
+        
+        //Verify
+        Subscription remainedSubscription = aStore.matches("/topic").get(0);
+        assertEquals(slashSub.getClientId(), remainedSubscription.getClientId());
+    }
 
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];

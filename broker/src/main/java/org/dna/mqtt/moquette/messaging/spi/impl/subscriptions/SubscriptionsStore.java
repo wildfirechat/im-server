@@ -124,10 +124,10 @@ public class SubscriptionsStore {
     public void removeSubscription(String topic, String clientID) {
         TreeNode matchNode = findMatchingNode(topic);
         
-        //search fr the subscription to remove
+        //search for the subscription to remove
         Subscription toBeRemoved = null;
         for (Subscription sub : matchNode.subscriptions()) {
-            if (sub.topic.equals(topic)) {
+            if (sub.topic.equals(topic) && sub.getClientId().equals(clientID)) {
                 toBeRemoved = sub;
                 break;
             }
