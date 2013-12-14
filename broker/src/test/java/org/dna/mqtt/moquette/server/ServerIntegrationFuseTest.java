@@ -2,9 +2,6 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.QoS;
@@ -26,6 +23,8 @@ public class ServerIntegrationFuseTest {
 
     Server m_server;
     MQTT m_mqtt;
+    BlockingConnection m_subscriber;
+    BlockingConnection m_publisher;
     
 //mqtt.setHost("test.mosquitto.org", 1883);
 
@@ -48,6 +47,13 @@ public class ServerIntegrationFuseTest {
 //        if (m_mqtt.isConnected()) {
 //            m_mqtt.disconnect();
 //        }
+        if (m_subscriber != null) {
+            m_subscriber.disconnect();
+        }
+        
+        if (m_publisher != null) {
+            m_publisher.disconnect();
+        }
 
         m_server.stopServer();
         File dbFile = new File(Server.STORAGE_FILE_PATH);
@@ -62,47 +68,46 @@ public class ServerIntegrationFuseTest {
         MQTT mqtt = new MQTT();
         mqtt.setHost("localhost", 1883); 
         mqtt.setClientId("Publisher");
-        BlockingConnection publisher = mqtt.blockingConnection();
-        publisher.connect();
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
         
         m_mqtt.setHost("localhost", 1883); 
         m_mqtt.setCleanSession(false);
         m_mqtt.setClientId("Subscriber");
-        BlockingConnection subscriber = m_mqtt.blockingConnection();
-        subscriber.connect();
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
         Topic[] topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        byte[] qoses = subscriber.subscribe(topics);
+        m_subscriber.subscribe(topics);
         
         //force the publisher to send
-        publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), QoS.AT_LEAST_ONCE, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), QoS.AT_LEAST_ONCE, false);
         
         //read the first message and drop the connection
-        Message msg = subscriber.receive();
+        Message msg = m_subscriber.receive();
         msg.ack();
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
-        subscriber.disconnect();
+        m_subscriber.disconnect();
         
-        publisher.publish("/topic", "Hello world MQTT!!-2".getBytes(), QoS.AT_LEAST_ONCE, false);
-        publisher.publish("/topic", "Hello world MQTT!!-3".getBytes(), QoS.AT_LEAST_ONCE, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!-2".getBytes(), QoS.AT_LEAST_ONCE, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!-3".getBytes(), QoS.AT_LEAST_ONCE, false);
         
         //reconnect and expect to receive the hello 2 message
-        subscriber = m_mqtt.blockingConnection();
-        subscriber.connect();
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
         topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        qoses = subscriber.subscribe(topics);
-        msg = subscriber.receive();
+        m_subscriber.subscribe(topics);
+        msg = m_subscriber.receive();
         msg.ack();
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
-        subscriber.disconnect();
+        m_subscriber.disconnect();
         
-        subscriber = m_mqtt.blockingConnection();
-        subscriber.connect();
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
         topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        qoses = subscriber.subscribe(topics);
-        msg = subscriber.receive();
+        m_subscriber.subscribe(topics);
+        msg = m_subscriber.receive();
         assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
         msg.ack();
         //TODO check topic and content
-        subscriber.disconnect();
     }
 }
