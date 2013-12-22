@@ -244,7 +244,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}", 
                     sub.getClientId(), sub.getTopic(), qos, sub.isActive());
             
-            if (qos == AbstractMessage.QOSType.MOST_ONE) {
+            if (qos == AbstractMessage.QOSType.MOST_ONE && sub.isActive()) {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
             } else {

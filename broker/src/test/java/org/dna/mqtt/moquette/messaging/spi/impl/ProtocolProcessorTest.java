@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-//import org.apache.mina.core.filterchain.IoFilter;
-//import org.apache.mina.core.filterchain.IoFilterAdapter;
-//import org.apache.mina.core.session.DummySession;
-//import org.apache.mina.core.session.IoSession;
-//import org.apache.mina.core.write.WriteRequest;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
@@ -22,10 +17,8 @@ import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
-//import org.dna.mqtt.moquette.server.mina.MinaChannel;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,6 +28,7 @@ import org.junit.Test;
  */
 public class ProtocolProcessorTest {
     final static String FAKE_CLIENT_ID = "FAKE_123";
+    final static String FAKE_PUBLISHER_ID = "Publisher";
     final static String FAKE_TOPIC = "/news";
     
     ServerChannel m_session;
@@ -233,7 +227,7 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
+        final Subscription subscription = new Subscription(FAKE_PUBLISHER_ID, 
                 FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
 
         //subscriptions.matches(topic) redefine the method to return true
@@ -252,18 +246,18 @@ public class ProtocolProcessorTest {
         //simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_storageService);
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setClientID(FAKE_CLIENT_ID);
+        connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProcotolVersion((byte)3);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "FakeCLI", null);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
         m_processor.processPublish(pubEvt);
         
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
-        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        m_processor.processSubscribe(m_session, msg, FAKE_PUBLISHER_ID, false);
         
         //Verify
         assertNotNull(m_receivedMessage); 
@@ -271,4 +265,24 @@ public class ProtocolProcessorTest {
         PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
         assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
     }
+    
+    @Test
+    public void processPublishNoPublishToInactiveSubscriptions() {
+        SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
+        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, false); 
+        inactiveSub.setActive(false);
+        List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
+        when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
+        m_processor = new ProtocolProcessor();
+        m_processor.init(mockedSubscriptions, m_storageService);
+        
+        //Exercise
+        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
+        m_processor.processPublish(pubEvt);
+
+        //Verify no message is received
+        assertNull(m_receivedMessage); 
+    }
+    
 }

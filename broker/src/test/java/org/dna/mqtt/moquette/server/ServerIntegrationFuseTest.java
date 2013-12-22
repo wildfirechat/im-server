@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.QoS;
@@ -109,5 +110,41 @@ public class ServerIntegrationFuseTest {
         assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
         msg.ack();
         //TODO check topic and content
+    }
+    
+    @Test
+    public void checkReplayStoredPublish_forNoCleanSession_qos1() throws Exception {
+        LOG.info("*** checkReplayStoredPublish_forNoCleanSession_qos1 ***");
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883); 
+        mqtt.setClientId("Publisher");
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        
+        m_mqtt.setHost("localhost", 1883); 
+        m_mqtt.setCleanSession(false);
+        m_mqtt.setClientId("Subscriber");
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+        Topic[] topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
+        m_subscriber.subscribe(topics);
+        System.out.println("***Subscriber listen to /topic and disonnect");
+        m_subscriber.disconnect();
+        
+        //force the publisher to send
+        m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), QoS.AT_LEAST_ONCE, false);
+        System.out.println("***Publisher published to /topic :: Hello world MQTT!!-1");
+        
+        //reconnect and expect to receive the hello 2 message
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+        topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
+        m_subscriber.subscribe(topics);
+        Message msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        assertNotNull(msg);
+        msg.ack();
+        assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
+        System.out.println(String.format("***Subscriber received message <%s> from /topic", new String(msg.getPayload())));
+//        m_subscriber.disconnect();
     }
 }
