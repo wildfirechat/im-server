@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
@@ -207,6 +209,7 @@ public class ProtocolProcessorTest {
     
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
+        final CountDownLatch publishRecvSignal = new CountDownLatch(1);
         /*ServerChannel */m_session = new DummyChannel() {
             @Override
             public void write(Object value) {
@@ -214,6 +217,7 @@ public class ProtocolProcessorTest {
                     System.out.println("filterReceived class " + value.getClass().getName());
                     if (value instanceof PublishMessage) {
                         m_receivedMessage = (AbstractMessage) value;
+                        publishRecvSignal.countDown();
                     }
                     
                     if (m_receivedMessage instanceof ConnAckMessage) {
@@ -260,6 +264,8 @@ public class ProtocolProcessorTest {
         m_processor.processSubscribe(m_session, msg, FAKE_PUBLISHER_ID, false);
         
         //Verify
+        //wait the latch
+        assertTrue(publishRecvSignal.await(1, TimeUnit.SECONDS)); //no timeout
         assertNotNull(m_receivedMessage); 
         assertTrue(m_receivedMessage instanceof PublishMessage);
         PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
