@@ -20,9 +20,12 @@ public class ServerIntegrationPahoTest {
         private String m_topic;
         private CountDownLatch m_latch = new CountDownLatch(1);
 
-        public MqttMessage getMessage() {
+        public MqttMessage getMessage(boolean checkElapsed) {
             try {
-                m_latch.await(1, TimeUnit.SECONDS);
+                boolean elapsed = !m_latch.await(1, TimeUnit.SECONDS);
+                if (elapsed && checkElapsed) {
+                    throw new IllegalStateException("Elapsed the timeout to get the result");
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -83,6 +86,9 @@ public class ServerIntegrationPahoTest {
 
     @Before
     public void setUp() throws Exception {
+        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        assertFalse(dbFile.exists());
+        
         startServer();
 
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
@@ -101,6 +107,7 @@ public class ServerIntegrationPahoTest {
         if (dbFile.exists()) {
             dbFile.delete();
         }
+        assertFalse(dbFile.exists());
     }
 
     @Test
@@ -172,7 +179,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect();
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_callback.getMessage());
+        assertNull(m_callback.getMessage(false));
     }
 
     @Test
@@ -225,7 +232,7 @@ public class ServerIntegrationPahoTest {
         m_callback.reinit();
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_callback.getMessage());
+        assertNull(m_callback.getMessage(false));
     }
 
     @Test
@@ -246,7 +253,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_callback.getMessage());
+        assertNull(m_callback.getMessage(false));
     }
 
     @Test
@@ -258,8 +265,9 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         //reconnect and publish
-        assertEquals("Hello MQTT", m_callback.getMessage().toString());
-        assertEquals(1, m_callback.getMessage().getQos());
+        MqttMessage message = m_callback.getMessage(true);
+        assertEquals("Hello MQTT", message.toString());
+        assertEquals(1, message.getQos());
     }
 
     @Test
@@ -276,7 +284,7 @@ public class ServerIntegrationPahoTest {
 
         m_client.connect(options);
 
-        assertEquals("Hello MQTT", m_callback.getMessage().toString());
+        assertEquals("Hello MQTT", m_callback.getMessage(true).toString());
     }
     
     @Test
@@ -295,8 +303,9 @@ public class ServerIntegrationPahoTest {
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1); 
         
         //Verify that after a reconnection the client receive the message
-        assertNotNull(m_callback.getMessage());
-        assertEquals("Hello MQTT", m_callback.getMessage().toString());
+        MqttMessage message = m_callback.getMessage(true);
+        assertNotNull(message);
+        assertEquals("Hello MQTT", message.toString());
     }
  
     private void publishFromAnotherClient(String topic, byte[] payload, int qos) throws Exception {
@@ -321,8 +330,9 @@ public class ServerIntegrationPahoTest {
         m_callback.reinit();
         m_client.connect(options);
         
-        assertEquals("Hello MQTT", m_callback.getMessage().toString());
-        assertEquals(2, m_callback.getMessage().getQos());
+        MqttMessage message = m_callback.getMessage(true);
+        assertEquals("Hello MQTT", message.toString());
+        assertEquals(2, message.getQos());
     }
 
     @Test
@@ -340,8 +350,9 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         
         assertNotNull(m_callback);
-        assertNotNull(m_callback.getMessage());
-        assertEquals("Hello MQTT", m_callback.getMessage().toString());
+        MqttMessage message = m_callback.getMessage(true);
+        assertNotNull(message);
+        assertEquals("Hello MQTT", message.toString());
     }
     
     @Test
@@ -358,8 +369,9 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         
         assertNotNull(m_callback);
-        assertNotNull(m_callback.getMessage());
-        assertEquals("Hello MQTT 1", m_callback.getMessage().toString());
+        MqttMessage message = m_callback.getMessage(true);
+        assertNotNull(message);
+        assertEquals("Hello MQTT 1", message.toString());
         m_client.disconnect();
         
         //publish other message
@@ -369,8 +381,9 @@ public class ServerIntegrationPahoTest {
         m_callback.reinit();
         m_client.connect(options);
         assertNotNull(m_callback);
-        assertNotNull(m_callback.getMessage());
-        assertEquals("Hello MQTT 2", m_callback.getMessage().toString());
+        message = m_callback.getMessage(true);
+        assertNotNull(message);
+        assertEquals("Hello MQTT 2", message.toString());
     }
 
 }
