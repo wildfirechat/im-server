@@ -1,13 +1,16 @@
-Version 0.2:
-    Fixed issues (10, 11, 12, 13)
-    Fixed interdependency bug in test
-    
-Version 0.3:
-    Added Netty IO connectors
-    Dropped tests based on Fuse source client lib moving to Paho java client
-
 Version 0.4:
     Dropped support for MINA
     Fix Issue 15 (bad re-activation of client's subscriptions after a recconection)
     Fix Issue 16 (bad re-publish of stored messages after a client reconnection)
     Fixed a bug in unsubscribe due to missed clientID check
+    Fixed Issue 18 (descriptor of a disconnected (not active) client)
+    Bug fix for override subscriptions to the same /topic but with different QoS (latest wins)
+    Added test to check the downgrading of QoS of messages sent to registered subscribers (fixed a bug of double delivery of QoS2 messages)
+
+Version 0.3:
+    Added Netty IO connectors
+    Dropped tests based on Fuse source client lib moving to Paho java client
+
+Version 0.2:
+    Fixed issues (10, 11, 12, 13)
+    Fixed interdependency bug in test

@@ -200,7 +200,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     protected void processPublish(PublishEvent evt) {
-        LOG.trace("processPublish invoked with {}", evt);
+        LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", evt);
         final String topic = evt.getTopic();
         final AbstractMessage.QOSType qos = evt.getQos();
         final ByteBuffer message = evt.getMessage();
@@ -221,7 +221,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             sendPubRec(evt.getClientID(), evt.getMessageID());
         }
 
-        publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+        //NB publish 2 subscribers for QoS 2 happen upon PUBREL from publsher
+        if (qos != AbstractMessage.QOSType.EXACTLY_ONCE) {
+            publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
+        }
 
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
             if (publishKey == null) {
@@ -247,6 +250,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.debug("subscription tree {}", subscriptions.dumpTree());
         }
         for (final Subscription sub : subscriptions.matches(topic)) {
+            if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
+                qos = sub.getRequestedQos();
+            }
+            
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}", 
                     sub.getClientId(), sub.getTopic(), qos, sub.isActive());
             
@@ -275,7 +282,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {
-        sendPublish(clientId, topic, qos, message, retained, 0);
+        //TODO pay attention to the message ID can't be 0 and it's the message sent to subscriber
+        int messageID = 1;
+        sendPublish(clientId, topic, qos, message, retained, messageID);
     }
     
     private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, int messageID) {
@@ -309,7 +318,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPubRec(String clientID, int messageID) {
-        LOG.trace("sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
+        LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
 
@@ -346,6 +355,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * to all interested subscribers.
      * */
     void processPubRel(String clientID, int messageID) {
+        LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         String publishKey = String.format("%s%d", clientID, messageID);
         PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
 
@@ -364,7 +374,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
+        LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
@@ -374,15 +384,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     void processPubRec(String clientID, int messageID) {
         //once received a PUBREC reply with a PUBREL(messageID)
-        LOG.debug("processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
+        LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
         PubRelMessage pubRelMessage = new PubRelMessage();
         pubRelMessage.setMessageID(messageID);
+        pubRelMessage.setQos(AbstractMessage.QOSType.LEAST_ONE);
 
 //        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
         disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRelMessage));
     }
     
     void processPubComp(String clientID, int messageID) {
+        LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         String publishKey = String.format("%s%d", clientID, messageID);
         m_storageService.cleanInFlight(publishKey);
