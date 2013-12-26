@@ -1,11 +1,21 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class TreeNode {
+    
+    private class ClientIDComparator implements Comparator<Subscription> {
+
+        public int compare(Subscription o1, Subscription o2) {
+            return o1.getClientId().compareTo(o2.getClientId());
+        }
+        
+    }
 
     TreeNode m_parent;
     Token m_token;
@@ -25,10 +35,16 @@ class TreeNode {
     }
 
     void addSubscription(Subscription s) {
-        //avoid double registering
+        //avoid double registering for same clientID, topic and QoS
         if (m_subscriptions.contains(s)) {
             return;
         }
+        //remove existing subscription for same client and topic but different QoS
+        int existingSubIdx = Collections.binarySearch(m_subscriptions, s, new ClientIDComparator());
+        if (existingSubIdx >= 0) {
+            m_subscriptions.remove(existingSubIdx);
+        }
+        
         m_subscriptions.add(s);
     }
 

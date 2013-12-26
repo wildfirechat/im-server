@@ -87,7 +87,7 @@ public class ServerIntegrationPahoTest {
     @Before
     public void setUp() throws Exception {
         File dbFile = new File(Server.STORAGE_FILE_PATH);
-        assertFalse(dbFile.exists());
+        assertFalse(String.format("The DB storagefile %s already exists", Server.STORAGE_FILE_PATH), dbFile.exists());
         
         startServer();
 

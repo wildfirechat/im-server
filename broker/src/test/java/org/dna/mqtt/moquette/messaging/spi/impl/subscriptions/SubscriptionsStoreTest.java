@@ -345,6 +345,20 @@ public class SubscriptionsStoreTest {
         Subscription remainedSubscription = aStore.matches("/topic").get(0);
         assertEquals(slashSub.getClientId(), remainedSubscription.getClientId());
     }
+    
+    @Test
+    public void overridingSubscriptions() {
+        Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
+        store.add(oldSubscription);
+        Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE, false);
+        store.add(overrindingSubscription);
+        
+        //Verify
+        List<Subscription> subscriptions = store.matches("/topic");
+        assertEquals(1, subscriptions.size());
+        Subscription sub = subscriptions.get(0);
+        assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
+    }
 
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];

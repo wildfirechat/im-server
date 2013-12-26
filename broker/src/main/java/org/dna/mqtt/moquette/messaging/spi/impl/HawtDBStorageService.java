@@ -225,6 +225,17 @@ public class HawtDBStorageService implements IStorageService {
         Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
         if (!subs.contains(newSubscription)) {
             LOG.debug("updating clientID {} subscriptions set with new subscription", clientID);
+            //TODO check the subs doesn't contain another subscription to the same topic with different
+            Subscription existingSubscription = null;
+            for (Subscription scanSub : subs) {
+                if (newSubscription.getTopic().equals(scanSub.getTopic())) {
+                    existingSubscription = scanSub;
+                    break;
+                }
+            }
+            if (existingSubscription != null) {
+                subs.remove(existingSubscription);
+            }
             subs.add(newSubscription);
             m_persistentSubscriptions.put(clientID, subs);
             LOG.debug("clientID {} subscriptions set now is {}", clientID, subs);
