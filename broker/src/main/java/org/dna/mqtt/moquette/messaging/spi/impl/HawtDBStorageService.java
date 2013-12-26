@@ -216,14 +216,18 @@ public class HawtDBStorageService implements IStorageService {
     }
 
     public void addNewSubscription(Subscription newSubscription, String clientID) {
+        LOG.debug("addNewSubscription invoked with subscription {} for client {}", newSubscription, clientID);
         if (!m_persistentSubscriptions.containsKey(clientID)) {
+            LOG.debug("clientID {} is a newcome, creating it's subscriptions set", clientID);
             m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
         }
 
         Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
         if (!subs.contains(newSubscription)) {
+            LOG.debug("updating clientID {} subscriptions set with new subscription", clientID);
             subs.add(newSubscription);
             m_persistentSubscriptions.put(clientID, subs);
+            LOG.debug("clientID {} subscriptions set now is {}", clientID, subs);
         }
     }
 
@@ -236,10 +240,12 @@ public class HawtDBStorageService implements IStorageService {
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions) {
             allSubscriptions.addAll(entry.getValue());
         }
+        LOG.debug("retrieveAllSubscriptions returning subs {}", allSubscriptions);
         return allSubscriptions;
     }
 
     public void close() {
+        LOG.debug("closing disk storage");
         try {
             pageFactory.close();
         } catch (IOException ex) {

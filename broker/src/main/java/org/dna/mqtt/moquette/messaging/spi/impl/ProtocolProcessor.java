@@ -236,7 +236,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
     private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retain, Integer messageID) {
-        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
+        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}, content", topic);
+        LOG.debug("content <{}>", new String(message.array()));
         if (LOG.isDebugEnabled()) {
             LOG.debug("subscription tree {}", subscriptions.dumpTree());
         }
@@ -281,6 +282,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         pubMessage.setPayload(message);
         
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
+        LOG.debug("content <{}>", new String(message.array()));
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
             pubMessage.setMessageID(messageID);
         }

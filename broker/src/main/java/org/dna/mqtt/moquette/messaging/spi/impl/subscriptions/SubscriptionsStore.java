@@ -122,7 +122,6 @@ public class SubscriptionsStore {
         //log the subscription
         String clientID = newSubscription.getClientId();
         m_storageService.addNewSubscription(newSubscription, clientID);
-//        pageFile.flush();
     }
 
 
