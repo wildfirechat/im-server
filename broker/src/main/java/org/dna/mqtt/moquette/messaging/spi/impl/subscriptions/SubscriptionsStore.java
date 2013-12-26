@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.dna.mqtt.moquette.messaging.spi.IPersistentSubscriptionStore;
 
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +58,13 @@ public class SubscriptionsStore {
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
-    private IStorageService m_storageService;
+    private IPersistentSubscriptionStore m_storageService;
 
     /**
      * Initialize basic store structures, like the FS storage to maintain
      * client's topics subscriptions
      */
-    public void init(IStorageService storageService) {
+    public void init(IPersistentSubscriptionStore storageService) {
         LOG.debug("init invoked");
 
         m_storageService = storageService;

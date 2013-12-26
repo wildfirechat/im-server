@@ -60,8 +60,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
     ProtocolProcessor() {}
     
-    void init(/*Map<String, ConnectionDescriptor> clientIDs, */SubscriptionsStore subscriptions,
-            IStorageService storageService) {
+    /**
+     * @param subscriptions the subscription store where are stored all the existing
+     *  clients subscriptions.
+     * @param storageService the persistent store to use for save/load of messages
+     *  for QoS1 and QoS2 handling.
+     */
+    void init(SubscriptionsStore subscriptions, IStorageService storageService) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_storageService = storageService;

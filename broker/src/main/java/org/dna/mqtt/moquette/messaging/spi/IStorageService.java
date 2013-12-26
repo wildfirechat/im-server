@@ -1,7 +1,6 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
 import java.nio.ByteBuffer;
-import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
@@ -12,7 +11,7 @@ import java.util.List;
 /**
  * Defines the SPI to be implemented by a StorageService that handle persistence of messages and subscriptions.
  */
-public interface IStorageService {
+public interface IStorageService extends IPersistentSubscriptionStore {
 
     /**
      * Used to initialize all persistent store structures
@@ -34,12 +33,6 @@ public interface IStorageService {
     void cleanInFlight(String msgID);
 
     void addInFlight(PublishEvent evt, String publishKey);
-
-    void addNewSubscription(Subscription newSubscription, String clientID);
-
-    void removeAllSubscriptions(String clientID);
-
-    List<Subscription> retrieveAllSubscriptions();
 
     void close();
 
