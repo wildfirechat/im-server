@@ -29,7 +29,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMessaging.class);
     
-    private SubscriptionsStore subscriptions = new SubscriptionsStore();
+    private SubscriptionsStore subscriptions;
     
     private RingBuffer<ValueEvent> m_ringBuffer;
 
@@ -53,6 +53,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     public void init() {
+        subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
 
         m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
@@ -179,5 +180,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
 //        m_eventProcessor.halt();
         m_executor.shutdown();
+        
+        subscriptions = null;
     }
 }
