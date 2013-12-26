@@ -315,7 +315,6 @@ public class ServerIntegrationPahoTest {
         anotherClient.disconnect();
     }
 
-    //BUG
     @Test
     public void testPublishWithQoS2() throws Exception {
         LOG.info("*** testPublishWithQoS2 ***");

@@ -4,8 +4,10 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
@@ -41,6 +43,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private static SimpleMessaging INSTANCE;
     
     private ProtocolProcessor m_processor = new ProtocolProcessor();
+    
+    CountDownLatch m_stopLatch;
     
     private SimpleMessaging() {
     }
@@ -92,7 +96,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     public void stop() {
+        m_stopLatch = new CountDownLatch(1);
         disruptorPublish(new StopEvent());
+        try {
+            //wait the callback notification from the protocol processor thread
+            boolean elapsed = !m_stopLatch.await(10, TimeUnit.SECONDS);
+            if (elapsed) {
+                LOG.error("Can't stop the server in 10 seconds");
+            }
+        } catch (InterruptedException ex) {
+            LOG.error(null, ex);
+        }
     }
     
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
@@ -182,5 +196,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_executor.shutdown();
         
         subscriptions = null;
+        m_stopLatch.countDown();
     }
 }

@@ -45,19 +45,16 @@ public class Server {
         m_acceptor.initialize(messaging);
     }
     
-    /**
-     * It's an asynchronous method, it's only a request to stop
-     */
     public void stopServer() {
         System.out.println("Server stopping...");
         messaging.stop();
         m_acceptor.close();
         System.out.println("Server stopped");
-        try {
-            //sleep one second to give the disruptor
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+//        try {
+//            //sleep one second to give the disruptor
+//            Thread.sleep(100);
+//        } catch (InterruptedException ex) {
+//            LOG.error(null, ex);
+//        }
     }
 }
