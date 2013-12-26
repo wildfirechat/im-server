@@ -71,17 +71,16 @@ public class SubscriptionsStore {
 
         //reload any subscriptions persisted
         if (LOG.isDebugEnabled()) {
-            LOG.debug("subscription tree before {}", dumpTree());
+            LOG.debug("Reloading all stored subscriptions...subscription tree before {}", dumpTree());
         }
-        LOG.debug("Reloading all stored subscriptions...");
+        
         for (Subscription subscription : m_storageService.retrieveAllSubscriptions()) {
             LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopic());
             addDirect(subscription);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("subscription tree after {}", dumpTree());
+            LOG.debug("Finished loading. Subscription tree after {}", dumpTree());
         }
-        LOG.debug("Finished loading");
     }
     
     protected void addDirect(Subscription newSubscription) {
