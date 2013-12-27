@@ -457,10 +457,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
-        //TODO by now it handles only QoS 0 messages
-        for (int i = 0; i < msg.subscriptions().size(); i++) {
-            ackMessage.addType(AbstractMessage.QOSType.MOST_ONE);
+        //reply with requested qos
+        for(SubscribeMessage.Couple req : msg.subscriptions()) {
+            AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
+            ackMessage.addType(qos);
         }
+        
         LOG.debug("replying with SubAck to MSG ID {}", msg.getMessageID());
         session.write(ackMessage);
     }
