@@ -52,7 +52,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                     break;
                 case PINGREQ:
                     PingRespMessage pingResp = new PingRespMessage();
-                    ctx.write(pingResp);
+                    ctx.writeAndFlush(pingResp);
                     break;
             }
         } catch (Exception ex) {
