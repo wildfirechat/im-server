@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <relativePath>../</relativePath>
+        <!--<relativePath>../pom.xml</relativePath>-->
+        <artifactId>moquette-parent</artifactId>
+        <groupId>org.dna.mqtt</groupId>
+        <version>0.5-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>distribution</artifactId>
+    <packaging>pom</packaging>
+    <name>Moquette - distribution</name>
+
+    <!-- Includes all modules -->
+    <dependencies>
+        <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-parser-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-netty-parser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>${basedir}/src/main/</sourceDirectory> <!-- Force default maven layout -->
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>distribution-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Specifies the configuration file of the assembly plugin -->
+                            <descriptors>
+                                <descriptor>${basedir}/src/main/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                             <tarLongFileMode>gnu</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>    
