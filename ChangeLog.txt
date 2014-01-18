@@ -1,3 +1,7 @@
+Version 0.5:
+    Fix issue 20 (no flush of message on PINGREQ)
+    Fix issue 21 (bad channel timeout handler)
+
 Version 0.4:
     Dropped support for MINA
     Fix Issue 15 (bad re-activation of client's subscriptions after a recconection)
