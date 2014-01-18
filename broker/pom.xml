@@ -107,32 +107,6 @@
                     </includes>
                 </configuration>
             </plugin>
-            
-            
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                <execution>
-                <id>broker-distribution</id>
-                <phase>package</phase>
-                <goals>
-                    <goal>single</goal>
-                </goals>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.dna.mqtt.moquette.server.Server</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                </execution>
-                </executions>
-            </plugin>
-
-            
         </plugins>
     </build>
     
