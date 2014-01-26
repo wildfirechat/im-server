@@ -9,3 +9,4 @@ client/target/
 netty_parser/target/
 parser_commons/target/
 /distribution/target/
+/bundle/target/

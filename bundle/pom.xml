@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <relativePath>../</relativePath>
+        <!--<relativePath>../pom.xml</relativePath>-->
+        <artifactId>moquette-parent</artifactId>
+        <groupId>org.dna.mqtt</groupId>
+        <version>0.5-SNAPSHOT</version>
+    </parent>
+    <artifactId>moquette-bundle</artifactId>
+
+    <packaging>bundle</packaging>
+
+    <!--<version>${moquette-version}</version>-->
+
+    <name>Moquette - bundle</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>0.5-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+            <!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>-->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>org.dna.mqtt.commons</Export-Package>
+                        <Private-Package>org.dna.mqtt.moquette.bundle,
+                            ${project.groupId}.*
+<!--                            com.lmax.*,
+                            io.netty.*,
+                            org.fusesource.*,
+                            org.slf4j.*,
+                            org.apache.log4j,
+                            org.apache.log4j.*-->
+                        </Private-Package>
+                        <!--<Import-Package>java.*,javax.*,org.osgi.*</Import-Package>-->
+                        <Import-Package>*</Import-Package>
+                        <DynamicImport-Package>*</DynamicImport-Package>
+<!--                        <DynamicImport-Package>com.barchart.udt, com.barchart.udt.nio, 
+                            com.google.protobuf, com.jcraft.jzlib, com.sun.nio.sctp, gnu.io, javassist, 
+                            org.apache.commons.logging, org.jboss.marshalling,
+                            sun.misc, com.ibm.uvm.tools, com.sun.jdmk.comm, org.w3c.dom, org.xml.sax, org.xml.sax.helpers,
+                            javax.jmdns, javax.jms, javax.mail, javax.mail.internet</DynamicImport-Package>-->
+                        <Bundle-Activator>${project.groupId}.moquette.bundle.Activator</Bundle-Activator>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Pax Runner Maven plugin -->
+                <groupId>org.ops4j</groupId>
+                <artifactId>maven-pax-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <!-- Pax Runner version -->
+                    <runner>1.4.0</runner>
+                    <!-- OSGi framework type (equinox, felix, knopflerfish) -->
+                    <framework>equinox</framework>
+                    <provision>
+                        <!--                        <param> - -log=debug</param>  
+                        <param> - -workingDirectory=target/runner</param>  -->
+                    </provision>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

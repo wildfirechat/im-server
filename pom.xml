@@ -20,6 +20,7 @@
         <module>netty_parser</module>
         <module>broker</module>
         <module>distribution</module>
+        <module>bundle</module>
     </modules>
     
     <reporting>
