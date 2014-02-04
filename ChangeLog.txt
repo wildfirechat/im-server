@@ -3,6 +3,7 @@ Version 0.5:
     Fix issue 21 (bad channel timeout handler)
     Created a self contained distribution package (issue 22)
     Fix issue 28, OSGi-fied the broker
+    Fixed issue #31 missed to insert the hawtdb jars
     
 Version 0.4:
     Dropped support for MINA
