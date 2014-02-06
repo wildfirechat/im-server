@@ -29,6 +29,10 @@ public class HawtDBStorageServiceTest {
 
     @After
     public void tearDown() {
+        if (m_storageService != null) {
+            m_storageService.close();
+        }
+        
         File dbFile = new File(Server.STORAGE_FILE_PATH);
         if (dbFile.exists()) {
             dbFile.delete();
