@@ -36,21 +36,18 @@
             <groupId>com.googlecode.disruptor</groupId>
             <artifactId>disruptor</artifactId>
             <version>2.7.1</version>
-            <!--<version>3.2.0</version>-->
         </dependency>
         
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
@@ -76,49 +73,42 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-common</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
             <groupId>org.fusesource.hawtbuf</groupId>
             <artifactId>hawtbuf</artifactId>
             <version>1.9</version>
-            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>org.fusesource.hawtdb</groupId>
             <artifactId>hawtdb</artifactId>
             <version>1.6</version>
-            <!--<scope>provided</scope>-->
         </dependency>
                 
         <dependency>
