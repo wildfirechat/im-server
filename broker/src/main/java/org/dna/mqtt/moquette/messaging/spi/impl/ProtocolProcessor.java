@@ -261,6 +261,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
             } else {
+                //TODO BUG if the sub is not active the code and the cleanSession is true
+                //then publish to the subscriber (that is not active)
+                
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
@@ -301,20 +304,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             pubMessage.setMessageID(messageID);
         }
 
-        try {
-            if (m_clientIDs == null) {
-                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
-            }
-            LOG.debug("clientIDs are {}", m_clientIDs);
-            if (m_clientIDs.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
-            }
-            LOG.debug("Session for clientId {} is {}", clientId, m_clientIDs.get(clientId).getSession());
-//            m_clientIDs.get(clientId).getSession().write(pubMessage);
-            disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubMessage));
-        } catch(Throwable t) {
-            LOG.error(null, t);
+        if (m_clientIDs == null) {
+            throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
         }
+        LOG.debug("clientIDs are {}", m_clientIDs);
+        if (m_clientIDs.get(clientId) == null) {
+            throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
+        }
+        LOG.debug("Session for clientId {} is {}", clientId, m_clientIDs.get(clientId).getSession());
+//            m_clientIDs.get(clientId).getSession().write(pubMessage);
+        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubMessage));
     }
     
     private void sendPubRec(String clientID, int messageID) {
