@@ -10,10 +10,10 @@
         <version>0.5-SNAPSHOT</version>
     </parent>
 
-    <artifactId>moquette-broker</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>moquette-bundle</artifactId>
+    <packaging>bundle</packaging>
     <!--<version>${moquette-version}</version>-->
-    <name>Moquette - broker</name>
+    <name>Moquette - OSGi bundle</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,6 +33,12 @@
         </dependency>
         
         <dependency>
+            <groupId>org.dna.mqtt</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.googlecode.disruptor</groupId>
             <artifactId>disruptor</artifactId>
             <version>2.7.1</version>
@@ -43,14 +49,14 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
@@ -76,35 +82,35 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-common</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
             <version>4.0.8.Final</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
@@ -118,7 +124,7 @@
             <groupId>org.fusesource.hawtdb</groupId>
             <artifactId>hawtdb</artifactId>
             <version>1.6</version>
-            <!--<scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
                 
         <dependency>
@@ -172,7 +178,7 @@
                 </configuration>
             </plugin>
             
-<!--            <plugin>
+            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>2.1.0</version>
@@ -196,21 +202,21 @@
                 </configuration>
             </plugin>
             <plugin>
-                 Pax Runner Maven plugin 
+                <!-- Pax Runner Maven plugin -->
                 <groupId>org.ops4j</groupId>
                 <artifactId>maven-pax-plugin</artifactId>
                 <version>1.4</version>
                 <configuration>
-                     Pax Runner version 
+                    <!-- Pax Runner version -->
                     <runner>1.4.0</runner>
-                     OSGi framework type (equinox, felix, knopflerfish) 
+                    <!-- OSGi framework type (equinox, felix, knopflerfish) -->
                     <framework>equinox</framework>
                     <provision>
-                                                <param> - -log=debug</param>  
-                        <param> - -workingDirectory=target/runner</param>  
+                        <!--                        <param> - -log=debug</param>  
+                        <param> - -workingDirectory=target/runner</param>  -->
                     </provision>
                 </configuration>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
     
