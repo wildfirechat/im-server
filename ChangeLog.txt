@@ -4,6 +4,8 @@ Version 0.5:
     Created a self contained distribution package (issue 22)
     Fix issue 28, OSGi-fied the broker
     Fixed issue #31 missed to insert the hawtdb jars
+    Added a separate mvn module to host the OSGi bundle declaration
+    Fixed issue #30
     
 Version 0.4:
     Dropped support for MINA

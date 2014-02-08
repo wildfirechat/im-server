@@ -22,6 +22,7 @@ import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -273,7 +274,7 @@ public class ProtocolProcessorTest {
     }
     
     @Test
-    public void processPublishNoPublishToInactiveSubscriptions() {
+    public void publishNoPublishToInactiveSubscriptions() {
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
         Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, false); 
         inactiveSub.setActive(false);
@@ -291,4 +292,23 @@ public class ProtocolProcessorTest {
         assertNull(m_receivedMessage); 
     }
     
+    
+    @Test
+    public void publishToAnInactiveSubscriptionsCleanSession() {
+        SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
+        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, true); 
+        inactiveSub.setActive(false);
+        List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
+        when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
+        m_processor = new ProtocolProcessor();
+        m_processor.init(mockedSubscriptions, m_storageService);
+        
+        //Exercise
+        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
+        m_processor.processPublish(pubEvt);
+
+        //Verify no message is received
+        assertNull(m_receivedMessage); 
+    }
 }

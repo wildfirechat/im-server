@@ -261,9 +261,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 //QoS 0
                 sendPublish(sub.getClientId(), topic, qos, message, false);
             } else {
-                //TODO BUG if the sub is not active the code and the cleanSession is true
-                //then publish to the subscriber (that is not active)
-                
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
@@ -278,7 +275,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                         m_storageService.addInFlight(newPublishEvt, publishKey);
                     }
                     //publish
-                    sendPublish(sub.getClientId(), topic, qos, message, false);
+                    if (sub.isActive()) {
+                        sendPublish(sub.getClientId(), topic, qos, message, false);
+                    }
                 }
             }
         }
