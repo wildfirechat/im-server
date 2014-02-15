@@ -3,11 +3,18 @@
 # Copyright (c) 2012-2014 Andrea Selva
 #
 
-echo "##########################################################"
-echo "#                                                        #"
-echo "#   Launching Moquette-MQTT broker                       #"
-echo "#                                                        #"
-echo "##########################################################"
+echo "                                                                         "
+echo "  ___  ___                       _   _        ___  ________ _____ _____  "
+echo "  |  \/  |                      | | | |       |  \/  |  _  |_   _|_   _| "
+echo "  | .  . | ___   __ _ _   _  ___| |_| |_ ___  | .  . | | | | | |   | |   "
+echo "  | |\/| |/ _ \ / _\ | | | |/ _ \ __| __/ _ \ | |\/| | | | | | |   | |   "
+echo "  | |  | | (_) | (_| | |_| |  __/ |_| ||  __/ | |  | \ \/' / | |   | |   "
+echo "  \_|  |_/\___/ \__, |\__,_|\___|\__|\__\___| \_|  |_/\_/\_\ \_/   \_/   "
+echo "                   | |                                                   "
+echo "                   |_|                                                   "
+echo "                                                                         "                                                                      
+                                                                      
+                                                             
 
 cd "$(dirname "$0")"
 
@@ -39,12 +46,12 @@ else
 fi
 export JAVA
 
-#LOG_FILE=$ORIENTDB_HOME/config/moquette-server-log.properties
+LOG_FILE=$MOQUETTE_HOME/config/moquette-log.properties
 #LOG_CONSOLE_LEVEL=info
 #LOG_FILE_LEVEL=fine
 #set MOQUETTE_SETTINGS="-Dprofiler.enabled=true -Dcache.level1.enabled=false -Dcache.level2.enabled=false"
 JAVA_OPTS_SCRIPT="-XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true"
 
 #$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT $ORIENTDB_SETTINGS -Dfile.encoding=UTF8 -Djava.util.logging.config.file="$LOG_FILE" -Dmoquette.config.file="$CONFIG_FILE" -Dmoquette.www.path="$WWW_PATH" -Dmoquette.build.number="@BUILD@" -cp "$ORIENTDB_HOME/lib/moquette-server-@VERSION@.jar:$ORIENTDB_HOME/lib/*" com.orientechnologies.orient.server.OServerMain
-$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -cp "$MOQUETTE_HOME/lib/moquette-broker-0.5-SNAPSHOT.jar:$MOQUETTE_HOME/lib/*" org.dna.mqtt.moquette.server.Server
+$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -cp "$LOG_FILE:$MOQUETTE_HOME/lib/moquette-broker-0.5-SNAPSHOT.jar:$MOQUETTE_HOME/lib/*" org.dna.mqtt.moquette.server.Server
 

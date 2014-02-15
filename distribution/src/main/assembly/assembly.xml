@@ -17,6 +17,12 @@
         </file>
         
         <file>
+            <source>src/main/resources/log4j.properties</source>
+            <outputDirectory>config/</outputDirectory>
+            <destName>moquette-log.properties</destName>
+        </file>
+        
+        <file>
             <source>src/main/resources/README.txt</source>
         </file>
     </files>     
