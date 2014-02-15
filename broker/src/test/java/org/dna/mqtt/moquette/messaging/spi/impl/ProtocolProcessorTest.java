@@ -22,7 +22,6 @@ import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -31,6 +30,7 @@ import org.junit.Test;
  */
 public class ProtocolProcessorTest {
     final static String FAKE_CLIENT_ID = "FAKE_123";
+    final static String FAKE_CLIENT_ID2 = "FAKE_456";
     final static String FAKE_PUBLISHER_ID = "Publisher";
     final static String FAKE_TOPIC = "/news";
     
@@ -75,6 +75,45 @@ public class ProtocolProcessorTest {
         }
     } 
     
+    
+    class MockReceiverChannel implements ServerChannel {
+//        byte m_returnCode;
+        AbstractMessage m_receivedMessage;
+        private Map<Object, Object> m_attributes = new HashMap<Object, Object>();
+
+        public Object getAttribute(Object key) {
+            return m_attributes.get(key);
+        }
+
+        public void setAttribute(Object key, Object value) {
+            m_attributes.put(key, value);
+        }
+
+        public void setIdleTime(int idleTime) {
+        }
+
+        public void close(boolean immediately) {
+        }
+        
+        public AbstractMessage getMessage() {
+            return this.m_receivedMessage;
+        }
+        
+//        public byte getReturnCode() {
+//            return this.m_returnCode;
+//        }
+
+        public void write(Object value) {
+            try {
+                this.m_receivedMessage = (AbstractMessage) value;
+//                if (this.m_receivedMessage instanceof PublishMessage) {
+//                    T buf = (T) this.m_receivedMessage;
+//                }
+            } catch (Exception ex) {
+                throw new AssertionError("Wrong return code");
+            }
+        }
+    } 
     
     @Before
     public void setUp() throws InterruptedException {
@@ -151,8 +190,6 @@ public class ProtocolProcessorTest {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
                 }
             }
-
-
         };
         
         //simulate a connect that register a clientID to an IoSession
@@ -173,6 +210,62 @@ public class ProtocolProcessorTest {
         //Verify
         assertNotNull(m_receivedMessage);
         //TODO check received message attributes
+    }
+    
+    @Test
+    public void testPublishToMultipleSubscribers() throws InterruptedException {
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+        final Subscription subscriptionClient2 = new Subscription(FAKE_CLIENT_ID2, 
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+
+        //subscriptions.matches(topic) redefine the method to return true
+        SubscriptionsStore subs = new SubscriptionsStore() {
+            @Override
+            public List<Subscription> matches(String topic) {
+                if (topic.equals(FAKE_TOPIC)) {
+                    return Arrays.asList(subscription, subscriptionClient2);
+                } else {
+                    throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
+                }
+            }
+        };
+        
+        //simulate a connect that register a clientID to an IoSession
+        subs.init(m_storageService);
+        m_processor.init(subs, m_storageService);
+        
+        MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setClientID(FAKE_CLIENT_ID);
+        connectMessage.setCleanSession(subscription.isCleanSession());
+        m_processor.processConnect(firstReceiverSession, connectMessage);
+        
+        //connect the second fake subscriber
+        MockReceiverChannel secondReceiverSession = new MockReceiverChannel();
+        ConnectMessage connectMessage2 = new ConnectMessage();
+        connectMessage2.setProcotolVersion((byte)3);
+        connectMessage2.setClientID(FAKE_CLIENT_ID2);
+        connectMessage2.setCleanSession(subscription.isCleanSession());
+        m_processor.processConnect(secondReceiverSession, connectMessage2);
+        
+        //Exercise
+        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI", null);
+        m_processor.processPublish(pubEvt);
+
+        //Verify
+        Thread.sleep(100); //ugly but we dependend on the asynch that pull data from back disruptor
+        PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverSession.getMessage();
+        assertNotNull(pub2FirstSubscriber);
+        String firstMessageContent = DebugUtils.payload2Str(pub2FirstSubscriber.getPayload());
+        assertEquals("Hello", firstMessageContent);
+        
+        PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverSession.getMessage();
+        assertNotNull(pub2SecondSubscriber);
+        String secondMessageContent = DebugUtils.payload2Str(pub2SecondSubscriber.getPayload());
+        assertEquals("Hello", secondMessageContent);
     }
     
     @Test

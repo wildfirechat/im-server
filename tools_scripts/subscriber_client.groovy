@@ -11,7 +11,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 
-
 class SubscriberCallback implements MqttCallback {
 
     int m_numReceived = 0
@@ -42,6 +41,7 @@ class SubscriberCallback implements MqttCallback {
             client.disconnect()
             m_latch.countDown()
         } else {
+            println "-received ${message} on ${topic} with QoS ${message.qos}"
             m_numReceived++
         }
     }
@@ -51,11 +51,18 @@ class SubscriberCallback implements MqttCallback {
     }
 }
 
+if (args.size() < 2) {
+    println "Usage subscriber <host> <QoS>"
+    return
+}
+
 String host = args[0]
+int qos = args[1] as int
 String tmpDir = System.getProperty("java.io.tmpdir")
 MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir)
 
-MqttClient client = new MqttClient("tcp://${host}:1883", "SubscriberClient", dataStore)
+int rnd = (Math.random() * 100) as int
+MqttClient client = new MqttClient("tcp://${host}:1883", "SubscriberClient${rnd}", dataStore)
 def callback = new SubscriberCallback()
 client.callback = callback
 client.connect()
