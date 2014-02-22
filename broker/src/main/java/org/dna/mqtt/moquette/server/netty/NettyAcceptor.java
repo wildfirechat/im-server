@@ -13,6 +13,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 
 import io.netty.handler.timeout.IdleStateHandler;
+import java.util.Properties;
 import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.parser.netty.MQTTDecoder;
@@ -36,7 +37,7 @@ public class NettyAcceptor implements ServerAcceptor {
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
 
 
-    public void initialize(IMessaging messaging) throws IOException {
+    public void initialize(IMessaging messaging, Properties props) throws IOException {
         m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         
@@ -65,7 +66,8 @@ public class NettyAcceptor implements ServerAcceptor {
              .childOption(ChannelOption.SO_KEEPALIVE, true); 
         try {    
             // Bind and start to accept incoming connections.
-            ChannelFuture f = b.bind(Constants.PORT);
+//            ChannelFuture f = b.bind(Constants.PORT);
+            ChannelFuture f = b.bind(props.getProperty("host"), Integer.parseInt(props.getProperty("port")));
             LOG.info("Server binded");
             f.sync();
         } catch (InterruptedException ex) {

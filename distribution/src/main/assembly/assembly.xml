@@ -23,6 +23,11 @@
         </file>
         
         <file>
+            <source>src/main/resources/moquette.conf</source>
+            <outputDirectory>config/</outputDirectory>
+        </file>
+        
+        <file>
             <source>src/main/resources/README.txt</source>
         </file>
     </files>     
