@@ -243,17 +243,18 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retain, Integer messageID) {
-        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}, content", topic);
+    private void publish2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer origMessage, boolean retain, Integer messageID) {
+        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", DebugUtils.payload2Str(message));
+            LOG.debug("content <{}>", DebugUtils.payload2Str(origMessage));
             LOG.debug("subscription tree {}", subscriptions.dumpTree());
         }
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
                 qos = sub.getRequestedQos();
             }
-            message.rewind();
+            
+            ByteBuffer message = origMessage.duplicate();
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}", 
                     sub.getClientId(), sub.getTopic(), qos, sub.isActive());
             
