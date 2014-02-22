@@ -252,6 +252,7 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
+        buffer.rewind();
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI", null);
         m_processor.processPublish(pubEvt);
 
