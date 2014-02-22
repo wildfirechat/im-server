@@ -17,7 +17,7 @@ MqttMessage message = new MqttMessage('Hello world!!'.bytes)
 message.setQos(0)
 print "publishing.."
 long startTime = System.currentTimeMillis()
-(1..10).each {
+(1..100).each {
     client.publish('topic', 'Hello world!!'.bytes, 0, false)
 }
 client.publish('/exit', 'Exit'.bytes, 0, false)
