@@ -22,21 +22,27 @@ class SubscribeEncoder extends DemuxEncoder<SubscribeMessage> {
         }
         
         ByteBuf variableHeaderBuff = chc.alloc().buffer(4);
-        variableHeaderBuff.writeShort(message.getMessageID());
-        for (SubscribeMessage.Couple c : message.subscriptions()) {
-            variableHeaderBuff.writeBytes(Utils.encodeString(c.getTopic()));
-            variableHeaderBuff.writeByte(c.getQos());
+        ByteBuf buff = null;
+        try {
+            variableHeaderBuff.writeShort(message.getMessageID());
+            for (SubscribeMessage.Couple c : message.subscriptions()) {
+                variableHeaderBuff.writeBytes(Utils.encodeString(c.getTopic()));
+                variableHeaderBuff.writeByte(c.getQos());
+            }
+
+            int variableHeaderSize = variableHeaderBuff.readableBytes();
+            byte flags = Utils.encodeFlags(message);
+            buff = chc.alloc().buffer(2 + variableHeaderSize);
+
+            buff.writeByte(AbstractMessage.SUBSCRIBE << 4 | flags);
+            buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
+            buff.writeBytes(variableHeaderBuff);
+
+            out.writeBytes(buff);
+        } finally {
+             variableHeaderBuff.release();
+             buff.release();
         }
-        
-        int variableHeaderSize = variableHeaderBuff.readableBytes();
-        byte flags = Utils.encodeFlags(message);
-        ByteBuf buff = chc.alloc().buffer(2 + variableHeaderSize);
-
-        buff.writeByte(AbstractMessage.SUBSCRIBE << 4 | flags);
-        buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
-        buff.writeBytes(variableHeaderBuff);
-
-        out.writeBytes(buff);
     }
     
 }

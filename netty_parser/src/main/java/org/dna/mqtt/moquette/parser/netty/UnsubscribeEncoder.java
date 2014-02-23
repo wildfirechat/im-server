@@ -23,20 +23,26 @@ class UnsubscribeEncoder extends DemuxEncoder<UnsubscribeMessage> {
         }
         
         ByteBuf variableHeaderBuff = chc.alloc().buffer(4);
-        variableHeaderBuff.writeShort(message.getMessageID());
-        for (String topic : message.topics()) {
-            variableHeaderBuff.writeBytes(Utils.encodeString(topic));
+        ByteBuf buff = null;
+        try {
+            variableHeaderBuff.writeShort(message.getMessageID());
+            for (String topic : message.topics()) {
+                variableHeaderBuff.writeBytes(Utils.encodeString(topic));
+            }
+
+            int variableHeaderSize = variableHeaderBuff.readableBytes();
+            byte flags = Utils.encodeFlags(message);
+            buff = chc.alloc().buffer(2 + variableHeaderSize);
+
+            buff.writeByte(AbstractMessage.UNSUBSCRIBE << 4 | flags);
+            buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
+            buff.writeBytes(variableHeaderBuff);
+
+            out.writeBytes(buff);
+        } finally {
+            variableHeaderBuff.release();
+            buff.release();
         }
-        
-        int variableHeaderSize = variableHeaderBuff.readableBytes();
-        byte flags = Utils.encodeFlags(message);
-        ByteBuf buff = chc.alloc().buffer(2 + variableHeaderSize);
-
-        buff.writeByte(AbstractMessage.UNSUBSCRIBE << 4 | flags);
-        buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
-        buff.writeBytes(variableHeaderBuff);
-
-        out.writeBytes(buff);
     }
     
 }

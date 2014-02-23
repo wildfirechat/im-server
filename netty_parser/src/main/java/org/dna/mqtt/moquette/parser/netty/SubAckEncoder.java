@@ -18,19 +18,25 @@ class SubAckEncoder extends DemuxEncoder<SubAckMessage> {
         }
 
         ByteBuf variableHeaderBuff = chc.alloc().buffer(4);
-        variableHeaderBuff.writeShort(message.getMessageID());
-        for (AbstractMessage.QOSType c : message.types()) {
-            variableHeaderBuff.writeByte(c.ordinal());
+        ByteBuf buff = null;
+        try {
+            variableHeaderBuff.writeShort(message.getMessageID());
+            for (AbstractMessage.QOSType c : message.types()) {
+                variableHeaderBuff.writeByte(c.ordinal());
+            }
+
+            int variableHeaderSize = variableHeaderBuff.readableBytes();
+            buff = chc.alloc().buffer(2 + variableHeaderSize);
+
+            buff.writeByte(AbstractMessage.SUBACK << 4 );
+            buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
+            buff.writeBytes(variableHeaderBuff);
+
+            out.writeBytes(buff);
+        } finally {
+            variableHeaderBuff.release();
+            buff.release();
         }
-
-        int variableHeaderSize = variableHeaderBuff.readableBytes();
-        ByteBuf buff = chc.alloc().buffer(2 + variableHeaderSize);
-
-        buff.writeByte(AbstractMessage.SUBACK << 4 );
-        buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
-        buff.writeBytes(variableHeaderBuff);
-
-        out.writeBytes(buff);
     }
     
 }
