@@ -3,6 +3,7 @@ package org.dna.mqtt.moquette.server;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Properties;
 import org.dna.mqtt.moquette.messaging.spi.impl.SimpleMessaging;
 import org.dna.mqtt.moquette.server.netty.NettyAcceptor;
 import org.slf4j.Logger;
@@ -43,12 +44,13 @@ public class Server {
         } catch (ParseException pex) {
             LOG.warn("An error occured in parsing configuration, fallback on deafult configuration", pex);
         }
+        Properties configProps = confParser.getProperties();
         
         messaging = SimpleMessaging.getInstance();
-        messaging.init();
+        messaging.init(configProps);
         
         m_acceptor = new NettyAcceptor();
-        m_acceptor.initialize(messaging, confParser.getProperties());
+        m_acceptor.initialize(messaging, configProps);
     }
     
     public void stopServer() {

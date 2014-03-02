@@ -6,6 +6,7 @@ Version 0.5:
     Fixed issue #31 missed to insert the hawtdb jars
     Added a separate mvn module to host the OSGi bundle declaration
     Fixed issue #30
+    Added password file for identity management on connect (Fix #23)
     
 Version 0.4:
     Dropped support for MINA

@@ -34,6 +34,9 @@ public class ProtocolProcessorTest {
     final static String FAKE_PUBLISHER_ID = "Publisher";
     final static String FAKE_TOPIC = "/news";
     
+    final static String TEST_USER = "fakeuser";
+    final static String TEST_PWD = "fakepwd";
+    
     ServerChannel m_session;
     byte m_returnCode;
     ConnectMessage connMsg;
@@ -42,6 +45,7 @@ public class ProtocolProcessorTest {
     IStorageService m_storageService;
     SubscriptionsStore subscriptions;
     AbstractMessage m_receivedMessage;
+    MockAuthenticator m_mockAuthenticator;
     
     class DummyChannel implements ServerChannel {
         
@@ -127,11 +131,15 @@ public class ProtocolProcessorTest {
         
         m_storageService = new MemoryStorageService();
         //m_storageService.initStore();
+        
+        Map<String, String> users = new HashMap<String, String>();
+        users.put(TEST_USER, TEST_PWD);
+        m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
         subscriptions.init(m_storageService);
         m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_storageService);
+        m_processor.init(subscriptions, m_storageService, m_mockAuthenticator);
     }
     
     @Test
@@ -176,6 +184,51 @@ public class ProtocolProcessorTest {
     }
     
     @Test
+    public void validAuthentication() {
+        connMsg.setClientID("123");
+        connMsg.setUserFlag(true);
+        connMsg.setPasswordFlag(true);
+        connMsg.setUsername(TEST_USER);
+        connMsg.setPassword(TEST_PWD);
+        
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
+    }
+    
+    @Test
+    public void noPasswdAuthentication() {
+        connMsg.setClientID("123");
+        connMsg.setUserFlag(true);
+        connMsg.setPasswordFlag(false);
+        connMsg.setUsername(TEST_USER);
+        
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
+    }
+    
+    @Test
+    public void invalidAuthentication() {
+        connMsg.setClientID("123");
+        connMsg.setUserFlag(true);
+        connMsg.setPasswordFlag(true);
+        connMsg.setUsername(TEST_USER + "_fake");
+        connMsg.setPassword(TEST_PWD);
+        
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
+    }
+    
+    
+    @Test
     public void testPublish() throws InterruptedException {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
                 FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
@@ -194,7 +247,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(m_storageService);
-        m_processor.init(subs, m_storageService);
+        m_processor.init(subs, m_storageService, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProcotolVersion((byte)3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
@@ -233,7 +286,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(m_storageService);
-        m_processor.init(subs, m_storageService);
+        m_processor.init(subs, m_storageService, null);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage = new ConnectMessage();
@@ -343,7 +396,7 @@ public class ProtocolProcessorTest {
         subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
-        m_processor.init(subs, m_storageService);
+        m_processor.init(subs, m_storageService, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProcotolVersion((byte)3);
@@ -375,7 +428,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService);
+        m_processor.init(mockedSubscriptions, m_storageService, null);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -395,7 +448,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService);
+        m_processor.init(mockedSubscriptions, m_storageService, null);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());

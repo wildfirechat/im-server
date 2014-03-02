@@ -65,10 +65,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      *  clients subscriptions.
      * @param storageService the persistent store to use for save/load of messages
      *  for QoS1 and QoS2 handling.
+     * @param authenticator the authenticator used in connect messages
      */
-    void init(SubscriptionsStore subscriptions, IStorageService storageService) {
+    void init(SubscriptionsStore subscriptions, IStorageService storageService, 
+            IAuthenticator authenticator) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
+        m_authenticator = authenticator;
         m_storageService = storageService;
         
         //init the output ringbuffer

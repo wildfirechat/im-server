@@ -4,6 +4,7 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +16,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.server.Constants;
+import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         return INSTANCE;
     }
 
-    public void init() {
+    public void init(Properties configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
 
@@ -68,7 +70,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
         m_executor.submit(m_eventProcessor);
 
-        disruptorPublish(new InitEvent());
+        disruptorPublish(new InitEvent(configProps));
     }
 
     
@@ -172,19 +174,23 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             }
 
         } else if (evt instanceof InitEvent) {
-            processInit();
+            processInit(((InitEvent) evt).getConfig());
         } else if (evt instanceof LostConnectionEvent) {
             LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
             m_processor.proccessConnectionLost(lostEvt.getClientID());
         }
     }
 
-    private void processInit() {
+    private void processInit(Properties props) {
         m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
 
         subscriptions.init(m_storageService);
-        m_processor.init(subscriptions, m_storageService);
+        
+        String path = props.getProperty("password_file");
+        IAuthenticator authenticator = new FileAuthenticator(path);
+        
+        m_processor.init(subscriptions, m_storageService, authenticator);
     }
 
 

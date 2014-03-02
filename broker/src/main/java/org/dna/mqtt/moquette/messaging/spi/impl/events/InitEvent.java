@@ -1,6 +1,19 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
+import java.util.Properties;
+
 /**
  */
-public class InitEvent extends MessagingEvent {
+public final class InitEvent extends MessagingEvent {
+    
+    private Properties config;
+
+    public InitEvent(Properties config) {
+        this.config = config;
+    }
+
+    public Properties getConfig() {
+        return config;
+    }
+    
 }
