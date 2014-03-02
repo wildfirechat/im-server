@@ -64,6 +64,21 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void connectWithCredetials() throws Exception {
+        LOG.info("*** connectWithCredetials ***");
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883); 
+        mqtt.setClientId("Publisher");
+        mqtt.setUserName("testuser");
+        mqtt.setPassword("passwd");
+        
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        
+        assertTrue(true);
+    }
+    
+    @Test
     public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws Exception {
         LOG.info("*** checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1 ***");
         MQTT mqtt = new MQTT();

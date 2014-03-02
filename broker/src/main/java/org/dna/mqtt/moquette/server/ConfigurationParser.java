@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.util.Properties;
-import java.util.logging.Level;
 import org.dna.mqtt.commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
