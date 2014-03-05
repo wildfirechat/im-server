@@ -47,10 +47,10 @@ fi
 export JAVA
 
 LOG_FILE=$MOQUETTE_HOME/config/moquette-log.properties
+MOQUETTE_PATH=$MOQUETTE_HOME/
 #LOG_CONSOLE_LEVEL=info
 #LOG_FILE_LEVEL=fine
-#set MOQUETTE_SETTINGS="-Dprofiler.enabled=true -Dcache.level1.enabled=false -Dcache.level2.enabled=false"
 JAVA_OPTS_SCRIPT="-XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true"
 
-$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -cp "$LOG_FILE:$MOQUETTE_HOME/lib/moquette-broker-0.5.jar:$MOQUETTE_HOME/lib/*" org.dna.mqtt.moquette.server.Server
+$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -Dlog4j.configuration="file:$LOG_FILE" -Dmoquette.path="$MOQUETTE_PATH" -cp "$MOQUETTE_HOME/lib/moquette-broker-0.5.jar:$MOQUETTE_HOME/lib/*" org.dna.mqtt.moquette.server.Server
 
