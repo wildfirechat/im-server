@@ -7,7 +7,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.dna.mqtt</groupId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.5</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
