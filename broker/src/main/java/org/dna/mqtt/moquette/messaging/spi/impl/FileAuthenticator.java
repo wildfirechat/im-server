@@ -23,16 +23,21 @@ public class FileAuthenticator implements IAuthenticator {
     
     private Map<String, String> m_identities = new HashMap<String, String>();
     
-    FileAuthenticator(String filePath) {
-        LOG.info("Loading password file: " + filePath);
-        File file = new File(filePath);
+    FileAuthenticator(String parent, String filePath) {
+        File file = new File(parent, filePath);
+        LOG.info("Loading password file: " + file);
+        if (file.isDirectory()) {
+            LOG.warn(String.format("Bad file reference %s is a directory", file));
+            return;
+        }
+            
         try {
             FileReader reader = new FileReader(file);
             parse(reader);
         } catch (FileNotFoundException fex) {
-            LOG.warn(String.format("Parsing not existing file %s", filePath), fex);
+            LOG.warn(String.format("Parsing not existing file %s", file), fex);
         } catch (ParseException pex) {
-            LOG.warn(String.format("Fromat ero in parsing password file %s", filePath), pex);
+            LOG.warn(String.format("Fromat ero in parsing password file %s", file), pex);
         }
     }
     

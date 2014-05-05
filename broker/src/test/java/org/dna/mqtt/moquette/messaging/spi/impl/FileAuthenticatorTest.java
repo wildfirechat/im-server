@@ -13,7 +13,7 @@ public class FileAuthenticatorTest {
     @Test
     public void loadPasswordFile_verifyValid() {
         String file = getClass().getResource("/password_file.conf").getPath();        
-        IAuthenticator auth = new FileAuthenticator(file);
+        IAuthenticator auth = new FileAuthenticator(null, file);
         
         assertTrue(auth.checkValid("testuser", "passwd"));
     }
@@ -21,8 +21,16 @@ public class FileAuthenticatorTest {
     @Test
     public void loadPasswordFile_verifyInvalid() {
         String file = getClass().getResource("/password_file.conf").getPath();        
-        IAuthenticator auth = new FileAuthenticator(file);
+        IAuthenticator auth = new FileAuthenticator(null, file);
         
         assertFalse(auth.checkValid("testuser2", "passwd"));
     }
+    
+    @Test
+    public void loadPasswordFile_verifyDirectoryRef() {
+        IAuthenticator auth = new FileAuthenticator("", "");
+        
+        assertFalse(auth.checkValid("testuser2", "passwd"));
+    }
+    
 }

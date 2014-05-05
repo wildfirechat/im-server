@@ -1,3 +1,6 @@
+Version 0.6:
+    Fix issue 42, bad password file path composition
+
 Version 0.5:
     Fix issue 20 (no flush of message on PINGREQ)
     Fix issue 21 (bad channel timeout handler)

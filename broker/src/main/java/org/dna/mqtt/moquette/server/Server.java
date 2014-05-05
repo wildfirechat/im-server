@@ -40,8 +40,8 @@ public class Server {
     public void startServer() throws IOException {
         ConfigurationParser confParser = new ConfigurationParser();
         try {
-            String configPath = System.getProperty("moquette.path", "");
-            confParser.parse(new File(configPath + "config/moquette.conf"));
+            String configPath = System.getProperty("moquette.path", null);
+            confParser.parse(new File(configPath, "config/moquette.conf"));
         } catch (ParseException pex) {
             LOG.warn("An error occured in parsing configuration, fallback on default configuration", pex);
         }
