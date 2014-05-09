@@ -59,7 +59,7 @@ public class SubscriptionsStoreTest {
         assertEqualsSeq(asArray(Token.EMPTY, "finance", "stock", "ibm"), tokens);
 
         tokens = store.splitTopic("/");
-        assertEqualsSeq(asArray(Token.EMPTY), tokens);
+        assertEqualsSeq(asArray(Token.EMPTY, Token.EMPTY), tokens);
     }
 
 //    @Test(expected = ParseException.class)
@@ -295,10 +295,12 @@ public class SubscriptionsStoreTest {
     public void testMatchTopics_single() {
         assertTrue(SubscriptionsStore.matchTopics("finance", "+"));
         assertTrue(SubscriptionsStore.matchTopics("finance/stock", "finance/+"));
+        assertFalse(SubscriptionsStore.matchTopics("finance", "finance/+"));
         assertTrue(SubscriptionsStore.matchTopics("/finance", "/+"));
         assertFalse(SubscriptionsStore.matchTopics("/finance", "+"));
         assertTrue(SubscriptionsStore.matchTopics("/finance", "+/+"));
         assertTrue(SubscriptionsStore.matchTopics("/finance/stock/ibm", "/finance/+/ibm"));
+        assertTrue(SubscriptionsStore.matchTopics("/", "+/+"));
         assertFalse(SubscriptionsStore.matchTopics("/finance/stock", "+"));
     }
     

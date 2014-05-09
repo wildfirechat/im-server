@@ -249,9 +249,9 @@ public class SubscriptionsStore {
                 }
             }
             //if last token was a SINGLE then treat it as an empty
-            if (subToken == Token.SINGLE && (i - msgTokens.size() == 1)) {
-               i--; 
-            }
+//            if (subToken == Token.SINGLE && (i - msgTokens.size() == 1)) {
+//               i--; 
+//            }
             return i == msgTokens.size();
         } catch (ParseException ex) {
             LOG.error(null, ex);
@@ -266,7 +266,15 @@ public class SubscriptionsStore {
         if (splitted.length == 0) {
             res.add(Token.EMPTY);
         }
-
+        
+        if (topic.endsWith("/")) {
+            //Add a fictious space 
+            String[] newSplitted = new String[splitted.length + 1];
+            System.arraycopy(splitted, 0, newSplitted, 0, splitted.length); 
+            newSplitted[splitted.length] = "";
+            splitted = newSplitted;
+        }
+        
         for (int i = 0; i < splitted.length; i++) {
             String s = splitted[i];
             if (s.isEmpty()) {
