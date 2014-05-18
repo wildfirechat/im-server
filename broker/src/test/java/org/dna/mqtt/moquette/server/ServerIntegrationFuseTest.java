@@ -64,7 +64,7 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
-    public void connectWithCredetials() throws Exception {
+    public void connectWithCredentials() throws Exception {
         LOG.info("*** connectWithCredetials ***");
         MQTT mqtt = new MQTT();
         mqtt.setHost("localhost", 1883); 

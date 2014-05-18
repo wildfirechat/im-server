@@ -29,6 +29,7 @@ class ConfigurationParser {
     ConfigurationParser() {
         m_properties.put("port", Integer.toString(Constants.PORT));
         m_properties.put("host", Constants.HOST);
+        m_properties.put("websocket_port", Integer.toString(Constants.WEBSOCKET_PORT));
         m_properties.put("password_file", "");
     }
     
