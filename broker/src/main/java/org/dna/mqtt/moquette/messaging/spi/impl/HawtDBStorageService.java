@@ -134,6 +134,7 @@ public class HawtDBStorageService implements IStorageService {
         m_qos2Store = (SortedIndex<String, StoredPublishEvent>) m_multiIndexFactory.openOrCreate("qos2Store", indexFactory);
     }
 
+    @Override
     public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
         if (!message.hasRemaining()) {
             //clean the message from topic
@@ -146,6 +147,7 @@ public class HawtDBStorageService implements IStorageService {
         }
     }
 
+    @Override
     public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
@@ -175,7 +177,8 @@ public class HawtDBStorageService implements IStorageService {
         LOG.debug("Stored published message for client <{}> on topic <{}>", clientID, evt.getTopic());
     }
 
-    public List<PublishEvent> retrivePersistedPublishes(String clientID) {
+    @Override
+    public List<PublishEvent> retrievePersistedPublishes(String clientID) {
         List<StoredPublishEvent> storedEvts = m_persistentMessageStore.get(clientID);
         if (storedEvts == null) {
             return null;
@@ -266,7 +269,7 @@ public class HawtDBStorageService implements IStorageService {
 
     /*-------- QoS 2  storage management --------------*/
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
-        LOG.debug("persistQoS2Message store pubKey {}, evt {}", publishKey, evt);
+        LOG.debug("persistQoS2Message store pubKey: {}, evt: {}", publishKey, evt);
         m_qos2Store.put(publishKey, convertToStored(evt));
     }
 

@@ -176,7 +176,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private void republishStored(String clientID) {
         LOG.trace("republishStored invoked");
-        List<PublishEvent> publishedEvents = m_storageService.retrivePersistedPublishes(clientID);
+        List<PublishEvent> publishedEvents = m_storageService.retrievePersistedPublishes(clientID);
         if (publishedEvents == null) {
             LOG.info("No stored messages for client <{}>", clientID);
             return;
@@ -224,7 +224,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             sendPubRec(evt.getClientID(), evt.getMessageID());
         }
 
-        //NB publish 2 subscribers for QoS 2 happen upon PUBREL from publsher
+        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
         if (qos != AbstractMessage.QOSType.EXACTLY_ONCE) {
             publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
         }
@@ -294,7 +294,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
     
     private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, int messageID) {
-        LOG.debug("sendPublish invoked clientId <{}> on topic <{}> QoS {} ratained {} messageID {}", clientId, topic, qos, retained, messageID);
+        LOG.debug("sendPublish invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);

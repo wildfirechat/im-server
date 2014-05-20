@@ -74,7 +74,8 @@ public class MemoryStorageService implements IStorageService {
         m_persistentMessageStore.put(clientID, storedEvents);
     }
 
-    public List<PublishEvent> retrivePersistedPublishes(String clientID) {
+    @Override
+    public List<PublishEvent> retrievePersistedPublishes(String clientID) {
         return m_persistentMessageStore.get(clientID);
     }
     

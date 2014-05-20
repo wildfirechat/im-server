@@ -18,13 +18,25 @@ public interface IStorageService extends IPersistentSubscriptionStore {
      * */
     void initStore();
 
+    /**
+     * Persist the message. 
+     * If the message is empty then the topic is cleaned, else it's stored.
+     */
     void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos);
 
+    /**
+     * Return a list of retained messages that satisfy the condition.
+     */
     Collection<StoredMessage> searchMatching(IMatchingCondition condition);
 
     void storePublishForFuture(PublishEvent evt);
 
-    List<PublishEvent> retrivePersistedPublishes(String clientID);
+    /**
+     * Return the list of persisted publishes for the given clientID.
+     * For QoS1 and QoS2 with clean session flag, this method return the list of 
+     * missed publish events while the client was disconnected.
+     */
+    List<PublishEvent> retrievePersistedPublishes(String clientID);
     
     void cleanPersistedPublishMessage(String clientID, int messageID);
 
