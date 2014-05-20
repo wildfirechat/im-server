@@ -2,6 +2,7 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
@@ -161,5 +162,53 @@ public class ServerIntegrationFuseTest {
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
         System.out.println(String.format("***Subscriber received message <%s> from /topic", new String(msg.getPayload())));
 //        m_subscriber.disconnect();
+    }
+    
+    /**
+     * subscriber connect and subscribe on "topic"
+     * subscriber disconnects
+     * publisher connects and send two message "hello1" "hello2" to "topic"
+     * subscriber connects again and receive "hello1" "hello2"
+     */
+    @Test
+    public void checkQoS2SuscriberDisconnectReceivePersistedPublishes() throws Exception {
+        LOG.info("*** checkQoS2SuscriberDisconnectReceivePersistedPublishes ***");
+        m_mqtt.setHost("localhost", 1883); 
+        m_mqtt.setCleanSession(false);
+        m_mqtt.setClientId("Subscriber");
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+        Topic[] topics = new Topic[]{new Topic("topic", QoS.EXACTLY_ONCE)};
+        m_subscriber.subscribe(topics);
+        m_subscriber.disconnect();
+        System.out.println("***Subscriber listen to topic and disconnects");
+        
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883); 
+        mqtt.setClientId("Publisher");
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        m_publisher.publish("topic", "Hello1".getBytes(), QoS.EXACTLY_ONCE, true);
+        m_publisher.publish("topic", "Hello2".getBytes(), QoS.EXACTLY_ONCE, true);
+        m_publisher.disconnect();
+        System.out.println("***Publisher published 2 messges to topic and disconnects");
+        
+        //subscriber reconnects
+        m_mqtt = new MQTT();
+        m_mqtt.setHost("localhost", 1883); 
+        m_mqtt.setClientId("Subscriber");
+        m_mqtt.setCleanSession(false);
+        m_subscriber = m_mqtt.blockingConnection();
+        System.out.println("***Subscriber reconnects");
+        m_subscriber.connect();
+        //subscriber should receive the 2 messages missed
+        Message msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        assertNotNull(msg);
+        msg.ack();
+        assertEquals("Hello1", new String(msg.getPayload()));
+        msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        assertNotNull(msg);
+        msg.ack();
+        assertEquals("Hello2", new String(msg.getPayload()));
     }
 }
