@@ -1,5 +1,8 @@
 Version 0.6:
-    Fix issue 42, bad password file path composition
+    Fix issue #42, bad password file path composition
+    Fix issue #43, missed topic case (finance/+ does has to match finance)
+    Integrated WebSocket support (issue #37)
+    Integrated SSL support (issue #41)
 
 Version 0.5:
     Fix issue 20 (no flush of message on PINGREQ)
