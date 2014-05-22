@@ -124,6 +124,14 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(IMessaging messaging, Properties props) throws IOException {
+        String webSocketPortProp = props.getProperty("websocket_port");
+        if (webSocketPortProp == null) {
+            //Do nothing no WebSocket configured
+            LOG.info("WebSocket is disabled");
+            return;
+        }
+        int port = Integer.parseInt(webSocketPortProp);
+        
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
 
@@ -152,7 +160,6 @@ public class NettyAcceptor implements ServerAcceptor {
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         try {
-            int port = Integer.parseInt(props.getProperty("websocket_port"));
             ChannelFuture f = b.bind(props.getProperty("host"), port);
             System.out.println("Web socket server started at port " + port + '.');
             System.out.println("Open your browser and navigate to http://localhost:" + port + '/');
