@@ -18,12 +18,18 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
 
 import java.util.List;
 import java.util.Properties;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.parser.netty.MQTTDecoder;
@@ -76,6 +82,7 @@ public class NettyAcceptor implements ServerAcceptor {
         
         initializePlainTCPTransport(messaging, props);
         initializeWebSocketTransport(messaging, props);
+        initializeSSLTCPTransport(messaging, props);
     }
     
     private void initializePlainTCPTransport(IMessaging messaging, Properties props) throws IOException {
@@ -117,9 +124,6 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(IMessaging messaging, Properties props) throws IOException {
-//        m_bossGroup = new NioEventLoopGroup();
-//        m_workerGroup = new NioEventLoopGroup();
-
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
 
@@ -152,6 +156,85 @@ public class NettyAcceptor implements ServerAcceptor {
             ChannelFuture f = b.bind(props.getProperty("host"), port);
             System.out.println("Web socket server started at port " + port + '.');
             System.out.println("Open your browser and navigate to http://localhost:" + port + '/');
+            f.sync();
+        } catch (InterruptedException ex) {
+            LOG.error(null, ex);
+        }
+    }
+    
+    
+    private void initializeSSLTCPTransport(IMessaging messaging, Properties props) throws IOException {
+        String sslPortProp = props.getProperty("ssl_port");
+        if (sslPortProp == null) {
+            //Do nothing no SSL configured
+            LOG.info("SSL is disabled");
+            return;
+        }
+        final String jksPath = props.getProperty("jks_path");
+        if (jksPath == null || jksPath.isEmpty()) {
+            //key_store_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
+            return;
+        }
+        
+        //if we have the port also the jks then keyStorePassword and keyManagerPassword 
+        //has to be defined
+        final String keyStorePassword = props.getProperty("key_store_password");
+        final String keyManagerPassword = props.getProperty("key_manager_password");
+        if (keyStorePassword == null || keyStorePassword.isEmpty()) {
+            //key_store_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
+            return;
+        }
+        if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
+            //key_manager_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
+            return;
+        }
+        
+        int sslPort = Integer.parseInt(sslPortProp);
+        
+        final NettyMQTTHandler handler = new NettyMQTTHandler();
+        handler.setMessaging(messaging);
+
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(m_bossGroup, m_workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) throws Exception {
+                        InputStream jksInputStream = getClass().getClassLoader().getResourceAsStream(jksPath);
+                        SSLContext serverContext = SSLContext.getInstance("TLS");
+                        final KeyStore ks = KeyStore.getInstance("JKS");
+                        ks.load(jksInputStream, keyStorePassword.toCharArray());
+                        final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                        kmf.init(ks, keyManagerPassword.toCharArray());
+                        serverContext.init(kmf.getKeyManagers(), null, null);
+                        
+                        SSLEngine engine = serverContext.createSSLEngine();
+                        engine.setUseClientMode(false);
+                        final SslHandler sslHandler = new SslHandler(engine);
+                        
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast("ssl", sslHandler);
+                    //pipeline.addFirst("metrics", new BytesMetricsHandler(m_metricsCollector));
+                        pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                        pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                        //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                        pipeline.addLast("decoder", new MQTTDecoder());
+                        pipeline.addLast("encoder", new MQTTEncoder());
+                        pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                        pipeline.addLast("handler", handler);
+                    }
+                })
+                .option(ChannelOption.SO_BACKLOG, 128)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
+        try {
+            // Bind and start to accept incoming connections.
+//            ChannelFuture f = b.bind(Constants.PORT);
+            ChannelFuture f = b.bind(props.getProperty("host"), sslPort);
+            LOG.info("Server binded");
             f.sync();
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
