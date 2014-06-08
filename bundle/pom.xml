@@ -114,6 +114,13 @@
         </dependency>
         
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.0.8.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>org.fusesource.hawtbuf</groupId>
             <artifactId>hawtbuf</artifactId>
             <version>1.9</version>
