@@ -212,12 +212,13 @@
                 <!-- Pax Runner Maven plugin -->
                 <groupId>org.ops4j</groupId>
                 <artifactId>maven-pax-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.5</version>
                 <configuration>
                     <!-- Pax Runner version -->
-                    <runner>1.4.0</runner>
+                    <runner>1.8.5</runner>
                     <!-- OSGi framework type (equinox, felix, knopflerfish) -->
                     <framework>equinox</framework>
+                    <!--<framework>felix</framework>-->
                     <provision>
                         <!--                        <param> - -log=debug</param>  
                         <param> - -workingDirectory=target/runner</param>  -->
