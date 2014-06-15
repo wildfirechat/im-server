@@ -26,6 +26,8 @@ class MoquetteIdleTimoutHandler extends ChannelDuplexHandler {
         if (evt instanceof IdleStateEvent) {
             IdleState e = ((IdleStateEvent) evt).state();
             if (e == IdleState.ALL_IDLE) {
+                //fire a channelInactive to trigger publish of Will
+                ctx.fireChannelInactive();
                 ctx.close();
             } /*else if (e.getState() == IdleState.WRITER_IDLE) {
                     ctx.writeAndFlush(new PingMessage());

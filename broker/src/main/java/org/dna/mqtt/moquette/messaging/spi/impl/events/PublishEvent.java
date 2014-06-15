@@ -89,6 +89,7 @@ public class PublishEvent extends MessagingEvent {
         return m_msgID;
     }
 
+    //TODO remove the session it's never used!!
     public ServerChannel getSession() {
         return m_session;
     }

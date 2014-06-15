@@ -3,6 +3,8 @@ Version 0.6:
     Fix issue #43, missed topic case (finance/+ does has to match finance)
     Integrated WebSocket support (issue #37)
     Integrated SSL support (issue #41)
+    Fixed issue #40, check Logging inside the Felix OSGi
+    Fixed issue #46, implement correct behaviour for Will stuff
 
 Version 0.5:
     Fix issue 20 (no flush of message on PINGREQ)

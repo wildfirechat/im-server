@@ -94,6 +94,41 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
+    public void checkWillTestmaentIsPublishedOnConnectionKill_noRetain() throws Exception {
+        LOG.info("checkWillTestmaentIsPublishedOnConnectionKill");
+        
+        String willTestamentTopic = "/will/test";
+        String willTestamentMsg = "Bye bye";
+        
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883); 
+        mqtt.setClientId("WillTestamentPublisher");
+        mqtt.setWillRetain(false);
+        mqtt.setWillMessage(willTestamentMsg);
+        mqtt.setWillTopic(willTestamentTopic);
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        
+        m_mqtt.setHost("localhost", 1883); 
+        m_mqtt.setCleanSession(false);
+        m_mqtt.setClientId("Subscriber");
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+//        Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_LEAST_ONCE)};
+        Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_MOST_ONCE)};
+        m_subscriber.subscribe(topics);
+        
+        //Exercise, kill the publisher connection
+        m_publisher.kill();
+        
+        //Verify, that the testament is fired
+        Message msg = m_subscriber.receive(500, TimeUnit.MILLISECONDS);
+        assertNotNull("We should get notified with 'Will' message", msg);
+        msg.ack();
+        assertEquals(willTestamentMsg, new String(msg.getPayload()));
+    }
+    
+    @Test
     public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws Exception {
         LOG.info("*** checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1 ***");
         MQTT mqtt = new MQTT();

@@ -36,6 +36,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
@@ -62,12 +63,45 @@ import org.slf4j.LoggerFactory;
  */
 class ProtocolProcessor implements EventHandler<ValueEvent> {
     
+    static final class WillMessage {
+        private final String topic;
+        private final ByteBuffer payload;
+        private final boolean retained;
+        private final QOSType qos;
+
+        public WillMessage(String topic, ByteBuffer payload, boolean retained, QOSType qos) {
+            this.topic = topic;
+            this.payload = payload;
+            this.retained = retained;
+            this.qos = qos;
+        }
+
+        public String getTopic() {
+            return topic;
+        }
+
+        public ByteBuffer getPayload() {
+            return payload;
+        }
+
+        public boolean isRetained() {
+            return retained;
+        }
+
+        public QOSType getQos() {
+            return qos;
+        }
+        
+    }
+    
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
     private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private SubscriptionsStore subscriptions;
     private IStorageService m_storageService;
     private IAuthenticator m_authenticator;
+    //maps clientID to Will testament, if specified on CONNECT
+    private Map<String, WillMessage> m_willStore = new HashMap<String, WillMessage>();
     
     private ExecutorService m_executor;
     BatchEventProcessor<ValueEvent> m_eventProcessor;
@@ -149,9 +183,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
             byte[] willPayload = msg.getWillMessage().getBytes();
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
-            PublishEvent pubEvt = new PublishEvent(msg.getWillTopic(), willQos, 
-                    bb, msg.isWillRetain(), msg.getClientID(), session);
-            processPublish(pubEvt);
+            //save the will testment in the clientID store
+            WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos );
+            m_willStore.put(msg.getClientID(), will);
         }
 
         //handle user authentication
@@ -429,8 +463,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         session.close(true);
 
         //de-activate the subscriptions for this ClientID
-//        String clientID = (String) evt.getSession().getAttribute(Constants.ATTR_CLIENTID);
         subscriptions.deactivate(clientID);
+        //cleanup the will store
+        m_willStore.remove(clientID);
+        
         LOG.info("Disconnected client <{}> with clean session {}", clientID, cleanSession);
     }
     
@@ -441,6 +477,14 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             //de-activate the subscriptions for this ClientID
             subscriptions.deactivate(clientID);
             LOG.info("Lost connection with client <{}>", clientID);
+        }
+        //TODO publish the Will message (if any) for the clientID
+        if (m_willStore.containsKey(clientID)) {
+            WillMessage will = m_willStore.get(clientID);
+            PublishEvent pubEvt = new PublishEvent(will.getTopic(), will.getQos(), 
+                    will.getPayload(), will.isRetained(), clientID, null);
+            processPublish(pubEvt);
+            m_willStore.remove(clientID);
         }
     }
     

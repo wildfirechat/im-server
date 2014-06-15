@@ -76,7 +76,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
     
     @Override
-    public void channelInactive(ChannelHandlerContext ctx)throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = m_channelMapper.get(ctx);
         String clientID = (String) channel.getAttribute(Constants.ATTR_CLIENTID);
         m_messaging.lostConnection(clientID);
