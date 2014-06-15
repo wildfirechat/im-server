@@ -318,13 +318,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
                     //clone the event with matching clientID
-                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
                     m_storageService.storePublishForFuture(newPublishEvt);
                 } else  {
                     //if QoS 2 then store it in temp memory
                     if (qos ==AbstractMessage.QOSType.EXACTLY_ONCE) {
                         String publishKey = String.format("%s%d", sub.getClientId(), messageID);
-                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID, null);
+                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
                         m_storageService.addInFlight(newPublishEvt, publishKey);
                     }
                     //publish
@@ -482,7 +482,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);
             PublishEvent pubEvt = new PublishEvent(will.getTopic(), will.getQos(), 
-                    will.getPayload(), will.isRetained(), clientID, null);
+                    will.getPayload(), will.isRetained(), clientID);
             processPublish(pubEvt);
             m_willStore.remove(clientID);
         }

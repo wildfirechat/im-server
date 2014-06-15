@@ -145,7 +145,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             } else if (message instanceof  PublishMessage) {
                 PublishEvent pubEvt;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                pubEvt = new PublishEvent((PublishMessage) message, clientID, session);
+                pubEvt = new PublishEvent((PublishMessage) message, clientID);
 //                if (message.getQos() == QOSType.MOST_ONE) {
 //                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
 //

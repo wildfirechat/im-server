@@ -272,7 +272,7 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI", null);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI");
         m_processor.processPublish(pubEvt);
 
         //Verify
@@ -321,7 +321,7 @@ public class ProtocolProcessorTest {
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         buffer.rewind();
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI", null);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI");
         m_processor.processPublish(pubEvt);
 
         //Verify
@@ -418,7 +418,7 @@ public class ProtocolProcessorTest {
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
         m_processor.processPublish(pubEvt);
         
         //Exercise
@@ -447,7 +447,7 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
+        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
         m_processor.processPublish(pubEvt);
 
         //Verify no message is received
@@ -467,7 +467,7 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher", null);
+        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
         m_processor.processPublish(pubEvt);
 
         //Verify no message is received

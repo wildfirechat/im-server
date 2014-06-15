@@ -35,33 +35,29 @@ public class PublishEvent extends MessagingEvent {
     //Optional attribute, available only fo QoS 1 and 2
     int m_msgID;
 
-    transient ServerChannel m_session;
-
-    public PublishEvent(PublishMessage pubMsg, String clientID, ServerChannel session) {
+    public PublishEvent(PublishMessage pubMsg, String clientID) {
         m_topic = pubMsg.getTopicName();
         m_qos = pubMsg.getQos();
         m_message = pubMsg.getPayload();
         m_retain = pubMsg.isRetainFlag();
         m_clientID = clientID;
-        m_session = session;
         if (pubMsg.getQos() != QOSType.MOST_ONE) {
             m_msgID = pubMsg.getMessageID();
         }
     }
     
     public PublishEvent(String topic, QOSType qos, ByteBuffer message, boolean retain,
-            String clientID, ServerChannel session) {
+            String clientID) {
         m_topic = topic;
         m_qos = qos;
         m_message = message;
         m_retain = retain;
         m_clientID = clientID;
-        m_session = session;
     }
 
     public PublishEvent(String topic, QOSType qos, ByteBuffer message, boolean retain,
-                        String clientID, int msgID, ServerChannel session) {
-        this(topic, qos, message, retain, clientID, session);
+                        String clientID, int msgID) {
+        this(topic, qos, message, retain, clientID);
         m_msgID = msgID;
     }
     
@@ -87,11 +83,6 @@ public class PublishEvent extends MessagingEvent {
 
     public int getMessageID() {
         return m_msgID;
-    }
-
-    //TODO remove the session it's never used!!
-    public ServerChannel getSession() {
-        return m_session;
     }
 
     @Override
