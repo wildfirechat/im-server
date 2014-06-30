@@ -17,6 +17,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,7 @@ public class ProtocolProcessorTest {
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(m_storageService);
+        subscriptions.init(Collections.<Subscription>emptyList());
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_storageService, m_mockAuthenticator);
     }
@@ -261,7 +262,7 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(m_storageService);
+        subs.init(Collections.<Subscription>emptyList());
         m_processor.init(subs, m_storageService, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProcotolVersion((byte)3);
@@ -300,7 +301,7 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(m_storageService);
+        subs.init(Collections.<Subscription>emptyList());
         m_processor.init(subs, m_storageService, null);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
@@ -408,7 +409,7 @@ public class ProtocolProcessorTest {
                 }
             }
         };
-        subs.init(new MemoryStorageService());
+        subs.init(Collections.<Subscription>emptyList());
         
         //simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_storageService, null);

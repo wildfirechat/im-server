@@ -245,6 +245,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private void processRemoveAllSubscriptions(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
+        //remove from log all subscriptions
+        m_storageService.removeAllSubscriptions(clientID);
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
@@ -534,6 +536,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("<{}> subscribed to topic <{}> with QoS {}", 
                 newSubscription.getClientId(), topic, 
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
+        String clientID = newSubscription.getClientId();
+        m_storageService.addNewSubscription(newSubscription, clientID);
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription

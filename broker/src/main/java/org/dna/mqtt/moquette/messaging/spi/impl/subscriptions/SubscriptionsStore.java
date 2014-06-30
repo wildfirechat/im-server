@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingDeque;
-import org.dna.mqtt.moquette.messaging.spi.IPersistentSubscriptionStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,23 +72,18 @@ public class SubscriptionsStore {
     private TreeNode subscriptions = new TreeNode(null);
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
-    private IPersistentSubscriptionStore m_storageService;
-
     /**
-     * Initialize basic store structures, like the FS storage to maintain
-     * client's topics subscriptions
+     * Initialize the subscription tree with the list of subscriptions.
      */
-    public void init(IPersistentSubscriptionStore storageService) {
+    public void init(List<Subscription> subscriptions) {
         LOG.debug("init invoked");
-
-        m_storageService = storageService;
 
         //reload any subscriptions persisted
         if (LOG.isDebugEnabled()) {
             LOG.debug("Reloading all stored subscriptions...subscription tree before {}", dumpTree());
         }
         
-        for (Subscription subscription : m_storageService.retrieveAllSubscriptions()) {
+        for (Subscription subscription : subscriptions) {
             LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
             addDirect(subscription);
         }
@@ -135,8 +129,8 @@ public class SubscriptionsStore {
         addDirect(newSubscription);
 
         //log the subscription
-        String clientID = newSubscription.getClientId();
-        m_storageService.addNewSubscription(newSubscription, clientID);
+//        String clientID = newSubscription.getClientId();
+//        m_storageService.addNewSubscription(newSubscription, clientID);
     }
 
 
@@ -177,7 +171,7 @@ public class SubscriptionsStore {
         subscriptions.removeClientSubscriptions(clientID);
 
         //remove from log all subscriptions
-        m_storageService.removeAllSubscriptions(clientID);
+//        m_storageService.removeAllSubscriptions(clientID);
     }
 
     public void deactivate(String clientID) {

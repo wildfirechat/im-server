@@ -19,6 +19,7 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.IStorageService;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
+import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
@@ -40,7 +42,9 @@ import org.slf4j.LoggerFactory;
  *
  * Singleton class that orchestrate the execution of the protocol.
  *
- * Uses the LMAX Disruptor to serialize the incoming, requests, because it work in a evented fashion.
+ * Uses the LMAX Disruptor to serialize the incoming, requests, because it work in a evented fashion;
+ * the requests income from front Netty connectors and are dispatched to the 
+ * ProtocolProcessor.
  *
  * @author andrea
  */
@@ -199,8 +203,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private void processInit(Properties props) {
         m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
-
-        subscriptions.init(m_storageService);
+        List<Subscription> storedSubscriptions = m_storageService.retrieveAllSubscriptions();
+        subscriptions.init(storedSubscriptions);
         
         String passwdPath = props.getProperty("password_file");
         String configPath = System.getProperty("moquette.path", null);
