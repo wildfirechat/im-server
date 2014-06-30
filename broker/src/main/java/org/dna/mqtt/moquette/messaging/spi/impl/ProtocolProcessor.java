@@ -27,7 +27,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
+import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.OutputMessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
@@ -98,7 +99,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private SubscriptionsStore subscriptions;
-    private IStorageService m_storageService;
+    private IMessagesStore m_storageService;
+    private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     //maps clientID to Will testament, if specified on CONNECT
     private Map<String, WillMessage> m_willStore = new HashMap<String, WillMessage>();
@@ -114,14 +116,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      *  clients subscriptions.
      * @param storageService the persistent store to use for save/load of messages
      *  for QoS1 and QoS2 handling.
+     * @param sessionsStore the clients sessions store, used to persist subscriptions.
      * @param authenticator the authenticator used in connect messages
      */
-    void init(SubscriptionsStore subscriptions, IStorageService storageService, 
+    void init(SubscriptionsStore subscriptions, IMessagesStore storageService, 
+            ISessionsStore sessionsStore,
             IAuthenticator authenticator) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_authenticator = authenticator;
         m_storageService = storageService;
+        m_sessionsStore = sessionsStore;
         
         //init the output ringbuffer
         m_executor = Executors.newFixedThreadPool(1);
@@ -246,7 +251,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void cleanSession(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
         //remove from log all subscriptions
-        m_storageService.wipeSubscriptions(clientID);
+        m_sessionsStore.wipeSubscriptions(clientID);
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
@@ -537,17 +542,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 newSubscription.getClientId(), topic, 
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
         String clientID = newSubscription.getClientId();
-        m_storageService.addNewSubscription(newSubscription, clientID);
+        m_sessionsStore.addNewSubscription(newSubscription, clientID);
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
-        Collection<HawtDBStorageService.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+        Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, topic);
             }
         });
 
-        for (HawtDBStorageService.StoredMessage storedMsg : messages) {
+        for (HawtDBPersistentStore.StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("send publish message for topic {}", topic);
             sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);

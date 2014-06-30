@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
+import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
@@ -58,7 +59,8 @@ public class ProtocolProcessorTest {
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
     
-    IStorageService m_storageService;
+    IMessagesStore m_storageService;
+    ISessionsStore m_sessionStore;
     SubscriptionsStore subscriptions;
     AbstractMessage m_receivedMessage;
     MockAuthenticator m_mockAuthenticator;
@@ -144,8 +146,9 @@ public class ProtocolProcessorTest {
 
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
-        
-        m_storageService = new MemoryStorageService();
+        MemoryStorageService memStorage = new MemoryStorageService();
+        m_storageService = memStorage;
+        m_sessionStore = memStorage;
         //m_storageService.initStore();
         
         Map<String, String> users = new HashMap<String, String>();
@@ -155,7 +158,7 @@ public class ProtocolProcessorTest {
         subscriptions = new SubscriptionsStore();
         subscriptions.init(Collections.<Subscription>emptyList());
         m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_storageService, m_mockAuthenticator);
+        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator);
     }
     
     @Test
@@ -263,7 +266,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(Collections.<Subscription>emptyList());
-        m_processor.init(subs, m_storageService, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProcotolVersion((byte)3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
@@ -302,7 +305,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(Collections.<Subscription>emptyList());
-        m_processor.init(subs, m_storageService, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage = new ConnectMessage();
@@ -412,7 +415,7 @@ public class ProtocolProcessorTest {
         subs.init(Collections.<Subscription>emptyList());
         
         //simulate a connect that register a clientID to an IoSession
-        m_processor.init(subs, m_storageService, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProcotolVersion((byte)3);
@@ -444,7 +447,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, null);
+        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -464,7 +467,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, null);
+        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());

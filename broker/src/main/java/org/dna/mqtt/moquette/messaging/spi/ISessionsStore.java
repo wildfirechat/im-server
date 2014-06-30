@@ -23,7 +23,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
  *
  * @author andrea
  */
-public interface IPersistentSubscriptionStore {
+public interface ISessionsStore {
 
     /**
      * Add a new subscription to the session

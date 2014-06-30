@@ -22,7 +22,8 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import org.dna.mqtt.moquette.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
+import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.storage.StoredPublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
@@ -35,9 +36,9 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Implementation of IStorageService backed by HawtDB
+ * Implementation of IMessagesStore and ISessionsStore backed by HawtDB
  */
-public class HawtDBStorageService implements IStorageService {
+public class HawtDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     public static class StoredMessage implements Serializable {
         AbstractMessage.QOSType m_qos;
@@ -64,7 +65,7 @@ public class HawtDBStorageService implements IStorageService {
     }
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(HawtDBStorageService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HawtDBPersistentStore.class);
 
     private MultiIndexFactory m_multiIndexFactory;
     private PageFileFactory pageFactory;
@@ -81,7 +82,7 @@ public class HawtDBStorageService implements IStorageService {
     //persistent Map of clientID, set of Subscriptions
     private SortedIndex<String, Set<Subscription>> m_persistentSubscriptions;
 
-    public HawtDBStorageService() {
+    public HawtDBPersistentStore() {
         String storeFile = Server.STORAGE_FILE_PATH;
 
         pageFactory = new PageFileFactory();

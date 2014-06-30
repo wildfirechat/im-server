@@ -18,15 +18,15 @@ package org.dna.mqtt.moquette.messaging.spi;
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import static org.dna.mqtt.moquette.messaging.spi.impl.HawtDBStorageService.StoredMessage;
+import static org.dna.mqtt.moquette.messaging.spi.impl.HawtDBPersistentStore.StoredMessage;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Defines the SPI to be implemented by a StorageService that handle persistence of messages and subscriptions.
+ * Defines the SPI to be implemented by a StorageService that handle persistence of messages
  */
-public interface IStorageService extends IPersistentSubscriptionStore {
+public interface IMessagesStore {
 
     /**
      * Used to initialize all persistent store structures

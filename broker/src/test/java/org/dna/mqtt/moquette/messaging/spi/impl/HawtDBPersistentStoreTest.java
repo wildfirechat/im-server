@@ -29,16 +29,16 @@ import org.junit.Before;
  *
  * @author andrea
  */
-public class HawtDBStorageServiceTest {
+public class HawtDBPersistentStoreTest {
 
-    HawtDBStorageService m_storageService;
+    HawtDBPersistentStore m_storageService;
         
     @Before
     public void setUp() throws Exception {
         File dbFile = new File(Server.STORAGE_FILE_PATH);
         assertFalse(String.format("The DB storagefile %s already exists", Server.STORAGE_FILE_PATH), dbFile.exists());
         
-        m_storageService = new HawtDBStorageService();
+        m_storageService = new HawtDBPersistentStore();
         m_storageService.initStore();
     }
 

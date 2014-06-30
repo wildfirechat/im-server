@@ -26,7 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
-import org.dna.mqtt.moquette.messaging.spi.IStorageService;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
+import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
@@ -56,7 +57,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     private RingBuffer<ValueEvent> m_ringBuffer;
 
-    private IStorageService m_storageService;
+    private IMessagesStore m_storageService;
+    private ISessionsStore m_sessionsStore;
 
     private ExecutorService m_executor;
     BatchEventProcessor<ValueEvent> m_eventProcessor;
@@ -201,16 +203,19 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     private void processInit(Properties props) {
-        m_storageService = new HawtDBStorageService();
+        HawtDBPersistentStore hawtStorage = new HawtDBPersistentStore();
+        m_storageService = hawtStorage;
         m_storageService.initStore();
-        List<Subscription> storedSubscriptions = m_storageService.listAllSubscriptions();
+        m_sessionsStore = hawtStorage;
+        
+        List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         subscriptions.init(storedSubscriptions);
         
         String passwdPath = props.getProperty("password_file");
         String configPath = System.getProperty("moquette.path", null);
         IAuthenticator authenticator = new FileAuthenticator(configPath, passwdPath);
         
-        m_processor.init(subscriptions, m_storageService, authenticator);
+        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator);
     }
 
 
