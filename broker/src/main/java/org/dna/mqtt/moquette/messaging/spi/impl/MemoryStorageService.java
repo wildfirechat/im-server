@@ -130,7 +130,7 @@ public class MemoryStorageService implements IStorageService {
         }
     }
 
-    public void removeAllSubscriptions(String clientID) {
+    public void wipeSubscriptions(String clientID) {
         m_persistentSubscriptions.remove(clientID);
     }
 

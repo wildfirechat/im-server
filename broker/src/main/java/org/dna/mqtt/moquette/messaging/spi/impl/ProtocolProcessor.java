@@ -160,7 +160,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
             if (cleanSession) {
                 //cleanup topic subscriptions
-                processRemoveAllSubscriptions(msg.getClientID());
+                cleanSession(msg.getClientID());
             }
 
             m_clientIDs.get(msg.getClientID()).getSession().close(false);
@@ -208,7 +208,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (msg.isCleanSession()) {
             //remove all prev subscriptions
             //cleanup topic subscriptions
-            processRemoveAllSubscriptions(msg.getClientID());
+            cleanSession(msg.getClientID());
         }
 
         ConnAckMessage okResp = new ConnAckMessage();
@@ -243,10 +243,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_storageService.cleanPersistedPublishMessage(clientID, messageID);
     }
     
-    private void processRemoveAllSubscriptions(String clientID) {
+    private void cleanSession(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
         //remove from log all subscriptions
-        m_storageService.removeAllSubscriptions(clientID);
+        m_storageService.wipeSubscriptions(clientID);
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
@@ -458,7 +458,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     void processDisconnect(ServerChannel session, String clientID, boolean cleanSession) throws InterruptedException {
         if (cleanSession) {
             //cleanup topic subscriptions
-            processRemoveAllSubscriptions(clientID);
+            cleanSession(clientID);
         }
 //        m_notifier.disconnect(evt.getSession());
         m_clientIDs.remove(clientID);

@@ -25,9 +25,15 @@ import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
  */
 public interface IPersistentSubscriptionStore {
 
+    /**
+     * Add a new subscription to the session
+     */
     void addNewSubscription(Subscription newSubscription, String clientID);
 
-    void removeAllSubscriptions(String clientID);
+    /**
+     * Remove all the subscriptions of the session
+     */
+    void wipeSubscriptions(String sessionID);
 
     List<Subscription> retrieveAllSubscriptions();
 }
