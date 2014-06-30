@@ -27,16 +27,16 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
  */
 public class Subscription implements Serializable {
     
-    QOSType requestedQos;
+    QOSType requestedQos; //max QoS acceptable
     String clientId;
-    String topic;
+    String topicFilter;
     boolean cleanSession;
     boolean active = true;
     
-    public Subscription(String clientId, String topic, QOSType requestedQos, boolean cleanSession) {
+    public Subscription(String clientId, String topicFilter, QOSType requestedQos, boolean cleanSession) {
         this.requestedQos = requestedQos;
         this.clientId = clientId;
-        this.topic = topic;
+        this.topicFilter = topicFilter;
         this.cleanSession = cleanSession;
     }
 
@@ -48,8 +48,8 @@ public class Subscription implements Serializable {
         return requestedQos;
     }
 
-    public String getTopic() {
-        return topic;
+    public String getTopicFilter() {
+        return topicFilter;
     }
 
     public boolean isCleanSession() {
@@ -79,7 +79,7 @@ public class Subscription implements Serializable {
         if ((this.clientId == null) ? (other.clientId != null) : !this.clientId.equals(other.clientId)) {
             return false;
         }
-        if ((this.topic == null) ? (other.topic != null) : !this.topic.equals(other.topic)) {
+        if ((this.topicFilter == null) ? (other.topicFilter != null) : !this.topicFilter.equals(other.topicFilter)) {
             return false;
         }
         return true;
@@ -90,7 +90,7 @@ public class Subscription implements Serializable {
         int hash = 3;
         hash = 37 * hash + (this.requestedQos != null ? this.requestedQos.hashCode() : 0);
         hash = 37 * hash + (this.clientId != null ? this.clientId.hashCode() : 0);
-        hash = 37 * hash + (this.topic != null ? this.topic.hashCode() : 0);
+        hash = 37 * hash + (this.topicFilter != null ? this.topicFilter.hashCode() : 0);
         return hash;
     }
 
@@ -98,11 +98,11 @@ public class Subscription implements Serializable {
      * Trivial match method
      */
     boolean match(String topic) {
-        return this.topic.equals(topic);
+        return this.topicFilter.equals(topic);
     }
     
     @Override
     public String toString() {
-        return String.format("[t:%s, cliID: %s, qos: %s, active: %s]", this.topic, this.clientId, this.requestedQos, this.active);
+        return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos, this.active);
     }
 }

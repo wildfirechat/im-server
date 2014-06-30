@@ -246,7 +246,7 @@ public class HawtDBStorageService implements IStorageService {
             //TODO check the subs doesn't contain another subscription to the same topic with different
             Subscription existingSubscription = null;
             for (Subscription scanSub : subs) {
-                if (newSubscription.getTopic().equals(scanSub.getTopic())) {
+                if (newSubscription.getTopicFilter().equals(scanSub.getTopicFilter())) {
                     existingSubscription = scanSub;
                     break;
                 }

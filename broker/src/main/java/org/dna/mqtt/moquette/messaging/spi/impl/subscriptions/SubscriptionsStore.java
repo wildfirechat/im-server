@@ -90,7 +90,7 @@ public class SubscriptionsStore {
         }
         
         for (Subscription subscription : m_storageService.retrieveAllSubscriptions()) {
-            LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopic());
+            LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
             addDirect(subscription);
         }
         if (LOG.isDebugEnabled()) {
@@ -99,7 +99,7 @@ public class SubscriptionsStore {
     }
     
     protected void addDirect(Subscription newSubscription) {
-        TreeNode current = findMatchingNode(newSubscription.topic);
+        TreeNode current = findMatchingNode(newSubscription.topicFilter);
         current.addSubscription(newSubscription);
     }
     
@@ -146,7 +146,7 @@ public class SubscriptionsStore {
         //search for the subscription to remove
         Subscription toBeRemoved = null;
         for (Subscription sub : matchNode.subscriptions()) {
-            if (sub.topic.equals(topic) && sub.getClientId().equals(clientID)) {
+            if (sub.topicFilter.equals(topic) && sub.getClientId().equals(clientID)) {
                 toBeRemoved = sub;
                 break;
             }
@@ -166,7 +166,7 @@ public class SubscriptionsStore {
         
         List<Subscription> allSubscriptions = subsCollector.getResult();
         for (Subscription subscription : allSubscriptions) {
-            removeSubscription(subscription.getTopic(), subscription.getClientId());
+            removeSubscription(subscription.getTopicFilter(), subscription.getClientId());
         }
     }
 
@@ -211,7 +211,7 @@ public class SubscriptionsStore {
     }
 
     public boolean contains(Subscription sub) {
-        return !matches(sub.topic).isEmpty();
+        return !matches(sub.topicFilter).isEmpty();
     }
 
     public int size() {

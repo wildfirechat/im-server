@@ -308,7 +308,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             
             ByteBuffer message = origMessage.duplicate();
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}", 
-                    sub.getClientId(), sub.getTopic(), qos, sub.isActive());
+                    sub.getClientId(), sub.getTopicFilter(), qos, sub.isActive());
             
             if (qos == AbstractMessage.QOSType.MOST_ONE && sub.isActive()) {
                 //QoS 0
