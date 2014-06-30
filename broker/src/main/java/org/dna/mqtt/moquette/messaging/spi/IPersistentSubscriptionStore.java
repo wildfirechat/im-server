@@ -35,5 +35,5 @@ public interface IPersistentSubscriptionStore {
      */
     void wipeSubscriptions(String sessionID);
 
-    List<Subscription> retrieveAllSubscriptions();
+    List<Subscription> listAllSubscriptions();
 }

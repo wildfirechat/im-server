@@ -203,7 +203,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private void processInit(Properties props) {
         m_storageService = new HawtDBStorageService();
         m_storageService.initStore();
-        List<Subscription> storedSubscriptions = m_storageService.retrieveAllSubscriptions();
+        List<Subscription> storedSubscriptions = m_storageService.listAllSubscriptions();
         subscriptions.init(storedSubscriptions);
         
         String passwdPath = props.getProperty("password_file");

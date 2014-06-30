@@ -63,7 +63,7 @@ public class HawtDBStorageServiceTest {
         m_storageService.addNewSubscription(overrindingSubscription, overrindingSubscription.getClientId());
         
         //Verify
-        List<Subscription> subscriptions = m_storageService.retrieveAllSubscriptions();
+        List<Subscription> subscriptions = m_storageService.listAllSubscriptions();
         assertEquals(1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());

@@ -264,7 +264,7 @@ public class HawtDBStorageService implements IStorageService {
         m_persistentSubscriptions.remove(clientID);
     }
 
-    public List<Subscription> retrieveAllSubscriptions() {
+    public List<Subscription> listAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions) {
             allSubscriptions.addAll(entry.getValue());
