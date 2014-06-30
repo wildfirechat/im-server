@@ -99,7 +99,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
     private SubscriptionsStore subscriptions;
-    private IMessagesStore m_storageService;
+    private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     //maps clientID to Will testament, if specified on CONNECT
@@ -125,7 +125,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         m_authenticator = authenticator;
-        m_storageService = storageService;
+        m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
         
         //init the output ringbuffer
@@ -230,7 +230,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private void republishStored(String clientID) {
         LOG.trace("republishStored invoked");
-        List<PublishEvent> publishedEvents = m_storageService.retrievePersistedPublishes(clientID);
+        List<PublishEvent> publishedEvents = m_messagesStore.retrievePersistedPublishes(clientID);
         if (publishedEvents == null) {
             LOG.info("No stored messages for client <{}>", clientID);
             return;
@@ -245,7 +245,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     void processPubAck(String clientID, int messageID) {
         //Remove the message from message store
-        m_storageService.cleanPersistedPublishMessage(clientID, messageID);
+        m_messagesStore.cleanPersistedPublishMessage(clientID, messageID);
     }
     
     private void cleanSession(String clientID) {
@@ -255,7 +255,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
-        m_storageService.cleanPersistedPublishes(clientID);
+        m_messagesStore.cleanPersistedPublishes(clientID);
     }
     
     protected void processPublish(PublishEvent evt) {
@@ -272,11 +272,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
             //store the temporary message
             publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
-            m_storageService.addInFlight(evt, publishKey);
+            m_messagesStore.addInFlight(evt, publishKey);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
             publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
             //store the message in temp store
-            m_storageService.persistQoS2Message(publishKey, evt);
+            m_messagesStore.persistQoS2Message(publishKey, evt);
             sendPubRec(evt.getClientID(), evt.getMessageID());
         }
 
@@ -289,13 +289,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             if (publishKey == null) {
                 throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + evt);
             }
-            m_storageService.cleanInFlight(publishKey);
+            m_messagesStore.cleanInFlight(publishKey);
             sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
             LOG.debug("replying with PubAck to MSG ID {}", evt.getMessageID());
         }
 
         if (retain) {
-            m_storageService.storeRetained(topic, message, qos);
+            m_messagesStore.storeRetained(topic, message, qos);
         }
     }
     
@@ -326,13 +326,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 if (!sub.isCleanSession() && !sub.isActive()) {
                     //clone the event with matching clientID
                     PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
-                    m_storageService.storePublishForFuture(newPublishEvt);
+                    m_messagesStore.storePublishForFuture(newPublishEvt);
                 } else  {
                     //if QoS 2 then store it in temp memory
                     if (qos ==AbstractMessage.QOSType.EXACTLY_ONCE) {
                         String publishKey = String.format("%s%d", sub.getClientId(), messageID);
                         PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
-                        m_storageService.addInFlight(newPublishEvt, publishKey);
+                        m_messagesStore.addInFlight(newPublishEvt, publishKey);
                     }
                     //publish
                     if (sub.isActive()) {
@@ -417,17 +417,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     void processPubRel(String clientID, int messageID) {
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         String publishKey = String.format("%s%d", clientID, messageID);
-        PublishEvent evt = m_storageService.retrieveQoS2Message(publishKey);
+        PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
 
         final String topic = evt.getTopic();
         final AbstractMessage.QOSType qos = evt.getQos();
 
         publish2Subscribers(topic, qos, evt.getMessage(), evt.isRetain(), evt.getMessageID());
 
-        m_storageService.removeQoS2Message(publishKey);
+        m_messagesStore.removeQoS2Message(publishKey);
 
         if (evt.isRetain()) {
-            m_storageService.storeRetained(topic, evt.getMessage(), qos);
+            m_messagesStore.storeRetained(topic, evt.getMessage(), qos);
         }
 
         sendPubComp(clientID, messageID);
@@ -457,7 +457,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         String publishKey = String.format("%s%d", clientID, messageID);
-        m_storageService.cleanInFlight(publishKey);
+        m_messagesStore.cleanInFlight(publishKey);
     }
     
     void processDisconnect(ServerChannel session, String clientID, boolean cleanSession) throws InterruptedException {
@@ -546,7 +546,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
-        Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+        Collection<HawtDBPersistentStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, topic);
             }
