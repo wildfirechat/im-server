@@ -41,7 +41,7 @@ public class Server {
         
         final Server server = new Server();
         server.startServer();
-        System.out.println("Server started, version 0.6-SNAPSHOT");
+        System.out.println("Server started, version 0.6");
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
