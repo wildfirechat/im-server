@@ -52,16 +52,39 @@ public class Server {
         
     }
     
+    /**
+     * Starts Moquette bringing the configuration from the file 
+     * located at config/moquette.conf
+     */
     public void startServer() throws IOException {
+        String configPath = System.getProperty("moquette.path", null);
+        startServer(new File(configPath, "config/moquette.conf"));
+    }
+
+    /**
+     * Starts Moquette bringing the configuration from the given file
+     */
+    public void startServer(File configFile) throws IOException {
         ConfigurationParser confParser = new ConfigurationParser();
         try {
-            String configPath = System.getProperty("moquette.path", null);
-            confParser.parse(new File(configPath, "config/moquette.conf"));
+            confParser.parse(configFile);
         } catch (ParseException pex) {
             LOG.warn("An error occured in parsing configuration, fallback on default configuration", pex);
         }
         Properties configProps = confParser.getProperties();
-        
+        startServer(configProps);
+    }
+    
+    /**
+     * Starts the server with the given properties.
+     * 
+     * Its need at least the following properties:
+     * <ul>
+     *  <li>port</li>
+     *  <li>password_file</li>
+     * </ul>
+     */
+    public void startServer(Properties configProps) throws IOException {
         messaging = SimpleMessaging.getInstance();
         messaging.init(configProps);
         
