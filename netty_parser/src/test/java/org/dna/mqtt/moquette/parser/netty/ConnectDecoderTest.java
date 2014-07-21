@@ -18,9 +18,14 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeMap;
+import io.netty.util.DefaultAttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1;
+import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1_1;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import static org.junit.Assert.assertEquals;
@@ -35,10 +40,12 @@ public class ConnectDecoderTest {
     
     ByteBuf m_buff;
     ConnectDecoder m_msgdec;
+    AttributeMap attrMap;
     
     @Before
     public void setUp() {
         m_msgdec = new ConnectDecoder();
+        attrMap = new DefaultAttributeMap();
     }
     
     @Test
@@ -48,11 +55,57 @@ public class ConnectDecoderTest {
         List<Object> results = new ArrayList<Object >();
         
         //Excercise
-        m_msgdec.decode(null, m_buff, results);
+        m_msgdec.decode(this.attrMap, m_buff, results);
         
         //Verify
         assertFalse(results.isEmpty());
         verifyBaseHeader((ConnectMessage)results.get(0));
+    }
+    
+    @Test
+    public void testBaseHeader_311() throws UnsupportedEncodingException {
+        m_buff = Unpooled.buffer(12);
+        initBaseHeader311(m_buff);
+        List<Object> results = new ArrayList<Object>();
+        
+        //Excercise
+        m_msgdec.decode(this.attrMap, m_buff, results);
+        
+        //Verify
+        assertFalse(results.isEmpty());
+        verifyBaseHeader311((ConnectMessage)results.get(0));
+        Attribute<Integer> attr = this.attrMap.attr(MQTTDecoder.PROTOCOL_VERSION);
+        assertEquals(VERSION_3_1_1, attr.get().intValue());
+    }
+    
+    @Test(expected = CorruptedFrameException.class)
+    public void testBaseHeader_311_withFlagsTouched() throws UnsupportedEncodingException {
+        m_buff = Unpooled.buffer(12);
+        initBaseHeader311_withFixedFlags(m_buff, (byte) 0x01);
+        List<Object> results = new ArrayList<Object>();
+        
+        //Excercise
+        m_msgdec.decode(this.attrMap, m_buff, results);
+        
+        //Verify
+        assertFalse(results.isEmpty());
+        verifyBaseHeader311((ConnectMessage)results.get(0));
+        Attribute<Integer> attr = this.attrMap.attr(MQTTDecoder.PROTOCOL_VERSION);
+        assertEquals(VERSION_3_1_1, attr.get().intValue());
+    }
+    
+    @Test(expected = CorruptedFrameException.class)
+    public void testDoubleConnectInTheSameSession() throws Exception {
+        //setup the connection session as already connected
+        Attribute<Boolean> connectAttr = this.attrMap.attr(ConnectDecoder.CONNECT_STATUS);
+        connectAttr.set(true);
+        
+        m_buff = Unpooled.buffer(12);
+        initBaseHeader311(m_buff);
+        List<Object> results = new ArrayList<Object>();
+        
+        //Excercise
+        m_msgdec.decode(this.attrMap, m_buff, results);
     }
     
     @Test
@@ -65,7 +118,7 @@ public class ConnectDecoderTest {
         List<Object> results = new ArrayList<Object >();
         
         //Excercise
-        m_msgdec.decode(null, m_buff, results);
+        m_msgdec.decode(this.attrMap, m_buff, results);
         
         //Verify
         assertFalse(results.isEmpty());
@@ -89,7 +142,7 @@ public class ConnectDecoderTest {
         List<Object> results = new ArrayList<Object >();
         
         //Excercise
-        m_msgdec.decode(null, m_buff, results);
+        m_msgdec.decode(this.attrMap, m_buff, results);
         
         //Verify
         assertFalse(results.isEmpty());
@@ -104,21 +157,21 @@ public class ConnectDecoderTest {
     }
     
     @Test(expected = CorruptedFrameException.class)
-    public void testBadFlagUserPwd() throws UnsupportedEncodingException, Exception {
+    public void testBadFlagUserPwd() throws Exception {
         m_buff = Unpooled.buffer(14);
         m_buff.writeByte((AbstractMessage.CONNECT << 4)).writeByte(12);
         //Proto name
         encodeString(m_buff, "MQIsdp");
         //version
-        m_buff.writeByte(3);
+        m_buff.writeByte(VERSION_3_1);
         //conn flags
         m_buff.writeByte(0x4E); //sets user to false and password to true
         //keepAlive
         m_buff.writeByte(0).writeByte(0x0A);
-        List<Object> results = new ArrayList<Object >();
+        List<Object> results = new ArrayList<Object>();
         
         //Excercise
-        m_msgdec.decode(null, m_buff, results);
+        m_msgdec.decode(this.attrMap, m_buff, results);
     }
     
     
@@ -138,6 +191,22 @@ public class ConnectDecoderTest {
         buff.writeBytes(new byte[]{(byte)0, (byte) 0x0A});
     }
     
+    private void initBaseHeader311(ByteBuf buff) throws UnsupportedEncodingException {
+        initBaseHeader311_withFixedFlags(buff, (byte) 0);
+    }
+    
+    private void initBaseHeader311_withFixedFlags(ByteBuf buff, byte fixedFlags) throws UnsupportedEncodingException {
+        buff.clear().writeByte((byte)(AbstractMessage.CONNECT << 4) | fixedFlags).writeByte((byte)0x0A);
+        //Proto name
+        encodeString(buff, "MQTT");
+        //version
+        buff.writeByte(VERSION_3_1_1);
+        //conn flags
+        buff.writeByte(0xCE);
+        //keepAlive
+        buff.writeBytes(new byte[]{(byte)0, (byte) 0x0A});
+    }
+    
     /**
      * Encode and insert the given string into the given buff
      */
@@ -149,7 +218,20 @@ public class ConnectDecoderTest {
     private void verifyBaseHeader(ConnectMessage connMessage) {
         assertNotNull(connMessage);
         assertEquals("MQIsdp", connMessage.getProtocolName());
-        assertEquals(3, connMessage.getProcotolVersion());
+        assertEquals(VERSION_3_1, connMessage.getProcotolVersion());
+        assertTrue(connMessage.isUserFlag());
+        assertTrue(connMessage.isPasswordFlag());
+        assertTrue(connMessage.isCleanSession());
+        assertEquals(10, connMessage.getKeepAlive());
+        assertTrue(connMessage.isWillFlag());
+        assertFalse(connMessage.isWillRetain());
+        assertEquals(1, connMessage.getWillQos());
+    }
+    
+    private void verifyBaseHeader311(ConnectMessage connMessage) {
+        assertNotNull(connMessage);
+        assertEquals("MQTT", connMessage.getProtocolName());
+        assertEquals(VERSION_3_1_1, connMessage.getProcotolVersion());
         assertTrue(connMessage.isUserFlag());
         assertTrue(connMessage.isPasswordFlag());
         assertTrue(connMessage.isCleanSession());

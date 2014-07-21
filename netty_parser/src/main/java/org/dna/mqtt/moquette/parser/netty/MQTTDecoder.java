@@ -19,6 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,10 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
  */
 public class MQTTDecoder extends ByteToMessageDecoder {
     
-    private Map<Byte, DemuxDecoder> m_decoderMap = new HashMap<Byte, DemuxDecoder>();
+    //3 = 3.1, 4 = 3.1.1
+    static final AttributeKey<Integer> PROTOCOL_VERSION = new AttributeKey<Integer>("version");
+    
+    private final Map<Byte, DemuxDecoder> m_decoderMap = new HashMap<Byte, DemuxDecoder>();
     
     public MQTTDecoder() {
        m_decoderMap.put(AbstractMessage.CONNECT, new ConnectDecoder());
