@@ -120,6 +120,12 @@ public class ConnectDecoder extends DemuxDecoder {
 
         //Connection flag
         byte connFlags = in.readByte();
+        if (message.getProcotolVersion() == VERSION_3_1_1) { 
+            if ((connFlags & 0x01) != 0) { //bit(0) of connection flags is != 0
+                throw new CorruptedFrameException("Received a CONNECT with connectionFlags[0(bit)] != 0");
+            }
+        }
+        
         boolean cleanSession = ((connFlags & 0x02) >> 1) == 1 ? true : false;
         boolean willFlag = ((connFlags & 0x04) >> 2) == 1 ? true : false;
         byte willQos = (byte) ((connFlags & 0x18) >> 3);

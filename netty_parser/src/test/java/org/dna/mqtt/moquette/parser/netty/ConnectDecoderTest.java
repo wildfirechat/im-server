@@ -108,6 +108,22 @@ public class ConnectDecoderTest {
         m_msgdec.decode(this.attrMap, m_buff, results);
     }
     
+    @Test(expected = CorruptedFrameException.class)
+    public void testConnectFlags_311_withNot0Reserved() throws UnsupportedEncodingException {
+        m_buff = Unpooled.buffer(12);
+        initBaseHeader311_withFixedFlags(m_buff, (byte) 0, (byte) 0xCF); // sets the bit(0) = 1
+        List<Object> results = new ArrayList<Object>();
+        
+        //Excercise
+        m_msgdec.decode(this.attrMap, m_buff, results);
+        
+        //Verify
+        assertFalse(results.isEmpty());
+        verifyBaseHeader311((ConnectMessage)results.get(0));
+        Attribute<Integer> attr = this.attrMap.attr(MQTTDecoder.PROTOCOL_VERSION);
+        assertEquals(VERSION_3_1_1, attr.get().intValue());
+    }
+    
     @Test
     public void testBaseHeader_ClientID() throws UnsupportedEncodingException, Exception {
         m_buff = Unpooled.buffer(40);
@@ -196,13 +212,17 @@ public class ConnectDecoderTest {
     }
     
     private void initBaseHeader311_withFixedFlags(ByteBuf buff, byte fixedFlags) throws UnsupportedEncodingException {
+        initBaseHeader311_withFixedFlags(buff, fixedFlags, (byte) 0xCE);
+    }
+    
+    private void initBaseHeader311_withFixedFlags(ByteBuf buff, byte fixedFlags, byte connectFlags) throws UnsupportedEncodingException {
         buff.clear().writeByte((byte)(AbstractMessage.CONNECT << 4) | fixedFlags).writeByte((byte)0x0A);
         //Proto name
         encodeString(buff, "MQTT");
         //version
         buff.writeByte(VERSION_3_1_1);
         //conn flags
-        buff.writeByte(0xCE);
+        buff.writeByte(connectFlags);
         //keepAlive
         buff.writeBytes(new byte[]{(byte)0, (byte) 0x0A});
     }
