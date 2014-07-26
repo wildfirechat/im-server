@@ -27,20 +27,22 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
-import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.MessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.OutputMessagingEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PubAckEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
-import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
+import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1;
+import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1_1;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
@@ -142,7 +144,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     void processConnect(ServerChannel session, ConnectMessage msg) {
         LOG.debug("processConnect for client {}", msg.getClientID());
-        if (msg.getProcotolVersion() != 0x03) {
+        if (msg.getProcotolVersion() != VERSION_3_1 && msg.getProcotolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
             LOG.warn("processConnect sent bad proto ConnAck");
@@ -151,7 +153,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             return;
         }
 
-        if (msg.getClientID() == null || msg.getClientID().length() > 23) {
+        if (msg.getClientID() == null || msg.getClientID().length() > 23 || msg.getClientID().length() == 0) {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             session.write(okResp);

@@ -153,8 +153,8 @@ public class ConnectDecoder extends DemuxDecoder {
         int keepAlive = in.readUnsignedShort();
         message.setKeepAlive(keepAlive);
 
-        if ((remainingLength == 12 && message.getProcotolVersion() == 3) || 
-            (remainingLength == 10 && message.getProcotolVersion() == 4)) {
+        if ((remainingLength == 12 && message.getProcotolVersion() == VERSION_3_1) || 
+            (remainingLength == 10 && message.getProcotolVersion() == VERSION_3_1_1)) {
             out.add(message);
             return;
         }

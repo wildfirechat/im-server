@@ -24,6 +24,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import java.util.concurrent.Callable;
 import org.dna.mqtt.commons.Constants;
 import org.dna.mqtt.moquette.parser.netty.MQTTDecoder;
 import org.dna.mqtt.moquette.parser.netty.MQTTEncoder;
@@ -38,6 +39,10 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class Client {
+    
+    public static interface ICallback {
+        void call(AbstractMessage msg);
+    }
     
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
     final ClientNettyMQTTHandler handler = new ClientNettyMQTTHandler();
@@ -78,12 +83,20 @@ public class Client {
         }
     }
     
+    ICallback callback;
+    public void setCallback(ICallback callback) {
+        this.callback = callback;
+    }
+    
     public void sendMessage(AbstractMessage msg) {
         m_channel.writeAndFlush(msg);
     }
 
     void messageReceived(AbstractMessage msg) {
         LOG.info("Received message " + msg);
+        if (this.callback != null) {
+            this.callback.call(msg);
+        }
     }
     
     void setConnectionLost(boolean status) {

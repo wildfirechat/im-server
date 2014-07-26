@@ -17,8 +17,11 @@ package org.dna.mqtt.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.testclient.Client;
 import org.fusesource.mqtt.client.BlockingConnection;
@@ -27,9 +30,9 @@ import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.QoS;
 import org.fusesource.mqtt.client.Topic;
 import org.junit.After;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,4 +124,37 @@ public class ServerLowlevelMessagesIntegrationTests {
         assertEquals(willTestamentMsg, new String(msg.getPayload()));
         willSubscriber.disconnect();
     }
+    
+    AbstractMessage receivedMsg;
+    
+    @Test
+    public void checkRejectConnectWithEmptyClientID() throws InterruptedException {
+        LOG.info("*** checkRejectConnectWithEmptyClientID ***");
+        final CountDownLatch latch = new CountDownLatch(1);
+        m_client.setCallback(new Client.ICallback() {
+
+            public void call(AbstractMessage msg) {
+                receivedMsg = msg;
+                latch.countDown();
+            }
+        });
+        
+        int keepAlive = 2; //secs
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setProcotolVersion((byte) 4);
+        connectMessage.setClientID("");
+        connectMessage.setKeepAlive(keepAlive);
+        connectMessage.setWillFlag(false);
+        connectMessage.setWillQos((byte) QOSType.MOST_ONE.ordinal());
+        
+        //Execute
+        m_client.sendMessage(connectMessage);
+        
+        latch.await(200, TimeUnit.MILLISECONDS);
+        
+        assertTrue(receivedMsg instanceof ConnAckMessage);
+        ConnAckMessage connAck = (ConnAckMessage) receivedMsg;
+        assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, connAck.getReturnCode());
+    }
+    
 }

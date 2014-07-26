@@ -89,7 +89,7 @@ public class ServerIntegrationPahoTest {
 
         assertEquals("/topic", m_callback.getTopic());
     }
-
+    
 
     @Test
     public void testCleanSession_maintainClientSubscriptions() throws Exception {
