@@ -39,6 +39,13 @@ public class Subscription implements Serializable {
         this.topicFilter = topicFilter;
         this.cleanSession = cleanSession;
     }
+    
+    /**
+     * Factory method for empty subscriptions
+     */
+    public static final Subscription createEmptySubscription(String clientId, boolean cleanSession) {
+        return new Subscription(clientId, "", QOSType.MOST_ONE, cleanSession);
+    }
 
     public String getClientId() {
         return clientId;

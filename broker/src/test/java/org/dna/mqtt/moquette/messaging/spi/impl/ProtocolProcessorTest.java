@@ -23,23 +23,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1_1;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -97,7 +99,9 @@ public class ProtocolProcessorTest {
         }
     } 
     
-    
+    /**
+     * This a synchronous channel that avoid output ring buffer from Processor
+     */
     class MockReceiverChannel implements ServerChannel {
 //        byte m_returnCode;
         AbstractMessage m_receivedMessage;
@@ -246,6 +250,31 @@ public class ProtocolProcessorTest {
         assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
     }
     
+    
+    @Test
+    public void testConnAckContainsSessionPresentFlag() throws InterruptedException {
+        connMsg = new ConnectMessage();
+        connMsg.setProcotolVersion(VERSION_3_1_1);
+        connMsg.setClientID("CliID");
+        connMsg.setCleanSession(false);
+
+        //Connect a first time
+        m_processor.processConnect(m_session, connMsg);
+        //disconnect
+        m_processor.processDisconnect(m_session, "CliID", false);
+              
+        //Exercise, reconnect
+        MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
+        m_processor.processConnect(firstReceiverSession, connMsg);
+
+        //Verify
+        AbstractMessage recvMsg = firstReceiverSession.getMessage();
+        
+        assertTrue(recvMsg instanceof ConnAckMessage);
+        ConnAckMessage connAckMsg = (ConnAckMessage) recvMsg;
+        assertTrue(connAckMsg.isSessionPresent());
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, connAckMsg.getReturnCode());
+    }
     
     @Test
     public void testPublish() throws InterruptedException {

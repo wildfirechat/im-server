@@ -134,6 +134,11 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     public void wipeSubscriptions(String clientID) {
         m_persistentSubscriptions.remove(clientID);
     }
+    
+    @Override
+    public boolean contains(String clientID) {
+        return m_persistentSubscriptions.containsKey(clientID);
+    }
 
     public List<Subscription> listAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();

@@ -30,7 +30,7 @@ class ConnAckEncoder extends DemuxEncoder<ConnAckMessage>{
     protected void encode(ChannelHandlerContext chc, ConnAckMessage message, ByteBuf out) {
         out.writeByte(AbstractMessage.CONNACK << 4);
         out.writeBytes(Utils.encodeRemainingLength(2));
-        out.writeByte(0);
+        out.writeByte(message.isSessionPresent() ? 0x01 : 0x00);
         out.writeByte(message.getReturnCode());
     }
     

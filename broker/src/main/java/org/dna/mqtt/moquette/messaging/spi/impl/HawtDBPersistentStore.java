@@ -273,6 +273,11 @@ public class HawtDBPersistentStore implements IMessagesStore, ISessionsStore {
         LOG.debug("retrieveAllSubscriptions returning subs {}", allSubscriptions);
         return allSubscriptions;
     }
+    
+    @Override
+    public boolean contains(String clientID) {
+        return m_persistentSubscriptions.containsKey(clientID);
+    }
 
     public void close() {
         LOG.debug("closing disk storage");

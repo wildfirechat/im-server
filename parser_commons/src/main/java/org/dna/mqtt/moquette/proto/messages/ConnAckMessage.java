@@ -29,6 +29,7 @@ public class ConnAckMessage extends AbstractMessage {
     public static final byte NOT_AUTHORIZED = 0x05;
     
     private byte m_returnCode;
+    private boolean sessionPresent;
     
     public ConnAckMessage() {
         m_messageType = AbstractMessage.CONNACK;
@@ -41,5 +42,12 @@ public class ConnAckMessage extends AbstractMessage {
     public void setReturnCode(byte returnCode) {
         this.m_returnCode = returnCode;
     }
-    
+
+    public boolean isSessionPresent() {
+        return this.sessionPresent;
+    }
+
+    public void setSessionPresent(boolean present) {
+        this.sessionPresent = present;
+    }
 }

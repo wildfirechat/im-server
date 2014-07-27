@@ -36,4 +36,9 @@ public interface ISessionsStore {
     void wipeSubscriptions(String sessionID);
 
     List<Subscription> listAllSubscriptions();
+
+    /**
+     * @return true iff there are subscriptions persisted with clientID
+     */
+    boolean contains(String clientID);
 }
