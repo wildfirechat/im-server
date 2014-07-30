@@ -18,6 +18,8 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.slf4j.LoggerFactory;
@@ -173,5 +175,14 @@ public class Utils {
         
         flags |= ((message.getQos().ordinal() & 0x03) << 1);
         return flags;
+    }
+    
+    static boolean isMQTT3_1_1(AttributeMap attrsMap) {
+        Attribute<Integer> versionAttr = attrsMap.attr(MQTTDecoder.PROTOCOL_VERSION);
+        Integer protocolVersion = versionAttr.get();
+        if (protocolVersion == null) {
+            return true;
+        } 
+        return protocolVersion == VERSION_3_1_1;
     }
 }

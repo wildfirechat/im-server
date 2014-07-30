@@ -303,7 +303,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
 
         if (retain) {
-            m_messagesStore.storeRetained(topic, message, qos);
+            if (qos == AbstractMessage.QOSType.MOST_ONE) {
+                //QoS == 0 && retain => clean old retained 
+                m_messagesStore.cleanRetained(topic);
+            } else {
+                m_messagesStore.storeRetained(topic, message, qos);
+            }
         }
     }
     
@@ -408,7 +413,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             }
             LOG.debug("clientIDs are {}", m_clientIDs);
             if (m_clientIDs.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDEwcriptor for client %s in cache %s", clientId, m_clientIDs));
+                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
 //            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
 //            m_clientIDs.get(clientId).getSession().write(pubAckMessage);

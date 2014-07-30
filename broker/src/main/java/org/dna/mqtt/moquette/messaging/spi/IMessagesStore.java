@@ -68,4 +68,6 @@ public interface IMessagesStore {
     void removeQoS2Message(String publishKey);
 
     PublishEvent retrieveQoS2Message(String publishKey);
+
+    void cleanRetained(String topic);
 }

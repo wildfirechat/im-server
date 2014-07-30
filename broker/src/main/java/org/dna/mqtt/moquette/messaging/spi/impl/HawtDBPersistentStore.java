@@ -151,6 +151,11 @@ public class HawtDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
+    public void cleanRetained(String topic) {
+        m_retainedStore.remove(topic);
+    }
+    
+    @Override
     public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
         if (!message.hasRemaining()) {
             //clean the message from topic

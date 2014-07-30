@@ -47,9 +47,14 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemoryStorageService.class);
     
     public void initStore() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
-
+    
+    @Override
+    public void cleanRetained(String topic) {
+        m_retainedStore.remove(topic);
+    }
+    
+    @Override
     public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
         if (!message.hasRemaining()) {
             //clean the message from topic
@@ -62,6 +67,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         }
     }
 
+    @Override
     public Collection<HawtDBPersistentStore.StoredMessage> searchMatching(IMatchingCondition condition) {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
@@ -77,6 +83,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         return results;
     }
 
+    @Override
     public void storePublishForFuture(PublishEvent evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
         List<PublishEvent> storedEvents;
@@ -95,6 +102,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         return m_persistentMessageStore.get(clientID);
     }
     
+    @Override
     public void cleanPersistedPublishMessage(String clientID, int messageID) {
         List<PublishEvent> events = m_persistentMessageStore.get(clientID);
         PublishEvent toRemoveEvt = null;
@@ -107,18 +115,22 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         m_persistentMessageStore.put(clientID, events);
     }
 
+    @Override
     public void cleanPersistedPublishes(String clientID) {
         m_persistentMessageStore.remove(clientID);
     }
 
+    @Override
     public void cleanInFlight(String msgID) {
         m_inflightStore.remove(msgID);
     }
 
+    @Override
     public void addInFlight(PublishEvent evt, String publishKey) {
         m_inflightStore.put(publishKey, evt);
     }
 
+    @Override
     public void addNewSubscription(Subscription newSubscription, String clientID) {
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
@@ -131,6 +143,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         }
     }
 
+    @Override
     public void wipeSubscriptions(String clientID) {
         m_persistentSubscriptions.remove(clientID);
     }
@@ -140,6 +153,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         return m_persistentSubscriptions.containsKey(clientID);
     }
 
+    @Override
     public List<Subscription> listAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
@@ -148,19 +162,23 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         return allSubscriptions;
     }
 
+    @Override
     public void close() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
         LOG.debug("persistQoS2Message store pubKey {}, evt {}", publishKey, evt);
         m_qos2Store.put(publishKey, evt);
     }
 
+    @Override
     public void removeQoS2Message(String publishKey) {
         m_qos2Store.remove(publishKey);
     }
 
+    @Override
     public PublishEvent retrieveQoS2Message(String publishKey) {
         return m_qos2Store.get(publishKey);
     }

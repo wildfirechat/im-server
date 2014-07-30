@@ -18,6 +18,8 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.AttributeMap;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
@@ -34,6 +36,11 @@ class PublishDecoder extends DemuxDecoder {
 
     @Override
     void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        decode((AttributeMap)ctx, in, out);
+    }
+    
+//    @Override
+    void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         LOG.info("decode invoked with buffer {}", in);
         in.resetReaderIndex();
         int startPos = in.readerIndex();
@@ -45,6 +52,18 @@ class PublishDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
+        
+        if (Utils.isMQTT3_1_1(ctx)) {
+            if (message.getQos() == AbstractMessage.QOSType.MOST_ONE && message.isDupFlag()) {
+                //bad protocol, if QoS=0 => DUP = 0
+                throw new CorruptedFrameException("Received a PUBLISH with QoS=0 & DUP = 1, MQTT 3.1.1 violation");
+            }
+            
+            if (message.getQos() == AbstractMessage.QOSType.RESERVED) {
+                throw new CorruptedFrameException("Received a PUBLISH with QoS flags setted 10 b11, MQTT 3.1.1 violation");
+            }
+        }
+        
         int remainingLength = message.getRemainingLength();
         
         //Topic name
@@ -53,6 +72,10 @@ class PublishDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
+        if (topic.contains("+") || topic.contains("#")) {
+            throw new CorruptedFrameException("Received a PUBLISH with topic containting wild card chars, topic: " + topic);
+        }
+        
         message.setTopicName(topic);
         
         if (message.getQos() == AbstractMessage.QOSType.LEAST_ONE || 

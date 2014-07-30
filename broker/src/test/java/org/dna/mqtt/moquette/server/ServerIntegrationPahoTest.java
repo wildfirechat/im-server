@@ -172,7 +172,7 @@ public class ServerIntegrationPahoTest {
     public void testRetain_maintainMessage_againstClientDestruction() throws Exception {
         LOG.info("*** testRetain_maintainMessage_againstClientDestruction ***");
         m_client.connect();
-        m_client.publish("/topic", "Test my payload".getBytes(), 0, true);
+        m_client.publish("/topic", "Test my payload".getBytes(), 1, true);
 
         m_client.disconnect();
 

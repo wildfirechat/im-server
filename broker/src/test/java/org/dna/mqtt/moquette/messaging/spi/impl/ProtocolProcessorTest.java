@@ -17,12 +17,14 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
@@ -41,6 +43,7 @@ import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.internal.runners.model.MultipleFailureException.assertEmpty;
 import static org.mockito.Mockito.*;
 
 /**
@@ -505,5 +508,32 @@ public class ProtocolProcessorTest {
 
         //Verify no message is received
         assertNull(m_receivedMessage); 
+    }
+    
+    
+    /**
+     * Verify that receiving a publish with retained message and with Q0S = 0 
+     * clean the existing retained messages for that topic.
+     */
+    @Test
+    public void testCleanRetainedStoreAfterAQoS0AndRetainedTrue() {
+        //prepare and existing retained store
+        ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
+        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.LEAST_ONE, payload, true, "Publisher");
+        m_processor.processPublish(pubEvt);
+        
+        //Exercise
+        PublishEvent cleanPubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, payload, true, "Publisher");
+        m_processor.processPublish(cleanPubEvt);
+        
+        //Verify
+//        List<PublishEvent> retainedPublishes = m_storageService.retrievePersistedPublishes("Publisher");
+        
+        Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+            public boolean match(String key) {
+                return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
+            }
+        });
+        assertTrue(messages.isEmpty());
     }
 }
