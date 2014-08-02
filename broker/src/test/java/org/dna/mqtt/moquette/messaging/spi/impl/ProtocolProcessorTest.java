@@ -517,6 +517,9 @@ public class ProtocolProcessorTest {
      */
     @Test
     public void testCleanRetainedStoreAfterAQoS0AndRetainedTrue() {
+        //force a connect
+        connMsg.setClientID("Publisher");
+        m_processor.processConnect(m_session, connMsg);
         //prepare and existing retained store
         ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.LEAST_ONE, payload, true, "Publisher");
@@ -527,8 +530,6 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(cleanPubEvt);
         
         //Verify
-//        List<PublishEvent> retainedPublishes = m_storageService.retrievePersistedPublishes("Publisher");
-        
         Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
