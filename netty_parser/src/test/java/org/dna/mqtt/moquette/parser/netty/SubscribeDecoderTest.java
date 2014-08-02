@@ -67,6 +67,37 @@ public class SubscribeDecoderTest {
         assertEquals(AbstractMessage.SUBSCRIBE, message.getMessageType());
     }
     
+    @Test(expected = CorruptedFrameException.class)
+    public void testFailOnEmptyTopic() throws Exception {
+        m_buff = Unpooled.buffer(4);
+        initMultiTopic(m_buff, 123);
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, m_results);
+
+        //Verify
+        assertFalse(m_results.isEmpty());
+        SubscribeMessage message = (SubscribeMessage)m_results.get(0); 
+        assertEquals(2, message.subscriptions().size());
+        assertEquals(AbstractMessage.SUBSCRIBE, message.getMessageType());
+    }
+    
+    @Test(expected = CorruptedFrameException.class)
+    public void testFailOnSubscriptionWithReservedQosPolluted() throws Exception {
+        m_buff = Unpooled.buffer(4);
+        SubscribeMessage.Couple c1 = new SubscribeMessage.Couple((byte)2, "a/b");
+        initPollutedTopic(m_buff, 123, c1);
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, m_results);
+
+        //Verify
+        assertFalse(m_results.isEmpty());
+        SubscribeMessage message = (SubscribeMessage)m_results.get(0); 
+        assertEquals(2, message.subscriptions().size());
+        assertEquals(AbstractMessage.SUBSCRIBE, message.getMessageType());
+    }
+    
     private void initHeaderBadQos(ByteBuf buff) {
         buff.clear().writeByte(AbstractMessage.SUBSCRIBE << 4).writeByte(0);
     }
@@ -78,6 +109,17 @@ public class SubscribeDecoderTest {
             topicBuffer.writeBytes(Utils.encodeString(couple.getTopic()));
             topicBuffer.writeByte(couple.getQos());
         }
+        
+        buff.clear().writeByte(AbstractMessage.SUBSCRIBE << 4 | (byte)0x02)
+                .writeBytes(Utils.encodeRemainingLength(topicBuffer.readableBytes()));
+        buff.writeBytes(topicBuffer);
+    }
+    
+    private void initPollutedTopic(ByteBuf buff, int messageID, SubscribeMessage.Couple topic) throws IllegalAccessException {
+        ByteBuf topicBuffer = Unpooled.buffer(4);
+        topicBuffer.writeShort(messageID);
+        topicBuffer.writeBytes(Utils.encodeString(topic.getTopic()));
+        topicBuffer.writeByte(0xF0 | topic.getQos());
         
         buff.clear().writeByte(AbstractMessage.SUBSCRIBE << 4 | (byte)0x02)
                 .writeBytes(Utils.encodeRemainingLength(topicBuffer.readableBytes()));
