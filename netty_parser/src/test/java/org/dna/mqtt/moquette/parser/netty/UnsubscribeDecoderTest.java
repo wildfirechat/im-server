@@ -72,6 +72,15 @@ public class UnsubscribeDecoderTest {
     }
     
     
+    @Test(expected = CorruptedFrameException.class)
+    public void testFailOnEmptyTopic() throws Exception {
+        m_buff = Unpooled.buffer(4);
+        initMultiTopic(m_buff, 123);
+        
+        //Excercise
+        m_msgdec.decode(null, m_buff, m_results);
+    }
+    
     @Test
     public void testDecodeSingleTopic_bug() throws Exception {
         //A2 0C 00 01 00 06 2F 74 6F 70 69 63 //12 byte

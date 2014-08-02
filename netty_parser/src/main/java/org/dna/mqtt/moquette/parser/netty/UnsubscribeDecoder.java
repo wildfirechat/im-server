@@ -51,7 +51,9 @@ class UnsubscribeDecoder extends DemuxDecoder {
             message.addTopic(Utils.decodeString(in));
             readed = in.readerIndex()- start;
         }
-        
+        if (message.topics().isEmpty()) {
+            throw new CorruptedFrameException("unsubscribe MUST have got at least 1 topic");
+        }
         out.add(message);
     }
     
