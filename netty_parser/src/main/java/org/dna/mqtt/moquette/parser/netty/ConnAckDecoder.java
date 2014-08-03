@@ -16,7 +16,7 @@ class ConnAckDecoder extends DemuxDecoder {
         in.resetReaderIndex();
         //Common decoding part
         ConnAckMessage message = new ConnAckMessage();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x00, in)) {
             in.resetReaderIndex();
             return;
         }

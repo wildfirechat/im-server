@@ -31,7 +31,7 @@ class DisconnectDecoder extends DemuxDecoder {
         //Common decoding part
         in.resetReaderIndex();
         DisconnectMessage message = new DisconnectMessage();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x00, in)) {
             in.resetReaderIndex();
             return;
         }

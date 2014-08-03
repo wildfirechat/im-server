@@ -33,7 +33,7 @@ class UnsubscribeDecoder extends DemuxDecoder {
         //Common decoding part
         in.resetReaderIndex();
         UnsubscribeMessage message = new UnsubscribeMessage();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x02, in)) {
             in.resetReaderIndex();
             return;
         }

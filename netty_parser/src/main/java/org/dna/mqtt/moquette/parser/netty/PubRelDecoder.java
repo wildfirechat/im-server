@@ -17,7 +17,6 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;

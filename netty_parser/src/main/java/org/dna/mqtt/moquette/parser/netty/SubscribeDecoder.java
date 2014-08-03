@@ -34,11 +34,10 @@ class SubscribeDecoder extends DemuxDecoder {
         //Common decoding part
         SubscribeMessage message = new SubscribeMessage();
         in.resetReaderIndex();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x02, in)) {
             in.resetReaderIndex();
             return;
         }
-        //TODO check reserved fixed flags = b0010
         
         //check qos level
         if (message.getQos() != QOSType.LEAST_ONE) {

@@ -31,7 +31,7 @@ class PingReqDecoder extends DemuxDecoder {
         //Common decoding part
         in.resetReaderIndex();
         PingReqMessage message = new PingReqMessage();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x00, in)) {
             in.resetReaderIndex();
             return;
         }
