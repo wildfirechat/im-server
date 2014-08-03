@@ -35,11 +35,6 @@ class PublishDecoder extends DemuxDecoder {
     private static Logger LOG = LoggerFactory.getLogger(PublishDecoder.class);
 
     @Override
-    void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        decode((AttributeMap)ctx, in, out);
-    }
-    
-//    @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         LOG.info("decode invoked with buffer {}", in);
         in.resetReaderIndex();

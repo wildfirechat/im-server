@@ -16,7 +16,7 @@
 package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AttributeMap;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
@@ -28,7 +28,7 @@ import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 class SubAckDecoder extends DemuxDecoder {
 
     @Override
-    void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
         //Common decoding part
         in.resetReaderIndex();
         SubAckMessage message = new SubAckMessage();

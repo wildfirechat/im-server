@@ -16,8 +16,8 @@
 package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.util.AttributeMap;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 
@@ -26,7 +26,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
  * @author andrea
  */
 abstract class DemuxDecoder {
-    abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
+    abstract void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception;
     
     /**
      * Decodes the first 2 bytes of the MQTT packet.

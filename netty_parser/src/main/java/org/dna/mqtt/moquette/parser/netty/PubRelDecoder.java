@@ -16,7 +16,6 @@
 package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -30,11 +29,6 @@ import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 class PubRelDecoder extends DemuxDecoder {
     
     @Override
-    void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
-        decode((AttributeMap)ctx, in, out);
-    }
-
-//    @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
         in.resetReaderIndex();
         //Common decoding part

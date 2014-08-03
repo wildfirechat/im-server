@@ -37,11 +37,6 @@ public class ConnectDecoder extends DemuxDecoder {
     static final AttributeKey<Boolean> CONNECT_STATUS = new AttributeKey<Boolean>("connected");
     
     @Override
-    void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
-        decode((AttributeMap)ctx, in, out);
-    }
-
-//    @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
         in.resetReaderIndex();
         //Common decoding part
