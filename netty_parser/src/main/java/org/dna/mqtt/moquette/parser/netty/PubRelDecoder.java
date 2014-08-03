@@ -21,7 +21,6 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
 
@@ -41,14 +40,9 @@ class PubRelDecoder extends DemuxDecoder {
         in.resetReaderIndex();
         //Common decoding part
         MessageIDMessage message = new PubRelMessage();
-        if (!decodeCommonHeader(message, in)) {
+        if (!decodeCommonHeader(message, 0x02, in)) {
             in.resetReaderIndex();
             return;
-        }
-        
-        //if 3.1.1, check the flags (dup, retain and qos == 0)
-        if (message.isDupFlag() || message.isRetainFlag() || message.getQos() != AbstractMessage.QOSType.LEAST_ONE) {
-            throw new CorruptedFrameException("Received a PURREL with fixed header flags != b0010");
         }
         
         //read  messageIDs
