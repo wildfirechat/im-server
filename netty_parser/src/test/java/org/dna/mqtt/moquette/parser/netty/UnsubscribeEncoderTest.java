@@ -50,7 +50,7 @@ public class UnsubscribeEncoderTest {
         
         //variable part
         String topic1 = "/topic";
-        m_msg.addTopic(topic1);
+        m_msg.addTopicFilter(topic1);
 
         //Exercise
         m_encoder.encode(m_mockedContext, m_msg, m_out);
@@ -76,8 +76,8 @@ public class UnsubscribeEncoderTest {
         //variable part
         String topic1 = "a/b";
         String topic2 = "a/b/c";
-        m_msg.addTopic(topic1);
-        m_msg.addTopic(topic2);
+        m_msg.addTopicFilter(topic1);
+        m_msg.addTopicFilter(topic2);
 
         //Exercise
         m_encoder.encode(m_mockedContext, m_msg, m_out);

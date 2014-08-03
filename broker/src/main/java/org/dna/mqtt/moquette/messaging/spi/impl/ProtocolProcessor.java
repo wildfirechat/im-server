@@ -532,8 +532,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
-            Subscription newSubscription = new Subscription(clientID, req.getTopic(), qos, cleanSession);
-            subscribeSingleTopic(newSubscription, req.getTopic());
+            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
+            subscribeSingleTopic(newSubscription, req.getTopicFilter());
         }
 
         //ack the client

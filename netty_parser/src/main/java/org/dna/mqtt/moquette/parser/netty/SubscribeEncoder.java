@@ -41,7 +41,7 @@ class SubscribeEncoder extends DemuxEncoder<SubscribeMessage> {
         try {
             variableHeaderBuff.writeShort(message.getMessageID());
             for (SubscribeMessage.Couple c : message.subscriptions()) {
-                variableHeaderBuff.writeBytes(Utils.encodeString(c.getTopic()));
+                variableHeaderBuff.writeBytes(Utils.encodeString(c.getTopicFilter()));
                 variableHeaderBuff.writeByte(c.getQos());
             }
 

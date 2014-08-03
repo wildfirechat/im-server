@@ -29,11 +29,11 @@ public class UnsubscribeMessage extends MessageIDMessage {
         m_messageType = AbstractMessage.UNSUBSCRIBE;
     }
 
-    public List<String> topics() {
+    public List<String> topicFilters() {
         return m_types;
     }
 
-    public void addTopic(String type) {
+    public void addTopicFilter(String type) {
         m_types.add(type);
     }
 }

@@ -19,6 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.CorruptedFrameException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
@@ -65,9 +66,7 @@ public class UnsubscribeDecoderTest {
         assertFalse(m_results.isEmpty());
         UnsubscribeMessage message = (UnsubscribeMessage)m_results.get(0); 
         assertNotNull(message);
-        assertEquals(2, message.topics().size());
-        assertEquals(topic1, message.topics().get(0));
-        assertEquals(topic2, message.topics().get(1));
+        assertEquals(Arrays.asList(topic1, topic2), message.topicFilters());
         assertEquals(AbstractMessage.UNSUBSCRIBE, message.getMessageType());
     }
     

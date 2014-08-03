@@ -48,10 +48,10 @@ class UnsubscribeDecoder extends DemuxDecoder {
         message.setMessageID(in.readUnsignedShort());
         int readed = in.readerIndex()- start;
         while (readed < message.getRemainingLength()) {
-            message.addTopic(Utils.decodeString(in));
+            message.addTopicFilter(Utils.decodeString(in));
             readed = in.readerIndex()- start;
         }
-        if (message.topics().isEmpty()) {
+        if (message.topicFilters().isEmpty()) {
             throw new CorruptedFrameException("unsubscribe MUST have got at least 1 topic");
         }
         out.add(message);

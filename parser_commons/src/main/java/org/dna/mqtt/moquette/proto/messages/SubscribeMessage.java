@@ -27,19 +27,19 @@ public class SubscribeMessage extends MessageIDMessage {
     public static class Couple {
 
         private byte m_qos;
-        private String m_topic;
+        private String m_topicFilter;
 
         public Couple(byte qos, String topic) {
             m_qos = qos;
-            m_topic = topic;
+            m_topicFilter = topic;
         }
         
         public byte getQos() {
             return m_qos;
         }
 
-        public String getTopic() {
-            return m_topic;
+        public String getTopicFilter() {
+            return m_topicFilter;
         }
     }
     private List<Couple> m_subscriptions = new ArrayList<Couple>();

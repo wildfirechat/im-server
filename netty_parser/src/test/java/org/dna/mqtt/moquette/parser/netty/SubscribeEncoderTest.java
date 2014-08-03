@@ -65,9 +65,9 @@ public class SubscribeEncoderTest {
         assertEquals((byte)0xBB, m_out.readByte());
         
         //Variable part
-        verifyString(c1.getTopic(), m_out);
+        verifyString(c1.getTopicFilter(), m_out);
         assertEquals(c1.getQos(), m_out.readByte());
-        verifyString(c2.getTopic(), m_out);
+        verifyString(c2.getTopicFilter(), m_out);
         assertEquals(c2.getQos(), m_out.readByte());
     }
     
