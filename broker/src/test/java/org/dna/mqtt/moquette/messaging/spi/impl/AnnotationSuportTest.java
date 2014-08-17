@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * @author andrea
  */
-public class AnnotationHelperTest {
+public class AnnotationSuportTest {
     
     class SimplyAnnotatedFixture {
         
@@ -46,7 +46,7 @@ public class AnnotationHelperTest {
     
     @Test
     public void testAnnotationDiscovery() {
-        AnnotationHelper annHelper = new AnnotationHelper();
+        AnnotationSupport annHelper = new AnnotationSupport();
         annHelper.processAnnotations(annotationTarget);
         annHelper.dispatch(null, new ConnectMessage());
         

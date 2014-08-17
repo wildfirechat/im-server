@@ -15,12 +15,9 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 
@@ -32,9 +29,9 @@ import org.dna.mqtt.moquette.server.ServerChannel;
  *  
  * @author andrea
  */
-class AnnotationHelper {
+class AnnotationSupport {
     
-    private Map<Class, Method> messageClassToMethod = new HashMap<Class, Method>();
+    private final Map<Class, Method> messageClassToMethod = new HashMap<Class, Method>();
     private Object targetInstance;
 
     void processAnnotations(Object instance) {

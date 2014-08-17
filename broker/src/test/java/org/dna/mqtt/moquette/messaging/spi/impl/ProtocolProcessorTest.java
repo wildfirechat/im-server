@@ -35,6 +35,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
@@ -259,11 +260,13 @@ public class ProtocolProcessorTest {
         connMsg.setProcotolVersion(VERSION_3_1_1);
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "CliID");
+        m_session.setAttribute(Constants.CLEAN_SESSION, false);
 
         //Connect a first time
         m_processor.processConnect(m_session, connMsg);
         //disconnect
-        m_processor.processDisconnect(m_session, "CliID", false);
+        m_processor.processDisconnect(m_session, new DisconnectMessage());
               
         //Exercise, reconnect
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();

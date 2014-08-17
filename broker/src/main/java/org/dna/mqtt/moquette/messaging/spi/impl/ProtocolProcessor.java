@@ -41,6 +41,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.PubRecMessage;
@@ -487,7 +488,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_messagesStore.cleanInFlight(publishKey);
     }
     
-    void processDisconnect(ServerChannel session, String clientID, boolean cleanSession) throws InterruptedException {
+    @MQTTMessage(message = DisconnectMessage.class)
+    void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
         if (cleanSession) {
             //cleanup topic subscriptions
             cleanSession(clientID);

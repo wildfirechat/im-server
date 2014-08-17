@@ -66,7 +66,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private static SimpleMessaging INSTANCE;
     
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
-    private final AnnotationHelper annotationHelper = new AnnotationHelper();
+    private final AnnotationSupport annotationSupport = new AnnotationSupport();
     
     CountDownLatch m_stopLatch;
     
@@ -92,7 +92,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
         m_executor.submit(m_eventProcessor);
         
-        annotationHelper.processAnnotations(m_processor);
+        annotationSupport.processAnnotations(m_processor);
         processInit(configProps);
 //        disruptorPublish(new InitEvent(configProps));
     }
@@ -133,6 +133,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
     }
     
+    @Override
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
         LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
@@ -149,20 +150,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 message instanceof PubRelMessage ||
                 message instanceof PubRecMessage ||
                 message instanceof PubCompMessage ||
-                message instanceof PubAckMessage) {
-                annotationHelper.dispatch(session, message);
+                message instanceof PubAckMessage ||
+                message instanceof DisconnectMessage) {
+                annotationSupport.dispatch(session, message);
             } else if (message instanceof  PublishMessage) {
                 PublishEvent pubEvt;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 pubEvt = new PublishEvent((PublishMessage) message, clientID);
                 m_processor.processPublish(pubEvt);
-            } else if (message instanceof DisconnectMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-
-                //close the TCP connection
-                //session.close(true);
-                m_processor.processDisconnect(session, clientID, cleanSession);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
