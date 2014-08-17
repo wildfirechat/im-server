@@ -94,8 +94,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_executor.submit(m_eventProcessor);
         
         annotationHelper.processAnnotations(m_processor);
-
-        disruptorPublish(new InitEvent(configProps));
+        processInit(configProps);
+//        disruptorPublish(new InitEvent(configProps));
     }
 
     
@@ -174,9 +174,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 throw new RuntimeException("Illegal message received " + message);
             }
 
-        } else if (evt instanceof InitEvent) {
+        } /*else if (evt instanceof InitEvent) {
             processInit(((InitEvent) evt).getConfig());
-        } else if (evt instanceof LostConnectionEvent) {
+        } */else if (evt instanceof LostConnectionEvent) {
             LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
             m_processor.proccessConnectionLost(lostEvt.getClientID());
         }
