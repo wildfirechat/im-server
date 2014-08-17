@@ -30,8 +30,6 @@ public interface IMessaging {
 
     void stop();
 
-    void disconnect(ServerChannel session);
-    
     void lostConnection(String clientID);
 
     void handleProtocolMessage(ServerChannel session, AbstractMessage msg);

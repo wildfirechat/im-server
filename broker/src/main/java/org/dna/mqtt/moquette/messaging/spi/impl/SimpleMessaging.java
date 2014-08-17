@@ -65,11 +65,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private static SimpleMessaging INSTANCE;
     
-    private ProtocolProcessor m_processor = new ProtocolProcessor();
+    private final ProtocolProcessor m_processor = new ProtocolProcessor();
+    private final AnnotationHelper annotationHelper = new AnnotationHelper();
     
     CountDownLatch m_stopLatch;
-    
-    private AnnotationHelper annotationHelper = new AnnotationHelper();
     
     private SimpleMessaging() {
     }
@@ -109,19 +108,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_ringBuffer.publish(sequence); 
     }
     
-
-    public void disconnect(ServerChannel session) {
-        disruptorPublish(new DisconnectEvent(session));
-    }
-    
+    @Override
     public void lostConnection(String clientID) {
         disruptorPublish(new LostConnectionEvent(clientID));
     }
 
+    @Override
     public void handleProtocolMessage(ServerChannel session, AbstractMessage msg) {
         disruptorPublish(new ProtocolEvent(session, msg));
     }
 
+    @Override
     public void stop() {
         m_stopLatch = new CountDownLatch(1);
         disruptorPublish(new StopEvent());
@@ -143,11 +140,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
             processStop();
-        } else if (evt instanceof DisconnectEvent) {
+        } /*else if (evt instanceof DisconnectEvent) {
             DisconnectEvent disEvt = (DisconnectEvent) evt;
             String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
             m_processor.processDisconnect(disEvt.getSession(), clientID, false);
-        } else if (evt instanceof ProtocolEvent) {
+        } */else if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage ||
@@ -174,9 +171,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 throw new RuntimeException("Illegal message received " + message);
             }
 
-        } /*else if (evt instanceof InitEvent) {
-            processInit(((InitEvent) evt).getConfig());
-        } */else if (evt instanceof LostConnectionEvent) {
+        } else if (evt instanceof LostConnectionEvent) {
             LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
             m_processor.proccessConnectionLost(lostEvt.getClientID());
         }
