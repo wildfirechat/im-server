@@ -35,7 +35,6 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
-import org.dna.mqtt.moquette.proto.messages.DisconnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
@@ -43,7 +42,6 @@ import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.internal.runners.model.MultipleFailureException.assertEmpty;
 import static org.mockito.Mockito.*;
 
 /**
