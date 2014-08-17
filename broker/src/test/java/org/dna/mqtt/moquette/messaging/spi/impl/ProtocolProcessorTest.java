@@ -38,6 +38,7 @@ import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -376,7 +377,9 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
-        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, FAKE_CLIENT_ID);
+        m_session.setAttribute(Constants.CLEAN_SESSION, false);
+        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
 
         //Verify
         assertTrue(m_receivedMessage instanceof SubAckMessage);
@@ -388,14 +391,15 @@ public class ProtocolProcessorTest {
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
-        
+        m_session.setAttribute(Constants.ATTR_CLIENTID, FAKE_CLIENT_ID);
+        m_session.setAttribute(Constants.CLEAN_SESSION, false);
         subscriptions.clearAllSubscriptions();
         assertEquals(0, subscriptions.size());
         
-        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
                 
         //Exercise
-        m_processor.processSubscribe(m_session, msg, FAKE_CLIENT_ID, false);
+        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
 
         //Verify
         assertEquals(1, subscriptions.size());
@@ -454,11 +458,13 @@ public class ProtocolProcessorTest {
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
         m_processor.processPublish(pubEvt);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, FAKE_PUBLISHER_ID);
+        m_session.setAttribute(Constants.CLEAN_SESSION, false);
         
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
-        m_processor.processSubscribe(m_session, msg, FAKE_PUBLISHER_ID, false);
+        m_processor.processSubscribe(m_session, msg/*, FAKE_PUBLISHER_ID, false*/);
         
         //Verify
         //wait the latch

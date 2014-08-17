@@ -49,6 +49,7 @@ import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 import org.dna.mqtt.moquette.proto.messages.SubAckMessage;
 import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
 import org.dna.mqtt.moquette.proto.messages.UnsubAckMessage;
+import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
 import org.dna.mqtt.moquette.server.ConnectionDescriptor;
 import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
@@ -252,7 +253,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
     
-    void processPubAck(String clientID, int messageID) {
+    @MQTTMessage(message = PubAckMessage.class)
+    void processPubAck(ServerChannel session, PubAckMessage msg) {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        int messageID = msg.getMessageID();
         //Remove the message from message store
         m_messagesStore.cleanPersistedPublishMessage(clientID, messageID);
     }
@@ -428,7 +432,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
      * */
-    void processPubRel(String clientID, int messageID) {
+    @MQTTMessage(message = PubRelMessage.class)
+    void processPubRel(ServerChannel session, PubRelMessage msg) {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         String publishKey = String.format("%s%d", clientID, messageID);
         PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
@@ -456,7 +463,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubCompMessage));
     }
     
-    void processPubRec(String clientID, int messageID) {
+    @MQTTMessage(message = PubRecMessage.class)
+    void processPubRec(ServerChannel session, PubRecMessage msg) {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        int messageID = msg.getMessageID();
         //once received a PUBREC reply with a PUBREL(messageID)
         LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
         PubRelMessage pubRelMessage = new PubRelMessage();
@@ -467,7 +477,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRelMessage));
     }
     
-    void processPubComp(String clientID, int messageID) {
+    @MQTTMessage(message = PubCompMessage.class)
+    void processPubComp(ServerChannel session, PubCompMessage msg) {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         String publishKey = String.format("%s%d", clientID, messageID);
@@ -513,7 +526,11 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
      */
-    void processUnsubscribe(ServerChannel session, String clientID, List<String> topics, int messageID) {
+    @MQTTMessage(message = UnsubscribeMessage.class)
+    void processUnsubscribe(ServerChannel session, UnsubscribeMessage msg) {
+        List<String> topics = msg.topicFilters();
+        int messageID = msg.getMessageID();
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
         LOG.debug("processUnsubscribe invoked, removing subscription on topics {}, for clientID <{}>", topics, clientID);
 
         for (String topic : topics) {
@@ -527,8 +544,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         session.write(ackMessage);
     }
     
-    
-    void processSubscribe(ServerChannel session, SubscribeMessage msg, String clientID, boolean cleanSession) {
+    @MQTTMessage(message = SubscribeMessage.class)
+    void processSubscribe(ServerChannel session, SubscribeMessage msg) {
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
         LOG.debug("processSubscribe invoked from client {} with msgID {}", clientID, msg.getMessageID());
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {

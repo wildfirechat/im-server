@@ -150,19 +150,18 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         } else if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
-            if (message instanceof ConnectMessage) {
-//                m_processor.processConnect(session, (ConnectMessage) message);
+            if (message instanceof ConnectMessage ||
+                message instanceof UnsubscribeMessage ||
+                message instanceof SubscribeMessage ||
+                message instanceof PubRelMessage ||
+                message instanceof PubRecMessage ||
+                message instanceof PubCompMessage ||
+                message instanceof PubAckMessage) {
                 annotationHelper.dispatch(session, message);
             } else if (message instanceof  PublishMessage) {
                 PublishEvent pubEvt;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
                 pubEvt = new PublishEvent((PublishMessage) message, clientID);
-//                if (message.getQos() == QOSType.MOST_ONE) {
-//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, session);
-//
-//                } else {
-//                    pubEvt = new PublishEvent(pubMsg.getTopicName(), pubMsg.getQos(), pubMsg.getPayload(), pubMsg.isRetainFlag(), clientID, pubMsg.getMessageID(), session);
-//                }
                 m_processor.processPublish(pubEvt);
             } else if (message instanceof DisconnectMessage) {
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
@@ -171,30 +170,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 //close the TCP connection
                 //session.close(true);
                 m_processor.processDisconnect(session, clientID, cleanSession);
-            } else if (message instanceof UnsubscribeMessage) {
-                UnsubscribeMessage unsubMsg = (UnsubscribeMessage) message;
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                m_processor.processUnsubscribe(session, clientID, unsubMsg.topicFilters(), unsubMsg.getMessageID());
-            } else if (message instanceof SubscribeMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
-                m_processor.processSubscribe(session, (SubscribeMessage) message, clientID, cleanSession);
-            } else if (message instanceof PubRelMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                int messageID = ((PubRelMessage) message).getMessageID();
-                m_processor.processPubRel(clientID, messageID);
-            } else if (message instanceof PubRecMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                int messageID = ((PubRecMessage) message).getMessageID();
-                m_processor.processPubRec(clientID, messageID);
-            } else if (message instanceof PubCompMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                int messageID = ((PubCompMessage) message).getMessageID();
-                m_processor.processPubComp(clientID, messageID);
-            } else if (message instanceof PubAckMessage) {
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                int messageID = ((PubAckMessage) message).getMessageID();
-                m_processor.processPubAck(clientID, messageID);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }
