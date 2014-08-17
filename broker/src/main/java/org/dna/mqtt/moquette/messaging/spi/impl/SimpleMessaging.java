@@ -69,6 +69,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     CountDownLatch m_stopLatch;
     
+    private AnnotationHelper annotationHelper = new AnnotationHelper();
+    
     private SimpleMessaging() {
     }
 
@@ -87,9 +89,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         SequenceBarrier barrier = m_ringBuffer.newBarrier();
         m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
-        //TODO in a presentation is said to don't do the followinf line!!
+        //TODO in a presentation is said to don't do the following line!!
         m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
         m_executor.submit(m_eventProcessor);
+        
+        annotationHelper.processAnnotations(m_processor);
 
         disruptorPublish(new InitEvent(configProps));
     }
@@ -147,7 +151,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage) {
-                m_processor.processConnect(session, (ConnectMessage) message);
+//                m_processor.processConnect(session, (ConnectMessage) message);
+                annotationHelper.dispatch(session, message);
             } else if (message instanceof  PublishMessage) {
                 PublishEvent pubEvt;
                 String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);

@@ -142,6 +142,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_executor.submit(m_eventProcessor);
     }
     
+    @MQTTMessage(message = ConnectMessage.class)
     void processConnect(ServerChannel session, ConnectMessage msg) {
         LOG.debug("processConnect for client {}", msg.getClientID());
         if (msg.getProcotolVersion() != VERSION_3_1 && msg.getProcotolVersion() != VERSION_3_1_1) {
