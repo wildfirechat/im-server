@@ -140,11 +140,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             m_processor.processPublish((PublishEvent) evt);
         } else if (evt instanceof StopEvent) {
             processStop();
-        } /*else if (evt instanceof DisconnectEvent) {
-            DisconnectEvent disEvt = (DisconnectEvent) evt;
-            String clientID = (String) disEvt.getSession().getAttribute(Constants.ATTR_CLIENTID);
-            m_processor.processDisconnect(disEvt.getSession(), clientID, false);
-        } */else if (evt instanceof ProtocolEvent) {
+        } else if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage ||
