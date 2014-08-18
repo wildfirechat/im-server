@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
-import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import static org.dna.mqtt.moquette.parser.netty.Utils.VERSION_3_1_1;
@@ -310,8 +309,13 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI");
-        m_processor.processPublish(pubEvt);
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName(FAKE_TOPIC);
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setPayload(buffer);
+        msg.setRetainFlag(false);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "FakeCLI");
+        m_processor.processPublish(m_session, msg);
 
         //Verify
         assertNotNull(m_receivedMessage);
@@ -359,8 +363,13 @@ public class ProtocolProcessorTest {
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         buffer.rewind();
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, false, "FakeCLI");
-        m_processor.processPublish(pubEvt);
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName(FAKE_TOPIC);
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setPayload(buffer);
+        msg.setRetainFlag(false);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "FakeCLI");
+        m_processor.processPublish(m_session, msg);
 
         //Verify
         Thread.sleep(100); //ugly but we dependend on the asynch that pull data from back disruptor
@@ -459,9 +468,13 @@ public class ProtocolProcessorTest {
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
-        m_processor.processPublish(pubEvt);
+        PublishMessage pubmsg = new PublishMessage();
+        pubmsg.setTopicName(FAKE_TOPIC);
+        pubmsg.setQos(QOSType.MOST_ONE);
+        pubmsg.setPayload(buffer);
+        pubmsg.setRetainFlag(true);
         m_session.setAttribute(Constants.ATTR_CLIENTID, FAKE_PUBLISHER_ID);
+        m_processor.processPublish(m_session, pubmsg);
         m_session.setAttribute(Constants.CLEAN_SESSION, false);
         
         //Exercise
@@ -490,8 +503,13 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
-        m_processor.processPublish(pubEvt);
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName("/topic");
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setPayload(buffer);
+        msg.setRetainFlag(true);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "Publisher");
+        m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
         assertNull(m_receivedMessage); 
@@ -510,8 +528,13 @@ public class ProtocolProcessorTest {
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent("/topic", AbstractMessage.QOSType.MOST_ONE, buffer, true, "Publisher");
-        m_processor.processPublish(pubEvt);
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName("/topic");
+        msg.setQos(QOSType.MOST_ONE);
+        msg.setPayload(buffer);
+        msg.setRetainFlag(true);
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "Publisher");
+         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
         assertNull(m_receivedMessage); 
@@ -528,13 +551,23 @@ public class ProtocolProcessorTest {
         connMsg.setClientID("Publisher");
         m_processor.processConnect(m_session, connMsg);
         //prepare and existing retained store
+        m_session.setAttribute(Constants.ATTR_CLIENTID, "Publisher");
         ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishEvent pubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.LEAST_ONE, payload, true, "Publisher");
-        m_processor.processPublish(pubEvt);
+        PublishMessage msg = new PublishMessage();
+        msg.setTopicName(FAKE_TOPIC);
+        msg.setQos(QOSType.LEAST_ONE);
+        msg.setPayload(payload);
+        msg.setRetainFlag(true);
+        msg.setMessageID(100);
+        m_processor.processPublish(m_session, msg);
         
         //Exercise
-        PublishEvent cleanPubEvt = new PublishEvent(FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, payload, true, "Publisher");
-        m_processor.processPublish(cleanPubEvt);
+        PublishMessage cleanPubMsg = new PublishMessage();
+        cleanPubMsg.setTopicName(FAKE_TOPIC);
+        cleanPubMsg.setPayload(payload);
+        cleanPubMsg.setQos(QOSType.MOST_ONE);
+        cleanPubMsg.setRetainFlag(true);
+        m_processor.processPublish(m_session, cleanPubMsg);
         
         //Verify
         Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {

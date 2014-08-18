@@ -11,7 +11,7 @@
 
     <packaging>pom</packaging>
     <version>0.7-SNAPSHOT</version>
-    <name>Moquette MQTT library</name>
+    <name>Moquette MQTT parent</name>
     <url>http://code.google.com/p/moquette-mqtt/</url>
 
 

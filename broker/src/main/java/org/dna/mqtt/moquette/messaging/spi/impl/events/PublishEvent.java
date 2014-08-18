@@ -19,7 +19,6 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
 
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.proto.messages.PublishMessage;
-import org.dna.mqtt.moquette.server.ServerChannel;
 
 /**
  *

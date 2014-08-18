@@ -15,6 +15,7 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
+import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
 import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
@@ -52,5 +53,12 @@ public class AnnotationSupportTest {
         
         //Verify
         assertTrue(methodInvoked);
+    }
+    
+    @Test(expected = RuntimeException.class)
+    public void testAnnotationFailsDiscovery() {
+        AnnotationSupport annHelper = new AnnotationSupport();
+        annHelper.processAnnotations(annotationTarget);
+        annHelper.dispatch(null, new ConnAckMessage());
     }
 }

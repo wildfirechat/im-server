@@ -272,6 +272,55 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_messagesStore.cleanPersistedPublishes(clientID);
     }
     
+    @MQTTMessage(message = PublishMessage.class)
+    void processPublish(ServerChannel session, PublishMessage msg) {
+        LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", msg);
+        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        final String topic = msg.getTopicName();
+        final AbstractMessage.QOSType qos = msg.getQos();
+        final ByteBuffer message = msg.getPayload();
+        boolean retain = msg.isRetainFlag();
+        
+        LOG.info("Publish recieved from clientID <{}> on topic <{}> with QoS {}", 
+                clientID, topic, qos);
+
+        String publishKey = null;
+        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
+            //store the temporary message
+            publishKey = String.format("%s%d", clientID, msg.getMessageID());
+            m_messagesStore.addInFlight(new PublishEvent(msg, clientID), publishKey);
+        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
+            publishKey = String.format("%s%d", clientID, msg.getMessageID());
+            //store the message in temp store
+            m_messagesStore.persistQoS2Message(publishKey, new PublishEvent(msg, clientID));
+            sendPubRec(clientID, msg.getMessageID());
+        }
+
+        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
+        if (qos != AbstractMessage.QOSType.EXACTLY_ONCE) {
+            publish2Subscribers(topic, qos, message, retain, msg.getMessageID());
+        }
+
+        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
+            if (publishKey == null) {
+                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + msg);
+            }
+            m_messagesStore.cleanInFlight(publishKey);
+            sendPubAck(new PubAckEvent(msg.getMessageID(), clientID));
+            LOG.debug("replying with PubAck to MSG ID {}", msg.getMessageID());
+        }
+
+        if (retain) {
+            if (qos == AbstractMessage.QOSType.MOST_ONE) {
+                //QoS == 0 && retain => clean old retained 
+                m_messagesStore.cleanRetained(topic);
+            } else {
+                m_messagesStore.storeRetained(topic, message, qos);
+            }
+        }
+    }
+    
+    @Deprecated
     protected void processPublish(PublishEvent evt) {
         LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", evt);
         final String topic = evt.getTopic();
@@ -344,13 +393,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !sub.isActive()) {
                     //clone the event with matching clientID
-                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
+                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
                     m_messagesStore.storePublishForFuture(newPublishEvt);
                 } else  {
                     //if QoS 2 then store it in temp memory
-                    if (qos ==AbstractMessage.QOSType.EXACTLY_ONCE) {
+                    if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
                         String publishKey = String.format("%s%d", sub.getClientId(), messageID);
-                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID);
+                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
                         m_messagesStore.addInFlight(newPublishEvt, publishKey);
                     }
                     //publish

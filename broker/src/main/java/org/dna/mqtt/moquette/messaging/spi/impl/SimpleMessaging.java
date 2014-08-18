@@ -138,7 +138,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         MessagingEvent evt = t.getEvent();
         LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
         if (evt instanceof PublishEvent) {
-            m_processor.processPublish((PublishEvent) evt);
+//            m_processor.processPublish((PublishEvent) evt);
+//            System.out.println("onEvent invoked with PublishEvent ##############################");
         } else if (evt instanceof StopEvent) {
             processStop();
         } else if (evt instanceof ProtocolEvent) {
@@ -151,13 +152,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 message instanceof PubRecMessage ||
                 message instanceof PubCompMessage ||
                 message instanceof PubAckMessage ||
-                message instanceof DisconnectMessage) {
+                message instanceof DisconnectMessage ||
+                message instanceof PublishMessage) {
                 annotationSupport.dispatch(session, message);
-            } else if (message instanceof  PublishMessage) {
-                PublishEvent pubEvt;
-                String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-                pubEvt = new PublishEvent((PublishMessage) message, clientID);
-                m_processor.processPublish(pubEvt);
             } else {
                 throw new RuntimeException("Illegal message received " + message);
             }

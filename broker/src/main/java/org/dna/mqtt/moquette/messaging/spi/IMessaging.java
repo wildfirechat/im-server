@@ -19,7 +19,7 @@ import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 
 /**
- * Interface to the underling messaging system used to publish, subscribe.
+ * Callback interface used to be notified of some events from the input event queue.
  * 
  * It's the abstraction of the messaging stuff attached in after the front protocol
  * parsing stuff.
