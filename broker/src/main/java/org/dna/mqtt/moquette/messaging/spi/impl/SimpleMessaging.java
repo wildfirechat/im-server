@@ -137,12 +137,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
         MessagingEvent evt = t.getEvent();
         LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
-        if (evt instanceof PublishEvent) {
-//            m_processor.processPublish((PublishEvent) evt);
-//            System.out.println("onEvent invoked with PublishEvent ##############################");
-        } else if (evt instanceof StopEvent) {
+        if (evt instanceof StopEvent) {
             processStop();
-        } else if (evt instanceof ProtocolEvent) {
+            return;
+        } 
+        if (evt instanceof LostConnectionEvent) {
+            LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
+            m_processor.proccessConnectionLost(lostEvt.getClientID());
+            return;
+        }
+        
+        if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             if (message instanceof ConnectMessage ||
@@ -159,9 +164,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 throw new RuntimeException("Illegal message received " + message);
             }
 
-        } else if (evt instanceof LostConnectionEvent) {
-            LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
-            m_processor.proccessConnectionLost(lostEvt.getClientID());
         }
     }
 
