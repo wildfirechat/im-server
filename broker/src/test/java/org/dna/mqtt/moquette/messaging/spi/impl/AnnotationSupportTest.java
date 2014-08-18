@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * @author andrea
  */
-public class AnnotationSuportTest {
+public class AnnotationSupportTest {
     
     class SimplyAnnotatedFixture {
         
