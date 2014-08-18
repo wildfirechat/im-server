@@ -34,30 +34,16 @@ public class PublishEvent extends MessagingEvent {
     //Optional attribute, available only fo QoS 1 and 2
     int m_msgID;
 
-    public PublishEvent(PublishMessage pubMsg, String clientID) {
-        m_topic = pubMsg.getTopicName();
-        m_qos = pubMsg.getQos();
-        m_message = pubMsg.getPayload();
-        m_retain = pubMsg.isRetainFlag();
-        m_clientID = clientID;
-        if (pubMsg.getQos() != QOSType.MOST_ONE) {
-            m_msgID = pubMsg.getMessageID();
-        }
-    }
-    
     public PublishEvent(String topic, QOSType qos, ByteBuffer message, boolean retain,
-            String clientID) {
+                        String clientID, Integer msgID) {
         m_topic = topic;
         m_qos = qos;
         m_message = message;
         m_retain = retain;
         m_clientID = clientID;
-    }
-
-    public PublishEvent(String topic, QOSType qos, ByteBuffer message, boolean retain,
-                        String clientID, int msgID) {
-        this(topic, qos, message, retain, clientID);
-        m_msgID = msgID;
+        if (qos != QOSType.MOST_ONE) {
+            m_msgID = msgID;
+        }
     }
     
     public String getTopic() {

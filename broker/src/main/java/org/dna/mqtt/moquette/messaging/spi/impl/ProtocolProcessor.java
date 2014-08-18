@@ -280,34 +280,41 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final AbstractMessage.QOSType qos = msg.getQos();
         final ByteBuffer message = msg.getPayload();
         boolean retain = msg.isRetainFlag();
+        processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
+    }
         
+    private void processPublish(String clientID, String topic, QOSType qos, ByteBuffer message, boolean retain, Integer messageID) { 
         LOG.info("Publish recieved from clientID <{}> on topic <{}> with QoS {}", 
                 clientID, topic, qos);
 
         String publishKey = null;
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
             //store the temporary message
-            publishKey = String.format("%s%d", clientID, msg.getMessageID());
-            m_messagesStore.addInFlight(new PublishEvent(msg, clientID), publishKey);
+            publishKey = String.format("%s%d", clientID, messageID);
+            PublishEvent inFlightEvt = new PublishEvent(topic, qos, message, retain,
+                        clientID, messageID);
+            m_messagesStore.addInFlight(inFlightEvt, publishKey);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
-            publishKey = String.format("%s%d", clientID, msg.getMessageID());
+            publishKey = String.format("%s%d", clientID, messageID);
             //store the message in temp store
-            m_messagesStore.persistQoS2Message(publishKey, new PublishEvent(msg, clientID));
-            sendPubRec(clientID, msg.getMessageID());
+            PublishEvent qos2Persistent = new PublishEvent(topic, qos, message, retain,
+                        clientID, messageID);
+            m_messagesStore.persistQoS2Message(publishKey, qos2Persistent);
+            sendPubRec(clientID, messageID);
         }
 
         //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
         if (qos != AbstractMessage.QOSType.EXACTLY_ONCE) {
-            publish2Subscribers(topic, qos, message, retain, msg.getMessageID());
+            publish2Subscribers(topic, qos, message, retain, messageID);
         }
 
         if (qos == AbstractMessage.QOSType.LEAST_ONE) {
             if (publishKey == null) {
-                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + msg);
+                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + messageID);
             }
             m_messagesStore.cleanInFlight(publishKey);
-            sendPubAck(new PubAckEvent(msg.getMessageID(), clientID));
-            LOG.debug("replying with PubAck to MSG ID {}", msg.getMessageID());
+            sendPubAck(new PubAckEvent(messageID, clientID));
+            LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }
 
         if (retain) {
@@ -320,51 +327,15 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
     
-    @Deprecated
-    protected void processPublish(PublishEvent evt) {
-        LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", evt);
-        final String topic = evt.getTopic();
-        final AbstractMessage.QOSType qos = evt.getQos();
-        final ByteBuffer message = evt.getMessage();
-        boolean retain = evt.isRetain();
-        
-        LOG.info("Publish recieved from clientID <{}> on topic <{}> with QoS {}", 
-                evt.getClientID(), evt.getTopic(), evt.getQos());
-
-        String publishKey = null;
-        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
-            //store the temporary message
-            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
-            m_messagesStore.addInFlight(evt, publishKey);
-        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
-            publishKey = String.format("%s%d", evt.getClientID(), evt.getMessageID());
-            //store the message in temp store
-            m_messagesStore.persistQoS2Message(publishKey, evt);
-            sendPubRec(evt.getClientID(), evt.getMessageID());
-        }
-
-        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
-        if (qos != AbstractMessage.QOSType.EXACTLY_ONCE) {
-            publish2Subscribers(topic, qos, message, retain, evt.getMessageID());
-        }
-
-        if (qos == AbstractMessage.QOSType.LEAST_ONE) {
-            if (publishKey == null) {
-                throw new RuntimeException("Found a publish key null for QoS " + qos + " for message " + evt);
-            }
-            m_messagesStore.cleanInFlight(publishKey);
-            sendPubAck(new PubAckEvent(evt.getMessageID(), evt.getClientID()));
-            LOG.debug("replying with PubAck to MSG ID {}", evt.getMessageID());
-        }
-
-        if (retain) {
-            if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                //QoS == 0 && retain => clean old retained 
-                m_messagesStore.cleanRetained(topic);
-            } else {
-                m_messagesStore.storeRetained(topic, message, qos);
-            }
-        }
+    /**
+     * Specialized version to publish will testament message.
+     */
+    private void processPublish(WillMessage will, String clientID) {
+        final String topic = will.getTopic();
+        final AbstractMessage.QOSType qos = will.getQos();
+        final ByteBuffer message = will.getPayload();
+        boolean retain = will.isRetained();
+        processPublish(clientID, topic, qos, message, retain, null);
     }
     
     /**
@@ -568,9 +539,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //TODO publish the Will message (if any) for the clientID
         if (m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);
-            PublishEvent pubEvt = new PublishEvent(will.getTopic(), will.getQos(), 
-                    will.getPayload(), will.isRetained(), clientID);
-            processPublish(pubEvt);
+//            PublishEvent pubEvt = new PublishEvent(will.getTopic(), will.getQos(), 
+//                    will.getPayload(), will.isRetained(), clientID);
+            processPublish(will, clientID);
             m_willStore.remove(clientID);
         }
     }
