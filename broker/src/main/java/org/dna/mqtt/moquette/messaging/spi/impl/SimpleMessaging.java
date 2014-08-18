@@ -150,20 +150,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
-            if (message instanceof ConnectMessage ||
-                message instanceof UnsubscribeMessage ||
-                message instanceof SubscribeMessage ||
-                message instanceof PubRelMessage ||
-                message instanceof PubRecMessage ||
-                message instanceof PubCompMessage ||
-                message instanceof PubAckMessage ||
-                message instanceof DisconnectMessage ||
-                message instanceof PublishMessage) {
-                annotationSupport.dispatch(session, message);
-            } else {
-                throw new RuntimeException("Illegal message received " + message);
-            }
-
+            annotationSupport.dispatch(session, message);
         }
     }
 
