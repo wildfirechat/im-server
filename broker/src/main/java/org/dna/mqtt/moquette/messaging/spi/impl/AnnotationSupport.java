@@ -52,21 +52,18 @@ class AnnotationSupport {
      * Dispatch a call to the wrapped target invoking the method that match the 
      * msg class.
      * 
-     * @return true iff the dispatched method was found.
+     * @throws RuntimeException if the message can't be routed to any annotated method,
+     * or if there are any errors during invocation.
      */
-    boolean dispatch(ServerChannel session, AbstractMessage msg) {
+    void dispatch(ServerChannel session, AbstractMessage msg) {
         Method targetMethod = this.messageClassToMethod.get(msg.getClass());
         if (targetMethod == null) {
-            return false;
+            throw new RuntimeException("Can't dispatch to any @MQTTMessage marked the message: " + msg);
         }
         try {
             targetMethod.invoke(targetInstance, session, msg);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } 
-        
-        return true;
     }
-
-    
 }
