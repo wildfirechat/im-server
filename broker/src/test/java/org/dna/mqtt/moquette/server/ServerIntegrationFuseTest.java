@@ -42,9 +42,6 @@ public class ServerIntegrationFuseTest {
     BlockingConnection m_subscriber;
     BlockingConnection m_publisher;
     
-//mqtt.setHost("test.mosquitto.org", 1883);
-
-
     protected void startServer() throws IOException {
         m_server = new Server();
         m_server.startServer();
