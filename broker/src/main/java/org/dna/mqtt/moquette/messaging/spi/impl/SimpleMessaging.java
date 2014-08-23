@@ -163,9 +163,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         subscriptions.init(storedSubscriptions);
         
-        String passwdPath = props.getProperty("password_file");
+        String passwdPath = props.getProperty("password_file", "");
         String configPath = System.getProperty("moquette.path", null);
-        IAuthenticator authenticator = new FileAuthenticator(configPath, passwdPath);
+        IAuthenticator authenticator;
+        if (passwdPath.isEmpty()) {
+            authenticator = new AcceptAllAuthenticator();
+        } else {
+            authenticator = new FileAuthenticator(configPath, passwdPath);
+        }
         
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator);
     }
