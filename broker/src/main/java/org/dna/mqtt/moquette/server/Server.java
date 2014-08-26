@@ -38,7 +38,6 @@ public class Server {
     SimpleMessaging messaging;
     
     public static void main(String[] args) throws IOException {
-        
         final Server server = new Server();
         server.startServer();
         System.out.println("Server started, version 0.7-SNAPSHOT");
@@ -49,7 +48,6 @@ public class Server {
                 server.stopServer();
             }
         });
-        
     }
     
     /**
@@ -69,7 +67,7 @@ public class Server {
         try {
             confParser.parse(configFile);
         } catch (ParseException pex) {
-            LOG.warn("An error occured in parsing configuration, fallback on default configuration", pex);
+            LOG.warn("An error occurred in parsing configuration, fallback on default configuration", pex);
         }
         Properties configProps = confParser.getProperties();
         startServer(configProps);

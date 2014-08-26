@@ -79,34 +79,30 @@ public class NettyAcceptor implements ServerAcceptor {
             out.add(bb);
         }
     }
-    
+
+    abstract class PipelineInitializer {
+
+        abstract void init(ChannelPipeline pipeline) throws Exception;
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(NettyAcceptor.class);
     
     EventLoopGroup m_bossGroup;
     EventLoopGroup m_workerGroup;
     //BytesMetricsCollector m_metricsCollector = new BytesMetricsCollector();
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
-    MQTTEncoder mqttEncoder = new MQTTEncoder();
-    MQTTDecoder mqttDecoder = new MQTTDecoder();
-
 
     @Override
     public void initialize(IMessaging messaging, Properties props) throws IOException {
-         m_bossGroup = new NioEventLoopGroup();
+        m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         
         initializePlainTCPTransport(messaging, props);
         initializeWebSocketTransport(messaging, props);
         initializeSSLTCPTransport(messaging, props);
     }
-    
-    private void initializePlainTCPTransport(IMessaging messaging, Properties props) throws IOException {
-//        m_bossGroup = new NioEventLoopGroup();
-//        m_workerGroup = new NioEventLoopGroup();
 
-        final NettyMQTTHandler handler = new NettyMQTTHandler();
-        handler.setMessaging(messaging);
-
+    private void initFactory(String host, int port, final PipelineInitializer pipeliner) {
         ServerBootstrap b = new ServerBootstrap();
         b.group(m_bossGroup, m_workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -114,14 +110,7 @@ public class NettyAcceptor implements ServerAcceptor {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                    //pipeline.addFirst("metrics", new BytesMetricsHandler(m_metricsCollector));
-                        pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
-                        pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
-                        //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
-                        pipeline.addLast("decoder", new MQTTDecoder());
-                        pipeline.addLast("encoder", new MQTTEncoder());
-                        pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
-                        pipeline.addLast("handler", handler);
+                        pipeliner.init(pipeline);
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
@@ -129,13 +118,31 @@ public class NettyAcceptor implements ServerAcceptor {
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         try {
             // Bind and start to accept incoming connections.
-//            ChannelFuture f = b.bind(Constants.PORT);
-            ChannelFuture f = b.bind(props.getProperty("host"), Integer.parseInt(props.getProperty("port")));
+            ChannelFuture f = b.bind(host, port);
             LOG.info("Server binded");
             f.sync();
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
+    }
+    
+    private void initializePlainTCPTransport(IMessaging messaging, Properties props) throws IOException {
+        final NettyMQTTHandler handler = new NettyMQTTHandler();
+        handler.setMessaging(messaging);
+        String host = props.getProperty("host");
+        int port = Integer.parseInt(props.getProperty("port"));
+        initFactory(host, port, new PipelineInitializer() {
+            @Override
+            void init(ChannelPipeline pipeline) {
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                pipeline.addLast("decoder", new MQTTDecoder());
+                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("handler", handler);
+            }
+        });
     }
     
     private void initializeWebSocketTransport(IMessaging messaging, Properties props) throws IOException {
@@ -150,38 +157,22 @@ public class NettyAcceptor implements ServerAcceptor {
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
 
-        ServerBootstrap b = new ServerBootstrap();
-        b.group(m_bossGroup, m_workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-
-                        ChannelPipeline pipeline = ch.pipeline();
-
-                        pipeline.addLast("httpEncoder", new HttpResponseEncoder());
-                        pipeline.addLast("httpDdecoder", new HttpRequestDecoder());
-                        pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-                        pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt", "mqttv3.1"));
-                        pipeline.addLast("bytebuf2wsDecoderr", new ByteBufToWebSocketFrameEncoder());
-                        pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
-                        pipeline.addLast("decoder", new MQTTDecoder());
-                        pipeline.addLast("encoder", new MQTTEncoder());
-                        pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
-                        pipeline.addLast("handler", handler);
-                    }
-                })
-                .option(ChannelOption.SO_BACKLOG, 128)
-                .option(ChannelOption.SO_REUSEADDR, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
-        try {
-            ChannelFuture f = b.bind(props.getProperty("host"), port);
-            System.out.println("Web socket server started at port " + port + '.');
-            System.out.println("Open your browser and navigate to http://localhost:" + port + '/');
-            f.sync();
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+        String host = props.getProperty("host");
+        initFactory(host, port, new PipelineInitializer() {
+            @Override
+            void init(ChannelPipeline pipeline) {
+                pipeline.addLast("httpEncoder", new HttpResponseEncoder());
+                pipeline.addLast("httpDdecoder", new HttpRequestDecoder());
+                pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+                pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt", "mqttv3.1"));
+                pipeline.addLast("bytebuf2wsDecoderr", new ByteBufToWebSocketFrameEncoder());
+                pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
+                pipeline.addLast("decoder", new MQTTDecoder());
+                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("handler", handler);
+            }
+        });
     }
     
     
@@ -213,54 +204,38 @@ public class NettyAcceptor implements ServerAcceptor {
             LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
             return;
         }
-        
+
         int sslPort = Integer.parseInt(sslPortProp);
-        
+        String host = props.getProperty("host");
+
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
+        initFactory(host, sslPort, new PipelineInitializer() {
+            @Override
+            void init(ChannelPipeline pipeline) throws Exception {
+                InputStream jksInputStream = getClass().getClassLoader().getResourceAsStream(jksPath);
+                SSLContext serverContext = SSLContext.getInstance("TLS");
+                final KeyStore ks = KeyStore.getInstance("JKS");
+                ks.load(jksInputStream, keyStorePassword.toCharArray());
+                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(ks, keyManagerPassword.toCharArray());
+                serverContext.init(kmf.getKeyManagers(), null, null);
 
-        ServerBootstrap b = new ServerBootstrap();
-        b.group(m_bossGroup, m_workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        InputStream jksInputStream = getClass().getClassLoader().getResourceAsStream(jksPath);
-                        SSLContext serverContext = SSLContext.getInstance("TLS");
-                        final KeyStore ks = KeyStore.getInstance("JKS");
-                        ks.load(jksInputStream, keyStorePassword.toCharArray());
-                        final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                        kmf.init(ks, keyManagerPassword.toCharArray());
-                        serverContext.init(kmf.getKeyManagers(), null, null);
-                        
-                        SSLEngine engine = serverContext.createSSLEngine();
-                        engine.setUseClientMode(false);
-                        final SslHandler sslHandler = new SslHandler(engine);
-                        
-                        ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast("ssl", sslHandler);
-                    //pipeline.addFirst("metrics", new BytesMetricsHandler(m_metricsCollector));
-                        pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
-                        pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
-                        //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
-                        pipeline.addLast("decoder", new MQTTDecoder());
-                        pipeline.addLast("encoder", new MQTTEncoder());
-                        pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
-                        pipeline.addLast("handler", handler);
-                    }
-                })
-                .option(ChannelOption.SO_BACKLOG, 128)
-                .option(ChannelOption.SO_REUSEADDR, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
-        try {
-            // Bind and start to accept incoming connections.
-//            ChannelFuture f = b.bind(Constants.PORT);
-            ChannelFuture f = b.bind(props.getProperty("host"), sslPort);
-            LOG.info("Server binded");
-            f.sync();
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
+                SSLEngine engine = serverContext.createSSLEngine();
+                engine.setUseClientMode(false);
+                final SslHandler sslHandler = new SslHandler(engine);
+
+                pipeline.addLast("ssl", sslHandler);
+                //pipeline.addFirst("metrics", new BytesMetricsHandler(m_metricsCollector));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                pipeline.addLast("decoder", new MQTTDecoder());
+                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("handler", handler);
+            }
+        });
     }
 
     public void close() {
