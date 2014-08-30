@@ -31,8 +31,8 @@ public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
-    public static final String STORAGE_FILE_PATH = System.getProperty("user.home") + 
-            File.separator + "moquette_store.hawtdb";
+    public static final String STORAGE_FILE_PATH = System.getProperty("user.home") +
+            File.separator + "moquette_store.mapdb";
 
     private ServerAcceptor m_acceptor;
     SimpleMessaging messaging;

@@ -117,6 +117,12 @@
             <artifactId>hawtdb</artifactId>
             <version>1.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>1.0.6</version>
+        </dependency>
                 
         <dependency>
             <groupId>junit</groupId>

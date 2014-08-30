@@ -15,10 +15,10 @@
  */
 package org.dna.mqtt.moquette.messaging.spi;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import static org.dna.mqtt.moquette.messaging.spi.impl.HawtDBPersistentStore.StoredMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +27,30 @@ import java.util.List;
  * Defines the SPI to be implemented by a StorageService that handle persistence of messages
  */
 public interface IMessagesStore {
+
+    public static class StoredMessage implements Serializable {
+        final AbstractMessage.QOSType m_qos;
+        final byte[] m_payload;
+        final String m_topic;
+
+        public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
+            m_qos = qos;
+            m_payload = message;
+            m_topic = topic;
+        }
+
+        public AbstractMessage.QOSType getQos() {
+            return m_qos;
+        }
+
+        public ByteBuffer getPayload() {
+            return (ByteBuffer) ByteBuffer.allocate(m_payload.length).put(m_payload).flip();
+        }
+
+        public String getTopic() {
+            return m_topic;
+        }
+    }
 
     /**
      * Used to initialize all persistent store structures

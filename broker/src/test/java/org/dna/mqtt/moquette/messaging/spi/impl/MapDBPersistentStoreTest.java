@@ -18,6 +18,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 import java.io.File;
 import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
+import org.dna.mqtt.moquette.messaging.spi.persistence.MapDBPersistentStore;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.Server;
 import org.junit.After;
@@ -29,16 +30,16 @@ import org.junit.Before;
  *
  * @author andrea
  */
-public class HawtDBPersistentStoreTest {
+public class MapDBPersistentStoreTest {
 
-    HawtDBPersistentStore m_storageService;
+    MapDBPersistentStore m_storageService;
         
     @Before
     public void setUp() throws Exception {
         File dbFile = new File(Server.STORAGE_FILE_PATH);
         assertFalse(String.format("The DB storagefile %s already exists", Server.STORAGE_FILE_PATH), dbFile.exists());
         
-        m_storageService = new HawtDBPersistentStore();
+        m_storageService = new MapDBPersistentStore();
         m_storageService.initStore();
     }
 

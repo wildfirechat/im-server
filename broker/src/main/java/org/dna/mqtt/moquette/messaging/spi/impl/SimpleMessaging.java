@@ -19,6 +19,8 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+
+import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +33,7 @@ import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
+import org.dna.mqtt.moquette.messaging.spi.persistence.MapDBPersistentStore;
 import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
 import org.dna.mqtt.moquette.server.Constants;
@@ -155,10 +158,12 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     private void processInit(Properties props) {
-        HawtDBPersistentStore hawtStorage = new HawtDBPersistentStore();
-        m_storageService = hawtStorage;
+        //TODO use a property to select the storage path
+        MapDBPersistentStore mapStorage = new MapDBPersistentStore();
+        m_storageService = mapStorage;
+        m_sessionsStore = mapStorage;
+
         m_storageService.initStore();
-        m_sessionsStore = hawtStorage;
         
         List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         subscriptions.init(storedSubscriptions);
