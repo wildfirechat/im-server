@@ -570,7 +570,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, cleanPubMsg);
         
         //Verify
-        Collection<HawtDBPersistentStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+        Collection<IMessagesStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
             }

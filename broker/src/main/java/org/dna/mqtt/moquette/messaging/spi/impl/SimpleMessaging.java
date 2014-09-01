@@ -20,7 +20,6 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 
-import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -34,9 +33,7 @@ import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.messaging.spi.persistence.MapDBPersistentStore;
-import org.dna.mqtt.moquette.proto.messages.PubCompMessage;
 import org.dna.mqtt.moquette.proto.messages.*;
-import org.dna.mqtt.moquette.server.Constants;
 import org.dna.mqtt.moquette.server.IAuthenticator;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import org.slf4j.Logger;

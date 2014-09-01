@@ -603,13 +603,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
-        Collection<HawtDBPersistentStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
+        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, topic);
             }
         });
 
-        for (HawtDBPersistentStore.StoredMessage storedMsg : messages) {
+        for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("send publish message for topic {}", topic);
             sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);

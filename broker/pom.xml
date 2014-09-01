@@ -50,8 +50,9 @@
             <version>1.7.5</version>
             <scope>runtime</scope>
         </dependency>
-        
-        <dependency>
+
+
+        <!--dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>1.0.0</version>
@@ -61,14 +62,14 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.compendium</artifactId>
             <version>1.0.0</version>
-        </dependency>
+        </dependency-->
         
         <!-- Included to embedded an HawtDB dependency, we host commons-logging -->
-        <dependency>
+        <!--dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.3</version>
-        </dependency>
+        </dependency-->
         
         <dependency>
             <groupId>io.netty</groupId>
@@ -106,18 +107,6 @@
             <version>4.0.8.Final</version>
         </dependency>
         
-        <dependency>
-            <groupId>org.fusesource.hawtbuf</groupId>
-            <artifactId>hawtbuf</artifactId>
-            <version>1.9</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.fusesource.hawtdb</groupId>
-            <artifactId>hawtdb</artifactId>
-            <version>1.6</version>
-        </dependency>
-
         <dependency>
             <groupId>org.mapdb</groupId>
             <artifactId>mapdb</artifactId>
@@ -181,46 +170,6 @@
                     </includes>
                 </configuration>
             </plugin>
-            
-<!--            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.1.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Export-Package>org.dna.mqtt.commons, 
-                            org.apache.commons.logging,
-                            org.dna.mqtt.moquette.messaging.spi.impl.storage,
-                            org.dna.mqtt.moquette.messaging.spi.impl.subscriptions,
-                            org.dna.mqtt.moquette.proto.messages,
-                            org.dna.mqtt.moquette.server.netty.metrics
-                        </Export-Package>
-                        <Private-Package>org.dna.mqtt.moquette.bundle,
-                            ${project.groupId}.*,
-                            com.lmax.*
-                        </Private-Package>
-                        <Import-Package>*</Import-Package>
-                        <Bundle-Activator>${project.groupId}.moquette.bundle.Activator</Bundle-Activator>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                 Pax Runner Maven plugin 
-                <groupId>org.ops4j</groupId>
-                <artifactId>maven-pax-plugin</artifactId>
-                <version>1.4</version>
-                <configuration>
-                     Pax Runner version 
-                    <runner>1.4.0</runner>
-                     OSGi framework type (equinox, felix, knopflerfish) 
-                    <framework>equinox</framework>
-                    <provision>
-                                                <param> - -log=debug</param>  
-                        <param> - -workingDirectory=target/runner</param>  
-                    </provision>
-                </configuration>
-            </plugin>-->
         </plugins>
     </build>
     

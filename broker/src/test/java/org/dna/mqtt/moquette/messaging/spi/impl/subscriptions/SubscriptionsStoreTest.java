@@ -22,11 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.dna.mqtt.moquette.messaging.spi.impl.MemoryStorageService;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.fusesource.hawtdb.api.MultiIndexFactory;
-import org.fusesource.hawtdb.api.PageFile;
-import org.fusesource.hawtdb.api.PageFileFactory;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -38,7 +34,6 @@ import org.junit.Test;
  */
 public class SubscriptionsStoreTest {
     
-    private File hawtFile;
     private SubscriptionsStore store;
 
     public SubscriptionsStoreTest() {
@@ -46,26 +41,10 @@ public class SubscriptionsStoreTest {
 
     @Before
     public void setUp() throws IOException {
-        hawtFile = File.createTempFile("moquette_persistent_store", ".dat");
-        
         store = new SubscriptionsStore();
-//        store.init(hawtFile.getAbsolutePath());
-        PageFileFactory pageFactory = new PageFileFactory();
-        
-        pageFactory.setFile(hawtFile);
-        pageFactory.open();
-        PageFile pageFile = pageFactory.getPageFile();
-        MultiIndexFactory multiIndexFactory = new MultiIndexFactory(pageFile);
         store.init(Collections.<Subscription>emptyList());
     }
     
-    @After
-    public void tearDown() {
-        if (hawtFile.exists()) {
-            hawtFile.delete();
-        }
-    }
-
     @Test
     public void testSplitTopic() throws ParseException {
         List tokens = store.splitTopic("finance/stock/ibm");

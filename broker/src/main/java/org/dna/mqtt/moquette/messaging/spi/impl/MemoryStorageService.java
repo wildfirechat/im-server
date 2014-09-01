@@ -16,19 +16,14 @@
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.*;
+
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<String, Set<Subscription>>();
-    private Map<String, HawtDBPersistentStore.StoredMessage> m_retainedStore = new HashMap<String, HawtDBPersistentStore.StoredMessage>();
+    private Map<String, StoredMessage> m_retainedStore = new HashMap<String, StoredMessage>();
     //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
     private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<String, List<PublishEvent>>();
     private Map<String, PublishEvent> m_inflightStore = new HashMap<String, PublishEvent>();
@@ -63,18 +58,18 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
             //store the message to the topic
             byte[] raw = new byte[message.remaining()];
             message.get(raw);
-            m_retainedStore.put(topic, new HawtDBPersistentStore.StoredMessage(raw, qos, topic));
+            m_retainedStore.put(topic, new StoredMessage(raw, qos, topic));
         }
     }
 
     @Override
-    public Collection<HawtDBPersistentStore.StoredMessage> searchMatching(IMatchingCondition condition) {
+    public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
-        List<HawtDBPersistentStore.StoredMessage> results = new ArrayList<HawtDBPersistentStore.StoredMessage>();
+        List<StoredMessage> results = new ArrayList<StoredMessage>();
 
-        for (Map.Entry<String, HawtDBPersistentStore.StoredMessage> entry : m_retainedStore.entrySet()) {
-            HawtDBPersistentStore.StoredMessage storedMsg = entry.getValue();
+        for (Map.Entry<String, StoredMessage> entry : m_retainedStore.entrySet()) {
+            StoredMessage storedMsg = entry.getValue();
             if (condition.match(entry.getKey())) {
                 results.add(storedMsg);
             }
