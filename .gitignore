@@ -16,3 +16,9 @@ broker/runner
 /bundle/runner/
 *~
 *log*
+.DS_Store
+.settings/
+.project
+.classpath
+*.swp
+
