@@ -13,21 +13,20 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.server;
+package org.dna.mqtt.moquette.spec.v3_1_1.connection;
 
 import java.io.IOException;
 
+import org.dna.mqtt.moquette.server.Server;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kaazing.robot.junit.annotation.Robotic;
 import org.kaazing.robot.junit.rules.RobotRule;
 
 /**
- * This class runs the robot test scripts to run the TCK for Moquette  broker, before  remember to run
- * mvn -Dmaven.robot.daemon=false robot:start from broker submodule folder
- *
  *
  * @author pkhanal
  * 
@@ -57,8 +56,25 @@ public class ConnectionIT {
 	// The test starts the server during setUp
     // The network communication is driven by the script.
     @Robotic(script = "connect.then.close")
-    @Test(timeout = 1000)
+    @Test(timeout = 2000)
     public void shouldConnectThenClose() throws Exception {
+    	robot.join();
+    }
+    
+    // TODO: server is not closing the connection immediately. 
+    // The connection is closed 10 seconds after the CorruptedFrameException is 
+    // thrown from ConnectDecoder
+    @Robotic(script = "connect.with.invalid.WillQoS")
+    @Test(timeout = 15000)
+    public void connectWithInvalidWillQoS() throws Exception {
+    	robot.join();
+    }
+    
+    
+    @Ignore("Need to validate the test case.")
+    @Robotic(script = "connect.with.WillFlag.set.to.zero.but.WillQoS.set.to.nonzero")
+    @Test(timeout = 15000)
+    public void connectWithWillFlagSetToZeroButWillQoSFlagSetToNonZero() throws Exception {
     	robot.join();
     }
 
