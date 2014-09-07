@@ -1,0 +1,46 @@
+# Copyright (c) 2012-2014 The original author or authors
+# ------------------------------------------------------
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# and Apache License v2.0 which accompanies this distribution.
+#
+# The Eclipse Public License is available at
+# http://www.eclipse.org/legal/epl-v10.html
+#
+# The Apache License v2.0 is available at
+# http://www.opensource.org/licenses/apache2.0.php
+#
+# You may elect to redistribute this code under either of these licenses.
+
+# MQTT 3.1.1
+
+# Script that sends the CONNECT control packet to broker with invalid Will QoS - 3 
+# and expects the broker to close the network connection.
+
+connect tcp://127.0.0.1:1883
+connected
+
+# CONNECT
+write [0x10]            # MQTT Control Packet type(1)
+write [0x12]            # Remaining Length
+write [0x00 0x04]       # Protocol Name Length
+write "MQTT"            # Protocol Name
+write [0x04]            # The value of the Protocol Level field for the version 3.1.1 of the protocol is 4 (0x04)
+
+                        # Connect Flags
+                        # User Name Flag(0)
+                        # Password Flag(0)
+                        # Will Retain(0)
+                        # Will QoS(11) - It MUST NOT be 3 (0x03). Serve should close the connection.
+                        # Will Flag(1)
+                        # Clean Session(1)
+write [0x1E]            # Reserved(0)
+
+write [0x00 0x00]       # Keep Alive
+
+                        # Payload
+write [0x00 0x07]       # Client Identifier Length
+write "client1"         # Client Identifier
+
+# Server MUST close the Network Connection due to invalid Will QoS flag
+closed
