@@ -1,6 +1,7 @@
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1
     Refactored big event switch to @Annotation dispatcher
+    Switched from HawtDB to MapDB
 
 Version 0.6:
     Fix issue #42, bad password file path composition
