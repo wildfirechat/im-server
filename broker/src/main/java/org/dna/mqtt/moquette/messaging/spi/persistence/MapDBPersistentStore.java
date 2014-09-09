@@ -221,7 +221,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     public void close() {
         LOG.debug("closing disk storage");
         this.m_db.commit();
-        this.m_db.close();
+//        this.m_db.close(); this is done by the Shutdown hook into MapDB
     }
 
     /*-------- QoS 2  storage management --------------*/
