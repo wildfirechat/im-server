@@ -20,7 +20,7 @@
             <artifactId>moquette-broker</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.dna.mqtt</groupId>
             <artifactId>moquette-parser-commons</artifactId>
@@ -33,7 +33,7 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
+         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
