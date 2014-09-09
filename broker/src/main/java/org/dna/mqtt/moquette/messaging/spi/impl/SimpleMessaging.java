@@ -124,7 +124,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         disruptorPublish(new StopEvent());
         try {
             //wait the callback notification from the protocol processor thread
+            LOG.debug("waiting 10 sec to m_stopLatch");
             boolean elapsed = !m_stopLatch.await(10, TimeUnit.SECONDS);
+            LOG.debug("after m_stopLatch");
+            m_executor.shutdown();
             if (elapsed) {
                 LOG.error("Can't stop the server in 10 seconds");
             }
@@ -181,9 +184,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private void processStop() {
         LOG.debug("processStop invoked");
         m_storageService.close();
-
 //        m_eventProcessor.halt();
-        m_executor.shutdown();
+//        m_executor.shutdown();
         
         subscriptions = null;
         m_stopLatch.countDown();

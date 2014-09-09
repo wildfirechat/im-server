@@ -65,7 +65,6 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
             throw new MQTTException("Can't create temp file for subscriptions storage [" + STORAGE_FILE_PATH + "]", ex);
         }
         m_db = DBMaker.newFileDB(tmpFile)
-                .closeOnJvmShutdown()
                 .make();
         m_retainedStore = m_db.getHashMap("retained");
         m_persistentMessageStore = m_db.getHashMap("persistedMessages");
@@ -219,9 +218,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     public void close() {
-        LOG.debug("closing disk storage");
         this.m_db.commit();
-//        this.m_db.close(); this is done by the Shutdown hook into MapDB
+        this.m_db.close();
+        LOG.debug("closed disk storage");
     }
 
     /*-------- QoS 2  storage management --------------*/
