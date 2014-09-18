@@ -15,10 +15,11 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import com.lmax.disruptor.BatchEventProcessor;
+import com.lmax.disruptor.BusySpinWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.SleepingWaitStrategy;
+import com.lmax.disruptor.dsl.Disruptor;
 
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +27,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import com.lmax.disruptor.dsl.ProducerType;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
@@ -61,7 +64,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private ISessionsStore m_sessionsStore;
 
     private ExecutorService m_executor;
-    BatchEventProcessor<ValueEvent> m_eventProcessor;
 
     private static SimpleMessaging INSTANCE;
     
@@ -83,15 +85,15 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void init(Properties configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
+        Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        /*Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
+                ProducerType.MULTI, new BusySpinWaitStrategy());*/
+        disruptor.handleEventsWith(this);
+        disruptor.start();
 
-        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+        // Get the ring buffer from the Disruptor to be used for publishing.
+        m_ringBuffer = disruptor.getRingBuffer();
 
-        SequenceBarrier barrier = m_ringBuffer.newBarrier();
-        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
-        //TODO in a presentation is said to don't do the following line!!
-        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
-        m_executor.submit(m_eventProcessor);
-        
         annotationSupport.processAnnotations(m_processor);
         processInit(configProps);
 //        disruptorPublish(new InitEvent(configProps));

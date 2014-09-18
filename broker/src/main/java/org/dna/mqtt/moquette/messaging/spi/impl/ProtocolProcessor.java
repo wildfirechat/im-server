@@ -15,10 +15,9 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.dsl.Disruptor;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -110,7 +109,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private Map<String, WillMessage> m_willStore = new HashMap<String, WillMessage>();
     
     private ExecutorService m_executor;
-    BatchEventProcessor<ValueEvent> m_eventProcessor;
     private RingBuffer<ValueEvent> m_ringBuffer;
 
     ProtocolProcessor() {}
@@ -135,13 +133,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //init the output ringbuffer
         m_executor = Executors.newFixedThreadPool(1);
 
-        m_ringBuffer = new RingBuffer<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32);
+        Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        disruptor.handleEventsWith(this);
+        disruptor.start();
 
-        SequenceBarrier barrier = m_ringBuffer.newBarrier();
-        m_eventProcessor = new BatchEventProcessor<ValueEvent>(m_ringBuffer, barrier, this);
-        //TODO in a presentation is said to don't do the followinf line!!
-        m_ringBuffer.setGatingSequences(m_eventProcessor.getSequence());
-        m_executor.submit(m_eventProcessor);
+        // Get the ring buffer from the Disruptor to be used for publishing.
+        m_ringBuffer = disruptor.getRingBuffer();
     }
     
     @MQTTMessage(message = ConnectMessage.class)
@@ -228,7 +225,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
         LOG.debug("processConnect sent OK ConnAck");
         session.write(okResp);
-        LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
+        LOG.warn("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         
         LOG.info("Create persistent session for clientID {}", msg.getClientID());
         m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true), msg.getClientID()); //null means EmptySubscription
@@ -525,7 +522,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //cleanup the will store
         m_willStore.remove(clientID);
         
-        LOG.info("Disconnected client <{}> with clean session {}", clientID, cleanSession);
+        LOG.warn("Disconnected client <{}> with clean session {}", clientID, cleanSession);
     }
     
     void proccessConnectionLost(String clientID) {

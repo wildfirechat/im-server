@@ -33,9 +33,9 @@
         </dependency>
         
         <dependency>
-            <groupId>com.googlecode.disruptor</groupId>
+            <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
-            <version>2.7.1</version>
+            <version>3.3.0</version>
         </dependency>
         
         <dependency>
