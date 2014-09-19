@@ -15,16 +15,14 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.dna.mqtt.moquette.messaging.spi.impl.MemoryStorageService;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.junit.After;
+
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,56 +45,56 @@ public class SubscriptionsStoreTest {
     }
     
     @Test
-    public void testSplitTopic() throws ParseException {
-        List tokens = store.splitTopic("finance/stock/ibm");
+    public void testParseTopic() throws ParseException {
+        List tokens = store.parseTopic("finance/stock/ibm");
         assertEqualsSeq(asArray("finance", "stock", "ibm"), tokens);
 
-        tokens = store.splitTopic("/finance/stock/ibm");
+        tokens = store.parseTopic("/finance/stock/ibm");
         assertEqualsSeq(asArray(Token.EMPTY, "finance", "stock", "ibm"), tokens);
 
-        tokens = store.splitTopic("/");
+        tokens = store.parseTopic("/");
         assertEqualsSeq(asArray(Token.EMPTY, Token.EMPTY), tokens);
     }
 
 //    @Test(expected = ParseException.class)
 //    public void testSplitTopicTwinsSlashAvoided() throws ParseException {
-//        store.splitTopic("/finance//stock/ibm");
+//        store.parseTopic("/finance//stock/ibm");
 //    }
 
     @Test
-    public void testSplitTopicMultiValid() throws ParseException {
-        List tokens = store.splitTopic("finance/stock/#");
+    public void testParseTopicMultiValid() throws ParseException {
+        List tokens = store.parseTopic("finance/stock/#");
         assertEqualsSeq(asArray("finance", "stock", Token.MULTI), tokens);
 
-        tokens = store.splitTopic("#");
+        tokens = store.parseTopic("#");
         assertEqualsSeq(asArray(Token.MULTI), tokens);
     }
 
     @Test(expected = ParseException.class)
-    public void testSplitTopicMultiInTheMiddleNotValid() throws ParseException {
-        store.splitTopic("finance/#/closingprice");
+    public void testParseTopicMultiInTheMiddleNotValid() throws ParseException {
+        store.parseTopic("finance/#/closingprice");
     }
 
     @Test(expected = ParseException.class)
-    public void testSplitTopicMultiNotAferSeparatorNotValid() throws ParseException {
-        store.splitTopic("finance#");
+    public void testParseTopicMultiNotAferSeparatorNotValid() throws ParseException {
+        store.parseTopic("finance#");
     }
 
     @Test
-    public void testSplitTopicSingleValid() throws ParseException {
-        List tokens = store.splitTopic("finance/stock/+");
+    public void testParseTopicSingleValid() throws ParseException {
+        List tokens = store.parseTopic("finance/stock/+");
         assertEqualsSeq(asArray("finance", "stock", Token.SINGLE), tokens);
 
-        tokens = store.splitTopic("+");
+        tokens = store.parseTopic("+");
         assertEqualsSeq(asArray(Token.SINGLE), tokens);
 
-        tokens = store.splitTopic("finance/+/ibm");
+        tokens = store.parseTopic("finance/+/ibm");
         assertEqualsSeq(asArray("finance", Token.SINGLE, "ibm"), tokens);
     }
 
     @Test(expected = ParseException.class)
-    public void testSplitTopicSingleNotAferSeparatorNotValid() throws ParseException {
-        store.splitTopic("finance+");
+    public void testParseTopicSingleNotAferSeparatorNotValid() throws ParseException {
+        store.parseTopic("finance+");
     }
 
     @Test

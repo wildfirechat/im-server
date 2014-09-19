@@ -100,7 +100,7 @@ public class SubscriptionsStore {
     private TreeNode findMatchingNode(String topic) {
         List<Token> tokens = new ArrayList<Token>();
         try {
-            tokens = splitTopic(topic);
+            tokens = parseTopic(topic);
         } catch (ParseException ex) {
             //TODO handle the parse exception
             LOG.error(null, ex);
@@ -197,7 +197,7 @@ public class SubscriptionsStore {
     public List<Subscription> matches(String topic) {
         List<Token> tokens;
         try {
-            tokens = splitTopic(topic);
+            tokens = parseTopic(topic);
         } catch (ParseException ex) {
             //TODO handle the parse exception
             LOG.error(null, ex);
@@ -240,8 +240,8 @@ public class SubscriptionsStore {
     //TODO reimplement with iterators or with queues
     public static boolean matchTopics(String msgTopic, String subscriptionTopic) {
         try {
-            List<Token> msgTokens = SubscriptionsStore.splitTopic(msgTopic);
-            List<Token> subscriptionTokens = SubscriptionsStore.splitTopic(subscriptionTopic);
+            List<Token> msgTokens = SubscriptionsStore.parseTopic(msgTopic);
+            List<Token> subscriptionTokens = SubscriptionsStore.parseTopic(subscriptionTopic);
             int i = 0;
             Token subToken = null;
             for (; i< subscriptionTokens.size(); i++) {
@@ -274,7 +274,7 @@ public class SubscriptionsStore {
         }
     }
     
-    protected static List<Token> splitTopic(String topic) throws ParseException {
+    protected static List<Token> parseTopic(String topic) throws ParseException {
         List res = new ArrayList<Token>();
         String[] splitted = topic.split("/");
 
