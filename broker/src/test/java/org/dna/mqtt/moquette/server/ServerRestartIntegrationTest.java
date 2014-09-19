@@ -49,7 +49,9 @@ public class ServerRestartIntegrationTest {
         startServer();
 
         m_mqtt = new MQTT();
+
         m_mqtt.setHost("localhost", 1883);
+        m_mqtt.setCleanSession(false);
     }
 
     @After
@@ -72,10 +74,8 @@ public class ServerRestartIntegrationTest {
     
     @Test
     public void checkRestartCleanSubscriptionTree() throws Exception {
-        //subscribe to /topic
-        m_mqtt.setHost("localhost", 1883); 
-        m_mqtt.setCleanSession(false);
         m_mqtt.setClientId("Subscriber");
+        //subscribe to /topic
         m_subscriber = m_mqtt.blockingConnection();
         m_subscriber.connect();
         Topic[] topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
@@ -98,7 +98,7 @@ public class ServerRestartIntegrationTest {
         topics = new Topic[]{new Topic("/topic", QoS.EXACTLY_ONCE)};
         m_subscriber.subscribe(topics);
         
-        //shoud be just one registration so a publisher receive one notification
+        //should be just one registration so a publisher receive one notification
         MQTT mqtt = new MQTT();
         mqtt.setHost("localhost", 1883); 
         mqtt.setClientId("Publisher");
@@ -112,5 +112,42 @@ public class ServerRestartIntegrationTest {
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
         //no more messages on the same topic will be received
         assertNull(m_subscriber.receive(1, TimeUnit.SECONDS));
+    }
+
+
+    @Test
+    public void checkDontPublishInactiveClientsAfterServerRestart() throws Exception {
+        m_mqtt.setClientId("SubPub");
+        BlockingConnection conn = subscribeAndPublish("/topic");
+        conn.disconnect();
+
+        //shutdown the server
+        m_server.stopServer();
+
+        //restart the server
+        m_server.startServer();
+
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883);
+        mqtt.setClientId("Publisher");
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), QoS.AT_MOST_ONCE, false);
+    }
+
+    /**
+     * Connect subscribe to topic and publish on the same topic
+     * */
+    private BlockingConnection subscribeAndPublish(String topic) throws Exception {
+        BlockingConnection conn = m_mqtt.blockingConnection();
+        conn.connect();
+        Topic[] topics = new Topic[]{new Topic(topic, QoS.AT_MOST_ONCE)};
+        conn.subscribe(topics);
+        conn.publish(topic, "Hello world MQTT!!".getBytes(), QoS.AT_MOST_ONCE, false);
+        //read the message
+        Message msg = conn.receive();
+        msg.ack();
+        assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
+        return conn;
     }
 }

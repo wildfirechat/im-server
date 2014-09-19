@@ -2,6 +2,7 @@ Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1
     Refactored big event switch to @Annotation dispatcher
     Switched from HawtDB to MapDB
+    Fixed bug that didn't update client subscription on persistent store so that on server restart there where ghost subscriptions.
 
 Version 0.6:
     Fix issue #42, bad password file path composition

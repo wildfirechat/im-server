@@ -16,6 +16,8 @@
 package org.dna.mqtt.moquette.messaging.spi;
 
 import java.util.List;
+import java.util.Set;
+
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 
 /**
@@ -34,6 +36,11 @@ public interface ISessionsStore {
      * Remove all the subscriptions of the session
      */
     void wipeSubscriptions(String sessionID);
+
+    /**
+     * Updates the subscriptions set for the clientID
+     * */
+    void updateSubscriptions(String clientID, Set<Subscription> subscriptions);
 
     List<Subscription> listAllSubscriptions();
 

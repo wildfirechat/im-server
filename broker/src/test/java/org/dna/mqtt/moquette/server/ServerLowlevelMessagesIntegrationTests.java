@@ -64,8 +64,10 @@ public class ServerLowlevelMessagesIntegrationTests {
     @After
     public void tearDown() throws Exception {
         m_client.close();
-        
+        LOG.debug("After raw client close");
+        Thread.sleep(300); //to let the close event pass before server stop event
         m_server.stopServer();
+        LOG.debug("After asked server to stop");
         File dbFile = new File(Server.STORAGE_FILE_PATH);
         if (dbFile.exists()) {
             dbFile.delete();
@@ -111,11 +113,14 @@ public class ServerLowlevelMessagesIntegrationTests {
         //Execute
         m_client.sendMessage(connectMessage);
         long connectTime = System.currentTimeMillis();
-        
-        //but after the 2 KEEP ALIVE timeut expires it gets fired, 
+
+        //but after the 2 KEEP ALIVE timeout expires it gets fired,
         //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
-        Message msg = willSubscriber.receive(3100, TimeUnit.MILLISECONDS);
+        Message msg = willSubscriber.receive(3300, TimeUnit.MILLISECONDS);
         long willMessageReceiveTime = System.currentTimeMillis();
+        if (msg == null) {
+            LOG.warn("testament message is null");
+        }
         assertNotNull("the will message should be fired after keep alive!", msg);
         msg.ack();
         //the will message hasn't to be received before the elapsing of Keep Alive timeout

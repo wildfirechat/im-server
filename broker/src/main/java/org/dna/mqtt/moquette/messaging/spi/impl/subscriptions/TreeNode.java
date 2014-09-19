@@ -15,15 +15,11 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class TreeNode {
-    
+
     private class ClientIDComparator implements Comparator<Subscription> {
 
         public int compare(Subscription o1, Subscription o2) {
@@ -181,6 +177,22 @@ class TreeNode {
         for (TreeNode child : m_children) {
             child.activate(clientID);
         }
+    }
 
+    /**
+     * @return the set of subscriptions for the given client.
+     * */
+    Set<Subscription> findAllByClientID(String clientID) {
+        Set<Subscription> subs = new HashSet<Subscription>();
+        for (Subscription s : m_subscriptions) {
+            if (s.clientId.equals(clientID)) {
+                subs.add(s);
+            }
+        }
+        //go deep
+        for (TreeNode child : m_children) {
+            subs.addAll(child.findAllByClientID(clientID));
+        }
+        return subs;
     }
 }

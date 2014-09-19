@@ -19,7 +19,6 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +29,6 @@ import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.*;
-import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.SubscriptionsStore;
 import org.dna.mqtt.moquette.messaging.spi.persistence.MapDBPersistentStore;
 import org.dna.mqtt.moquette.proto.messages.*;
@@ -61,6 +59,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private ISessionsStore m_sessionsStore;
 
     private ExecutorService m_executor;
+    private Disruptor<ValueEvent> m_disruptor;
 
     private static SimpleMessaging INSTANCE;
     
@@ -82,14 +81,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void init(Properties configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
-        Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
-        /*Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
+        m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        /*Disruptor<ValueEvent> m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
                 ProducerType.MULTI, new BusySpinWaitStrategy());*/
-        disruptor.handleEventsWith(this);
-        disruptor.start();
+        m_disruptor.handleEventsWith(this);
+        m_disruptor.start();
 
         // Get the ring buffer from the Disruptor to be used for publishing.
-        m_ringBuffer = disruptor.getRingBuffer();
+        m_ringBuffer = m_disruptor.getRingBuffer();
 
         annotationSupport.processAnnotations(m_processor);
         processInit(configProps);
@@ -127,6 +126,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             boolean elapsed = !m_stopLatch.await(10, TimeUnit.SECONDS);
             LOG.debug("after m_stopLatch");
             m_executor.shutdown();
+            m_disruptor.shutdown();
             if (elapsed) {
                 LOG.error("Can't stop the server in 10 seconds");
             }
@@ -164,8 +164,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         m_storageService.initStore();
         
-        List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
-        subscriptions.init(storedSubscriptions);
+        //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
+        //subscriptions.init(storedSubscriptions);
+        subscriptions.init(m_sessionsStore);
         
         String passwdPath = props.getProperty("password_file", "");
         String configPath = System.getProperty("moquette.path", null);

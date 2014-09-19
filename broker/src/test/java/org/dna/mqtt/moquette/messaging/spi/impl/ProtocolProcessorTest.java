@@ -162,7 +162,7 @@ public class ProtocolProcessorTest {
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(Collections.<Subscription>emptyList());
+        subscriptions.init(new MemoryStorageService());
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator);
     }
@@ -298,7 +298,7 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(Collections.<Subscription>emptyList());
+        subs.init(new MemoryStorageService());
         m_processor.init(subs, m_storageService, m_sessionStore, null);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProcotolVersion((byte)3);
@@ -342,7 +342,7 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(Collections.<Subscription>emptyList());
+        subs.init(new MemoryStorageService());
         m_processor.init(subs, m_storageService, m_sessionStore, null);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
@@ -372,7 +372,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, msg);
 
         //Verify
-        Thread.sleep(100); //ugly but we dependend on the asynch that pull data from back disruptor
+        Thread.sleep(100); //ugly but we depend on the asynch that pull data from back disruptor
         PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverSession.getMessage();
         assertNotNull(pub2FirstSubscriber);
         String firstMessageContent = DebugUtils.payload2Str(pub2FirstSubscriber.getPayload());
@@ -458,7 +458,7 @@ public class ProtocolProcessorTest {
                 }
             }
         };
-        subs.init(Collections.<Subscription>emptyList());
+        subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_storageService, m_sessionStore, null);

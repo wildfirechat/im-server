@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.dna.mqtt.moquette.messaging.spi.impl.MemoryStorageService;
 import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -42,7 +43,7 @@ public class SubscriptionsStoreTest {
     @Before
     public void setUp() throws IOException {
         store = new SubscriptionsStore();
-        store.init(Collections.<Subscription>emptyList());
+        store.init(new MemoryStorageService());
     }
     
     @Test
@@ -232,7 +233,7 @@ public class SubscriptionsStoreTest {
     
     private void assertMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
-        store.init(Collections.<Subscription>emptyList());
+        store.init(new MemoryStorageService());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertFalse(store.matches(topic).isEmpty());
@@ -240,7 +241,7 @@ public class SubscriptionsStoreTest {
     
     private void assertNotMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
-        store.init(Collections.<Subscription>emptyList());
+        store.init(new MemoryStorageService());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertTrue(store.matches(topic).isEmpty());
@@ -325,7 +326,7 @@ public class SubscriptionsStoreTest {
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
         SubscriptionsStore aStore = new SubscriptionsStore();
-        aStore.init(Collections.<Subscription>emptyList());
+        aStore.init(new MemoryStorageService());
         //subscribe a not active clientID1 to /topic
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
         aStore.add(slashSub);

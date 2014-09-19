@@ -16,12 +16,10 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class SubscriptionsStore {
-    
+
     public static interface IVisitor<T> {
         void visit(TreeNode node);
         
@@ -70,19 +68,21 @@ public class SubscriptionsStore {
     }
 
     private TreeNode subscriptions = new TreeNode(null);
+    private ISessionsStore m_sessionsStore;
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
     /**
      * Initialize the subscription tree with the list of subscriptions.
      */
-    public void init(List<Subscription> subscriptions) {
+    public void init(ISessionsStore sessionsStore) {
         LOG.debug("init invoked");
-
+        m_sessionsStore = sessionsStore;
+        List<Subscription> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any subscriptions persisted
         if (LOG.isDebugEnabled()) {
             LOG.debug("Reloading all stored subscriptions...subscription tree before {}", dumpTree());
         }
-        
+
         for (Subscription subscription : subscriptions) {
             LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
             addDirect(subscription);
@@ -169,18 +169,24 @@ public class SubscriptionsStore {
      */
     public void removeForClient(String clientID) {
         subscriptions.removeClientSubscriptions(clientID);
-
+        //TODO persist the update
         //remove from log all subscriptions
 //        m_storageService.removeAllSubscriptions(clientID);
     }
 
     public void deactivate(String clientID) {
         subscriptions.deactivate(clientID);
+        //persist the update
+        Set<Subscription> subs = subscriptions.findAllByClientID(clientID);
+        m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 
     public void activate(String clientID) {
         LOG.debug("Activating subscriptions for clientID <{}>", clientID);
         subscriptions.activate(clientID);
+        //persist the update
+        Set<Subscription> subs = subscriptions.findAllByClientID(clientID);
+        m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 
     /**

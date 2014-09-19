@@ -203,6 +203,12 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_db.commit();
     }
 
+    @Override
+    public void updateSubscriptions(String clientID, Set<Subscription> subscriptions) {
+        m_persistentSubscriptions.put(clientID, subscriptions);
+        m_db.commit();
+    }
+
     public List<Subscription> listAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
@@ -219,6 +225,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     public void close() {
         this.m_db.commit();
+        LOG.debug("persisted subscriptions {}", m_persistentSubscriptions);
         this.m_db.close();
         LOG.debug("closed disk storage");
     }
