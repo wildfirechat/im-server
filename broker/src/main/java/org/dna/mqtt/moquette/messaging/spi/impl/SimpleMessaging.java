@@ -15,10 +15,8 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import com.lmax.disruptor.BusySpinWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.lmax.disruptor.dsl.ProducerType;
 import org.dna.mqtt.moquette.messaging.spi.IMessaging;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
@@ -148,7 +145,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         } 
         if (evt instanceof LostConnectionEvent) {
             LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
-            m_processor.proccessConnectionLost(lostEvt.getClientID());
+            m_processor.processConnectionLost(lostEvt.getClientID());
             return;
         }
         
@@ -186,6 +183,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private void processStop() {
         LOG.debug("processStop invoked");
         m_storageService.close();
+        LOG.debug("subscription tree {}", subscriptions.dumpTree());
 //        m_eventProcessor.halt();
 //        m_executor.shutdown();
         
