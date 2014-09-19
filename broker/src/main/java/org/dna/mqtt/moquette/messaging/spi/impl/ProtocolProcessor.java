@@ -126,6 +126,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             IAuthenticator authenticator) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
+        LOG.debug("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
@@ -525,7 +526,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.warn("Disconnected client <{}> with clean session {}", clientID, cleanSession);
     }
     
-    void proccessConnectionLost(String clientID) {
+    void processConnectionLost(String clientID) {
         //If already removed a disconnect message was already processed for this clientID
         if (m_clientIDs.remove(clientID) != null) {
 
@@ -533,11 +534,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             subscriptions.deactivate(clientID);
             LOG.info("Lost connection with client <{}>", clientID);
         }
-        //TODO publish the Will message (if any) for the clientID
+        //publish the Will message (if any) for the clientID
         if (m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);
-//            PublishEvent pubEvt = new PublishEvent(will.getTopic(), will.getQos(), 
-//                    will.getPayload(), will.isRetained(), clientID);
             processPublish(will, clientID);
             m_willStore.remove(clientID);
         }
