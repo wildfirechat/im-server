@@ -169,9 +169,8 @@ public class SubscriptionsStore {
      */
     public void removeForClient(String clientID) {
         subscriptions.removeClientSubscriptions(clientID);
-        //TODO persist the update
-        //remove from log all subscriptions
-//        m_storageService.removeAllSubscriptions(clientID);
+        //persist the update
+        m_sessionsStore.wipeSubscriptions(clientID);
     }
 
     public void deactivate(String clientID) {
