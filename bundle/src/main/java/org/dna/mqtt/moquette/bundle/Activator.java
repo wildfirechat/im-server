@@ -35,11 +35,11 @@ public class Activator implements BundleActivator {
     public void start(BundleContext bundleContext) throws Exception {
         server = new Server();
         server.startServer();
-        LOG.info("Moquette MQTT broker started, version 0.5");
+        LOG.info("Moquette MQTT broker started, version 0.7-SNAPSHOT");
     }
 
     public void stop(BundleContext bundleContext) throws Exception {
         server.stopServer();
-        LOG.info("Moquette MQTT broker stopped, version 0.5");
+        LOG.info("Moquette MQTT broker stopped, version 0.7-SNAPSHOT");
     }
 }
