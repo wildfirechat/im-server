@@ -6,7 +6,7 @@
         <mina-version>2.0.7</mina-version>
     </properties>
     
-    <groupId>org.dna.mqtt</groupId>
+    <groupId>org.eclipse.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>

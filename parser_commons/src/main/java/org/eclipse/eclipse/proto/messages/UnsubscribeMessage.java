@@ -13,14 +13,27 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.commons;
+package org.eclipse.moquette.proto.messages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Contains some useful constants.
+ *
+ * @author andrea
  */
-public class Constants {
-    public static final int PORT = 1883;
-    public static final int WEBSOCKET_PORT = 8080;
-    public static final String HOST = "0.0.0.0";
-    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
+public class UnsubscribeMessage extends MessageIDMessage {
+    List<String> m_types = new ArrayList<String>();
+    
+    public UnsubscribeMessage() {
+        m_messageType = AbstractMessage.UNSUBSCRIBE;
+    }
+
+    public List<String> topicFilters() {
+        return m_types;
+    }
+
+    public void addTopicFilter(String type) {
+        m_types.add(type);
+    }
 }

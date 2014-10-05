@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
 
 import java.util.ArrayList;
 import java.util.List;

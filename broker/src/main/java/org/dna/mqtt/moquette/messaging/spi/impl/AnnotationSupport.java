@@ -18,7 +18,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 
 /**

@@ -13,9 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto;
+package org.eclipse.moquette.proto;
 
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.proto.messages.AbstractMessage;
 
 /**
  * Common utils methodd used in codecs.

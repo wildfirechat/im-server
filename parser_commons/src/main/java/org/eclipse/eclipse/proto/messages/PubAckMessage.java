@@ -13,16 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
 
 /**
- * Placeholder for PUBREC message.
+ * Placeholder for PUBACK message.
  * 
  * @author andrea
  */
-public class PubRecMessage extends MessageIDMessage {
+public class PubAckMessage extends MessageIDMessage {
     
-    public PubRecMessage() {
-        m_messageType = AbstractMessage.PUBREC;
+    public PubAckMessage() {
+        m_messageType = AbstractMessage.PUBACK;
     }
 }

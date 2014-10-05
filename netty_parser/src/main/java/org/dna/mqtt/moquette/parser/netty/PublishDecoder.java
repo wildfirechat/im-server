@@ -17,12 +17,11 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.PublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

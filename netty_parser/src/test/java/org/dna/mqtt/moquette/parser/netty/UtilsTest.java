@@ -22,8 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.UnsubscribeMessage;
 
 /**
  *

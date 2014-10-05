@@ -13,12 +13,28 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author andrea
  */
-public abstract class ZeroLengthMessage extends AbstractMessage {
+public class SubAckMessage extends MessageIDMessage {
+
+    List<QOSType> m_types = new ArrayList<QOSType>();
     
+    public SubAckMessage() {
+        m_messageType = AbstractMessage.SUBACK;
+    }
+
+    public List<QOSType> types() {
+        return m_types;
+    }
+
+    public void addType(QOSType type) {
+        m_types.add(type);
+    }
 }

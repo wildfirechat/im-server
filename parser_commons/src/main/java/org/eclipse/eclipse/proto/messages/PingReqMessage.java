@@ -13,16 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
 
 /**
- *
+ * Doesn't care DUP, QOS and RETAIN flags.
+ * 
  * @author andrea
  */
-public class UnsubAckMessage extends MessageIDMessage {
+public class PingReqMessage extends ZeroLengthMessage {
     
-    public UnsubAckMessage() {
-        m_messageType = AbstractMessage.UNSUBACK;
+    public PingReqMessage() {
+        m_messageType = AbstractMessage.PINGREQ;
     }
 }
-

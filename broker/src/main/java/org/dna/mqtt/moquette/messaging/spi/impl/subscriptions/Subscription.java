@@ -16,7 +16,7 @@
 package org.dna.mqtt.moquette.messaging.spi.impl.subscriptions;
 
 import java.io.Serializable;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.proto.messages.AbstractMessage.QOSType;
 
 /**
  * Maintain the information about which Topic a certain ClientID is subscribed 

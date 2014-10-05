@@ -20,8 +20,8 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
-import org.dna.mqtt.moquette.proto.messages.SubscribeMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.proto.messages.SubscribeMessage;
 
 /**
  *

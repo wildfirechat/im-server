@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
 import static org.dna.mqtt.moquette.parser.netty.TestUtils.*;
-import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
+import org.dna.mqtt.proto.messages.PubAckMessage;
 
 /**
  *

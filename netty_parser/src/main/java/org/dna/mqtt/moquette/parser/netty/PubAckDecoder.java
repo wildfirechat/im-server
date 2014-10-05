@@ -15,8 +15,8 @@
  */
 package org.dna.mqtt.moquette.parser.netty;
 
-import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
-import org.dna.mqtt.moquette.proto.messages.PubAckMessage;
+import org.dna.mqtt.proto.messages.MessageIDMessage;
+import org.dna.mqtt.proto.messages.PubAckMessage;
 
 /**
  *

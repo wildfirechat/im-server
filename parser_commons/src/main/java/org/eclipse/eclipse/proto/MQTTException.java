@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette;
+package org.eclipse.moquette.proto;
 
 /**
  *

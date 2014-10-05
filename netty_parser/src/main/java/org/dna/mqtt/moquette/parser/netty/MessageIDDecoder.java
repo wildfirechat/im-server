@@ -18,7 +18,7 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
+import org.dna.mqtt.proto.messages.MessageIDMessage;
 
 /**
  *

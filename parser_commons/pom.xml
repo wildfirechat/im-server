@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
-        <groupId>org.dna.mqtt</groupId>
+        <groupId>org.eclipse.moquette</groupId>
         <version>0.7-SNAPSHOT</version>
     </parent>
 
@@ -53,16 +53,16 @@
                 </configuration>
             </plugin>
             
-            <plugin>
+            <!--plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>org/dna/mqtt/moquette/proto/TestUtils.java</exclude>
-                        <exclude>org/dna/mqtt/moquette/proto/TestUtils$*</exclude>
+                        <exclude>org/eclipse/moquette/proto/TestUtils.java</exclude>
+                        <exclude>org/eclipse/moquette/proto/TestUtils$*</exclude>
                     </excludes>
                 </configuration>
-            </plugin>
+            </plugin-->
 
         </plugins>
     </build>

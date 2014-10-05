@@ -19,7 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 
 /**
  *

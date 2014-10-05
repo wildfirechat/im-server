@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.List;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
 import org.dna.mqtt.moquette.messaging.spi.persistence.MapDBPersistentStore;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 import org.dna.mqtt.moquette.server.Server;
 import org.junit.After;
 import org.junit.Test;

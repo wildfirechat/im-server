@@ -19,8 +19,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.MessageIDMessage;
-import org.dna.mqtt.moquette.proto.messages.PubRelMessage;
+import org.dna.mqtt.proto.messages.MessageIDMessage;
+import org.dna.mqtt.proto.messages.PubRelMessage;
 
 /**
  *

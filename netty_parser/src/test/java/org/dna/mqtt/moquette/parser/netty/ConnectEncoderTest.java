@@ -18,7 +18,7 @@ package org.dna.mqtt.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.proto.messages.ConnectMessage;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;

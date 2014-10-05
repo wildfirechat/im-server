@@ -18,7 +18,7 @@ package org.dna.mqtt.moquette.messaging.spi;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 
 import java.util.Collection;
 import java.util.List;

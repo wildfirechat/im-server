@@ -189,7 +189,7 @@
                             <!--org.apache.commons.logging,-->
                             <!--org.dna.mqtt.moquette.messaging.spi.impl.storage,-->
                             <!--org.dna.mqtt.moquette.messaging.spi.impl.subscriptions,-->
-                            org.dna.mqtt.moquette.proto.messages.*,
+                            org.dna.mqtt.proto.messages.*,
                             org.dna.mqtt.moquette.server.netty.metrics
                         </Export-Package>
                         <Private-Package>org.dna.mqtt.moquette.bundle,

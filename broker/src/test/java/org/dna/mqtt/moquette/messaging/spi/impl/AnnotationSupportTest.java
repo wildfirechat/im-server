@@ -15,8 +15,8 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl;
 
-import org.dna.mqtt.moquette.proto.messages.ConnAckMessage;
-import org.dna.mqtt.moquette.proto.messages.ConnectMessage;
+import org.dna.mqtt.proto.messages.ConnAckMessage;
+import org.dna.mqtt.proto.messages.ConnectMessage;
 import org.dna.mqtt.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;

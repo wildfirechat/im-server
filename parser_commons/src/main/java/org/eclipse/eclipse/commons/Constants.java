@@ -13,16 +13,14 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.commons;
 
 /**
- * Doesn't care DUP, QOS and RETAIN flags.
- * 
- * @author andrea
+ * Contains some useful constants.
  */
-public class PingReqMessage extends ZeroLengthMessage {
-    
-    public PingReqMessage() {
-        m_messageType = AbstractMessage.PINGREQ;
-    }
+public class Constants {
+    public static final int PORT = 1883;
+    public static final int WEBSOCKET_PORT = 8080;
+    public static final String HOST = "0.0.0.0";
+    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
 }

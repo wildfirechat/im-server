@@ -13,27 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.eclipse.moquette.proto.messages;
 
 /**
  *
  * @author andrea
  */
-public class UnsubscribeMessage extends MessageIDMessage {
-    List<String> m_types = new ArrayList<String>();
+public class PubCompMessage extends MessageIDMessage {
     
-    public UnsubscribeMessage() {
-        m_messageType = AbstractMessage.UNSUBSCRIBE;
-    }
-
-    public List<String> topicFilters() {
-        return m_types;
-    }
-
-    public void addTopicFilter(String type) {
-        m_types.add(type);
+    public PubCompMessage() {
+        m_messageType = AbstractMessage.PUBCOMP;
     }
 }
+

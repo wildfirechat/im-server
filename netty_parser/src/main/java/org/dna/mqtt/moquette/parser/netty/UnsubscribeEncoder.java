@@ -17,8 +17,8 @@ package org.dna.mqtt.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
-import org.dna.mqtt.moquette.proto.messages.UnsubscribeMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.UnsubscribeMessage;
 
 
 /**

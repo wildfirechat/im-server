@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.dna.mqtt.moquette.messaging.spi.impl.MemoryStorageService;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 
 import static org.junit.Assert.*;
 import org.junit.Before;

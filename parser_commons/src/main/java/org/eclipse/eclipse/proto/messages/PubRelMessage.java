@@ -13,16 +13,15 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
 
 /**
  *
  * @author andrea
  */
-public class PubCompMessage extends MessageIDMessage {
+public class PubRelMessage extends MessageIDMessage {
     
-    public PubCompMessage() {
-        m_messageType = AbstractMessage.PUBCOMP;
+    public PubRelMessage() {
+        m_messageType = AbstractMessage.PUBREL;
     }
 }
-

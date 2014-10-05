@@ -22,7 +22,7 @@ import io.netty.util.AttributeMap;
 import io.netty.util.DefaultAttributeMap;
 import java.util.ArrayList;
 import java.util.List;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;

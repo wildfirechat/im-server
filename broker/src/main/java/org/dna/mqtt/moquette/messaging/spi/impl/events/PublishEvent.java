@@ -15,10 +15,9 @@
  */
 package org.dna.mqtt.moquette.messaging.spi.impl.events;
 
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.proto.messages.AbstractMessage.QOSType;
 
 import java.nio.ByteBuffer;
-import org.dna.mqtt.moquette.proto.messages.PublishMessage;
 
 /**
  *

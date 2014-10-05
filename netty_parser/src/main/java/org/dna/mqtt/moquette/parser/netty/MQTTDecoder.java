@@ -23,7 +23,7 @@ import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 
 /**
  *

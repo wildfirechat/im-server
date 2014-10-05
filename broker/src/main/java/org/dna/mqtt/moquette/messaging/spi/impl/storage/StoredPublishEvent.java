@@ -18,7 +18,7 @@ package org.dna.mqtt.moquette.messaging.spi.impl.storage;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage.QOSType;
+import org.dna.mqtt.proto.messages.AbstractMessage.QOSType;
 
 /**
  * Publish event serialized to the DB.

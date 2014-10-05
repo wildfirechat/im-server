@@ -16,14 +16,14 @@
 
 package org.dna.mqtt.moquette.messaging.spi.persistence;
 
-import org.dna.mqtt.moquette.MQTTException;
+import org.dna.mqtt.proto.MQTTException;
 import org.dna.mqtt.moquette.messaging.spi.IMatchingCondition;
 import org.dna.mqtt.moquette.messaging.spi.IMessagesStore;
 import org.dna.mqtt.moquette.messaging.spi.ISessionsStore;
 import org.dna.mqtt.moquette.messaging.spi.impl.events.PublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.storage.StoredPublishEvent;
 import org.dna.mqtt.moquette.messaging.spi.impl.subscriptions.Subscription;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 import static org.dna.mqtt.moquette.server.Server.STORAGE_FILE_PATH;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;

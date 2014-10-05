@@ -21,7 +21,7 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
-import org.dna.mqtt.moquette.proto.messages.AbstractMessage;
+import org.dna.mqtt.proto.messages.AbstractMessage;
 import org.slf4j.LoggerFactory;
 
 /**

@@ -13,15 +13,12 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.dna.mqtt.moquette.proto.messages;
+package org.eclipse.moquette.proto.messages;
 
 /**
- * Doesn't care DUP, QOS and RETAIN flags.
+ *
  * @author andrea
  */
-public class PingRespMessage extends ZeroLengthMessage {
+public abstract class ZeroLengthMessage extends AbstractMessage {
     
-    public PingRespMessage() {
-        m_messageType = AbstractMessage.PINGRESP;
-    }
 }
