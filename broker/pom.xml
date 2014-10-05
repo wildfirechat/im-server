@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
-        <groupId>org.dna.mqtt</groupId>
+        <groupId>org.eclipse.moquette</groupId>
         <version>0.7-SNAPSHOT</version>
     </parent>
 
@@ -21,13 +21,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-parser-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-netty-parser</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -214,11 +214,11 @@
         </plugins>
     </build>
     
-    <repositories>
+    <!--repositories>
         <repository>
             <id>Paho Releases</id>
             <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
         </repository>
 
-    </repositories>
+    </repositories-->
 </project>

@@ -55,7 +55,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.dna.mqtt.moquette.server.Server</mainClass>
+                                <mainClass>org.eclipse.moquette.server.Server</mainClass>
                             </manifest>
                         </archive>
 

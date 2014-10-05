@@ -1,7 +1,7 @@
 @GrabResolver(name='moquette-bintray', root='http://dl.bintray.com/andsel/maven/')
 @Grab(group='org.dna.mqtt', module='moquette-broker', version='0.6')
 
-import org.dna.mqtt.moquette.server.Server
+import org.eclipse.moquette.server.Server
 
 println "Starting broker in embedded mode"
 Server server = new Server()

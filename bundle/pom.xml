@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
-        <groupId>org.dna.mqtt</groupId>
+        <groupId>org.eclipse.moquette</groupId>
         <version>0.7-SNAPSHOT</version>
     </parent>
 
@@ -21,19 +21,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-parser-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-netty-parser</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>org.dna.mqtt</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-broker</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -185,18 +185,18 @@
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            <!--org.dna.mqtt.commons,-->
+                            <!--org.eclipse.moquette.commons,-->
                             <!--org.apache.commons.logging,-->
-                            <!--org.dna.mqtt.moquette.messaging.spi.impl.storage,-->
-                            <!--org.dna.mqtt.moquette.messaging.spi.impl.subscriptions,-->
-                            org.dna.mqtt.proto.messages.*,
-                            org.dna.mqtt.moquette.server.netty.metrics
+                            <!--org.eclipse.moquette.spi.impl.storage,-->
+                            <!--org.eclipse.moquette.spi.impl.subscriptions,-->
+                            org.eclipse.moquette.proto.messages.*,
+                            org.eclipse.moquette.server.netty.metrics
                         </Export-Package>
-                        <Private-Package>org.dna.mqtt.moquette.bundle,
+                        <Private-Package>org.eclipse.moquette.bundle,
                             ${project.groupId}.*,
                             com.lmax.*
                         </Private-Package>
-                        <Import-Package>!org.dna.mqtt,*</Import-Package>
+                        <Import-Package>!org.eclipse.moquette,*</Import-Package>
                         <Bundle-Activator>${project.groupId}.moquette.bundle.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
@@ -221,11 +221,10 @@
         </plugins>
     </build>
     
-    <repositories>
+    <!--repositories>
         <repository>
             <id>Paho Releases</id>
             <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
         </repository>
-
-    </repositories>
+    </repositories-->
 </project>
