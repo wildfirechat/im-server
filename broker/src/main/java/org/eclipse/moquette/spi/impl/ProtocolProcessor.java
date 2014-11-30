@@ -172,6 +172,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             }
 
             m_clientIDs.get(msg.getClientID()).getSession().close(false);
+            LOG.info("Found an existing connection with same client ID <{}>, forced to close", msg.getClientID());
         }
 
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());

@@ -150,8 +150,8 @@
 
         <dependency>
             <groupId>org.eclipse.paho</groupId>
-            <artifactId>mqtt-client</artifactId>
-            <version>0.4.0</version>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -221,10 +221,10 @@
         </plugins>
     </build>
     
-    <!--repositories>
+    <repositories>
         <repository>
             <id>Paho Releases</id>
             <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
         </repository>
-    </repositories-->
+    </repositories>
 </project>
