@@ -26,34 +26,28 @@
             <version>${project.version}</version>
         </dependency>
         
-<!--        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.0.8.Final</version>
-        </dependency>-->
-        
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-common</artifactId>
-            <version>4.0.8.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
-            <version>4.0.8.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
-            <version>4.0.8.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.0.8.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         
         <dependency>
