@@ -227,7 +227,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
         LOG.debug("processConnect sent OK ConnAck");
         session.write(okResp);
-        LOG.warn("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
+        LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         
         LOG.info("Create persistent session for clientID {}", msg.getClientID());
         m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true), msg.getClientID()); //null means EmptySubscription
@@ -524,7 +524,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //cleanup the will store
         m_willStore.remove(clientID);
         
-        LOG.warn("Disconnected client <{}> with clean session {}", clientID, cleanSession);
+        LOG.info("Disconnected client <{}> with clean session {}", clientID, cleanSession);
     }
     
     void processConnectionLost(String clientID) {
