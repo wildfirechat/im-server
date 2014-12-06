@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.connection;
+package org.eclipse.moquette.spec.v3_1_1.connection;
 
 import java.io.IOException;
 
