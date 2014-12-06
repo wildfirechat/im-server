@@ -63,6 +63,9 @@ public class Server {
      * Starts Moquette bringing the configuration from the given file
      */
     public void startServer(File configFile) throws IOException {
+        LOG.info("Using config file: " + configFile.getAbsolutePath());
+        LOG.info("Persistent store file: " + STORAGE_FILE_PATH);
+
         ConfigurationParser confParser = new ConfigurationParser();
         try {
             confParser.parse(configFile);

@@ -119,7 +119,7 @@ public class NettyAcceptor implements ServerAcceptor {
         try {
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
-            LOG.info("Server binded");
+            LOG.info("Server binded host: {}, port: {}", host, port);
             f.sync();
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
