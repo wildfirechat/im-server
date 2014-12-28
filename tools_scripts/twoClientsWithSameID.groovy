@@ -14,21 +14,39 @@ MqttDefaultFilePersistence dataStore1 = new MqttDefaultFilePersistence(tmpDir + 
 MqttClient client1 = new MqttClient("tcp://${host}:1883", "ConnectedClient", dataStore1)
 client1.connect()
 println "Client1 connected"
-client1.subscribe("topic", 0)
-println "Client1 subscribed to topic"
-
-sleep(500)
+sleep(3000)
 
 //now connect a second client but with the same ID
 MqttDefaultFilePersistence dataStore2 = new MqttDefaultFilePersistence(tmpDir + "/client2")
 MqttClient client2 = new MqttClient("tcp://${host}:1883", "ConnectedClient", dataStore2)
 client2.connect()
 println "Client2 connected"
-client2.subscribe("topic", 0)
+try {
+    client1.subscribe("topic", 2)
+    println "BAD! Client1 subscribed to topic but its session has to be dropped out by client2"
+} catch (Exception ex) {
+    println "Ok, client1 has been dropped out"
+}
+sleep(3000)
+
+//now connect a second client but with the same ID
+MqttDefaultFilePersistence dataStorePublisher = new MqttDefaultFilePersistence(tmpDir + "/publisher")
+MqttClient publisher = new MqttClient("tcp://${host}:1883", "Publisher", dataStorePublisher)
+publisher.connect()
+println "publisher connected"
+client2.subscribe("topic", 2)
 println "Client2 subscribed to topic"
+sleep(3000)
+
+print "Publisher is going to publish.."
+publisher.publish('topic', 'Hello world!!'.bytes, 2, false)
+println "Ok mate, done!"
 
 client1.disconnect()
 println "Client1 disconnected"
 
 client2.disconnect()
 println "Client2 disconnected"
+
+publisher.disconnect()
+println "publisher disconnected"
