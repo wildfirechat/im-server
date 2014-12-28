@@ -67,7 +67,7 @@ public class NettyAcceptor implements ServerAcceptor {
         protected void decode(ChannelHandlerContext chc, BinaryWebSocketFrame frame, List<Object> out) throws Exception {
             //convert the frame to a ByteBuf
             ByteBuf bb = frame.content();
-            System.out.println("WebSocketFrameToByteBufDecoder decode - " + ByteBufUtil.hexDump(bb));
+            //System.out.println("WebSocketFrameToByteBufDecoder decode - " + ByteBufUtil.hexDump(bb));
             bb.retain();
             out.add(bb);
         }
@@ -79,7 +79,7 @@ public class NettyAcceptor implements ServerAcceptor {
         protected void encode(ChannelHandlerContext chc, ByteBuf bb, List<Object> out) throws Exception {
             //convert the ByteBuf to a WebSocketFrame
             BinaryWebSocketFrame result = new BinaryWebSocketFrame();
-            System.out.println("ByteBufToWebSocketFrameEncoder encode - " + ByteBufUtil.hexDump(bb));
+            //System.out.println("ByteBufToWebSocketFrameEncoder encode - " + ByteBufUtil.hexDump(bb));
             result.content().writeBytes(bb);
             out.add(result);
         }
