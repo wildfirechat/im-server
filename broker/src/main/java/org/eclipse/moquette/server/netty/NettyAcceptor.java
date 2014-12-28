@@ -17,6 +17,7 @@ package org.eclipse.moquette.server.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -66,6 +67,8 @@ public class NettyAcceptor implements ServerAcceptor {
         protected void decode(ChannelHandlerContext chc, BinaryWebSocketFrame frame, List<Object> out) throws Exception {
             //convert the frame to a ByteBuf
             ByteBuf bb = frame.content();
+            System.out.println("WebSocketFrameToByteBufDecoder decode - " + ByteBufUtil.hexDump(bb));
+            bb.retain();
             out.add(bb);
         }
     }
@@ -75,8 +78,10 @@ public class NettyAcceptor implements ServerAcceptor {
         @Override
         protected void encode(ChannelHandlerContext chc, ByteBuf bb, List<Object> out) throws Exception {
             //convert the ByteBuf to a WebSocketFrame
-            BinaryWebSocketFrame result = new BinaryWebSocketFrame(bb);
-            out.add(bb);
+            BinaryWebSocketFrame result = new BinaryWebSocketFrame();
+            System.out.println("ByteBufToWebSocketFrameEncoder encode - " + ByteBufUtil.hexDump(bb));
+            result.content().writeBytes(bb);
+            out.add(result);
         }
     }
 
@@ -162,11 +167,14 @@ public class NettyAcceptor implements ServerAcceptor {
             @Override
             void init(ChannelPipeline pipeline) {
                 pipeline.addLast("httpEncoder", new HttpResponseEncoder());
-                pipeline.addLast("httpDdecoder", new HttpRequestDecoder());
+                pipeline.addLast("httpDecoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-                pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt", "mqttv3.1"));
-                pipeline.addLast("bytebuf2wsDecoderr", new ByteBufToWebSocketFrameEncoder());
+                pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt"/*"/mqtt"*/, "mqttv3.1, mqttv3.1.1"));
+                //pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler(null, "mqtt"));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
+                pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+
+<head>
+  <!--script type="text/javascript" src="paho.javascript-1.0.0/mqttws31.js"></script-->
+  <script type="application/javascript" src="http://git.eclipse.org/c/paho/org.eclipse.paho.mqtt.javascript.git/plain/src/mqttws31.js"></script>
+  <!--script type="text/javascript" src="file:///home/andrea/workspace/moquette_github/mqttws31.js"></script-->
+
+  <script type="text/javascript">
+  
+  // Create a client instance
+        var client;
+        function doConnect() {
+                console.log("connect invoked");
+                client = new Paho.MQTT.Client("127.0.0.1", Number(8080), "", "clientId");
+                //client = new Paho.MQTT.Client("test.mosquitto.org", Number(8080), "", "clientId");
+                //client = new Paho.MQTT.Client("ws://whistler1.hursley.ibm.com", Number(1883), "ClientId");
+
+                client.startTrace();
+                // set callback handlers
+                client.onConnectionLost = onConnectionLost;
+                client.onMessageArrived = onMessageArrived;
+
+                // connect the client
+                client.connect({onSuccess:onConnect});
+                console.log("connect finished");
+        }
+
+
+        // called when the client connects
+        function onConnect() {
+          // Once a connection has been made, make a subscription and send a message.
+          console.log("onConnect");
+          client.subscribe("/World");
+          message = new Paho.MQTT.Message("Hello");
+          message.destinationName = "/World";
+          client.send(message); 
+        }
+
+        // called when the client loses its connection
+        function onConnectionLost(responseObject) {
+          if (responseObject.errorCode !== 0) {
+            console.log("onConnectionLost:"+responseObject.errorMessage);
+          }
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {
+          console.log("onMessageArrived:"+message.payloadString);
+        } 
+
+        function doSubscribe() {
+              client.subscribe("/World");
+        }
+
+        function doDisconnect() {
+            client.disconnect();
+        }
+  </script>
+</head> 
+
+<body>
+  <h1>Example Web Messaging web page.</h1>
+  <form id="example">
+  <fieldset>
+  <legend id="Connect" > Connect </legend>
+    Make a connection to the server, and set up a call back used if a 
+    message arrives for this client.
+    <br>
+    <input type="button" value="Connect" onClick="doConnect(this.form)" name="Connect"/>
+    <input type="checkbox" name="connected" disabled="disabled"/>
+  </fieldset>
+  
+  <fieldset>
+  <legend id="Subscribe" > Subscribe </legend>
+  Make a subscription to topic "/World".
+  <br> <input type="button" value="Subscribe" onClick="doSubscribe(this.form)"/>
+  </fieldset>
+  
+  <fieldset>
+  <legend id="Send" > Send </legend>
+    Create a Message object containing the word "Hello" and then publish it at
+    the server.
+    <br>
+    <input type="button" value="Send" onClick="doSend(this.form)"/>
+  </fieldset>
+  
+  <fieldset>
+  <legend id="Receive" > Receive </legend>
+    A copy of the published Message is received in the callback we created earlier.
+  <textarea name="receiveMsg" rows="1" cols="40" disabled="disabled"></textarea>
+  </fieldset>
+  
+  <fieldset>
+  <legend id="Disconnect" > Disconnect </legend>
+    Now disconnect this client from the server.
+  <br> <input type="button" value="Disconnect" onClick="doDisconnect()"/>
+  </fieldset>
+  </form>
+</body>
+</html>
