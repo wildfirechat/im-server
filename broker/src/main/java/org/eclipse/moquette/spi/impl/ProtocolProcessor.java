@@ -28,10 +28,7 @@ import java.util.concurrent.Executors;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.MessagingEvent;
-import org.eclipse.moquette.spi.impl.events.OutputMessagingEvent;
-import org.eclipse.moquette.spi.impl.events.PubAckEvent;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
+import org.eclipse.moquette.spi.impl.events.*;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1;
@@ -100,13 +97,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<String, ConnectionDescriptor>();
+    private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<>();
     private SubscriptionsStore subscriptions;
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     //maps clientID to Will testament, if specified on CONNECT
-    private Map<String, WillMessage> m_willStore = new HashMap<String, WillMessage>();
+    private Map<String, WillMessage> m_willStore = new HashMap<>();
     
     private ExecutorService m_executor;
     private RingBuffer<ValueEvent> m_ringBuffer;
@@ -163,6 +160,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
+            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
             ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).getSession();
             boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
@@ -171,8 +169,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 cleanSession(msg.getClientID());
             }
 
-            m_clientIDs.get(msg.getClientID()).getSession().close(false);
-            LOG.info("Found an existing connection with same client ID <{}>, forced to close", msg.getClientID());
+            oldSession.close(false);
+            LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
         }
 
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), session, msg.isCleanSession());
@@ -283,7 +281,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
         
     private void processPublish(String clientID, String topic, QOSType qos, ByteBuffer message, boolean retain, Integer messageID) { 
-        LOG.info("Publish recieved from clientID <{}> on topic <{}> with QoS {}", 
+        LOG.info("Publish received from clientID <{}> on topic <{}> with QoS {}",
                 clientID, topic, qos);
 
         String publishKey = null;
@@ -527,7 +525,15 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("Disconnected client <{}> with clean session {}", clientID, cleanSession);
     }
     
-    void processConnectionLost(String clientID) {
+    void processConnectionLost(LostConnectionEvent evt) {
+        String clientID = evt.clientID;
+        if (m_clientIDs.containsKey(clientID)) {
+            if (!m_clientIDs.get(clientID).getSession().equals(evt.session)) {
+                LOG.info("Received a lost connection with client <{}> for a not matching session", clientID);
+                return;
+            }
+        }
+
         //If already removed a disconnect message was already processed for this clientID
         if (m_clientIDs.remove(clientID) != null) {
 

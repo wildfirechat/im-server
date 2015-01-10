@@ -42,8 +42,12 @@ print "Publisher is going to publish.."
 publisher.publish('topic', 'Hello world!!'.bytes, 2, false)
 println "Ok mate, done!"
 
-client1.disconnect()
-println "Client1 disconnected"
+try {
+    client1.disconnect()
+    println "BAD! Client1 has been able to call disconnect, but it has to be already dropped out"
+} catch (Exception ex) {
+    println "Ok, client1 can't disconnect because it was already disconnected"
+}
 
 client2.disconnect()
 println "Client2 disconnected"

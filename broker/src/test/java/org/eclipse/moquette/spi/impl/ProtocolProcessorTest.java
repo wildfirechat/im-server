@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
+import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1_1;
@@ -272,13 +273,12 @@ public class ProtocolProcessorTest {
 
         //Verify
         AbstractMessage recvMsg = firstReceiverSession.getMessage();
-        
         assertTrue(recvMsg instanceof ConnAckMessage);
         ConnAckMessage connAckMsg = (ConnAckMessage) recvMsg;
         assertTrue(connAckMsg.isSessionPresent());
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, connAckMsg.getReturnCode());
     }
-    
+
     @Test
     public void testPublish() throws InterruptedException {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
@@ -533,7 +533,7 @@ public class ProtocolProcessorTest {
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
         m_session.setAttribute(Constants.ATTR_CLIENTID, "Publisher");
-         m_processor.processPublish(m_session, msg);
+        m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
         assertNull(m_receivedMessage); 
@@ -575,5 +575,46 @@ public class ProtocolProcessorTest {
             }
         });
         assertTrue(messages.isEmpty());
+    }
+
+
+    /**
+     * Simulate a client1 (FAKE_CLIENT_ID) bound with session1, an event of connection lost
+     * for client2 (FAKE_CLIENT_ID, same of the client1) but from another session, verify
+     * the session of client1 is not closed.
+     * */
+    @Test
+    public void testConnectionLostClosesTheCorrectSession() {
+        MockReceiverChannel channel1 = new MockReceiverChannel();
+
+        //init the processor
+        /*SubscriptionsStore subs = new SubscriptionsStore();
+        subs.init(new MemoryStorageService());*/
+        SubscriptionsStore subs = mock(SubscriptionsStore.class);
+        m_processor.init(subs, m_storageService, m_sessionStore, null);
+
+        //simulate a connect from client1 FAKE_CLIENT_ID from channel1
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setProcotolVersion((byte) 3);
+        connectMessage.setClientID(FAKE_CLIENT_ID);
+        m_processor.processConnect(channel1, connectMessage);
+        assertConnectReturnCode(ConnAckMessage.CONNECTION_ACCEPTED, channel1);
+        //ConnAck received
+
+        //send a connection lost event from an already disconnected client, but with same clientID (FAKE_CLIENT_ID)
+        //Exercise
+        DummyChannel channel2 = new DummyChannel();
+        LostConnectionEvent lostConnectionEvent = new LostConnectionEvent(channel2, FAKE_CLIENT_ID);
+        m_processor.processConnectionLost(lostConnectionEvent);
+
+        //Verify no subscriptions were deactivated for the client on session1
+        verify(subs, never()).deactivate(anyString());
+    }
+
+    private void assertConnectReturnCode(byte expectedReturnCode, MockReceiverChannel receiverSession) {
+        AbstractMessage recvMsg = receiverSession.getMessage();
+        assertTrue(recvMsg instanceof ConnAckMessage);
+        ConnAckMessage connAckMsg = (ConnAckMessage) recvMsg;
+        assertEquals(expectedReturnCode, connAckMsg.getReturnCode());
     }
 }
