@@ -151,7 +151,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             return;
         }
 
-        if (msg.getClientID() == null || msg.getClientID().length() > 23 || msg.getClientID().length() == 0) {
+        if (msg.getClientID() == null || msg.getClientID().length() == 0) {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             session.write(okResp);

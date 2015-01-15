@@ -186,7 +186,7 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, m_returnCode);
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
     }
 
     @Test
