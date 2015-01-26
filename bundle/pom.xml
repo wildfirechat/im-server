@@ -187,8 +187,11 @@
                             ${project.groupId}.*,
                             com.lmax.*
                         </Private-Package>
-                        <Import-Package>!org.eclipse.moquette,*</Import-Package>
-                        <Bundle-Activator>${project.groupId}.moquette.bundle.Activator</Bundle-Activator>
+                        <Import-Package>!org.eclipse.moquette,
+                            sun.misc;resolution:=optional,
+                            *
+                        </Import-Package>
+                        <Bundle-Activator>${project.groupId}.bundle.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
             </plugin>
@@ -199,13 +202,14 @@
                 <version>1.5</version>
                 <configuration>
                     <!-- Pax Runner version -->
-                    <runner>1.8.5</runner>
+                    <!--runner>1.8.5</runner-->
+                    <runner>1.8.6</runner>
                     <!-- OSGi framework type (equinox, felix, knopflerfish) -->
-                    <framework>equinox</framework>
-                    <!--<framework>felix</framework>-->
+                    <!--<framework>equinox</framework>-->
+                    <framework>felix</framework>
                     <provision>
-                        <!--                        <param> - -log=debug</param>  
-                        <param> - -workingDirectory=target/runner</param>  -->
+                        <!--param>- -log=debug</param -->
+                        <!-- <param> - -workingDirectory=target/runner</param>  -->
                     </provision>
                 </configuration>
             </plugin>
