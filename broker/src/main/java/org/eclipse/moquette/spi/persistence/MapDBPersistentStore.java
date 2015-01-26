@@ -237,6 +237,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     public void removeQoS2Message(String publishKey) {
+        LOG.debug("Removing stored Q0S2 message <{}>", publishKey);
         m_qos2Store.remove(publishKey);
     }
 

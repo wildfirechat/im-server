@@ -94,7 +94,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
 
     @Override
     public List<PublishEvent> retrievePersistedPublishes(String clientID) {
-        return m_persistentMessageStore.get(clientID);
+        return new ArrayList<>(m_persistentMessageStore.get(clientID));
     }
     
     @Override

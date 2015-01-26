@@ -16,17 +16,14 @@
 package org.eclipse.moquette.spi.impl;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
+import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1_1;
@@ -488,6 +485,26 @@ public class ProtocolProcessorTest {
         assertTrue(m_receivedMessage instanceof PublishMessage);
         PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
         assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
+    }
+
+    @Test
+    public void testRepublishAndConsumePersistedMessages_onReconnect() {
+        SubscriptionsStore subs = mock(SubscriptionsStore.class);
+        List<Subscription> emptySubs = Collections.emptyList();
+        when(subs.matches(anyString())).thenReturn(emptySubs);
+        PublishEvent retainedMessage = new PublishEvent("/topic", QOSType.EXACTLY_ONCE,
+                ByteBuffer.wrap("Hello".getBytes()), true, FAKE_PUBLISHER_ID, 120);
+        m_storageService.storePublishForFuture(retainedMessage);
+
+        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setClientID(FAKE_PUBLISHER_ID);
+        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setCleanSession(false);
+        m_processor.processConnect(m_session, connectMessage);
+
+        //Verify no messages are still stored
+        assertTrue(m_storageService.retrievePersistedPublishes(FAKE_PUBLISHER_ID).isEmpty());
     }
     
     @Test

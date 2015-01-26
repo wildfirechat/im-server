@@ -248,6 +248,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (PublishEvent pubEvt : publishedEvents) {
             sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                    pubEvt.getMessage(), false, pubEvt.getMessageID());
+            m_messagesStore.cleanPersistedPublishMessage(clientID, pubEvt.getMessageID());
         }
     }
     
