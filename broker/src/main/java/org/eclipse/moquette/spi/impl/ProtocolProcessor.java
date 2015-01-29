@@ -242,7 +242,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void republishStoredInSession(String clientID) {
         LOG.trace("republishStoredInSession invoked");
         List<PublishEvent> publishedEvents = m_messagesStore.listMessagesInSession(clientID);
-        if (publishedEvents == null) {
+        if (publishedEvents.isEmpty()) {
             LOG.info("No stored messages for client <{}>", clientID);
             return;
         }

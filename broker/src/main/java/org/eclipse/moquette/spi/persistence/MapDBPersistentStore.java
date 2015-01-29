@@ -25,6 +25,8 @@ import org.eclipse.moquette.spi.impl.storage.StoredPublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import static org.eclipse.moquette.server.Server.STORAGE_FILE_PATH;
+import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
+
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
@@ -126,11 +128,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     @Override
     public List<PublishEvent> listMessagesInSession(String clientID) {
-        List<StoredPublishEvent> storedEvts = m_persistentMessageStore.get(clientID);
-        if (storedEvts == null) {
-            return null;
-        }
-        List<PublishEvent> liveEvts = new ArrayList<PublishEvent>();
+        List<PublishEvent> liveEvts = new ArrayList<>();
+        List<StoredPublishEvent> storedEvts = defaultGet(m_persistentMessageStore, clientID, Collections.<StoredPublishEvent>emptyList());
+
         for (StoredPublishEvent storedEvt : storedEvts) {
             liveEvts.add(convertFromStored(storedEvt));
         }

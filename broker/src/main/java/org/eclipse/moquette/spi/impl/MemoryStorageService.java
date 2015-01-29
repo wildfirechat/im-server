@@ -28,6 +28,8 @@ import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
+
 /**
  */
 public class MemoryStorageService implements IMessagesStore, ISessionsStore {
@@ -81,20 +83,21 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     @Override
     public void storePublishForFuture(PublishEvent evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
-        List<PublishEvent> storedEvents;
+//        List<PublishEvent> storedEvents;
         String clientID = evt.getClientID();
-        if (!m_persistentMessageStore.containsKey(clientID)) {
-            storedEvents = new ArrayList<PublishEvent>();
-        } else {
-            storedEvents = m_persistentMessageStore.get(clientID);
-        }
+//        if (!m_persistentMessageStore.containsKey(clientID)) {
+//            storedEvents = new ArrayList<PublishEvent>();
+//        } else {
+//            storedEvents = m_persistentMessageStore.get(clientID);
+//        }
+        List<PublishEvent> storedEvents = defaultGet(m_persistentMessageStore, clientID, new ArrayList<PublishEvent>());
         storedEvents.add(evt);
         m_persistentMessageStore.put(clientID, storedEvents);
     }
 
     @Override
     public List<PublishEvent> listMessagesInSession(String clientID) {
-        return new ArrayList<>(m_persistentMessageStore.get(clientID));
+        return new ArrayList<>(defaultGet(m_persistentMessageStore, clientID, Collections.<PublishEvent>emptyList()));
     }
     
     @Override
