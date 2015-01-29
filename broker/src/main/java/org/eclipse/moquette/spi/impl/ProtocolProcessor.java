@@ -232,13 +232,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2
-            republishStored(msg.getClientID());
+            republishStoredInSession(msg.getClientID());
         }
     }
-    
-    private void republishStored(String clientID) {
-        LOG.trace("republishStored invoked");
-        List<PublishEvent> publishedEvents = m_messagesStore.retrievePersistedPublishes(clientID);
+
+    /**
+     * Republish QoS1 and QoS2 messages stored into the session for the clientID.
+     * */
+    private void republishStoredInSession(String clientID) {
+        LOG.trace("republishStoredInSession invoked");
+        List<PublishEvent> publishedEvents = m_messagesStore.listMessagesInSession(clientID);
         if (publishedEvents == null) {
             LOG.info("No stored messages for client <{}>", clientID);
             return;
@@ -248,7 +251,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (PublishEvent pubEvt : publishedEvents) {
             sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                    pubEvt.getMessage(), false, pubEvt.getMessageID());
-            m_messagesStore.cleanPersistedPublishMessage(clientID, pubEvt.getMessageID());
+            m_messagesStore.removeMessageInSession(clientID, pubEvt.getMessageID());
         }
     }
     
@@ -257,7 +260,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
         int messageID = msg.getMessageID();
         //Remove the message from message store
-        m_messagesStore.cleanPersistedPublishMessage(clientID, messageID);
+        m_messagesStore.removeMessageInSession(clientID, messageID);
     }
     
     private void cleanSession(String clientID) {
@@ -267,7 +270,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
-        m_messagesStore.cleanPersistedPublishes(clientID);
+        m_messagesStore.dropMessagesInSession(clientID);
     }
     
     @MQTTMessage(message = PublishMessage.class)

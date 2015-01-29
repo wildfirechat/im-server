@@ -93,12 +93,12 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public List<PublishEvent> retrievePersistedPublishes(String clientID) {
+    public List<PublishEvent> listMessagesInSession(String clientID) {
         return new ArrayList<>(m_persistentMessageStore.get(clientID));
     }
     
     @Override
-    public void cleanPersistedPublishMessage(String clientID, int messageID) {
+    public void removeMessageInSession(String clientID, int messageID) {
         List<PublishEvent> events = m_persistentMessageStore.get(clientID);
         PublishEvent toRemoveEvt = null;
         for (PublishEvent evt : events) {
@@ -111,7 +111,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void cleanPersistedPublishes(String clientID) {
+    public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
     }
 

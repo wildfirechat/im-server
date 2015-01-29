@@ -504,7 +504,7 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_session, connectMessage);
 
         //Verify no messages are still stored
-        assertTrue(m_storageService.retrievePersistedPublishes(FAKE_PUBLISHER_ID).isEmpty());
+        assertTrue(m_storageService.listMessagesInSession(FAKE_PUBLISHER_ID).isEmpty());
     }
     
     @Test

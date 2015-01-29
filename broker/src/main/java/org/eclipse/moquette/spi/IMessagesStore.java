@@ -75,11 +75,11 @@ public interface IMessagesStore {
      * For QoS1 and QoS2 with clean session flag, this method return the list of 
      * missed publish events while the client was disconnected.
      */
-    List<PublishEvent> retrievePersistedPublishes(String clientID);
+    List<PublishEvent> listMessagesInSession(String clientID);
     
-    void cleanPersistedPublishMessage(String clientID, int messageID);
+    void removeMessageInSession(String clientID, int messageID);
 
-    void cleanPersistedPublishes(String clientID);
+    void dropMessagesInSession(String clientID);
 
     void cleanInFlight(String msgID);
 

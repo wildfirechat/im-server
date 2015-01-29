@@ -125,7 +125,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public List<PublishEvent> retrievePersistedPublishes(String clientID) {
+    public List<PublishEvent> listMessagesInSession(String clientID) {
         List<StoredPublishEvent> storedEvts = m_persistentMessageStore.get(clientID);
         if (storedEvts == null) {
             return null;
@@ -138,7 +138,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void cleanPersistedPublishMessage(String clientID, int messageID) {
+    public void removeMessageInSession(String clientID, int messageID) {
         List<StoredPublishEvent> events = m_persistentMessageStore.get(clientID);
         if (events == null) {
             return;
@@ -154,7 +154,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_db.commit();
     }
 
-    public void cleanPersistedPublishes(String clientID) {
+    public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
         m_db.commit();
     }
