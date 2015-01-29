@@ -162,16 +162,11 @@ public class ServerIntegrationFuseTest {
         msg = m_subscriber.receive();
         msg.ack();
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
-        m_subscriber.disconnect();
-        
-        m_subscriber = m_mqtt.blockingConnection();
-        m_subscriber.connect();
-        topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        m_subscriber.subscribe(topics);
+
         msg = m_subscriber.receive();
         assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
         msg.ack();
-        //TODO check topic and content
+        m_subscriber.disconnect();
     }
     
     @Test
