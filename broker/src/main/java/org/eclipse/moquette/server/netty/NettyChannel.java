@@ -80,5 +80,10 @@ public class NettyChannel implements ServerChannel {
     public void write(Object value) {
         m_channel.writeAndFlush(value);
     }
-    
+
+    @Override
+    public String toString() {
+        String clientID = (String) getAttribute(Constants.ATTR_CLIENTID);
+        return "session [clientID "+ clientID +"]";
+    }
 }

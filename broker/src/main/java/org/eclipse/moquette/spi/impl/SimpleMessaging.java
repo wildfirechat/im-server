@@ -152,7 +152,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         if (evt instanceof ProtocolEvent) {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
-            annotationSupport.dispatch(session, message);
+            try {
+                annotationSupport.dispatch(session, message);
+            } catch (Throwable th) {
+                LOG.error("Grave error processing the message {} for {}", message, session, th);
+            }
         }
     }
 

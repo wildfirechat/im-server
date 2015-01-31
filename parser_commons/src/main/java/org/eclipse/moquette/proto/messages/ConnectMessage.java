@@ -155,5 +155,13 @@ public class ConnectMessage extends AbstractMessage {
     public void setWillMessage(String willMessage) {
         this.m_willMessage = willMessage;
     }
-    
+
+    @Override
+    public String toString() {
+        String base = String.format("Connect [clientID: %s, prot: %s, ver: %02X, clean: %b]", m_clientID, m_protocolName, m_procotolVersion, m_cleanSession);
+        if (m_willFlag) {
+             base += String.format(" Will [QoS: %d, retain: %b]", m_willQos, m_willRetain);
+        }
+        return base;
+    }
 }
