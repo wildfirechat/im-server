@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -41,7 +42,7 @@ class SubscriberCallback implements MqttCallback {
             client.disconnect()
             m_latch.countDown()
         } else {
-            println "-received ${message} on ${topic} with QoS ${message.qos}"
+            //println "-received ${message} on ${topic} with QoS ${message.qos}"
             m_numReceived++
         }
     }
@@ -65,6 +66,12 @@ int rnd = (Math.random() * 100) as int
 MqttClient client = new MqttClient("tcp://${host}:1883", "SubscriberClient${rnd}", dataStore)
 def callback = new SubscriberCallback()
 client.callback = callback
+//Only for Apollo ---
+//MqttConnectOptions connOptions = new MqttConnectOptions()
+//connOptions.userName ='admin'
+//connOptions.password = 'password' as char[]
+//client.connect(connOptions)
+//Only for Apollo ---
 client.connect()
 client.subscribe("topic", 0)
 println "subscribed to topic"

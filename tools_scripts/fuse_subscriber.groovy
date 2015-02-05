@@ -1,4 +1,4 @@
-@Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.5')
+@Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.10')
 
 import java.net.URISyntaxException
 
@@ -9,6 +9,11 @@ import org.fusesource.mqtt.client.QoS
 import org.fusesource.mqtt.client.Topic
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+
+if (args.size() != 1) {
+    println "Usage subscriber <host>"
+    return
+}
 
 String host = args[0]
 MQTT mqtt = new MQTT()
@@ -48,4 +53,6 @@ long stopTime = System.currentTimeMillis()
 long spentTime = stopTime - startTime
 println "/exit received"
 println "subscriber disconnected, received ${numReceived} messages in ${spentTime} ms"
+double msgPerSec = (numReceived / spentTime) * 1000
+println "speed $msgPerSec msg/sec"
 
