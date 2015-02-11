@@ -23,14 +23,9 @@ if (args.size() < 2) {
 String host = args[0]
 int numToSend = args[1] as int
 MQTT mqtt = new MQTT()
-//mqtt.setHost("test.mosquitto.org", 1883);
 mqtt.setHost(host, 1883)
 mqtt.setCleanSession(true)
-mqtt.setHost(host, 1883)
 mqtt.setClientId("PublisherClient")
-
-long startTime = System.currentTimeMillis()
-CountDownLatch m_latch = new CountDownLatch(1)
 
 final CallbackConnection connection = mqtt.callbackConnection()
 //connection.resume()
@@ -42,70 +37,78 @@ connection.connect(new Callback<Void>() {
 
     // Once we connect..
     public void onSuccess(Void v) {
-
+        println "Succesfully connected to server"
     }
 })
 
-String topic = "/topic"
 byte[] message = 'Hello world!!'.bytes
 QoS qos = QoS.AT_MOST_ONCE
 boolean retain = false
 
 print "publishing.."
-startTime = System.currentTimeMillis()
+CountDownLatch m_latch = new CountDownLatch(1)
+final long startTime = System.currentTimeMillis()
 
-new Task() {
-    long sent = 0;
-    public void run() {
-        final Task publish = this
-
-        connection.publish(topic, message, qos, retain, new Callback<Void>() {
-            public void onSuccess(Void value) {
-                sent ++;
-
-                if( sent < numToSend ) {
-                    connection.getDispatchQueue().execute(publish);
-                } else {
-                    connection.getDispatchQueue().execute(new Runnable() {
-                        public void run() {
-                            connection.publish("/exit", message, qos, retain, new Callback<Void>() {
-                                public void onSuccess(Void value2) {
-                                    long stopTime = System.currentTimeMillis()
-                                    long spentTime = stopTime -startTime
-                                    println "published in ${spentTime} ms"
-
-                                    connection.disconnect(null)
-                                    double msgPerSec = (numToSend / spentTime) * 1000
-                                    println "speed $msgPerSec msg/sec"
-
-                                    connection.disconnect(new Callback<Void>() {
-                                        public void onSuccess(Void valueSuccess2) {
-                                            m_latch.countDown();
-                                        }
-                                        public void onFailure(Throwable th2) {
-                                            m_latch.countDown();
-                                        }
-                                    });
-                                }
-
-                                public void onFailure(Throwable th) {
-                                    println "Publish failed: " + th
-
-                                    System.exit(2);
-                                }
-                            });
-                        }
-                    });
-
-                }
-            }
-            public void onFailure(Throwable th) {
-                println "Publish failed: " + th
-
-                System.exit(2);
-            }
-        });
+class PublishCallback implements Callback<Void> {
+    public void onSuccess(Void value) {
+        //ok published
+        //increment counter
     }
-}.run();
 
+    public void onFailure(Throwable th) {
+        println "Publish failed: " + th
+        System.exit(2);
+    }
+}
+
+class ExitTopicCallback implements Callback<Void> {
+
+    private final long startedTime
+    private final long numToSend
+    private final CallbackConnection connection
+    private final CountDownLatch stopLatch
+
+    ExitTopicCallback(long startedTime, long numToSend, CallbackConnection connection, CountDownLatch stopLatch) {
+        this.startedTime = startedTime
+        this.numToSend = numToSend
+        this.connection = connection
+        this.stopLatch = stopLatch
+    }
+
+    public void onSuccess(Void value2) {
+        long stopTime = System.currentTimeMillis()
+        long spentTime = stopTime - startedTime
+        println "published in ${spentTime} ms"
+
+        this.connection.disconnect(null)
+        double msgPerSec = (numToSend / spentTime) * 1000
+        println "speed $msgPerSec msg/sec"
+        this.stopLatch.countDown()
+    }
+
+    public void onFailure(Throwable th) {
+        println "Publish failed: " + th
+        System.exit(2);
+    }
+}
+
+
+def pubCallback = new PublishCallback()
+(1..numToSend).each {
+    connection.getDispatchQueue().execute(new Task() {
+        public void run() {
+            connection.publish("/topic", message, qos, retain, pubCallback)
+        }
+    })
+}
+
+
+def exitCallback = new ExitTopicCallback(startTime, numToSend, connection, m_latch)
+connection.getDispatchQueue().execute(new Task() {
+    public void run() {
+        connection.publish("/exit", message, qos, retain, exitCallback)
+    }
+})
+
+//wait finish...
 m_latch.await()
