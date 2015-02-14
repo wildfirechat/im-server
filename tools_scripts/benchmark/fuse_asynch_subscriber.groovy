@@ -1,4 +1,5 @@
 @Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.10')
+@Grab(group='org.hdrhistogram', module='HdrHistogram', version='2.1.2')
 
 import org.fusesource.mqtt.client.BlockingConnection
 import org.fusesource.mqtt.client.CallbackConnection
@@ -12,6 +13,7 @@ import org.fusesource.hawtbuf.Buffer
 import org.fusesource.hawtbuf.UTF8Buffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.HdrHistogram.Histogram
 
 if (args.size() != 1) {
     println "Usage subscriber <host>"
@@ -30,6 +32,8 @@ int numReceived = 0
 long startTime = System.currentTimeMillis()
 boolean exit = false
 CountDownLatch m_latch = new CountDownLatch(1)
+boolean alreadyStarted = false
+Histogram histogram = new Histogram(5)
 
 final CallbackConnection connection = mqtt.callbackConnection()
 connection.listener(new Listener() {
@@ -39,13 +43,20 @@ connection.listener(new Listener() {
     }
     public void onConnected() {
         println "Listener received a connected to ${host}"
-        startTime = System.currentTimeMillis()
+//        startTime = System.currentTimeMillis()
     }
 
     public void onPublish(UTF8Buffer topic, Buffer payload, Runnable ack) {
         // You can now process a received message from a topic.
         // Once process execute the ack runnable.
         ack.run()
+
+        //used to catch the first message published
+         if (!alreadyStarted) {
+             startTime = System.currentTimeMillis()
+             alreadyStarted = true
+         }
+
         //println "Received a publish on topic ${topic}"
         if (topic.toString() == "/exit") {
             println "Ok Exit!"
@@ -56,9 +67,15 @@ connection.listener(new Listener() {
             println "/exit received"
             println "subscriber disconnected, received ${numReceived} messages in ${spentTime} ms"
             double msgPerSec = (numReceived / spentTime) * 1000
-            println "speed $msgPerSec msg/sec"
+            println "Speed: $msgPerSec msg/sec"
+            println "Latency diagram"
+            histogram.outputPercentileDistribution(System.out, 1000.0);
             m_latch.countDown()
         } else {
+            String message = payload as String
+            long sentTime = message.split('-')[1] as long
+            long delay = System.nanoTime() - sentTime
+            histogram.recordValue(delay)
             numReceived++
 //        if ((numReceived % 10000) == 0) {
 //            print '.'
@@ -66,17 +83,13 @@ connection.listener(new Listener() {
         }
 
     }
-    public void onFailure(Throwable value) {
+    public void onFailure(Throwable th) {
         connection.disconnect(null)
-        println "Some thing failed $value"
+        println "Something failed during message reception"
+        th.printStackTrace()
         m_latch.countDown()
     }
 })
-
-//Topic[] topics = [new Topic("/topic", QoS.AT_MOST_ONCE), new Topic("/exit", QoS.AT_MOST_ONCE)]
-//byte[] qoses = connection.subscribe(topics)
-//println "subscribed to /topic qos: ${qoses[0]}"
-//println "subscribed to /exit qos: ${qoses[1]}"
 
 connection.connect(new Callback<Void>() {
     public void onFailure(Throwable value) {

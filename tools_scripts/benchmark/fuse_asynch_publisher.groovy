@@ -1,4 +1,5 @@
 @Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.10')
+@Grab(group='org.eclipse.jetty.toolchain', module='jetty-perf-helper', version='1.0.5')
 
 import java.net.URISyntaxException
 
@@ -12,16 +13,25 @@ import org.fusesource.mqtt.client.Topic
 import org.fusesource.mqtt.client.Callback
 import org.fusesource.hawtbuf.Buffer
 import org.fusesource.hawtbuf.UTF8Buffer
+
+import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import org.fusesource.hawtdispatch.Task
+import org.eclipse.jetty.toolchain.perf.PlatformTimer
 
-if (args.size() < 2) {
-    println "Usage publisher <host> <num messages to sent>"
+if (args.size() < 3) {
+    println "Usage publisher <host> <num messages to sent> <frequency>[msg/sec]"
+    println "Ex localhost 10000 5000"
+    println "should take 2 secs"
     return
 }
 
 String host = args[0]
 int numToSend = args[1] as int
+int messagesPerSecond = args[2] as int
+long pauseMicroseconds = (1 / messagesPerSecond) * 1000 * 1000
+println "Pause over the each message sent ${pauseMicroseconds} microsecs"
+
 MQTT mqtt = new MQTT()
 mqtt.setHost(host, 1883)
 mqtt.setCleanSession(true)
@@ -41,7 +51,7 @@ connection.connect(new Callback<Void>() {
     }
 })
 
-byte[] message = 'Hello world!!'.bytes
+//byte[] message = 'Hello world!!'.bytes
 QoS qos = QoS.AT_MOST_ONCE
 boolean retain = false
 
@@ -92,20 +102,26 @@ class ExitTopicCallback implements Callback<Void> {
     }
 }
 
-
+//initialize the timer
+PlatformTimer timer = PlatformTimer.detect()
 def pubCallback = new PublishCallback()
 (1..numToSend).each {
     connection.getDispatchQueue().execute(new Task() {
         public void run() {
+            long nanos = System.nanoTime()
+            byte[] message = "Hello world!!-${nanos}".bytes
             connection.publish("/topic", message, qos, retain, pubCallback)
         }
     })
+    timer.sleep(pauseMicroseconds)
 }
 
 
 def exitCallback = new ExitTopicCallback(startTime, numToSend, connection, m_latch)
 connection.getDispatchQueue().execute(new Task() {
     public void run() {
+        long nanos = System.nanoTime()
+        byte[] message = "Now exit!!-${nanos}".bytes
         connection.publish("/exit", message, qos, retain, exitCallback)
     }
 })
