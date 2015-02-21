@@ -92,3 +92,7 @@ the broker (select the password), exporting a certificate and define 4 variables
   
   It's done! We just need use the Paho client to connect to the server, check ServerIntegrationSSLTest.java integration test to see how. 
   
+  
+  **Developers resources**
+   Google Group https://groups.google.com/forum/#!forum/moquette-mqtt
+  
