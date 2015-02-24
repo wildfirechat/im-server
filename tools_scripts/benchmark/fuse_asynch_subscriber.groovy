@@ -15,18 +15,20 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.HdrHistogram.Histogram
 
-if (args.size() != 1) {
-    println "Usage subscriber <host>"
+if (args.size() < 1) {
+    println "Usage subscriber <host> :[dialog_id]"
     return
 }
 
 String host = args[0]
+String dialog_id = args.size() > 1 ? args[1] : ""
+
 MQTT mqtt = new MQTT()
 //mqtt.setHost("test.mosquitto.org", 1883);
 mqtt.setHost(host, 1883)
 mqtt.setCleanSession(true)
 mqtt.setHost(host, 1883)
-mqtt.setClientId("SubscriberClient")
+mqtt.setClientId("SubscriberClient${dialog_id}")
 
 int numReceived = 0
 long startTime = System.currentTimeMillis()
@@ -58,13 +60,13 @@ connection.listener(new Listener() {
          }
 
         //println "Received a publish on topic ${topic}"
-        if (topic.toString() == "/exit") {
+        if (topic.toString().startsWith("/exit")) {
             println "Ok Exit!"
             exit = true
             connection.disconnect(null)
             long stopTime = System.currentTimeMillis()
             long spentTime = stopTime - startTime
-            println "/exit received"
+            println topic.toString() + " received"
             println "subscriber disconnected, received ${numReceived} messages in ${spentTime} ms"
             double msgPerSec = (numReceived / spentTime) * 1000
             println "Speed: $msgPerSec msg/sec"
@@ -99,11 +101,11 @@ connection.connect(new Callback<Void>() {
     // Once we connect..
     public void onSuccess(Void v) {
         // Subscribe to /topic
-        Topic[] topics = [new Topic("/topic", QoS.AT_LEAST_ONCE)]
+        Topic[] topics = [new Topic("/topic" + dialog_id, QoS.AT_LEAST_ONCE)]
         connection.subscribe(topics, new Callback<byte[]>() {
             public void onSuccess(byte[] qoses) {
                 // The result of the subcribe request.
-                println "subscribed to /topic ${qoses}"
+                println "subscribed to /topic${dialog_id} ${qoses}"
             }
             public void onFailure(Throwable value) {
                 connection.disconnect(null); // subscribe failed.
@@ -112,11 +114,11 @@ connection.connect(new Callback<Void>() {
 
 
         // Subscribe to /topic
-        Topic[] exitTopic = [new Topic("/exit", QoS.AT_LEAST_ONCE)]
+        Topic[] exitTopic = [new Topic("/exit" + dialog_id, QoS.AT_LEAST_ONCE)]
         connection.subscribe(exitTopic, new Callback<byte[]>() {
             public void onSuccess(byte[] qoses) {
                 // The result of the subcribe request.
-                println "subscribed to /exit ${qoses}"
+                println "subscribed to /exit${dialog_id} ${qoses}"
             }
             public void onFailure(Throwable value) {
                 connection.disconnect(null); // subscribe failed.

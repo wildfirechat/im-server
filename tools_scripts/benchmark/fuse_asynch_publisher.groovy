@@ -20,8 +20,8 @@ import org.fusesource.hawtdispatch.Task
 import org.eclipse.jetty.toolchain.perf.PlatformTimer
 
 if (args.size() < 3) {
-    println "Usage publisher <host> <num messages to sent> <frequency>[msg/sec]"
-    println "Ex localhost 10000 5000"
+    println "Usage publisher <host> <num messages to sent> <frequency>[msg/sec] :[dialog_id]"
+    println "Ex localhost 10000 5000 test1"
     println "should take 2 secs"
     return
 }
@@ -29,13 +29,14 @@ if (args.size() < 3) {
 String host = args[0]
 int numToSend = args[1] as int
 int messagesPerSecond = args[2] as int
+String dialog_id = args.size() > 3 ? args[3] : ""
 long pauseMicroseconds = (1 / messagesPerSecond) * 1000 * 1000
 println "Pause over the each message sent ${pauseMicroseconds} microsecs"
 
 MQTT mqtt = new MQTT()
 mqtt.setHost(host, 1883)
 mqtt.setCleanSession(true)
-mqtt.setClientId("PublisherClient")
+mqtt.setClientId("PublisherClient${dialog_id}")
 
 final CallbackConnection connection = mqtt.callbackConnection()
 //connection.resume()
@@ -110,7 +111,7 @@ def pubCallback = new PublishCallback()
         public void run() {
             long nanos = System.nanoTime()
             byte[] message = "Hello world!!-${nanos}".bytes
-            connection.publish("/topic", message, qos, retain, pubCallback)
+            connection.publish("/topic" + dialog_id, message, qos, retain, pubCallback)
         }
     })
     timer.sleep(pauseMicroseconds)
@@ -122,7 +123,7 @@ connection.getDispatchQueue().execute(new Task() {
     public void run() {
         long nanos = System.nanoTime()
         byte[] message = "Now exit!!-${nanos}".bytes
-        connection.publish("/exit", message, qos, retain, exitCallback)
+        connection.publish("/exit" + dialog_id, message, qos, retain, exitCallback)
     }
 })
 
