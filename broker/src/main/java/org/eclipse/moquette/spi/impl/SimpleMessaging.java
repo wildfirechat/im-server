@@ -36,6 +36,7 @@ import org.eclipse.moquette.server.IAuthenticator;
 import org.eclipse.moquette.server.ServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.HdrHistogram.Histogram;
 
 /**
  *
@@ -67,6 +68,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     private final AnnotationSupport annotationSupport = new AnnotationSupport();
     
     CountDownLatch m_stopLatch;
+
+    Histogram histogram = new Histogram(5);
     
     private SimpleMessaging() {
     }
@@ -153,7 +156,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             ServerChannel session = ((ProtocolEvent) evt).getSession();
             AbstractMessage message = ((ProtocolEvent) evt).getMessage();
             try {
+                long startTime = System.nanoTime();
                 annotationSupport.dispatch(session, message);
+                long delay = System.nanoTime() - startTime;
+                histogram.recordValue(delay);
             } catch (Throwable th) {
                 LOG.error("Grave error processing the message {} for {}", message, session, th);
             }
@@ -194,5 +200,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         
         subscriptions = null;
         m_stopLatch.countDown();
+
+        //log metrics
+        histogram.outputPercentileDistribution(System.out, 1000.0);
     }
 }
