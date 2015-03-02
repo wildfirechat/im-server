@@ -66,6 +66,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
     private final AnnotationSupport annotationSupport = new AnnotationSupport();
+    private boolean benchmarkEnabled = false;
     
     CountDownLatch m_stopLatch;
 
@@ -158,8 +159,10 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             try {
                 long startTime = System.nanoTime();
                 annotationSupport.dispatch(session, message);
-                long delay = System.nanoTime() - startTime;
-                histogram.recordValue(delay);
+                if (benchmarkEnabled) {
+                    long delay = System.nanoTime() - startTime;
+                    histogram.recordValue(delay);
+                }
             } catch (Throwable th) {
                 LOG.error("Grave error processing the message {} for {}", message, session, th);
             }
@@ -167,6 +170,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     private void processInit(Properties props) {
+        benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
+
         //TODO use a property to select the storage path
         MapDBPersistentStore mapStorage = new MapDBPersistentStore();
         m_storageService = mapStorage;
@@ -201,7 +206,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         subscriptions = null;
         m_stopLatch.countDown();
 
-        //log metrics
-        histogram.outputPercentileDistribution(System.out, 1000.0);
+        if (benchmarkEnabled) {
+            //log metrics
+            histogram.outputPercentileDistribution(System.out, 1000.0);
+        }
     }
 }
