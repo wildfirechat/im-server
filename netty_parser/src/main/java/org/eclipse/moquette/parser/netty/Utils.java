@@ -136,7 +136,7 @@ public class Utils {
      * Return the IoBuffer with string encoded as MSB, LSB and UTF-8 encoded
      * string content.
      */
-    static ByteBuf encodeString(String str) {
+    public static ByteBuf encodeString(String str) {
         ByteBuf out = Unpooled.buffer(2);
         byte[] raw;
         try {

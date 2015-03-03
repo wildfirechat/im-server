@@ -18,13 +18,12 @@ package org.eclipse.moquette.spec.v3_1_1.connection;
 import java.io.IOException;
 
 import org.eclipse.moquette.server.Server;
+import org.eclipse.moquette.testclient.RawClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.kaazing.robot.junit.annotation.Robotic;
-import org.kaazing.robot.junit.rules.RobotRule;
 
 /**
  *
@@ -32,9 +31,6 @@ import org.kaazing.robot.junit.rules.RobotRule;
  * 
  */
 public class ConnectionIT {
-	
-	@Rule
-    public RobotRule robot = new RobotRule();
 	
 	Server m_server;
 	
@@ -52,30 +48,104 @@ public class ConnectionIT {
     public void tearDown() throws Exception {
         m_server.stopServer();
     }
-	
-	// The test starts the server during setUp
-    // The network communication is driven by the script.
-    @Robotic(script = "connect.then.close")
-    @Test(timeout = 2000)
-    public void shouldConnectThenClose() throws Exception {
-    	robot.join();
+
+    @Test(timeout = 3000)
+    public void testConnectThenClose() throws Exception {
+        RawClient.connect("127.0.0.1", 1883).isConnected()
+        //CONNECT
+        .write(0x10) //MQTT Control Packet type(1)
+        .write(0x13)            // Remaining Length
+        .write(0x00, 0x04)      // Protocol Name Length
+        .write("MQTT")           // Protocol Name
+        .write(0x04)           // The value of the Protocol Level field for the version 3.1.1 of the protocol is 4 (0x04)
+
+        //Connect Flags
+        //User Name Flag(0)
+        //Password Flag(0)
+        //Will Retain(0)
+        //Will QoS(00)
+        //Will Flag(0)
+        //Clean Session(1)
+        .write(0x02)            // Reserved(0)
+        .write(0x00, 0x00)      // Keep Alive
+
+        // Payload
+        .write(0x00, 0x07)       // Client Identifier Length
+        .write("client1")      // Client Identifier
+        .flush()
+
+        //CONNACK
+        .read(0x20)             // MQTT Control Packet type(2)
+        .read(0x02)             // Remaining Length
+
+        //Connect Acknowledge Flags
+        .read(0x00)             // Session Present Flag(0)
+
+        //Connect Return code
+        .read(0x00)             // Connection Accepted
+
+        //DISCONNECT
+        .write(0xE0) // MQTT Control Packet type(14)
+        .write(0x00) // Remaining Length
+        .closed(1000);
     }
-    
-    // TODO: server is not closing the connection immediately. 
-    // The connection is closed 10 seconds after the CorruptedFrameException is 
-    // thrown from ConnectDecoder
-    @Robotic(script = "connect.with.invalid.WillQoS")
-    @Test(timeout = 15000)
-    public void connectWithInvalidWillQoS() throws Exception {
-    	robot.join();
+
+    @Test(timeout = 3000)
+    public void testConnectWithInvalidWillQoS() throws Exception {
+        RawClient.connect("127.0.0.1", 1883).isConnected()
+            //CONNECT
+            .write(0x10) //MQTT Control Packet type(1)
+            .write(0x13)            // Remaining Length
+            .write(0x00, 0x04)      // Protocol Name Length
+            .write("MQTT")           // Protocol Name
+            .write(0x04)           // The value of the Protocol Level field for the version 3.1.1 of the protocol is 4 (0x04)
+
+            //Connect Flags
+            //User Name Flag(0)
+            //Password Flag(0)
+            //Will Retain(0)
+            //Will QoS(11) - It MUST NOT be 3 (0x03). Server should close the connection.
+            //Will Flag(1)
+            //Clean Session(1)
+            .write(0x1E)            // Reserved(0)
+            .write(0x00, 0x00)      // Keep Alive
+
+                    // Payload
+            .write(0x00, 0x07)       // Client Identifier Length
+            .write("client1")      // Client Identifier
+            .flush()
+
+            .closed(1000);
     }
-    
-    
+
     @Ignore("Need to validate the test case.")
-    @Robotic(script = "connect.with.WillFlag.set.to.zero.but.WillQoS.set.to.nonzero")
     @Test(timeout = 15000)
-    public void connectWithWillFlagSetToZeroButWillQoSFlagSetToNonZero() throws Exception {
-    	robot.join();
+    public void testConnectWithWillFlagSetToZeroButWillQoSFlagSetToNonZero() throws Exception {
+        RawClient.connect("127.0.0.1", 1883).isConnected()
+        // CONNECT
+        .write(0x10) // MQTT Control Packet type(1)
+        .write(0x12) // Remaining Length
+        .write(0x00, 0x04)       // Protocol Name Length
+        .write("MQTT")            // Protocol Name
+        .write(0x04) // The value of the Protocol Level field for the version 3.1.1 of the protocol is 4 (0x04)
+
+        // Connect Flags
+        // User Name Flag(0)
+        // Password Flag(0)
+        // Will Retain(0)
+        // Will QoS(01) - If the Will Flag is set to 0, then the Will QoS MUST be set to 0
+        // Will Flag(0)
+        //Clean Session(1)
+        .write(0x0A)            // Reserved(0)
+
+        .write(0x00, 0x00)       // Keep Alive
+
+        // Payload
+        .write(0x00, 0x07)       // Client Identifier Length
+        .write("client1")        //Client Identifier
+
+        //Server MUST close the Network Connection due to invalid Will QoS flag
+        .closed();
     }
 
 }
