@@ -46,7 +46,7 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testParseTopic() throws ParseException {
-        List tokens = store.parseTopic("finance/stock/ibm");
+        List<Token> tokens = store.parseTopic("finance/stock/ibm");
         assertEqualsSeq(asArray("finance", "stock", "ibm"), tokens);
 
         tokens = store.parseTopic("/finance/stock/ibm");
@@ -63,7 +63,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testParseTopicMultiValid() throws ParseException {
-        List tokens = store.parseTopic("finance/stock/#");
+        List<Token> tokens = store.parseTopic("finance/stock/#");
         assertEqualsSeq(asArray("finance", "stock", Token.MULTI), tokens);
 
         tokens = store.parseTopic("#");
@@ -82,7 +82,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testParseTopicSingleValid() throws ParseException {
-        List tokens = store.parseTopic("finance/stock/+");
+        List<Token> tokens = store.parseTopic("finance/stock/+");
         assertEqualsSeq(asArray("finance", "stock", Token.SINGLE), tokens);
 
         tokens = store.parseTopic("+");

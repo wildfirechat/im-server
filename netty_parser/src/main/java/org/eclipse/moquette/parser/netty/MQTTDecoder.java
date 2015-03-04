@@ -32,9 +32,9 @@ import org.eclipse.moquette.proto.messages.AbstractMessage;
 public class MQTTDecoder extends ByteToMessageDecoder {
     
     //3 = 3.1, 4 = 3.1.1
-    static final AttributeKey<Integer> PROTOCOL_VERSION = new AttributeKey<Integer>("version");
+    static final AttributeKey<Integer> PROTOCOL_VERSION = AttributeKey.valueOf("version");
     
-    private final Map<Byte, DemuxDecoder> m_decoderMap = new HashMap<Byte, DemuxDecoder>();
+    private final Map<Byte, DemuxDecoder> m_decoderMap = new HashMap<>();
     
     public MQTTDecoder() {
        m_decoderMap.put(AbstractMessage.CONNECT, new ConnectDecoder());

@@ -200,7 +200,7 @@ public class SubscriptionsStore {
         } catch (ParseException ex) {
             //TODO handle the parse exception
             LOG.error(null, ex);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Queue<Token> tokenQueue = new LinkedBlockingDeque<Token>(tokens);
@@ -274,7 +274,7 @@ public class SubscriptionsStore {
     }
     
     protected static List<Token> parseTopic(String topic) throws ParseException {
-        List res = new ArrayList<Token>();
+        List<Token> res = new ArrayList<>();
         String[] splitted = topic.split("/");
 
         if (splitted.length == 0) {

@@ -85,7 +85,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void init(Properties configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
-        m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
         /*Disruptor<ValueEvent> m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
                 ProducerType.MULTI, new BusySpinWaitStrategy());*/
         m_disruptor.handleEventsWith(this);

@@ -15,6 +15,11 @@
             <outputDirectory>bin</outputDirectory>
             <fileMode>0755</fileMode>
         </file>
+
+        <file>
+            <source>src/main/scripts/moquette.bat</source>
+            <outputDirectory>bin</outputDirectory>
+        </file>
         
         <file>
             <source>src/main/resources/log4j.properties</source>

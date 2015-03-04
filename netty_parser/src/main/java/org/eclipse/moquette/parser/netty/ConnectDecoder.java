@@ -32,8 +32,8 @@ import org.eclipse.moquette.proto.messages.ConnectMessage;
  * @author andrea
  */
 public class ConnectDecoder extends DemuxDecoder {
-    
-    static final AttributeKey<Boolean> CONNECT_STATUS = new AttributeKey<Boolean>("connected");
+
+    static final AttributeKey<Boolean> CONNECT_STATUS = AttributeKey.valueOf("connected");
     
     @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws UnsupportedEncodingException {
@@ -119,17 +119,17 @@ public class ConnectDecoder extends DemuxDecoder {
                 throw new CorruptedFrameException("Received a CONNECT with connectionFlags[0(bit)] != 0");
             }
         }
-        
-        boolean cleanSession = ((connFlags & 0x02) >> 1) == 1 ? true : false;
-        boolean willFlag = ((connFlags & 0x04) >> 2) == 1 ? true : false;
+
+        boolean cleanSession = ((connFlags & 0x02) >> 1) == 1;
+        boolean willFlag = ((connFlags & 0x04) >> 2) == 1;
         byte willQos = (byte) ((connFlags & 0x18) >> 3);
         if (willQos > 2) {
             in.resetReaderIndex();
             throw new CorruptedFrameException("Expected will QoS in range 0..2 but found: " + willQos);
         }
-        boolean willRetain = ((connFlags & 0x20) >> 5) == 1 ? true : false;
-        boolean passwordFlag = ((connFlags & 0x40) >> 6) == 1 ? true : false;
-        boolean userFlag = ((connFlags & 0x80) >> 7) == 1 ? true : false;
+        boolean willRetain = ((connFlags & 0x20) >> 5) == 1;
+        boolean passwordFlag = ((connFlags & 0x40) >> 6) == 1;
+        boolean userFlag = ((connFlags & 0x80) >> 7) == 1;
         //a password is true iff user is true.
         if (!userFlag && passwordFlag) {
             in.resetReaderIndex();

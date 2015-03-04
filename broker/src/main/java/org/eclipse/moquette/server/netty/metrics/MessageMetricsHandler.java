@@ -23,7 +23,7 @@ import io.netty.util.AttributeKey;
 
 public class MessageMetricsHandler extends ChannelDuplexHandler {
 
-    private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = new AttributeKey<MessageMetrics>("MessageMetrics");
+    private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("MessageMetrics");
 
     private MessageMetricsCollector m_collector;
 
