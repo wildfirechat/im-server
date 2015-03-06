@@ -25,7 +25,7 @@ cd bin
 Starting from version 0.6 Moquette is OSGi compliant, to see it in action: 
 ```
 mvn clean install;
-cd budle;
+cd bundle;
 mvn install pax:provision
 ``` 
 
