@@ -1,3 +1,5 @@
+https://api.travis-ci.org/andsel/moquette.svg?branch=master
+
 ## What is Moquette?
 
 Moquette aims to be a MQTT compliant broker. The broker supports QoS 0, QoS 1 and QoS 2.
