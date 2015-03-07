@@ -210,6 +210,9 @@
                     <provision>
                         <!--param>- -log=debug</param -->
                         <!-- <param> - -workingDirectory=target/runner</param>  -->
+                        <param>--autoWrap</param>
+                        <param>mvn:org.hdrhistogram/HdrHistogram/2.1.4</param>
+                        <param>mvn:com.github.livesense/org.liveSense.fragment.sun.misc/1.0.5</param>
                     </provision>
                 </configuration>
             </plugin>
