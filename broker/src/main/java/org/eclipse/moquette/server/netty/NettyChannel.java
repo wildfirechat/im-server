@@ -84,6 +84,6 @@ public class NettyChannel implements ServerChannel {
     @Override
     public String toString() {
         String clientID = (String) getAttribute(Constants.ATTR_CLIENTID);
-        return "session [clientID "+ clientID +"]";
+        return "session [clientID: "+ clientID +"]" + super.toString();
     }
 }

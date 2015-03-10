@@ -173,7 +173,6 @@ public class ServerIntegrationPahoTest {
         LOG.info("*** testRetain_maintainMessage_againstClientDestruction ***");
         m_client.connect();
         m_client.publish("/topic", "Test my payload".getBytes(), 1, true);
-
         m_client.disconnect();
 
         //reconnect and publish

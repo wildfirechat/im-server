@@ -77,13 +77,18 @@ public interface IMessagesStore {
      */
     List<PublishEvent> listMessagesInSession(String clientID);
     
-    void removeMessageInSession(String clientID, int messageID);
+    void removeMessageInSession(String clientID, int packetID);
 
     void dropMessagesInSession(String clientID);
 
-    void cleanInFlight(String msgID);
+    void cleanInFlight(String clientID, int packetID);
 
-    void addInFlight(PublishEvent evt, String publishKey);
+    void addInFlight(PublishEvent evt, String clientID, int packetID);
+
+    /**
+     * Return the next valid packetIdentifer for the given client session.
+     * */
+    int nextPacketID(String clientID);
 
     void close();
 

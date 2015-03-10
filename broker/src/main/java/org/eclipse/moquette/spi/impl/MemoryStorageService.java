@@ -39,6 +39,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
     private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<String, List<PublishEvent>>();
     private Map<String, PublishEvent> m_inflightStore = new HashMap<String, PublishEvent>();
+    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     private Map<String, PublishEvent> m_qos2Store = new HashMap<String, PublishEvent>();
     
     private static final Logger LOG = LoggerFactory.getLogger(MemoryStorageService.class);
@@ -119,13 +120,38 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void cleanInFlight(String msgID) {
-        m_inflightStore.remove(msgID);
+    public void cleanInFlight(String clientID, int packetID) {
+        String publishKey = String.format("%s%d", clientID, packetID);
+        m_inflightStore.remove(publishKey);
+        Set<Integer> inFlightForClient = m_inflightIDs.get(clientID);
+        if (inFlightForClient != null) {
+            inFlightForClient.remove(packetID);
+        }
     }
 
     @Override
-    public void addInFlight(PublishEvent evt, String publishKey) {
+    public void addInFlight(PublishEvent evt, String clientID, int packetID) {
+        String publishKey = String.format("%s%d", clientID, packetID);
         m_inflightStore.put(publishKey, evt);
+    }
+
+    /**
+     * Return the next valid packetIdentifer for the given client session.
+     * */
+    @Override
+    public int nextPacketID(String clientID) {
+        Set<Integer> inFlightForClient = m_inflightIDs.get(clientID);
+        if (inFlightForClient == null) {
+            int nextPacketId = 1;
+            inFlightForClient = new HashSet<>();
+            inFlightForClient.add(nextPacketId);
+            m_inflightIDs.put(clientID, inFlightForClient);
+            return nextPacketId;
+        }
+        int maxId = Collections.max(inFlightForClient);
+        int nextPacketId = (maxId + 1) % 0xFFFF;
+        inFlightForClient.add(nextPacketId);
+        return nextPacketId;
     }
 
     @Override
