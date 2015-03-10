@@ -32,36 +32,25 @@ public class NettyChannel implements ServerChannel {
     
     private ChannelHandlerContext m_channel;
     
-    private Map<Object, AttributeKey<Object>> m_attributesKeys = new HashMap<Object, AttributeKey<Object>>();
-    
-    private static final AttributeKey<Object> ATTR_KEY_KEEPALIVE = AttributeKey.valueOf(Constants.KEEP_ALIVE);
-    private static final AttributeKey<Object> ATTR_KEY_CLEANSESSION = AttributeKey.valueOf(Constants.CLEAN_SESSION);
-    private static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf(Constants.ATTR_CLIENTID);
+
+    public static final AttributeKey<Object> ATTR_KEY_KEEPALIVE = AttributeKey.valueOf(Constants.KEEP_ALIVE);
+    public static final AttributeKey<Object> ATTR_KEY_CLEANSESSION = AttributeKey.valueOf(Constants.CLEAN_SESSION);
+    public static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf(Constants.ATTR_CLIENTID);
 
     NettyChannel(ChannelHandlerContext ctx) {
         m_channel = ctx;
-        m_attributesKeys.put(Constants.KEEP_ALIVE, ATTR_KEY_KEEPALIVE);
-        m_attributesKeys.put(Constants.CLEAN_SESSION, ATTR_KEY_CLEANSESSION);
-        m_attributesKeys.put(Constants.ATTR_CLIENTID, ATTR_KEY_CLIENTID);
     }
 
-    public Object getAttribute(Object key) {
-        Attribute<Object> attr = m_channel.attr(mapKey(key));
+    public Object getAttribute(AttributeKey<Object> key) {
+        Attribute<Object> attr = m_channel.attr(key);
         return attr.get();
     }
 
-    public void setAttribute(Object key, Object value) {
-        Attribute<Object> attr = m_channel.attr(mapKey(key));
+    public void setAttribute(AttributeKey<Object> key, Object value) {
+        Attribute<Object> attr = m_channel.attr(key);
         attr.set(value);
     }
     
-    private synchronized AttributeKey<Object> mapKey(Object key) {
-        if (!m_attributesKeys.containsKey(key)) {
-            throw new IllegalArgumentException("mapKey can't find a matching AttributeKey for " + key);
-        }
-        return m_attributesKeys.get(key);
-    }
-
     public void setIdleTime(int idleTime) {
         if (m_channel.pipeline().names().contains("idleStateHandler")) {
             m_channel.pipeline().remove("idleStateHandler");
@@ -83,7 +72,7 @@ public class NettyChannel implements ServerChannel {
 
     @Override
     public String toString() {
-        String clientID = (String) getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) getAttribute(ATTR_KEY_CLIENTID);
         return "session [clientID: "+ clientID +"]" + super.toString();
     }
 }

@@ -15,15 +15,17 @@
  */
 package org.eclipse.moquette.server;
 
+import io.netty.util.AttributeKey;
+
 /**
  *
  * @author andrea
  */
 public interface ServerChannel {
     
-    Object getAttribute(Object key);
+    Object getAttribute(AttributeKey<Object> key);
     
-    void setAttribute(Object key, Object value);
+    void setAttribute(AttributeKey<Object> key, Object value);
     
     void setIdleTime(int idleTime);
     

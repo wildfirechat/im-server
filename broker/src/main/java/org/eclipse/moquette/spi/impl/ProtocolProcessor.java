@@ -22,6 +22,8 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
@@ -160,7 +162,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
             ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).getSession();
-            boolean cleanSession = (Boolean) oldSession.getAttribute(Constants.CLEAN_SESSION);
+            boolean cleanSession = (Boolean) oldSession.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
             if (cleanSession) {
                 //cleanup topic subscriptions
                 cleanSession(msg.getClientID());
@@ -175,10 +177,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         int keepAlive = msg.getKeepAlive();
         LOG.debug("Connect with keepAlive {} s",  keepAlive);
-        session.setAttribute(Constants.KEEP_ALIVE, keepAlive);
-        session.setAttribute(Constants.CLEAN_SESSION, msg.isCleanSession());
+        session.setAttribute(NettyChannel.ATTR_KEY_KEEPALIVE, keepAlive);
+        session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
-        session.setAttribute(Constants.ATTR_CLIENTID, msg.getClientID());
+        session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, msg.getClientID());
         LOG.debug("Conent create session <{}>", session);
 
         session.setIdleTime(Math.round(keepAlive * 1.5f));
@@ -253,7 +255,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = PubAckMessage.class)
     void processPubAck(ServerChannel session, PubAckMessage msg) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //Remove the message from message store
         m_messagesStore.removeMessageInSession(clientID, messageID);
@@ -272,7 +274,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     @MQTTMessage(message = PublishMessage.class)
     void processPublish(ServerChannel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", msg);
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         final String topic = msg.getTopicName();
         final AbstractMessage.QOSType qos = msg.getQos();
         final ByteBuffer message = msg.getPayload();
@@ -449,7 +451,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * */
     @MQTTMessage(message = PubRelMessage.class)
     void processPubRel(ServerChannel session, PubRelMessage msg) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         String publishKey = String.format("%s%d", clientID, messageID);
@@ -480,7 +482,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = PubRecMessage.class)
     void processPubRec(ServerChannel session, PubRecMessage msg) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //once received a PUBREC reply with a PUBREL(messageID)
         LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
@@ -495,7 +497,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = PubCompMessage.class)
     void processPubComp(ServerChannel session, PubCompMessage msg) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
@@ -504,8 +506,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = DisconnectMessage.class)
     void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+        boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         if (cleanSession) {
             //cleanup topic subscriptions
             cleanSession(clientID);
@@ -554,7 +556,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     void processUnsubscribe(ServerChannel session, UnsubscribeMessage msg) {
         List<String> topics = msg.topicFilters();
         int messageID = msg.getMessageID();
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         for (String topic : topics) {
@@ -570,8 +572,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = SubscribeMessage.class)
     void processSubscribe(ServerChannel session, SubscribeMessage msg) {
-        String clientID = (String) session.getAttribute(Constants.ATTR_CLIENTID);
-        boolean cleanSession = (Boolean) session.getAttribute(Constants.CLEAN_SESSION);
+        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+        boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
