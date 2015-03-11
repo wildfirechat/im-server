@@ -31,9 +31,6 @@ public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
-    public static final String STORAGE_FILE_PATH = System.getProperty("user.home") +
-            File.separator + "moquette_store.mapdb";
-
     private ServerAcceptor m_acceptor;
     SimpleMessaging messaging;
     
@@ -64,7 +61,6 @@ public class Server {
      */
     public void startServer(File configFile) throws IOException {
         LOG.info("Using config file: " + configFile.getAbsolutePath());
-        LOG.info("Persistent store file: " + STORAGE_FILE_PATH);
 
         ConfigurationParser confParser = new ConfigurationParser();
         try {
@@ -86,6 +82,7 @@ public class Server {
      * </ul>
      */
     public void startServer(Properties configProps) throws IOException {
+        LOG.info("Persistent store file: " + configProps.get("persistent_store"));
         messaging = SimpleMessaging.getInstance();
         messaging.init(configProps);
         

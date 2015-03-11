@@ -173,7 +173,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
 
         //TODO use a property to select the storage path
-        MapDBPersistentStore mapStorage = new MapDBPersistentStore();
+        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty("persistent_store", ""));
         m_storageService = mapStorage;
         m_sessionsStore = mapStorage;
 

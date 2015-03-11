@@ -24,7 +24,6 @@ import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.storage.StoredPublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
-import static org.eclipse.moquette.server.Server.STORAGE_FILE_PATH;
 import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
 
 import org.mapdb.DB;
@@ -57,16 +56,21 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     //persistent Map of clientID, set of Subscriptions
     private ConcurrentMap<String, Set<Subscription>> m_persistentSubscriptions;
     private DB m_db;
+    private String m_storePath;
 
+    public MapDBPersistentStore(String storePath) {
+        this.m_storePath = storePath;
+    }
+    
     @Override
     public void initStore() {
         File tmpFile;
         try {
-            tmpFile = new File(STORAGE_FILE_PATH);
+            tmpFile = new File(m_storePath);
             tmpFile.createNewFile();
         } catch (IOException ex) {
             LOG.error(null, ex);
-            throw new MQTTException("Can't create temp file for subscriptions storage [" + STORAGE_FILE_PATH + "]", ex);
+            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
         }
         m_db = DBMaker.newFileDB(tmpFile).make();
         m_retainedStore = m_db.getHashMap("retained");
