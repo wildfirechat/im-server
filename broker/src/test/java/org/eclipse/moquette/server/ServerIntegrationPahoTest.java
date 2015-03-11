@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -37,6 +38,9 @@ public class ServerIntegrationPahoTest {
     Server m_server;
     IMqttClient m_client;
     TestCallback m_callback;
+    Properties properties;
+    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
+    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
 
     @BeforeClass
     public static void beforeTests() {
@@ -46,14 +50,16 @@ public class ServerIntegrationPahoTest {
     }
 
     protected void startServer() throws IOException {
+    	properties = new Properties();
+    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer();
+        m_server.startServer(properties);
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
-        assertFalse(String.format("The DB storagefile %s already exists", Server.STORAGE_FILE_PATH), dbFile.exists());
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        assertFalse(String.format("The DB storagefile %s already exists", properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME)), dbFile.exists());
         
         startServer();
 
@@ -69,7 +75,7 @@ public class ServerIntegrationPahoTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

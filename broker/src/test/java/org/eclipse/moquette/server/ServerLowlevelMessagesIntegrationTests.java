@@ -17,8 +17,10 @@ package org.eclipse.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
 import org.eclipse.moquette.proto.messages.ConnAckMessage;
@@ -30,7 +32,9 @@ import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.QoS;
 import org.fusesource.mqtt.client.Topic;
 import org.junit.After;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -47,9 +51,15 @@ public class ServerLowlevelMessagesIntegrationTests {
     Client m_client;
     MQTT m_subscriberDef;
     
+    Properties properties;
+    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
+    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
+    
     protected void startServer() throws IOException {
+    	properties = new Properties();
+    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer();
+        m_server.startServer(properties);
     }
 
     @Before
@@ -68,7 +78,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         Thread.sleep(300); //to let the close event pass before server stop event
         m_server.stopServer();
         LOG.debug("After asked server to stop");
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

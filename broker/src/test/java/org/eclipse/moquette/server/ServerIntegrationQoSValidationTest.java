@@ -18,13 +18,17 @@ package org.eclipse.moquette.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
+
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -46,6 +50,10 @@ public class ServerIntegrationQoSValidationTest {
     IMqttClient m_subscriber;
     IMqttClient m_publisher;
     TestCallback m_callback;
+    
+    Properties properties;
+    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
+    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
 
     @BeforeClass
     public static void beforeTests() {
@@ -55,8 +63,10 @@ public class ServerIntegrationQoSValidationTest {
     }
 
     protected void startServer() throws IOException {
+    	properties = new Properties();
+    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer();
+        m_server.startServer(properties);
     }
 
     @Before
@@ -85,7 +95,7 @@ public class ServerIntegrationQoSValidationTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

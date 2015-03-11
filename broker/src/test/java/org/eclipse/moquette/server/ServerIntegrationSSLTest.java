@@ -24,18 +24,23 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Properties;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
+
 import static org.junit.Assert.assertFalse;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,6 +60,10 @@ public class ServerIntegrationSSLTest {
 
     IMqttClient m_client;
     TestCallback m_callback;
+    
+    Properties properties;
+    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
+    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
 
     @BeforeClass
     public static void beforeTests() {
@@ -65,14 +74,16 @@ public class ServerIntegrationSSLTest {
     protected void startServer() throws IOException {
         String file = getClass().getResource("/").getPath();
         System.setProperty("moquette.path", file);
+    	properties = new Properties();
+    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer();
+        m_server.startServer(properties);
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
-        assertFalse(String.format("The DB storagefile %s already exists", Server.STORAGE_FILE_PATH), dbFile.exists());
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        assertFalse(String.format("The DB storagefile %s already exists", properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME)), dbFile.exists());
         
         startServer();
 
@@ -90,7 +101,7 @@ public class ServerIntegrationSSLTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(Server.STORAGE_FILE_PATH);
+        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }
