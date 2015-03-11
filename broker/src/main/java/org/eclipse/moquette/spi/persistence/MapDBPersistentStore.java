@@ -59,21 +59,33 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     private DB m_db;
     private String m_storePath;
 
+    /*
+     * The default constructor will create an in memory store as no file path was specified
+     */
+    
+    public MapDBPersistentStore() {
+    	this.m_storePath = "";
+    }
+    
     public MapDBPersistentStore(String storePath) {
         this.m_storePath = storePath;
     }
     
     @Override
     public void initStore() {
-        File tmpFile;
-        try {
-            tmpFile = new File(m_storePath);
-            tmpFile.createNewFile();
-        } catch (IOException ex) {
-            LOG.error(null, ex);
-            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
-        }
-        m_db = DBMaker.newFileDB(tmpFile).make();
+    	if (m_storePath == null || m_storePath.length() <= 0) {
+    		m_db = DBMaker.newMemoryDB().make();
+    	} else {
+	        File tmpFile;
+	        try {
+	            tmpFile = new File(m_storePath);
+	            tmpFile.createNewFile();
+	        } catch (IOException ex) {
+	            LOG.error(null, ex);
+	            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
+	        }
+	        m_db = DBMaker.newFileDB(tmpFile).make();
+    	}
         m_retainedStore = m_db.getHashMap("retained");
         m_persistentMessageStore = m_db.getHashMap("persistedMessages");
         m_inflightStore = m_db.getHashMap("inflight");
