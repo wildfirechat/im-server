@@ -173,7 +173,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
 
         //TODO use a property to select the storage path
-        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty("persistent_store", ""));
+        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME, ""));
         m_storageService = mapStorage;
         m_sessionsStore = mapStorage;
 
@@ -183,7 +183,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
         
-        String passwdPath = props.getProperty("password_file", "");
+        String passwdPath = props.getProperty(org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME, "");
         String configPath = System.getProperty("moquette.path", null);
         IAuthenticator authenticator;
         if (passwdPath.isEmpty()) {
