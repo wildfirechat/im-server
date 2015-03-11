@@ -76,8 +76,8 @@ public class ServerIntegrationSSLTest {
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
-        assertFalse(String.format("The DB storagefile %s already exists", m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME)), dbFile.exists());
+        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
+        assertFalse(String.format("The DB storagefile %s already exists",org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
         
         startServer();
 
