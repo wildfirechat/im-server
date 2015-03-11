@@ -47,7 +47,6 @@ import org.eclipse.moquette.proto.messages.SubscribeMessage;
 import org.eclipse.moquette.proto.messages.UnsubAckMessage;
 import org.eclipse.moquette.proto.messages.UnsubscribeMessage;
 import org.eclipse.moquette.server.ConnectionDescriptor;
-import org.eclipse.moquette.server.Constants;
 import org.eclipse.moquette.server.IAuthenticator;
 import org.eclipse.moquette.server.ServerChannel;
 import org.slf4j.Logger;
@@ -130,7 +129,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //init the output ringbuffer
         m_executor = Executors.newFixedThreadPool(1);
 
-        Disruptor<ValueEvent> disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        Disruptor<ValueEvent> disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
         disruptor.handleEventsWith(this);
         disruptor.start();
 
@@ -181,7 +180,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
         session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, msg.getClientID());
-        LOG.debug("Conent create session <{}>", session);
+        LOG.debug("Connect create session <{}>", session);
 
         session.setIdleTime(Math.round(keepAlive * 1.5f));
 
@@ -288,7 +287,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
             forward2Subscribers(topic, qos, message, retain, messageID);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) {
-            String publishKey = String.format("%s%d", clientID, messageID);
             PublishEvent inFlightEvt = new PublishEvent(topic, qos, message, retain,
                         clientID, messageID);
             //TODO use a message store for TO PUBLISH MESSAGES it has nothing to do with inFlight!!
@@ -323,14 +321,19 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Specialized version to publish will testament message.
      */
     private void forwardPublishWill(WillMessage will, String clientID) {
-        //TODO reimplement it!
-        //TODO it has just to publish the message downstream to the subscribers
+        //it has just to publish the message downstream to the subscribers
         final String topic = will.getTopic();
         final AbstractMessage.QOSType qos = will.getQos();
         final ByteBuffer message = will.getPayload();
         boolean retain = will.isRetained();
         //NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
-        processPublish(clientID, topic, qos, message, retain, 1 /*null*/);
+        if (qos == AbstractMessage.QOSType.MOST_ONE) {
+            forward2Subscribers(topic, qos, message, retain, null);
+        } else {
+            int messageId = m_messagesStore.nextPacketID(clientID);
+            forward2Subscribers(topic, qos, message, retain, messageId);
+        }
+
     }
     
     /**

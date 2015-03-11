@@ -5,7 +5,8 @@ Version 0.7:
     Fixed bug that didn't update client subscription on persistent store so that on server restart there where ghost subscriptions.
     Fixed Issue #11, multiple republish of persisted QoS1/2 messages on clients reconnections.
     Refactored the publish logic for QoS 1 2 to try to be more readable
-    Added packetIdentifier storarage and generation
+    Added packetIdentifier storage and generation
+    Fixed issue #16, bad packetId for will messages with qos > 0
 
 Version 0.6:
     Fix issue #42, bad password file path composition
