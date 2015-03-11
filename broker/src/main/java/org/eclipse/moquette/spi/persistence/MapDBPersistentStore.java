@@ -24,6 +24,7 @@ import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.storage.StoredPublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
+
 import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
 
 import org.mapdb.DB;

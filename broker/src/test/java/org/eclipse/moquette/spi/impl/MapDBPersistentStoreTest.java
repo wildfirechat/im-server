@@ -17,6 +17,7 @@ package org.eclipse.moquette.spi.impl;
 
 import java.io.File;
 import java.util.List;
+
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
@@ -38,10 +39,10 @@ public class MapDBPersistentStoreTest {
     @Before
     public void setUp() throws Exception {
     	    	
-        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
-        assertFalse(String.format("The DB storagefile %s already exists", org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
+        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
+        assertFalse(String.format("The DB storagefile %s already exists", org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH), dbFile.exists());
         
-        m_storageService = new MapDBPersistentStore(org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
+        m_storageService = new MapDBPersistentStore(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
         m_storageService.initStore();
     }
 
@@ -51,9 +52,9 @@ public class MapDBPersistentStoreTest {
             m_storageService.close();
         }
         
-        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
+        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
         if (dbFile.exists()) {
-            dbFile.delete();
+        	assertTrue("Error deleting the moquette db file " + org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH, dbFile.delete());
         }
         assertFalse(dbFile.exists());
     }
