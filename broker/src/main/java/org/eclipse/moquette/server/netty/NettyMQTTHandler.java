@@ -25,7 +25,6 @@ import org.eclipse.moquette.proto.Utils;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import static org.eclipse.moquette.proto.messages.AbstractMessage.*;
 import org.eclipse.moquette.proto.messages.PingRespMessage;
-import org.eclipse.moquette.server.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

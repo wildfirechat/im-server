@@ -17,7 +17,6 @@ package org.eclipse.moquette.server.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -135,8 +134,8 @@ public class NettyAcceptor implements ServerAcceptor {
     private void initializePlainTCPTransport(IMessaging messaging, Properties props) throws IOException {
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
-        String host = props.getProperty("host");
-        int port = Integer.parseInt(props.getProperty("port"));
+        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
+        int port = Integer.parseInt(props.getProperty(Constants.PORT_PROPERTY_NAME));
         initFactory(host, port, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
@@ -152,7 +151,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(IMessaging messaging, Properties props) throws IOException {
-        String webSocketPortProp = props.getProperty("websocket_port");
+        String webSocketPortProp = props.getProperty(Constants.WEB_SOCKET_PORT_PROPERTY_NAME);
         if (webSocketPortProp == null) {
             //Do nothing no WebSocket configured
             LOG.info("WebSocket is disabled");
@@ -163,7 +162,7 @@ public class NettyAcceptor implements ServerAcceptor {
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
 
-        String host = props.getProperty("host");
+        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         initFactory(host, port, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
@@ -186,13 +185,13 @@ public class NettyAcceptor implements ServerAcceptor {
     
     
     private void initializeSSLTCPTransport(IMessaging messaging, Properties props) throws IOException {
-        String sslPortProp = props.getProperty("ssl_port");
+        String sslPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
             LOG.info("SSL is disabled");
             return;
         }
-        final String jksPath = props.getProperty("jks_path");
+        final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
         if (jksPath == null || jksPath.isEmpty()) {
             //key_store_password or key_manager_password are empty
             LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
@@ -201,8 +200,8 @@ public class NettyAcceptor implements ServerAcceptor {
         
         //if we have the port also the jks then keyStorePassword and keyManagerPassword 
         //has to be defined
-        final String keyStorePassword = props.getProperty("key_store_password");
-        final String keyManagerPassword = props.getProperty("key_manager_password");
+        final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
+        final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
         if (keyStorePassword == null || keyStorePassword.isEmpty()) {
             //key_store_password or key_manager_password are empty
             LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
@@ -215,7 +214,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
 
         int sslPort = Integer.parseInt(sslPortProp);
-        String host = props.getProperty("host");
+        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
 
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);

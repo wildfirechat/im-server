@@ -41,15 +41,10 @@ public class ServerRestartIntegrationTest {
     MQTT m_mqtt;
     BlockingConnection m_subscriber;
     BlockingConnection m_publisher;
-    Properties properties;
-    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
-    private final static String PERSISTENT_STORE_FILE_NAME = System.getProperty("user.home") + File.separator + "moquette_store.mapdb";
     
     protected void startServer() throws IOException {
-    	properties = new Properties();
-    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer(properties);
+        m_server.startServer(new Properties());
     }
 
     @Before

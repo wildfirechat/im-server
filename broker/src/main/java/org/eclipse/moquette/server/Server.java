@@ -96,10 +96,10 @@ public class Server {
     }
     
     public void stopServer() {
-        System.out.println("Server stopping...");
+    	LOG.info("Server stopping...");
         messaging.stop();
         m_acceptor.close();
-        System.out.println("Server stopped");
+        LOG.info("Server stopped");
     }
     
     public Properties getProperties() {

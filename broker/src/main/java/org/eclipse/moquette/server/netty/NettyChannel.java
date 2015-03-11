@@ -19,8 +19,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import java.util.HashMap;
-import java.util.Map;
 import org.eclipse.moquette.server.Constants;
 import org.eclipse.moquette.server.ServerChannel;
 
