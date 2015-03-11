@@ -22,7 +22,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
+import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.eclipse.moquette.commons.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +44,24 @@ class ConfigurationParser {
     private Properties m_properties = new Properties();
     
     ConfigurationParser() {
+    	createDefaults();
+    }
+    
+    ConfigurationParser(Properties properties) {
+    	createDefaults();
+    	for (Entry<Object, Object> entrySet : m_properties.entrySet()) {
+    		if (properties.containsKey(entrySet.getKey())) {
+    			entrySet.setValue(properties.get(entrySet.getKey()));
+    		}
+    	}
+    }
+    
+    private void createDefaults() {
         m_properties.put("port", Integer.toString(Constants.PORT));
         m_properties.put("host", Constants.HOST);
         m_properties.put("websocket_port", Integer.toString(Constants.WEBSOCKET_PORT));
         m_properties.put("password_file", "");
-        m_properties.put("persistent_store", System.getProperty("user.home") + File.separator + "moquette_store.mapdb");
+        m_properties.put(Constants.PERSISTENT_STORE_PROPERTY_NAME, Constants.DEFAULT_PERSISTENT_PATH);
     }
     
     /**

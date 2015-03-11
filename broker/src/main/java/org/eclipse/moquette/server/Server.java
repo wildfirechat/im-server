@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Properties;
+
+import org.eclipse.moquette.commons.Constants;
 import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.eclipse.moquette.server.netty.NettyAcceptor;
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ public class Server {
     
     private ServerAcceptor m_acceptor;
     SimpleMessaging messaging;
+    Properties m_properties;
     
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -68,26 +71,28 @@ public class Server {
         } catch (ParseException pex) {
             LOG.warn("An error occurred in parsing configuration, fallback on default configuration", pex);
         }
-        Properties configProps = confParser.getProperties();
-        startServer(configProps);
+        m_properties = confParser.getProperties(); 
+        startServer(m_properties);
     }
     
     /**
      * Starts the server with the given properties.
      * 
-     * Its need at least the following properties:
+     * Its suggested to at least have the following properties:
      * <ul>
      *  <li>port</li>
      *  <li>password_file</li>
      * </ul>
      */
     public void startServer(Properties configProps) throws IOException {
-        LOG.info("Persistent store file: " + configProps.get("persistent_store"));
+    	ConfigurationParser confParser = new ConfigurationParser(configProps);
+    	m_properties = confParser.getProperties();
+        LOG.info("Persistent store file: " + m_properties.get(Constants.PERSISTENT_STORE_PROPERTY_NAME));
         messaging = SimpleMessaging.getInstance();
-        messaging.init(configProps);
+        messaging.init(m_properties);
         
         m_acceptor = new NettyAcceptor();
-        m_acceptor.initialize(messaging, configProps);
+        m_acceptor.initialize(messaging, m_properties);
     }
     
     public void stopServer() {
@@ -95,5 +100,9 @@ public class Server {
         messaging.stop();
         m_acceptor.close();
         System.out.println("Server stopped");
+    }
+    
+    public Properties getProperties() {
+    	return m_properties;
     }
 }

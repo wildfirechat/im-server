@@ -34,13 +34,9 @@ public class ServerIntegrationPahoTest {
     static MqttClientPersistence s_dataStore;
     static MqttClientPersistence s_pubDataStore;
     
-
     Server m_server;
     IMqttClient m_client;
     TestCallback m_callback;
-    Properties properties;
-    private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
-    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
 
     @BeforeClass
     public static void beforeTests() {
@@ -50,16 +46,14 @@ public class ServerIntegrationPahoTest {
     }
 
     protected void startServer() throws IOException {
-    	properties = new Properties();
-    	properties.put(PERSISTENT_STORE_PROPERTY_NAME, PERSISTENT_STORE_FILE_NAME);
         m_server = new Server();
-        m_server.startServer(properties);
+        m_server.startServer(new Properties());
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        assertFalse(String.format("The DB storagefile %s already exists", properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME)), dbFile.exists());
+        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
+        assertFalse(String.format("The DB storagefile %s already exists", m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME)), dbFile.exists());
         
         startServer();
 
@@ -75,7 +69,7 @@ public class ServerIntegrationPahoTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

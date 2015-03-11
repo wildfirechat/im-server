@@ -43,7 +43,7 @@ public class ServerRestartIntegrationTest {
     BlockingConnection m_publisher;
     Properties properties;
     private final static String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
-    private final static String PERSISTENT_STORE_FILE_NAME = "store.mapdb";
+    private final static String PERSISTENT_STORE_FILE_NAME = System.getProperty("user.home") + File.separator + "moquette_store.mapdb";
     
     protected void startServer() throws IOException {
     	properties = new Properties();
@@ -73,7 +73,7 @@ public class ServerRestartIntegrationTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }
@@ -92,7 +92,7 @@ public class ServerRestartIntegrationTest {
         
         //shutdown the server
         m_server.stopServer();
-        File dbFile = new File(properties.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }
