@@ -7,6 +7,7 @@ Version 0.7:
     Refactored the publish logic for QoS 1 2 to try to be more readable
     Added packetIdentifier storage and generation
     Fixed issue #16, bad packetId for will messages with qos > 0
+    Added store path variable "persistent_store" to configuration file (picked from Steven Warwick fork)
 
 Version 0.6:
     Fix issue #42, bad password file path composition

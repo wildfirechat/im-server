@@ -46,13 +46,14 @@ class ConfigurationParser {
     ConfigurationParser() {
     	createDefaults();
     }
-    
+
+    /**
+     * Crate a ConfigurationParser merging the default properties with the provided ones.
+     * */
     ConfigurationParser(Properties properties) {
-    	createDefaults();
-    	for (Entry<Object, Object> entrySet : m_properties.entrySet()) {
-    		if (properties.containsKey(entrySet.getKey())) {
-    			entrySet.setValue(properties.get(entrySet.getKey()));
-    		}
+    	this();
+    	for (Entry<Object, Object> entrySet : properties.entrySet()) {
+                m_properties.put(entrySet.getKey(), entrySet.getValue());
     	}
     }
         
