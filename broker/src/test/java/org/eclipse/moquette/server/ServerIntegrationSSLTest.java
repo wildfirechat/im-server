@@ -15,39 +15,28 @@
  */
 package org.eclipse.moquette.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.util.Properties;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.eclipse.moquette.commons.*;
-import org.eclipse.moquette.commons.Constants;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
-
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.util.Properties;
+
+import static org.eclipse.moquette.commons.Constants.*;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Check that Moquette could also handle SSL.
@@ -75,17 +64,17 @@ public class ServerIntegrationSSLTest {
         m_server = new Server();
 
         Properties sslProps = new Properties();
-        sslProps.put(org.eclipse.moquette.commons.Constants.SSL_PORT_PROPERTY_NAME, "8883");
-        sslProps.put(org.eclipse.moquette.commons.Constants.JKS_PATH_PROPERTY_NAME, "serverkeystore.jks");
-        sslProps.put(org.eclipse.moquette.commons.Constants.KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
-        sslProps.put(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
+        sslProps.put(SSL_PORT_PROPERTY_NAME, "8883");
+        sslProps.put(JKS_PATH_PROPERTY_NAME, "serverkeystore.jks");
+        sslProps.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
+        sslProps.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
         m_server.startServer(sslProps);
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
-        assertFalse(String.format("The DB storage file %s already exists",org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
+        File dbFile = new File(DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
+        assertFalse(String.format("The DB storage file %s already exists", DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
 
         startServer();
 

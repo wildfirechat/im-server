@@ -15,18 +15,18 @@
  */
 package org.eclipse.moquette.spi.impl;
 
+import org.eclipse.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
+import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.util.List;
 
-import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
-import org.junit.After;
-import org.junit.Test;
-
+import static org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH;
 import static org.junit.Assert.*;
-
-import org.junit.Before;
 
 /**
  *
@@ -39,10 +39,10 @@ public class MapDBPersistentStoreTest {
     @Before
     public void setUp() throws Exception {
     	    	
-        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
-        assertFalse(String.format("The DB storagefile %s already exists", org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH), dbFile.exists());
+        File dbFile = new File(DEFAULT_PERSISTENT_PATH);
+        assertFalse(String.format("The DB storagefile %s already exists", DEFAULT_PERSISTENT_PATH), dbFile.exists());
         
-        m_storageService = new MapDBPersistentStore(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
+        m_storageService = new MapDBPersistentStore(DEFAULT_PERSISTENT_PATH);
         m_storageService.initStore();
     }
 
@@ -52,9 +52,9 @@ public class MapDBPersistentStoreTest {
             m_storageService.close();
         }
         
-        File dbFile = new File(org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH);
+        File dbFile = new File(DEFAULT_PERSISTENT_PATH);
         if (dbFile.exists()) {
-        	assertTrue("Error deleting the moquette db file " + org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH, dbFile.delete());
+        	assertTrue("Error deleting the moquette db file " + DEFAULT_PERSISTENT_PATH, dbFile.delete());
         }
         assertFalse(dbFile.exists());
     }

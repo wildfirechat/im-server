@@ -73,7 +73,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     
     @Override
     public void initStore() {
-    	if (m_storePath == null || m_storePath.length() <= 0) {
+    	if (m_storePath == null || m_storePath.isEmpty()) {
     		m_db = DBMaker.newMemoryDB().make();
     	} else {
 	        File tmpFile;

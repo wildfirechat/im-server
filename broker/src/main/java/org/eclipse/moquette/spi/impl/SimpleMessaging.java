@@ -18,6 +18,21 @@ package org.eclipse.moquette.spi.impl;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
+import org.HdrHistogram.Histogram;
+import org.eclipse.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.server.IAuthenticator;
+import org.eclipse.moquette.server.ServerChannel;
+import org.eclipse.moquette.spi.IMessagesStore;
+import org.eclipse.moquette.spi.IMessaging;
+import org.eclipse.moquette.spi.ISessionsStore;
+import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
+import org.eclipse.moquette.spi.impl.events.MessagingEvent;
+import org.eclipse.moquette.spi.impl.events.ProtocolEvent;
+import org.eclipse.moquette.spi.impl.events.StopEvent;
+import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -25,18 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.moquette.spi.IMessaging;
-import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.IMessagesStore;
-import org.eclipse.moquette.spi.impl.events.*;
-import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
-import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
-import org.eclipse.moquette.proto.messages.*;
-import org.eclipse.moquette.server.IAuthenticator;
-import org.eclipse.moquette.server.ServerChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.HdrHistogram.Histogram;
+import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
 
 /**
  *
@@ -173,7 +178,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
 
         //TODO use a property to select the storage path
-        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME, ""));
+        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
         m_storageService = mapStorage;
         m_sessionsStore = mapStorage;
 
@@ -183,7 +188,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
         
-        String passwdPath = props.getProperty(org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME, "");
+        String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
         String configPath = System.getProperty("moquette.path", null);
         IAuthenticator authenticator;
         if (passwdPath.isEmpty()) {

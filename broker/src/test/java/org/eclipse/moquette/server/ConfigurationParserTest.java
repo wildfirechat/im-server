@@ -15,14 +15,17 @@
  */
 package org.eclipse.moquette.server;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.ParseException;
 import java.util.Properties;
-import org.eclipse.moquette.commons.Constants;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+
+import static org.eclipse.moquette.commons.Constants.HOST;
+import static org.eclipse.moquette.commons.Constants.PORT;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -98,7 +101,7 @@ public class ConfigurationParserTest {
      * Helper method to verify default options.
      */
     private void verifyDefaults(Properties props) {
-        assertEquals(Constants.PORT, Integer.parseInt(props.getProperty("port")));
-        assertEquals(Constants.HOST, props.getProperty("host"));
+        assertEquals(PORT, Integer.parseInt(props.getProperty("port")));
+        assertEquals(HOST, props.getProperty("host"));
     }
 }
