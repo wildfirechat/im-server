@@ -12,7 +12,7 @@ is essentially a single threaded and it's isolated from front connectors part by
 ## Who use it?
 
 [Freedomotic] (http://www.freedomotic.com/) Is an home automation framework, uses Moquette embedded to interface with MQTT world.
-Part of moquette are also used into the [Vertx MQTT module] (https://github.com/giovibal/vertx-mqtt-broker-mod), into [MQTT spy](https://code.google.com/p/mqtt-spy/) 
+Part of moquette are also used into the [Vertx MQTT module] (https://github.com/giovibal/vertx-mqtt-broker-mod), into [MQTT spy](http://kamilfb.github.io/mqtt-spy/) 
 and into [WSO2 Messge broker] (http://techexplosives-pamod.blogspot.it/2014/05/mqtt-transport-architecture-wso2-mb-3x.html).
 
 ## 1 minute set up
