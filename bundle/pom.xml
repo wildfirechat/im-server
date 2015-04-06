@@ -41,7 +41,8 @@
         <dependency>
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
-            <version>3.3.0</version>
+            <version>3.3.2</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
@@ -122,8 +123,8 @@
         <dependency>
             <groupId>org.mapdb</groupId>
             <artifactId>mapdb</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-            <scope>provided</scope>
+            <version>2.0.0-SNAPSHOT</version>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -183,16 +184,25 @@
                             org.eclipse.moquette.proto.messages.*,
                             org.eclipse.moquette.server.netty.metrics
                         </Export-Package>
-                        <Private-Package>org.eclipse.moquette.bundle,
-                            ${project.groupId}.*,
-                            com.lmax.*
+                        <Private-Package>
+                            org.eclipse.moquette.bundle,
+                            ${project.groupId}.*
                         </Private-Package>
-                        <Import-Package>!org.eclipse.moquette,
-                            sun.misc;resolution:=optional,
-                            *
-                        </Import-Package>
+                        <!--<Private-Package>org.eclipse.moquette.bundle,-->
+                            <!--${project.groupId}.*,-->
+                            <!--com.lmax.*-->
+                        <!--</Private-Package>-->
+                        <!--<Import-Package>!org.eclipse.moquette,-->
+                            <!--sun.misc.*;resolution:=optional,-->
+                            <!--sun.nio.ch.*;resolution:=optional,-->
+                            <!--*-->
+                        <!--</Import-Package>-->
+                        <!--<Embed-Dependency>mapdb;scope=compile|runtime;inline=true,-->
+                        <!--disruptor;scope=compile|runtime;inline=true</Embed-Dependency>-->
                         <Bundle-Activator>${project.groupId}.bundle.Activator</Bundle-Activator>
                     </instructions>
+                    <obrRepository>file://${basedir}/target/localobr/
+                    </obrRepository>
                 </configuration>
             </plugin>
             <plugin>
@@ -208,11 +218,13 @@
                     <!--<framework>equinox</framework>-->
                     <framework>felix</framework>
                     <provision>
+                        <!--param>- -vmOptions="-Dorg.osgi.framework.system.packages.extra=sun.misc"</param-->
+                        <param>--bootDelegation=sun.*,com.sun.*</param>
                         <!--param>- -log=debug</param -->
-                        <!-- <param> - -workingDirectory=target/runner</param>  -->
+                        <!--param> - -workingDirectory=target/runner</param>  -->
                         <param>--autoWrap</param>
                         <param>mvn:org.hdrhistogram/HdrHistogram/2.1.4</param>
-                        <param>mvn:com.github.livesense/org.liveSense.fragment.sun.misc/1.0.5</param>
+                        <!--<param>mvn:com.github.livesense/org.liveSense.fragment.sun.misc/1.0.5</param>-->
                     </provision>
                 </configuration>
             </plugin>
