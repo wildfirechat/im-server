@@ -1,8 +1,0 @@
-Simple guide on how to use the bundle in a testable OSGi container:
-- mvn pax:provision //to create and download the required bundles
-- osgi>exit
-- cp target/moquette-bundle-0.5.jar runner/bundles/ //to move the broker bundle
-- mvn pax:provision //restart the OSGi container
-- osgi> install file:bundles/moquette-bundle-0.5.jar 
-- osgi> ss
-- osgi> start <num last bundle>

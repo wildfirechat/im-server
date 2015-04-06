@@ -8,6 +8,7 @@ Version 0.7:
     Added packetIdentifier storage and generation
     Fixed issue #16, bad packetId for will messages with qos > 0
     Added store path variable "persistent_store" to configuration file (picked from Steven Warwick fork)
+    Removed OSGi bundle, developer time burner
 
 Version 0.6:
     Fix issue #42, bad password file path composition
