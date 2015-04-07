@@ -47,7 +47,7 @@ public class ServerIntegrationWebSocketTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        m_server.startServer(new Properties());
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
     }
 
     @Before

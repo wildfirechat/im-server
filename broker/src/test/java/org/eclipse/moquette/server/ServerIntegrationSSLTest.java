@@ -68,13 +68,15 @@ public class ServerIntegrationSSLTest {
         sslProps.put(JKS_PATH_PROPERTY_NAME, "serverkeystore.jks");
         sslProps.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
         sslProps.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
+        sslProps.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
         m_server.startServer(sslProps);
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
-        assertFalse(String.format("The DB storage file %s already exists", DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
+        String dbPath = IntegrationUtils.localMapDBPath();
+        File dbFile = new File(dbPath);
+        assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
 
         startServer();
 

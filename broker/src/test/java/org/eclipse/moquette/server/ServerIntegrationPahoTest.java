@@ -28,8 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
-import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.*;
+import static org.eclipse.moquette.commons.Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.KEY_STORE_PASSWORD_PROPERTY_NAME;
 import static org.junit.Assert.*;
 
 public class ServerIntegrationPahoTest {
@@ -52,13 +53,14 @@ public class ServerIntegrationPahoTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        m_server.startServer(new Properties());
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
     }
 
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME);
-        assertFalse(String.format("The DB storagefile %s already exists", DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME), dbFile.exists());
+        String dbPath = IntegrationUtils.localMapDBPath();
+        File dbFile = new File(dbPath);
+        assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
     	
         startServer();
 
@@ -73,6 +75,10 @@ public class ServerIntegrationPahoTest {
             m_client.disconnect();
         }
 
+        stopServer();
+    }
+
+    private void stopServer() {
         m_server.stopServer();
         File dbFile = new File(m_server.getProperties().getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
@@ -164,7 +170,7 @@ public class ServerIntegrationPahoTest {
 
         m_server.stopServer();
 
-        m_server.startServer();
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
 
         //reconnect and publish
         m_client.connect(options);
