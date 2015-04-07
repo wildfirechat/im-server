@@ -199,7 +199,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     /**
-     * Return the next valid packetIdentifer for the given client session.
+     * Return the next valid packetIdentifier for the given client session.
      * */
     @Override
     public int nextPacketID(String clientID) {
@@ -211,7 +211,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
             this.m_inFlightIds.put(clientID, inFlightForClient);
             return nextPacketId;
         }
-        int maxId = Collections.max(inFlightForClient);
+        int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
         int nextPacketId = (maxId + 1) % 0xFFFF;
         inFlightForClient.add(nextPacketId);
         return nextPacketId;

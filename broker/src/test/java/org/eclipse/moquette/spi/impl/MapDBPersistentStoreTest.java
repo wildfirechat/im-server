@@ -38,7 +38,6 @@ public class MapDBPersistentStoreTest {
         
     @Before
     public void setUp() throws Exception {
-    	    	
         File dbFile = new File(DEFAULT_PERSISTENT_PATH);
         assertFalse(String.format("The DB storagefile %s already exists", DEFAULT_PERSISTENT_PATH), dbFile.exists());
         
@@ -71,5 +70,36 @@ public class MapDBPersistentStoreTest {
         assertEquals(1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
+    }
+
+    @Test
+    public void testNextPacketID_notExistingClientSession() {
+        int packetId = m_storageService.nextPacketID("NOT_EXISTING_CLI");
+        assertEquals(1, packetId);
+    }
+
+    @Test
+    public void testNextPacketID_existingClientSession() {
+        //Force creation of inflight map for the CLIENT session
+        int packetId = m_storageService.nextPacketID("CLIENT");
+        assertEquals(1, packetId);
+
+        //request a second packetID
+        packetId = m_storageService.nextPacketID("CLIENT");
+        assertEquals(2, packetId);
+    }
+
+    @Test
+    public void testNextPacketID() {
+        //request a first ID
+        int packetId = m_storageService.nextPacketID("CLIENT");
+        assertEquals(1, packetId);
+
+        //release the ID
+        m_storageService.cleanInFlight("CLIENT", packetId);
+
+        //request a second packetID, counter restarts from 0
+        packetId = m_storageService.nextPacketID("CLIENT");
+        assertEquals(1, packetId);
     }
 }
