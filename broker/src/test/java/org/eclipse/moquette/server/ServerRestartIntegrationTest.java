@@ -18,6 +18,7 @@ package org.eclipse.moquette.server;
 import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class ServerRestartIntegrationTest {
         }
         
         //restart the server
-        m_server.startServer();
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
         
         //reconnect the Subscriber subscribing to the same /topic but different QoS
         m_subscriber = m_mqtt.blockingConnection();
@@ -129,7 +130,7 @@ public class ServerRestartIntegrationTest {
         m_server.stopServer();
 
         //restart the server
-        m_server.startServer();
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
 
         MQTT mqtt = new MQTT();
         mqtt.setHost("localhost", 1883);

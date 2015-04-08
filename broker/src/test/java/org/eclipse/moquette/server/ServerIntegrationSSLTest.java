@@ -89,12 +89,15 @@ public class ServerIntegrationSSLTest {
 
     @After
     public void tearDown() throws Exception {
-        if (m_client.isConnected()) {
+        if (m_client != null && m_client.isConnected()) {
             m_client.disconnect();
         }
 
-        m_server.stopServer();
-        File dbFile = new File(m_server.getProperties().getProperty(org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
+        if (m_server != null) {
+            m_server.stopServer();
+        }
+        String dbPath = IntegrationUtils.localMapDBPath();
+        File dbFile = new File(dbPath);
         if (dbFile.exists()) {
             dbFile.delete();
         }
