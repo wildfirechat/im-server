@@ -9,6 +9,7 @@ Version 0.7:
     Fixed issue #16, bad packetId for will messages with qos > 0
     Added store path variable "persistent_store" to configuration file (picked from Steven Warwick fork)
     Removed OSGi bundle, developer time burner
+    Fixed github issue #30, returning error on mapdb file not deleted that corrupt reiterated builds
 
 Version 0.6:
     Fix issue #42, bad password file path composition
