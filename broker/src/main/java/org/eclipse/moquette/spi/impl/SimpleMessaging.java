@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.ALLOW_ANONYMOUS;
 
 /**
  *
@@ -187,7 +188,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
-        
+
         String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
         String configPath = System.getProperty("moquette.path", null);
         IAuthenticator authenticator;
@@ -196,8 +197,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         } else {
             authenticator = new FileAuthenticator(configPath, passwdPath);
         }
-        
-        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator);
+
+        boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS, "true"));
+        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous);
     }
 
 

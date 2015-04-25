@@ -36,4 +36,5 @@ public class Constants {
     public static final String JKS_PATH_PROPERTY_NAME = "jks_path";
     public static final String KEY_STORE_PASSWORD_PROPERTY_NAME = "key_store_password";
     public static final String KEY_MANAGER_PASSWORD_PROPERTY_NAME = "key_manager_password";
+    public static final String ALLOW_ANONYMOUS = "allow_anonymous";
 }

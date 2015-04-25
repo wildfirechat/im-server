@@ -97,6 +97,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<>();
     private SubscriptionsStore subscriptions;
+    private boolean allowAnonymous;
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
@@ -114,13 +115,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * @param storageService the persistent store to use for save/load of messages
      *  for QoS1 and QoS2 handling.
      * @param sessionsStore the clients sessions store, used to persist subscriptions.
-     * @param authenticator the authenticator used in connect messages
+     * @param authenticator the authenticator used in connect messages.
+     * @param allowAnonymous true connection to clients without credentials.
      */
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService, 
             ISessionsStore sessionsStore,
-            IAuthenticator authenticator) {
+            IAuthenticator authenticator,
+            boolean allowAnonymous) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
+        this.allowAnonymous = allowAnonymous;
         LOG.debug("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
         m_messagesStore = storageService;
@@ -199,13 +203,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             String pwd = null;
             if (msg.isPasswordFlag()) {
                 pwd = msg.getPassword();
-            }
-            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
-                ConnAckMessage okResp = new ConnAckMessage();
-                okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
-                session.write(okResp);
+            } else if (!this.allowAnonymous) {
+                failedCredetials(session);
                 return;
             }
+            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
+                failedCredetials(session);
+                return;
+            }
+        } else if (!this.allowAnonymous) {
+            failedCredetials(session);
+            return;
         }
 
         subscriptions.activate(msg.getClientID());
@@ -231,6 +239,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             //force the republish of stored QoS1 and QoS2
             republishStoredInSession(msg.getClientID());
         }
+    }
+
+    private void failedCredetials(ServerChannel session) {
+        ConnAckMessage okResp = new ConnAckMessage();
+        okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
+        session.write(okResp);
     }
 
     /**

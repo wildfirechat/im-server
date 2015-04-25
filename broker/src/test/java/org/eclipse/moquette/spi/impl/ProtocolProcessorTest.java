@@ -164,7 +164,7 @@ public class ProtocolProcessorTest {
         subscriptions = new SubscriptionsStore();
         subscriptions.init(new MemoryStorageService());
         m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator);
+        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true);
     }
     
     @Test
@@ -251,6 +251,44 @@ public class ProtocolProcessorTest {
         //Verify
         assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
     }
+
+    @Test
+    public void prohibitAnonymousClient() {
+        connMsg.setClientID("123");
+        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false);
+
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
+    }
+
+    @Test
+    public void prohibitAnonymousClient_providingUsername() {
+        connMsg.setClientID("123");
+        connMsg.setUserFlag(true);
+        connMsg.setUsername(TEST_USER + "_fake");
+        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false);
+
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
+    }
+
+    @Test
+    public void acceptAnonymousClient() {
+        connMsg.setClientID("123");
+        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true);
+
+        //Exercise
+        m_processor.processConnect(m_session, connMsg);
+
+        //Verify
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
+    }
     
     
     @Test
@@ -298,7 +336,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(new MemoryStorageService());
-        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null, true);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProcotolVersion((byte)3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
@@ -342,7 +380,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         subs.init(new MemoryStorageService());
-        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null, true);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage = new ConnectMessage();
@@ -460,7 +498,7 @@ public class ProtocolProcessorTest {
         subs.init(new MemoryStorageService());
         
         //simulate a connect that register a clientID to an IoSession
-        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null, true);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProcotolVersion((byte)3);
@@ -499,7 +537,7 @@ public class ProtocolProcessorTest {
                 ByteBuffer.wrap("Hello".getBytes()), true, FAKE_PUBLISHER_ID, 120);
         m_storageService.storePublishForFuture(retainedMessage);
 
-        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null, true);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProcotolVersion((byte)3);
@@ -518,7 +556,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null);
+        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -543,7 +581,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null);
+        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -611,7 +649,7 @@ public class ProtocolProcessorTest {
         /*SubscriptionsStore subs = new SubscriptionsStore();
         subs.init(new MemoryStorageService());*/
         SubscriptionsStore subs = mock(SubscriptionsStore.class);
-        m_processor.init(subs, m_storageService, m_sessionStore, null);
+        m_processor.init(subs, m_storageService, m_sessionStore, null, true);
 
         //simulate a connect from client1 FAKE_CLIENT_ID from channel1
         ConnectMessage connectMessage = new ConnectMessage();
