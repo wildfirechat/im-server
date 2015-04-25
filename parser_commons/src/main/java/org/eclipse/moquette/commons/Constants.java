@@ -26,7 +26,7 @@ public class Constants {
     public static final String HOST = "0.0.0.0";
     public static final int DEFAULT_CONNECT_TIMEOUT = 10;
     public static final String DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME = "moquette_store.mapdb";
-    public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.home") + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+    public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.dir") + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     public static final String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
     public static final String PASSWORD_FILE_PROPERTY_NAME = "password_file";    
     public static final String PORT_PROPERTY_NAME = "port";
