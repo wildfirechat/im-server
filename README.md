@@ -1,11 +1,9 @@
 
-## Documentation site:
- [Documentation site] http://andsel.github.io/moquette/
-
 ## What is Moquette?
 
 [![Build Status](https://api.travis-ci.org/andsel/moquette.svg?branch=master)](https://travis-ci.org/andsel/moquette)
 
+[Documentation site] http://andsel.github.io/moquette/
 Moquette aims to be a MQTT compliant broker. The broker supports QoS 0, QoS 1 and QoS 2.
 
 Its designed to be evented, uses Netty for the protocol encoding and decoding part, the protocol logic 
