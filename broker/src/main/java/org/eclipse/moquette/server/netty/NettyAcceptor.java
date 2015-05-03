@@ -36,8 +36,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.security.KeyStore;
 
 import java.util.List;
@@ -114,7 +114,12 @@ public class NettyAcceptor implements ServerAcceptor {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeliner.init(pipeline);
+                        try {
+                            pipeliner.init(pipeline);
+                        } catch (Throwable th) {
+                            LOG.error("Severe error during pipeline creation", th);
+                            throw th;
+                        }
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
@@ -215,13 +220,14 @@ public class NettyAcceptor implements ServerAcceptor {
 
         int sslPort = Integer.parseInt(sslPortProp);
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
+        LOG.info("Starting SSL on port {} using keystore at {}", sslPort, jksPath);
 
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                InputStream jksInputStream = getClass().getClassLoader().getResourceAsStream(jksPath);
+                InputStream jksInputStream = jksDatastore(jksPath);
                 SSLContext serverContext = SSLContext.getInstance("TLS");
                 final KeyStore ks = KeyStore.getInstance("JKS");
                 ks.load(jksInputStream, keyStorePassword.toCharArray());
@@ -259,6 +265,22 @@ public class NettyAcceptor implements ServerAcceptor {
         MessageMetrics metrics = m_metricsCollector.computeMetrics();
         //LOG.info(String.format("Bytes read: %d, bytes wrote: %d", metrics.readBytes(), metrics.wroteBytes()));
         LOG.info("Msg read: {}, msg wrote: {}", metrics.messagesRead(), metrics.messagesWrote());
+    }
+
+    private InputStream jksDatastore(String jksPath) throws FileNotFoundException {
+        URL jksUrl = getClass().getClassLoader().getResource(jksPath);
+        if (jksUrl != null) {
+            LOG.info("Starting with jks at {}, jks normal {}", jksUrl.toExternalForm(), jksUrl);
+            return getClass().getClassLoader().getResourceAsStream(jksPath);
+        }
+        LOG.info("jks not found in bundled resources, try on the filesystem");
+        File jksFile = new File(jksPath);
+        if (jksFile.exists()) {
+            LOG.info("Using {} ", jksFile.getAbsolutePath());
+            return new FileInputStream(jksFile);
+        }
+        LOG.warn("File {} doesn't exists", jksFile.getAbsolutePath());
+        return null;
     }
     
 }
