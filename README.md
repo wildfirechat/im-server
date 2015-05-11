@@ -9,10 +9,11 @@ Moquette aims to be a MQTT compliant broker. The broker supports QoS 0, QoS 1 an
 Its designed to be evented, uses Netty for the protocol encoding and decoding part, the protocol logic 
 is essentially a single threaded and it's isolated from front connectors part by LMAX disruptor's ring buffer.
  
-## Who use it?
+## It's easy to embed
 
 [Freedomotic] (http://www.freedomotic.com/) Is an home automation framework, uses Moquette embedded to interface with MQTT world.
-Part of moquette are also used into the [Vertx MQTT module] (https://github.com/giovibal/vertx-mqtt-broker-mod), into [MQTT spy](http://kamilfb.github.io/mqtt-spy/) 
+Moquette is also used inside the [Atomize Spin] (http://atomizesoftware.com/spin) a software solution used in the logistic field.
+Part of moquette are used into the [Vertx MQTT module] (https://github.com/giovibal/vertx-mqtt-broker-mod), into [MQTT spy](http://kamilfb.github.io/mqtt-spy/)
 and into [WSO2 Messge broker] (http://techexplosives-pamod.blogspot.it/2014/05/mqtt-transport-architecture-wso2-mb-3x.html).
 
 ## 1 minute set up
