@@ -17,7 +17,9 @@ package org.eclipse.moquette.spi.impl;
 
 import org.eclipse.moquette.server.IAuthenticator;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -47,5 +49,5 @@ public class FileAuthenticatorTest {
         
         assertFalse(auth.checkValid("testuser2", "passwd"));
     }
-    
+
 }

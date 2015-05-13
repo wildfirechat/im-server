@@ -15,20 +15,27 @@
  */
 package org.eclipse.moquette.spi.impl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.eclipse.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
+ * Load user credentials from a text file.
+ * Each line of the file is formatted as "<username>:<sha256(password)>". The username mustn't contains : char.
+ *
+ * To encode your password from command line on Linux systems, you could use:
+ * <pre>
+ *     echo -n "yourpassword" | sha256sum
+ * </pre>
+ * NB -n is important because echo append a newline by default at the of string. -n avoid this behaviour.
  *
  * @author andrea
  */
@@ -36,8 +43,9 @@ public class FileAuthenticator implements IAuthenticator {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileAuthenticator.class);
     
-    private Map<String, String> m_identities = new HashMap<String, String>();
-    
+    private Map<String, String> m_identities = new HashMap<>();
+    private MessageDigest m_digest;
+
     FileAuthenticator(String parent, String filePath) {
         File file = new File(parent, filePath);
         LOG.info("Loading password file: " + file);
@@ -45,14 +53,20 @@ public class FileAuthenticator implements IAuthenticator {
             LOG.warn(String.format("Bad file reference %s is a directory", file));
             return;
         }
-            
+        try {
+            this.m_digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException nsaex) {
+            LOG.error("Can't find SHA-256 for password encoding", nsaex);
+            throw new RuntimeException(nsaex);
+        }
+
         try {
             FileReader reader = new FileReader(file);
             parse(reader);
         } catch (FileNotFoundException fex) {
             LOG.warn(String.format("Parsing not existing file %s", file), fex);
         } catch (ParseException pex) {
-            LOG.warn(String.format("Fromat ero in parsing password file %s", file), pex);
+            LOG.warn(String.format("Format error in parsing password file %s", file), pex);
         }
     }
     
@@ -81,9 +95,9 @@ public class FileAuthenticator implements IAuthenticator {
                     }
                     
                     //split till the first space
-                    int deilimiterIdx = line.indexOf(':');
-                    String username = line.substring(0, deilimiterIdx).trim();
-                    String password = line.substring(deilimiterIdx + 1).trim();
+                    int delimiterIdx = line.indexOf(':');
+                    String username = line.substring(0, delimiterIdx).trim();
+                    String password = line.substring(delimiterIdx + 1).trim();
                     
                     m_identities.put(username, password);
                 }
@@ -98,8 +112,14 @@ public class FileAuthenticator implements IAuthenticator {
         if (foundPwq == null) {
             return false;
         }
-        
-        return foundPwq.equals(password);
+        try {
+            m_digest.update(password.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        byte[] digest = m_digest.digest();
+        String encodedPasswd = new String(Hex.encodeHex(digest));
+        return foundPwq.equals(encodedPasswd);
     }
     
 }
