@@ -13,14 +13,17 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.server;
+package org.eclipse.moquette.spi.impl.security;
 
 /**
- * username and password checker
- * 
+ * ACL checker
+ *
  * @author andrea
  */
-public interface IAuthenticator {
+public interface IAuthorizator {
 
-    boolean checkValid(String username, String password);
+    /**
+     * Ask the implementation of the authorizator if the topic can be used in a publish.
+     * */
+    boolean canWrite(String topic);
 }

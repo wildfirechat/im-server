@@ -13,29 +13,14 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.spi.impl;
-
-import java.util.Map;
-import org.eclipse.moquette.spi.impl.security.IAuthenticator;
+package org.eclipse.moquette.spi.impl.security;
 
 /**
- * Test utility to implements authenticator instance.
- * 
  * @author andrea
  */
-class MockAuthenticator implements IAuthenticator {
-    
-    private Map<String, String> m_userPwds;
-    
-    MockAuthenticator(Map<String, String> userPwds) {
-        m_userPwds = userPwds;
+public class PermitAllAuthorizator implements IAuthorizator {
+    @Override
+    public boolean canWrite(String topic) {
+        return true;
     }
-
-    public boolean checkValid(String username, String password) {
-        if (!m_userPwds.containsKey(username)) {
-            return false;
-        }
-        return m_userPwds.get(username).equals(password);
-    }
-    
 }

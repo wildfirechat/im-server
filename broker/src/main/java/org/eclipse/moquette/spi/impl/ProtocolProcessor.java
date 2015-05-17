@@ -28,6 +28,7 @@ import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.events.*;
+import org.eclipse.moquette.spi.impl.security.IAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1;
@@ -47,7 +48,7 @@ import org.eclipse.moquette.proto.messages.SubscribeMessage;
 import org.eclipse.moquette.proto.messages.UnsubAckMessage;
 import org.eclipse.moquette.proto.messages.UnsubscribeMessage;
 import org.eclipse.moquette.server.ConnectionDescriptor;
-import org.eclipse.moquette.server.IAuthenticator;
+import org.eclipse.moquette.spi.impl.security.IAuthenticator;
 import org.eclipse.moquette.server.ServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +99,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<>();
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
+    private IAuthorizator m_authorizator;
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
@@ -117,14 +119,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * @param sessionsStore the clients sessions store, used to persist subscriptions.
      * @param authenticator the authenticator used in connect messages.
      * @param allowAnonymous true connection to clients without credentials.
+     * @param authorizator used to apply ACL policies to publishes and subscriptions.
      */
-    void init(SubscriptionsStore subscriptions, IMessagesStore storageService, 
-            ISessionsStore sessionsStore,
-            IAuthenticator authenticator,
-            boolean allowAnonymous) {
+    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+              ISessionsStore sessionsStore,
+              IAuthenticator authenticator,
+              boolean allowAnonymous, IAuthorizator authorizator) {
         //m_clientIDs = clientIDs;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
+        m_authorizator = authorizator;
         LOG.debug("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
         m_messagesStore = storageService;
@@ -292,7 +296,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final AbstractMessage.QOSType qos = msg.getQos();
         final ByteBuffer message = msg.getPayload();
         boolean retain = msg.isRetainFlag();
-        processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
+        //check if the topic can be wrote
+        if (m_authorizator.canWrite(topic)) {
+            processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
+        }
     }
         
     private void processPublish(String clientID, String topic, QOSType qos, ByteBuffer message, boolean retain, Integer messageID) { 

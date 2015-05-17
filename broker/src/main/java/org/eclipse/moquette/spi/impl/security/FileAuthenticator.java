@@ -13,10 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.spi.impl;
+package org.eclipse.moquette.spi.impl.security;
 
 import org.apache.commons.codec.binary.Hex;
-import org.eclipse.moquette.server.IAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class FileAuthenticator implements IAuthenticator {
     private Map<String, String> m_identities = new HashMap<>();
     private MessageDigest m_digest;
 
-    FileAuthenticator(String parent, String filePath) {
+    public FileAuthenticator(String parent, String filePath) {
         File file = new File(parent, filePath);
         LOG.info("Loading password file: " + file);
         if (file.isDirectory()) {

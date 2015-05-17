@@ -18,9 +18,7 @@ package org.eclipse.moquette.spi.impl.security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +31,27 @@ import static org.eclipse.moquette.spi.impl.security.Authorization.Permission;
  * */
 public class ACLFileParser {
     private static final Logger LOG = LoggerFactory.getLogger(ACLFileParser.class);
+
+    /**
+     * Parse the configuration from file.
+     */
+    public static List<Authorization> parse(File file) throws ParseException {
+        if (file == null) {
+            LOG.warn("parsing NULL file, so fallback on default configuration!");
+            return Collections.emptyList();
+        }
+        if (!file.exists()) {
+            LOG.warn(String.format("parsing not existing file %s, so fallback on default configuration!", file.getAbsolutePath()));
+            return Collections.emptyList();
+        }
+        try {
+            FileReader reader = new FileReader(file);
+            return parse(reader);
+        } catch (FileNotFoundException fex) {
+            LOG.warn(String.format("parsing not existing file %s, so fallback on default configuration!", file.getAbsolutePath()), fex);
+            return Collections.emptyList();
+        }
+    }
 
     /**
      * Parse the ACL configuration file
