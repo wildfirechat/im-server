@@ -35,8 +35,8 @@ public class ACLAuthorizator implements IAuthorizator {
 
     List<Authorization> m_authorisations = Collections.emptyList();
 
-    public ACLAuthorizator(String aclFilePath) {
-        File aclFile = new File(aclFilePath);
+    public ACLAuthorizator(String parent, String filePath) {
+        File aclFile = new File(parent, filePath);
         try {
             m_authorisations = ACLFileParser.parse(aclFile);
         } catch (ParseException pex) {

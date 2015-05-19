@@ -8,6 +8,10 @@ import org.fusesource.mqtt.client.Topic
 
 
 String host = args[0]
+String topic = "/topic"
+if (args.length > 1) {
+    topic = args[1]
+}
 //start a publisher
 MQTT mqtt2 = new MQTT()
 mqtt2.setHost(host, 1883)
@@ -15,7 +19,7 @@ BlockingConnection publisher = mqtt2.blockingConnection()
 publisher.connect()
 println "publisher connected"
 
-publisher.publish("/topic", 'Hello world again!!'.bytes, QoS.AT_MOST_ONCE, false)
+publisher.publish(topic, 'Hello world again!!'.bytes, QoS.AT_MOST_ONCE, false)
 println "publisher published"
 
 println "shutdown publisher"

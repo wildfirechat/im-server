@@ -206,9 +206,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
         IAuthorizator authorizator;
         if (aclFilePath != null && !aclFilePath.isEmpty()) {
-            authorizator = new ACLAuthorizator(aclFilePath);
+            authorizator = new ACLAuthorizator(configPath, aclFilePath);
+            LOG.info("Using acl file defined at path {}", aclFilePath);
         } else {
             authorizator = new PermitAllAuthorizator();
+            LOG.info("Starting without ACL definition");
         }
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
