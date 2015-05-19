@@ -23,4 +23,9 @@ public class PermitAllAuthorizator implements IAuthorizator {
     public boolean canWrite(String topic) {
         return true;
     }
+
+    @Override
+    public boolean canRead(String topic) {
+        return true;
+    }
 }

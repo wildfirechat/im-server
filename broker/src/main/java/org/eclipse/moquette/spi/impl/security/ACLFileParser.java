@@ -27,6 +27,10 @@ import java.util.List;
 import static org.eclipse.moquette.spi.impl.security.Authorization.Permission;
 
 /**
+ * Parses the acl configuration file.
+ * If a line starts with # it's comment.
+ * Blank lines are skipped. The format is "topic [read|write|readwrite] <topic name>"
+ *
  * @author andrea
  * */
 public class ACLFileParser {

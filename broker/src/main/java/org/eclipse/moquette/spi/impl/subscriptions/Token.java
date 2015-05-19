@@ -15,7 +15,10 @@
  */
 package org.eclipse.moquette.spi.impl.subscriptions;
 
-class Token {
+/**
+ * Internal use only class.
+ * */
+public class Token {
 
     static final Token EMPTY = new Token("");
     static final Token MULTI = new Token("#");

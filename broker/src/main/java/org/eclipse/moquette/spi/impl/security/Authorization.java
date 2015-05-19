@@ -21,8 +21,8 @@ package org.eclipse.moquette.spi.impl.security;
  * @author andrea
  */
 public class Authorization {
-    private String topic;
-    private Permission permission;
+    protected final String topic;
+    protected final Permission permission;
 
     /**
      * Access rights

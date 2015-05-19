@@ -16,7 +16,11 @@
 package org.eclipse.moquette.spi.impl.security;
 
 /**
- * ACL checker
+ * ACL checker.
+ *
+ * Create an authorizator that matches topic names with same grammar of subscriptions.
+ * The # is always a terminator and its the multilevel matcher.
+ * The + sign is the single level matcher.
  *
  * @author andrea
  */
@@ -26,4 +30,6 @@ public interface IAuthorizator {
      * Ask the implementation of the authorizator if the topic can be used in a publish.
      * */
     boolean canWrite(String topic);
+
+    boolean canRead(String topic);
 }
