@@ -20,9 +20,6 @@ import org.junit.Test;
 
 import java.text.ParseException;
 
-import static java.util.Arrays.asList;
-import static org.eclipse.moquette.spi.impl.security.Authorization.Permission.READ;
-import static org.eclipse.moquette.spi.impl.security.Authorization.Permission.WRITE;
 import static org.eclipse.moquette.spi.impl.security.AuthorizationsCollector.*;
 import static org.junit.Assert.*;
 
@@ -90,7 +87,7 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testCanWriteSimpleTopic() {
+    public void testCanWriteSimpleTopic() throws ParseException {
         authorizator.parse("topic write /sensors");
 
         //verify
@@ -98,7 +95,7 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testCanReadSimpleTopic() {
+    public void testCanReadSimpleTopic() throws ParseException {
         authorizator.parse("topic read /sensors");
 
         //verify
@@ -106,7 +103,7 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testCanReadWriteMixedSimpleTopic() {
+    public void testCanReadWriteMixedSimpleTopic() throws ParseException {
         authorizator.parse("topic write /sensors");
         authorizator.parse("topic read /sensors/anemometer");
 
@@ -116,7 +113,7 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testCanWriteMultiMatherTopic() {
+    public void testCanWriteMultiMatherTopic() throws ParseException {
         authorizator.parse("topic write /sensors/#");
 
         //verify
@@ -124,7 +121,7 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testCanWriteSingleMatherTopic() {
+    public void testCanWriteSingleMatherTopic() throws ParseException {
         authorizator.parse("topic write /sensors/+");
 
         //verify

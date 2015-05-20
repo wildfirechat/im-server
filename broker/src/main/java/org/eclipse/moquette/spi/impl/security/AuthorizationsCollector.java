@@ -48,12 +48,8 @@ class AuthorizationsCollector implements IAuthorizator {
         return coll;
     }
 
-    void parse(String line) {
-        try {
-            m_authorizations.add(parseAuthLine(line));
-        } catch (ParseException pex) {
-            LOG.warn(String.format("Error parsing ACL definition [%s]", line), pex);
-        }
+    void parse(String line) throws ParseException {
+        m_authorizations.add(parseAuthLine(line));
     }
 
     protected static Authorization parseAuthLine(String line) throws ParseException {
