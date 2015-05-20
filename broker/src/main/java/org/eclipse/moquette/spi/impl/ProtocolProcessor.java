@@ -299,6 +299,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //check if the topic can be wrote
         if (m_authorizator.canWrite(topic)) {
             processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
+        } else {
+            LOG.debug("topic {} doesn't have write credentials", topic);
         }
     }
         
@@ -370,6 +372,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (final Subscription sub : subscriptions.matches(topic)) {
             if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
                 qos = sub.getRequestedQos();
+            }
+            if (!m_authorizator.canRead(topic)) {
+                LOG.debug("topic {} doesn't have read credentials", topic);
+                continue;
             }
             
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
