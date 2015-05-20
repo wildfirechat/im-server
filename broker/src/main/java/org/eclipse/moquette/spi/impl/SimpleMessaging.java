@@ -206,7 +206,13 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
         IAuthorizator authorizator;
         if (aclFilePath != null && !aclFilePath.isEmpty()) {
-            authorizator = new ACLAuthorizator(configPath, aclFilePath);
+            authorizator = new DenyAllAuthorizator();
+            File aclFile = new File(configPath, aclFilePath);
+            try {
+                authorizator = ACLFileParser.parse(aclFile);
+            } catch (ParseException pex) {
+                LOG.error(String.format("Format error in parsing acl file %s", aclFile), pex);
+            }
             LOG.info("Using acl file defined at path {}", aclFilePath);
         } else {
             authorizator = new PermitAllAuthorizator();

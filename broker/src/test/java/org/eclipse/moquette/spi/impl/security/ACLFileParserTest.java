@@ -30,14 +30,10 @@ import static org.junit.Assert.*;
  * */
 public class ACLFileParserTest {
 
-    private static final Authorization RW_ANEMOMETER = new Authorization("/weather/italy/anemometer");
-    private static final Authorization R_ANEMOMETER = new Authorization("/weather/italy/anemometer", Permission.READ);
-    private static final Authorization W_ANEMOMETER = new Authorization("/weather/italy/anemometer", Permission.WRITE);
-
     @Test
     public void testParseEmpty() throws ParseException {
         Reader conf = new StringReader("  ");
-        List<Authorization> authorizations = ACLFileParser.parse(conf);
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
         //Verify
         assertTrue(authorizations.isEmpty());
@@ -46,7 +42,7 @@ public class ACLFileParserTest {
     @Test
     public void testParseValidComment() throws ParseException {
         Reader conf = new StringReader("#simple comment");
-        List<Authorization> authorizations = ACLFileParser.parse(conf);
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
         //Verify
         assertTrue(authorizations.isEmpty());
@@ -61,58 +57,11 @@ public class ACLFileParserTest {
     @Test
     public void testParseSingleLineACL() throws ParseException {
         Reader conf = new StringReader("topic /weather/italy/anemometer");
-        List<Authorization> authorizations = ACLFileParser.parse(conf);
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
         //Verify
-        assertEquals(1, authorizations.size());
-        Authorization anemosAuth = authorizations.iterator().next();
-        assertEquals(RW_ANEMOMETER, anemosAuth);
+        assertTrue(authorizations.canRead("/weather/italy/anemometer"));
+        assertTrue(authorizations.canWrite("/weather/italy/anemometer"));
     }
 
-    @Test
-    public void testParseAuthLineValid() throws ParseException {
-        Authorization authorization = ACLFileParser.parseAuthLine("topic /weather/italy/anemometer");
-
-        //Verify
-        assertEquals(RW_ANEMOMETER, authorization);
-    }
-
-    @Test
-    public void testParseAuthLineValid_read() throws ParseException {
-        Authorization authorization = ACLFileParser.parseAuthLine("topic read /weather/italy/anemometer");
-
-        //Verify
-        assertEquals(R_ANEMOMETER, authorization);
-    }
-
-    @Test
-    public void testParseAuthLineValid_write() throws ParseException {
-        Authorization authorization = ACLFileParser.parseAuthLine("topic write /weather/italy/anemometer");
-
-        //Verify
-        assertEquals(W_ANEMOMETER, authorization);
-    }
-
-    @Test
-    public void testParseAuthLineValid_readwrite() throws ParseException {
-        Authorization authorization = ACLFileParser.parseAuthLine("topic readwrite /weather/italy/anemometer");
-
-        //Verify
-        assertEquals(RW_ANEMOMETER, authorization);
-    }
-
-
-    @Test
-    public void testParseAuthLineValid_topic_with_space() throws ParseException {
-        Authorization expected = new Authorization("/weather/eastern italy/anemometer");
-        Authorization authorization = ACLFileParser.parseAuthLine("topic readwrite /weather/eastern italy/anemometer");
-
-        //Verify
-        assertEquals(expected, authorization);
-    }
-
-    @Test(expected = ParseException.class)
-    public void testParseAuthLineValid_invalid() throws ParseException {
-        ACLFileParser.parseAuthLine("topic faker /weather/italy/anemometer");
-    }
 }

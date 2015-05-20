@@ -39,21 +39,21 @@ public class ACLFileParser {
     /**
      * Parse the configuration from file.
      */
-    public static List<Authorization> parse(File file) throws ParseException {
+    public static AuthorizationsCollector parse(File file) throws ParseException {
         if (file == null) {
             LOG.warn("parsing NULL file, so fallback on default configuration!");
-            return Collections.emptyList();
+            return AuthorizationsCollector.emptyImmutableCollector();
         }
         if (!file.exists()) {
             LOG.warn(String.format("parsing not existing file %s, so fallback on default configuration!", file.getAbsolutePath()));
-            return Collections.emptyList();
+            return AuthorizationsCollector.emptyImmutableCollector();
         }
         try {
             FileReader reader = new FileReader(file);
             return parse(reader);
         } catch (FileNotFoundException fex) {
             LOG.warn(String.format("parsing not existing file %s, so fallback on default configuration!", file.getAbsolutePath()), fex);
-            return Collections.emptyList();
+            return AuthorizationsCollector.emptyImmutableCollector();
         }
     }
 
@@ -62,16 +62,17 @@ public class ACLFileParser {
      *
      * @throws java.text.ParseException if the format is not compliant.
      */
-    public static List<Authorization> parse(Reader reader) throws ParseException {
+    public static AuthorizationsCollector parse(Reader reader) throws ParseException {
         if (reader == null) {
             //just log and return default properties
             LOG.warn("parsing NULL reader, so fallback on default configuration!");
-            return Collections.emptyList();
+            return AuthorizationsCollector.emptyImmutableCollector();
         }
 
         BufferedReader br = new BufferedReader(reader);
         String line;
-        List<Authorization> authorizations = new ArrayList();
+        AuthorizationsCollector collector = new AuthorizationsCollector();
+
         try {
             while ((line = br.readLine()) != null) {
                 int commentMarker = line.indexOf('#');
@@ -89,34 +90,12 @@ public class ACLFileParser {
                         continue;
                     }
 
-                    authorizations.add(parseAuthLine(line));
+                    collector.parse(line);
                 }
             }
         } catch (IOException ex) {
             throw new ParseException("Failed to read", 1);
         }
-        return authorizations;
-    }
-
-    protected static Authorization parseAuthLine(String line) throws ParseException {
-        String[] tokens = line.split("\\s+");
-        String keyword = tokens[0];
-        if ("topic".equalsIgnoreCase(keyword)) {
-            if (tokens.length > 2) {
-                //if the tokenized lines has 3 token the second must be the permission
-                try {
-                    Permission permission = Permission.valueOf(tokens[1].toUpperCase());
-                    //bring topic with all original spacing
-                    String topic = line.substring(line.indexOf(tokens[2]));
-
-                    return new Authorization(topic, permission);
-                } catch (IllegalArgumentException iaex) {
-                    throw new ParseException("invalid permission token", 1);
-                }
-            }
-            String topic = tokens[1];
-            return new Authorization(topic);
-        }
-        return null;
+        return collector;
     }
 }
