@@ -112,19 +112,21 @@ class AuthorizationsCollector implements IAuthorizator {
     }
 
     private boolean canDoOperation(String topic, Authorization.Permission permission, String username) {
-        if (username == null || username.isEmpty()) {
-            for (Authorization auth : m_globalAuthorizations) {
-                if (auth.permission == permission || auth.permission == READWRITE) {
-                    if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
-                        return true;
-                    }
+        for (Authorization auth : m_globalAuthorizations) {
+            if (auth.permission == permission || auth.permission == READWRITE) {
+                if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
+                    return true;
                 }
             }
-        } else if (m_userAuthorizations.containsKey(username)) {
-            for (Authorization auth : m_userAuthorizations.get(username)) {
-                if (auth.permission == permission || auth.permission == READWRITE) {
-                    if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
-                        return true;
+        }
+
+        if (username != null && !username.isEmpty()) {
+            if (m_userAuthorizations.containsKey(username)) {
+                for (Authorization auth : m_userAuthorizations.get(username)) {
+                    if (auth.permission == permission || auth.permission == READWRITE) {
+                        if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
+                            return true;
+                        }
                     }
                 }
             }
