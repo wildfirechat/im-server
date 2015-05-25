@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import java.text.ParseException;
 
-import static org.eclipse.moquette.spi.impl.security.AuthorizationsCollector.*;
 import static org.junit.Assert.*;
 
 /**
@@ -41,7 +40,7 @@ public class AuthorizationsCollectorTest {
 
     @Test
     public void testParseAuthLineValid() throws ParseException {
-        Authorization authorization = parseAuthLine("topic /weather/italy/anemometer");
+        Authorization authorization = authorizator.parseAuthLine("topic /weather/italy/anemometer");
 
         //Verify
         assertEquals(RW_ANEMOMETER, authorization);
@@ -49,7 +48,7 @@ public class AuthorizationsCollectorTest {
 
     @Test
     public void testParseAuthLineValid_read() throws ParseException {
-        Authorization authorization = parseAuthLine("topic read /weather/italy/anemometer");
+        Authorization authorization = authorizator.parseAuthLine("topic read /weather/italy/anemometer");
 
         //Verify
         assertEquals(R_ANEMOMETER, authorization);
@@ -57,7 +56,7 @@ public class AuthorizationsCollectorTest {
 
     @Test
     public void testParseAuthLineValid_write() throws ParseException {
-        Authorization authorization = parseAuthLine("topic write /weather/italy/anemometer");
+        Authorization authorization = authorizator.parseAuthLine("topic write /weather/italy/anemometer");
 
         //Verify
         assertEquals(W_ANEMOMETER, authorization);
@@ -65,7 +64,7 @@ public class AuthorizationsCollectorTest {
 
     @Test
     public void testParseAuthLineValid_readwrite() throws ParseException {
-        Authorization authorization = parseAuthLine("topic readwrite /weather/italy/anemometer");
+        Authorization authorization = authorizator.parseAuthLine("topic readwrite /weather/italy/anemometer");
 
         //Verify
         assertEquals(RW_ANEMOMETER, authorization);
@@ -75,7 +74,7 @@ public class AuthorizationsCollectorTest {
     @Test
     public void testParseAuthLineValid_topic_with_space() throws ParseException {
         Authorization expected = new Authorization("/weather/eastern italy/anemometer");
-        Authorization authorization = parseAuthLine("topic readwrite /weather/eastern italy/anemometer");
+        Authorization authorization = authorizator.parseAuthLine("topic readwrite /weather/eastern italy/anemometer");
 
         //Verify
         assertEquals(expected, authorization);
@@ -83,7 +82,7 @@ public class AuthorizationsCollectorTest {
 
     @Test(expected = ParseException.class)
     public void testParseAuthLineValid_invalid() throws ParseException {
-        parseAuthLine("topic faker /weather/italy/anemometer");
+        authorizator.parseAuthLine("topic faker /weather/italy/anemometer");
     }
 
     @Test
@@ -91,7 +90,7 @@ public class AuthorizationsCollectorTest {
         authorizator.parse("topic write /sensors");
 
         //verify
-        assertTrue(authorizator.canWrite("/sensors"));
+        assertTrue(authorizator.canWrite("/sensors", ""));
     }
 
     @Test
@@ -99,7 +98,7 @@ public class AuthorizationsCollectorTest {
         authorizator.parse("topic read /sensors");
 
         //verify
-        assertTrue(authorizator.canRead("/sensors"));
+        assertTrue(authorizator.canRead("/sensors", ""));
     }
 
     @Test
@@ -108,8 +107,8 @@ public class AuthorizationsCollectorTest {
         authorizator.parse("topic read /sensors/anemometer");
 
         //verify
-        assertTrue(authorizator.canWrite("/sensors"));
-        assertFalse(authorizator.canRead("/sensors"));
+        assertTrue(authorizator.canWrite("/sensors", ""));
+        assertFalse(authorizator.canRead("/sensors", ""));
     }
 
     @Test
@@ -117,7 +116,7 @@ public class AuthorizationsCollectorTest {
         authorizator.parse("topic write /sensors/#");
 
         //verify
-        assertTrue(authorizator.canWrite("/sensors/anemometer/wind"));
+        assertTrue(authorizator.canWrite("/sensors/anemometer/wind", ""));
     }
 
     @Test
@@ -125,6 +124,16 @@ public class AuthorizationsCollectorTest {
         authorizator.parse("topic write /sensors/+");
 
         //verify
-        assertTrue(authorizator.canWrite("/sensors/anemometer"));
+        assertTrue(authorizator.canWrite("/sensors/anemometer", ""));
+    }
+
+    @Test
+    public void testCanWriteUserTopic() throws ParseException {
+        authorizator.parse("user john");
+        authorizator.parse("topic write /sensors");
+
+        //verify
+        assertTrue(authorizator.canWrite("/sensors", "john"));
+        assertFalse(authorizator.canWrite("/sensors", "jack"));
     }
 }

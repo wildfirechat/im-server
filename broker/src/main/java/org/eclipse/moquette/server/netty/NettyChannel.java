@@ -29,11 +29,13 @@ import org.eclipse.moquette.server.ServerChannel;
 public class NettyChannel implements ServerChannel {
     
     private ChannelHandlerContext m_channel;
-    
+
+    public static final String ATTR_USERNAME = "username";
 
     public static final AttributeKey<Object> ATTR_KEY_KEEPALIVE = AttributeKey.valueOf(Constants.KEEP_ALIVE);
     public static final AttributeKey<Object> ATTR_KEY_CLEANSESSION = AttributeKey.valueOf(Constants.CLEAN_SESSION);
     public static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf(Constants.ATTR_CLIENTID);
+    public static final AttributeKey<Object> ATTR_KEY_USERNAME = AttributeKey.valueOf(ATTR_USERNAME);
 
     NettyChannel(ChannelHandlerContext ctx) {
         m_channel = ctx;
@@ -48,7 +50,7 @@ public class NettyChannel implements ServerChannel {
         Attribute<Object> attr = m_channel.attr(key);
         attr.set(value);
     }
-    
+
     public void setIdleTime(int idleTime) {
         if (m_channel.pipeline().names().contains("idleStateHandler")) {
             m_channel.pipeline().remove("idleStateHandler");

@@ -215,6 +215,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                 failedCredetials(session);
                 return;
             }
+            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
         } else if (!this.allowAnonymous) {
             failedCredetials(session);
             return;
@@ -297,7 +298,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         final ByteBuffer message = msg.getPayload();
         boolean retain = msg.isRetainFlag();
         //check if the topic can be wrote
-        if (m_authorizator.canWrite(topic)) {
+        String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
+        if (m_authorizator.canWrite(topic, user)) {
             processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
@@ -373,11 +375,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
                 qos = sub.getRequestedQos();
             }
-            if (!m_authorizator.canRead(topic)) {
-                LOG.debug("topic {} doesn't have read credentials", topic);
-                continue;
-            }
-            
+
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, sub.isActive());
             ByteBuffer message = origMessage.duplicate();
@@ -437,9 +435,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (m_clientIDs.get(clientId) == null) {
             throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
         }
-        LOG.debug("Session for clientId {} is {}", clientId, m_clientIDs.get(clientId).getSession());
-//        m_clientIDs.get(clientId).getSession().write(pubMessage);
-        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubMessage));
+        ServerChannel session = m_clientIDs.get(clientId).getSession();
+        LOG.debug("Session for clientId {} is {}", clientId, session);
+
+        String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
+        if (!m_authorizator.canRead(topic, user)) {
+            LOG.debug("topic {} doesn't have read credentials", topic);
+            return;
+        }
+
+        disruptorPublish(new OutputMessagingEvent(session, pubMessage));
     }
     
     private void sendPubRec(String clientID, int messageID) {

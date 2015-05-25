@@ -99,7 +99,7 @@ public class ProtocolProcessorTest {
                 throw new AssertionError("Wrong return code");
             }
         }
-    } 
+    }
     
     /**
      * This a synchronous channel that avoid output ring buffer from Processor
@@ -141,7 +141,7 @@ public class ProtocolProcessorTest {
                 throw new AssertionError("Wrong return code");
             }
         }
-    } 
+    }
     
     @Before
     public void setUp() throws InterruptedException {
