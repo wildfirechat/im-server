@@ -15,6 +15,8 @@
  */
 package org.eclipse.moquette.spi.impl.security;
 
+import static org.eclipse.moquette.spi.impl.security.Authorization.Permission.READWRITE;
+
 /**
  * Carries the read/write authorization to topics for the users.
  *
@@ -38,6 +40,10 @@ public class Authorization {
     Authorization(String topic, Permission permission) {
         this.topic = topic;
         this.permission = permission;
+    }
+
+    public boolean grant(Permission desiredPermission) {
+        return permission == desiredPermission || permission == READWRITE;
     }
 
     @Override

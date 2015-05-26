@@ -122,18 +122,14 @@ class AuthorizationsCollector implements IAuthorizator {
     }
 
     private boolean canDoOperation(String topic, Authorization.Permission permission, String username, String client) {
-        for (Authorization auth : m_globalAuthorizations) {
-            if (auth.permission == permission || auth.permission == READWRITE) {
-                if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
-                    return true;
-                }
-            }
+        if (matchACL(m_globalAuthorizations, topic, permission))  {
+            return true;
         }
 
         if (isNotEmpty(client) || isNotEmpty(username)) {
             for (Authorization auth : m_patternAuthorizations) {
                 String substitutedTopic = auth.topic.replace("%c", client).replace("%u", username);
-                if (auth.permission == permission || auth.permission == READWRITE) {
+                if (auth.grant(permission)) {
                     if (SubscriptionsStore.matchTopics(topic, substitutedTopic)) {
                         return true;
                     }
@@ -143,12 +139,20 @@ class AuthorizationsCollector implements IAuthorizator {
 
         if (isNotEmpty(username)) {
             if (m_userAuthorizations.containsKey(username)) {
-                for (Authorization auth : m_userAuthorizations.get(username)) {
-                    if (auth.permission == permission || auth.permission == READWRITE) {
-                        if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
-                            return true;
-                        }
-                    }
+                List<Authorization> auths = m_userAuthorizations.get(username);
+                if (matchACL(auths, topic, permission))  {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean matchACL(List<Authorization> auths, String topic, Authorization.Permission permission) {
+        for (Authorization auth : auths) {
+            if (auth.grant(permission)) {
+                if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
+                    return true;
                 }
             }
         }
