@@ -130,9 +130,9 @@ class AuthorizationsCollector implements IAuthorizator {
             }
         }
 
-        if (client != null && !client.isEmpty()) {
+        if (isNotEmpty(client) || isNotEmpty(username)) {
             for (Authorization auth : m_patternAuthorizations) {
-                String substitutedTopic = auth.topic.replace("%c", client);
+                String substitutedTopic = auth.topic.replace("%c", client).replace("%u", username);
                 if (auth.permission == permission || auth.permission == READWRITE) {
                     if (SubscriptionsStore.matchTopics(topic, substitutedTopic)) {
                         return true;
@@ -141,7 +141,7 @@ class AuthorizationsCollector implements IAuthorizator {
             }
         }
 
-        if (username != null && !username.isEmpty()) {
+        if (isNotEmpty(username)) {
             if (m_userAuthorizations.containsKey(username)) {
                 for (Authorization auth : m_userAuthorizations.get(username)) {
                     if (auth.permission == permission || auth.permission == READWRITE) {
@@ -153,6 +153,10 @@ class AuthorizationsCollector implements IAuthorizator {
             }
         }
         return false;
+    }
+
+    private boolean isNotEmpty(String client) {
+        return client != null && !client.isEmpty();
     }
 
     public boolean isEmpty() {

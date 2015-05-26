@@ -140,10 +140,18 @@ public class AuthorizationsCollectorTest {
     }
 
     @Test
-    public void testParsePatternClientLineACL() throws ParseException {
+    public void testPatternClientLineACL() throws ParseException {
         authorizator.parse("pattern read /weather/italy/%c");
 
         //Verify
         assertTrue(authorizator.canRead("/weather/italy/anemometer1", "", "anemometer1"));
+    }
+
+    @Test
+    public void testPatternClientAndUserLineACL() throws ParseException {
+        authorizator.parse("pattern read /weather/%u/%c");
+
+        //Verify
+        assertTrue(authorizator.canRead("/weather/italy/anemometer1", "italy", "anemometer1"));
     }
 }
