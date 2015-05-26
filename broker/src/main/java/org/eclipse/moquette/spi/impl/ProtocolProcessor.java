@@ -299,7 +299,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         boolean retain = msg.isRetainFlag();
         //check if the topic can be wrote
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
-        if (m_authorizator.canWrite(topic, user)) {
+        if (m_authorizator.canWrite(topic, user, clientID)) {
             processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
@@ -439,7 +439,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("Session for clientId {} is {}", clientId, session);
 
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
-        if (!m_authorizator.canRead(topic, user)) {
+        if (!m_authorizator.canRead(topic, user, clientId)) {
             LOG.debug("topic {} doesn't have read credentials", topic);
             return;
         }

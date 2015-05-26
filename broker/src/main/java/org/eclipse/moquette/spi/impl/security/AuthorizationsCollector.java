@@ -42,6 +42,7 @@ class AuthorizationsCollector implements IAuthorizator {
     private List<Authorization> m_patternAuthorizations = new ArrayList();
     private Map<String, List<Authorization>> m_userAuthorizations = new HashMap();
     private boolean m_parsingUsersSpecificSection = false;
+    private boolean m_parsingPatternSpecificSection = false;
     private String m_currentUser = "";
 
     static final AuthorizationsCollector emptyImmutableCollector() {
@@ -65,6 +66,8 @@ class AuthorizationsCollector implements IAuthorizator {
             }
             List<Authorization> userAuths = m_userAuthorizations.get(m_currentUser);
             userAuths.add(acl);
+        } else if (m_parsingPatternSpecificSection) {
+            m_patternAuthorizations.add(acl);
         } else {
             m_globalAuthorizations.add(acl);
         }
@@ -75,47 +78,65 @@ class AuthorizationsCollector implements IAuthorizator {
         String keyword = tokens[0].toLowerCase();
         switch (keyword) {
             case "topic":
-                if (tokens.length > 2) {
-                    //if the tokenized lines has 3 token the second must be the permission
-                    try {
-                        Authorization.Permission permission = Authorization.Permission.valueOf(tokens[1].toUpperCase());
-                        //bring topic with all original spacing
-                        String topic = line.substring(line.indexOf(tokens[2]));
-
-                        return new Authorization(topic, permission);
-                    } catch (IllegalArgumentException iaex) {
-                        throw new ParseException("invalid permission token", 1);
-                    }
-                }
-                String topic = tokens[1];
-                return new Authorization(topic);
+                return createAuthorization(line, tokens);
             case "user":
                 m_parsingUsersSpecificSection = true;
                 m_currentUser = tokens[1];
+                m_parsingPatternSpecificSection = false;
                 return null;
             case "pattern":
-                //TODO implement the part for patter matching
-                return null;
+                m_parsingUsersSpecificSection = false;
+                m_currentUser = "";
+                m_parsingPatternSpecificSection = true;
+                return createAuthorization(line, tokens);
             default:
                 throw new ParseException(String.format("invalid line definition found %s", line), 1);
         }
     }
 
-    @Override
-    public boolean canWrite(String topic, String user) {
-        return canDoOperation(topic, WRITE, user);
+    private Authorization createAuthorization(String line, String[] tokens) throws ParseException {
+        if (tokens.length > 2) {
+            //if the tokenized lines has 3 token the second must be the permission
+            try {
+                Authorization.Permission permission = Authorization.Permission.valueOf(tokens[1].toUpperCase());
+                //bring topic with all original spacing
+                String topic = line.substring(line.indexOf(tokens[2]));
+
+                return new Authorization(topic, permission);
+            } catch (IllegalArgumentException iaex) {
+                throw new ParseException("invalid permission token", 1);
+            }
+        }
+        String topic = tokens[1];
+        return new Authorization(topic);
     }
 
     @Override
-    public boolean canRead(String topic, String user) {
-        return canDoOperation(topic, READ, user);
+    public boolean canWrite(String topic, String user, String client) {
+        return canDoOperation(topic, WRITE, user, client);
     }
 
-    private boolean canDoOperation(String topic, Authorization.Permission permission, String username) {
+    @Override
+    public boolean canRead(String topic, String user, String client) {
+        return canDoOperation(topic, READ, user, client);
+    }
+
+    private boolean canDoOperation(String topic, Authorization.Permission permission, String username, String client) {
         for (Authorization auth : m_globalAuthorizations) {
             if (auth.permission == permission || auth.permission == READWRITE) {
                 if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
                     return true;
+                }
+            }
+        }
+
+        if (client != null && !client.isEmpty()) {
+            for (Authorization auth : m_patternAuthorizations) {
+                String substitutedTopic = auth.topic.replace("%c", client);
+                if (auth.permission == permission || auth.permission == READWRITE) {
+                    if (SubscriptionsStore.matchTopics(topic, substitutedTopic)) {
+                        return true;
+                    }
                 }
             }
         }

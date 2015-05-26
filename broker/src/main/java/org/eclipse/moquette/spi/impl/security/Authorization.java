@@ -29,7 +29,7 @@ public class Authorization {
      * */
     enum Permission {
         READ, WRITE, READWRITE
-    };
+    }
 
     Authorization(String topic) {
         this(topic, Permission.READWRITE);
