@@ -12,6 +12,7 @@ Version 0.7:
     Fixed github issue #30, returning error on mapdb file not deleted that corrupt reiterated builds
     Added handling of allow_anonymous clients (as in mosquitto issue #34)
     Modified the password_file format to use password stored in sha256 and not plain text
+    Added ACL file for topic read|write operations.
 
 Version 0.6:
     Fix issue #42, bad password file path composition
