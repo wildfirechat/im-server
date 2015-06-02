@@ -25,7 +25,7 @@ MqttClient client = new MqttClient("tcp://${host}:1883", "PublisherClient", data
 //connOptions.password = 'password' as char[]
 //Only for Apollo ---
 //client.connect(connOptions)
-client.connect(connOptions)
+client.connect()
 MqttMessage message = new MqttMessage('Hello world!!'.bytes)
 message.setQos(0)
 print "publishing..${numToSend} messages, "

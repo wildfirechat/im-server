@@ -17,9 +17,9 @@ class SubscriberCallback implements MqttCallback {
     int m_numReceived = 0
     long m_startTime
     boolean firstMessageReceived = false
-    
+
     private CountDownLatch m_latch = new CountDownLatch(1)
-    
+
     void waitFinish() {
         m_latch.await()
     }
@@ -39,7 +39,6 @@ class SubscriberCallback implements MqttCallback {
             long spentTime = stopTime - m_startTime
             println "/exit received"
             println "subscriber disconnected, received ${m_numReceived} messages in ${spentTime} ms"
-            client.disconnect()
             m_latch.countDown()
         } else {
             //println "-received ${message} on ${topic} with QoS ${message.qos}"
@@ -79,3 +78,4 @@ client.subscribe("/exit", 0)
 println "subscribed to /exit"
 
 callback.waitFinish()
+client.diconnect()
