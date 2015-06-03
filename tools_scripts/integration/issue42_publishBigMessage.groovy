@@ -82,7 +82,7 @@ pubClient.connect()
 //message.setQos(2)
 print "publishing.."
 //pubClient.getTopic("log").publish(message)
-pubClient.publish('/log', toSend.bytes, 2, false)
+pubClient.publish('/log', toSend.bytes, 1, false)
 println "published"
 pubClient.disconnect()
 println "disconnected publisher, waiting subscriber.."
