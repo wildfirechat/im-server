@@ -14,6 +14,7 @@ Version 0.7:
     Modified the password_file format to use password stored in sha256 and not plain text
     Added ACL file for topic read|write operations.
     Removed cause of leakage of Netty Sessions (fix issue #39)
+    Cleaned Netty's stuff reference from Events used in Disruptor (fix issue #40)
 
 Version 0.6:
     Fix issue #42, bad password file path composition

@@ -667,11 +667,15 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     }
 
     public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
-        MessagingEvent evt = t.getEvent();
-        //It's always of type OutputMessagingEvent
-        OutputMessagingEvent outEvent = (OutputMessagingEvent) evt;
-        LOG.debug("Output event, sending {}", outEvent.getMessage());
-        outEvent.getChannel().write(outEvent.getMessage());
+        try {
+            MessagingEvent evt = t.getEvent();
+            //It's always of type OutputMessagingEvent
+            OutputMessagingEvent outEvent = (OutputMessagingEvent) evt;
+            LOG.debug("Output event, sending {}", outEvent.getMessage());
+            outEvent.getChannel().write(outEvent.getMessage());
+        } finally {
+            t.setEvent(null); //free the reference to all Netty stuff
+        }
     }
 
 }
