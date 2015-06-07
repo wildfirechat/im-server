@@ -122,8 +122,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
     
     @Override
-    public void lostConnection(ServerChannel session, String clientID) {
-        disruptorPublish(new LostConnectionEvent(session, clientID));
+    public void lostConnection(String clientID) {
+        disruptorPublish(new LostConnectionEvent(clientID));
     }
 
     @Override

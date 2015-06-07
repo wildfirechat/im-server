@@ -23,11 +23,11 @@ import org.eclipse.moquette.server.ServerChannel;
  * @author andrea
  */
 public class LostConnectionEvent extends MessagingEvent {
-    public final ServerChannel session;
+//    public final ServerChannel session;
     public final String clientID;
 
-    public LostConnectionEvent(ServerChannel session, String clientID) {
-        this.session = session;
+    public LostConnectionEvent(/*ServerChannel session, */String clientID) {
+//        this.session = session;
         this.clientID = clientID;
     }
 }

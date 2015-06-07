@@ -37,7 +37,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
     private IMessaging m_messaging;
-    private final Map<ChannelHandlerContext, NettyChannel> m_channelMapper = new HashMap<ChannelHandlerContext, NettyChannel>();
+//    private final Map<ChannelHandlerContext, NettyChannel> m_channelMapper = new HashMap<>();
     
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
@@ -54,15 +54,15 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                 case PUBREL:
                 case DISCONNECT:
                 case PUBACK:    
-                    NettyChannel channel;
-                    synchronized(m_channelMapper) {
-                        if (!m_channelMapper.containsKey(ctx)) {
-                            m_channelMapper.put(ctx, new NettyChannel(ctx));
-                        }
-                        channel = m_channelMapper.get(ctx);
-                    }
+//                    NettyChannel channel;
+//                    synchronized(m_channelMapper) {
+//                        if (!m_channelMapper.containsKey(ctx)) {
+//                            m_channelMapper.put(ctx, new NettyChannel(ctx));
+//                        }
+//                        channel = m_channelMapper.get(ctx);
+//                    }
                     
-                    m_messaging.handleProtocolMessage(channel, msg);
+                    m_messaging.handleProtocolMessage(new NettyChannel(ctx), msg);
                     break;
                 case PINGREQ:
                     PingRespMessage pingResp = new PingRespMessage();
@@ -76,13 +76,14 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        NettyChannel channel = m_channelMapper.get(ctx);
-        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
-        m_messaging.lostConnection(channel, clientID);
+//        NettyChannel channel = m_channelMapper.get(ctx);
+//        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+        String clientID = (String) NettyUtils.getAttribute(ctx, NettyChannel.ATTR_KEY_CLIENTID);
+        m_messaging.lostConnection(clientID);
         ctx.close(/*false*/);
-        synchronized(m_channelMapper) {
-            m_channelMapper.remove(ctx);
-        }
+//        synchronized(m_channelMapper) {
+//            m_channelMapper.remove(ctx);
+//        }
     }
     
     public void setMessaging(IMessaging messaging) {
