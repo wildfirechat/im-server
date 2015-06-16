@@ -245,7 +245,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
-                pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));pipeline.addFirst("metrics", new BytesMetricsHandler(m_bytesMetricsCollector));
+                pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
