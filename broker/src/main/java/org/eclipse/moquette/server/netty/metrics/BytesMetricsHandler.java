@@ -59,7 +59,8 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
     public void close(ChannelHandlerContext ctx,
                       ChannelPromise promise) throws Exception {
         BytesMetrics metrics = ctx.attr(ATTR_KEY_METRICS).get();
-        m_collector.addMetrics(metrics);
+        m_collector.sumReadBytes(metrics.readBytes());
+        m_collector.sumWroteBytes(metrics.wroteBytes());
         super.close(ctx, promise);
     }
 }

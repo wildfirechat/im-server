@@ -17,23 +17,27 @@ package org.eclipse.moquette.server.netty.metrics;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Collects all the metrics from the various pipeline.
  */
 public class MessageMetricsCollector {
-    private Queue<MessageMetrics> m_allMetrics = new ConcurrentLinkedQueue<MessageMetrics>();
-
-    void addMetrics(MessageMetrics metrics) {
-        m_allMetrics.add(metrics);
-    }
+    private AtomicLong readMsgs = new AtomicLong();
+    private AtomicLong wroteMsgs = new AtomicLong();
 
     public MessageMetrics computeMetrics() {
         MessageMetrics allMetrics = new MessageMetrics();
-        for (MessageMetrics m : m_allMetrics) {
-            allMetrics.incrementRead(m.messagesRead());
-            allMetrics.incrementWrote(m.messagesWrote());
-        }
+        allMetrics.incrementRead(readMsgs.get());
+        allMetrics.incrementWrote(wroteMsgs.get());
         return allMetrics;
+    }
+
+    public void sumReadMessages(long count) {
+        readMsgs.getAndAdd(count);
+    }
+
+    public void sumWroteMessages(long count) {
+        wroteMsgs.getAndAdd(count);
     }
 }

@@ -58,7 +58,8 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     public void close(ChannelHandlerContext ctx,
                       ChannelPromise promise) throws Exception {
         MessageMetrics metrics = ctx.attr(ATTR_KEY_METRICS).get();
-        m_collector.addMetrics(metrics);
+        m_collector.sumReadMessages(metrics.messagesRead());
+        m_collector.sumWroteMessages(metrics.messagesWrote());
         super.close(ctx, promise);
     }
 }
