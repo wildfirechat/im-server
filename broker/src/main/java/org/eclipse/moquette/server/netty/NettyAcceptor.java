@@ -93,7 +93,7 @@ public class NettyAcceptor implements ServerAcceptor {
     
     EventLoopGroup m_bossGroup;
     EventLoopGroup m_workerGroup;
-    //BytesMetricsCollector m_metricsCollector = new BytesMetricsCollector();
+    BytesMetricsCollector m_bytesMetricsCollector = new BytesMetricsCollector();
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
 
     @Override
@@ -147,6 +147,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -180,6 +181,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -240,10 +242,10 @@ public class NettyAcceptor implements ServerAcceptor {
                 final SslHandler sslHandler = new SslHandler(engine);
 
                 pipeline.addLast("ssl", sslHandler);
-                //pipeline.addFirst("metrics", new BytesMetricsHandler(m_metricsCollector));
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
+                pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));pipeline.addFirst("metrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -263,8 +265,10 @@ public class NettyAcceptor implements ServerAcceptor {
         m_bossGroup.shutdownGracefully();
 
         MessageMetrics metrics = m_metricsCollector.computeMetrics();
-        //LOG.info(String.format("Bytes read: %d, bytes wrote: %d", metrics.readBytes(), metrics.wroteBytes()));
         LOG.info("Msg read: {}, msg wrote: {}", metrics.messagesRead(), metrics.messagesWrote());
+
+        BytesMetrics bytesMetrics = m_bytesMetricsCollector.computeMetrics();
+        LOG.info(String.format("Bytes read: %d, bytes wrote: %d", bytesMetrics.readBytes(), bytesMetrics.wroteBytes()));
     }
 
     private InputStream jksDatastore(String jksPath) throws FileNotFoundException {
