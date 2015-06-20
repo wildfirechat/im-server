@@ -208,16 +208,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             if (msg.isPasswordFlag()) {
                 pwd = msg.getPassword();
             } else if (!this.allowAnonymous) {
-                failedCredetials(session);
+                failedCredentials(session);
                 return;
             }
             if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
-                failedCredetials(session);
+                failedCredentials(session);
                 return;
             }
             session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
         } else if (!this.allowAnonymous) {
-            failedCredetials(session);
+            failedCredentials(session);
             return;
         }
 
@@ -246,7 +246,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
 
-    private void failedCredetials(ServerChannel session) {
+    private void failedCredentials(ServerChannel session) {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.write(okResp);
@@ -311,7 +311,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
             forward2Subscribers(topic, qos, message, retain, messageID);
-        } else if (qos == AbstractMessage.QOSType.LEAST_ONE) {
+        } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
             PublishEvent inFlightEvt = new PublishEvent(topic, qos, message, retain,
                         clientID, messageID);
             //TODO use a message store for TO PUBLISH MESSAGES it has nothing to do with inFlight!!
@@ -321,7 +321,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             //NB the PUB_ACK could be sent also after the addInFlight
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
-        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
+        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             String publishKey = String.format("%s%d", clientID, messageID);
             //store the message in temp store
             PublishEvent qos2Persistent = new PublishEvent(topic, qos, message, retain,
