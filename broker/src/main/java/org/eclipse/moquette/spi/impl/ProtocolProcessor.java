@@ -602,38 +602,38 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
-        for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
-            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
-            subscribeSingleTopic(newSubscription, req.getTopicFilter());
-        }
-
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
-        //reply with requested qos
-        for(SubscribeMessage.Couple req : msg.subscriptions()) {
+        for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
-            ackMessage.addType(qos);
+            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
+            boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
+            ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
         }
-        
+
         LOG.debug("SUBACK for packetID {}", msg.getMessageID());
         session.write(ackMessage);
     }
     
-    private void subscribeSingleTopic(Subscription newSubscription, final String topic) {
+    private boolean subscribeSingleTopic(Subscription newSubscription, final String topic) {
         LOG.info("<{}> subscribed to topic <{}> with QoS {}", 
                 newSubscription.getClientId(), topic, 
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
         String clientID = newSubscription.getClientId();
+        boolean validTopic = SubscriptionsStore.validate(newSubscription);
+        if (!validTopic) {
+            //send SUBACK with 0x80 for this topic filter
+            return false;
+        }
         m_sessionsStore.addNewSubscription(newSubscription, clientID);
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
-                return  SubscriptionsStore.matchTopics(key, topic);
+                return SubscriptionsStore.matchTopics(key, topic);
             }
         });
 
@@ -645,6 +645,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                     m_messagesStore.nextPacketID(newSubscription.getClientId());
             sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
+        return true;
     }
     
     private void disruptorPublish(OutputMessagingEvent msgEvent) {

@@ -54,6 +54,7 @@ public class ProtocolProcessorTest {
     final static String FAKE_CLIENT_ID2 = "FAKE_456";
     final static String FAKE_PUBLISHER_ID = "Publisher";
     final static String FAKE_TOPIC = "/news";
+    final static String BAD_FORMATTED_TOPIC = "#MQTTClient";
     
     final static String TEST_USER = "fakeuser";
     final static String TEST_PWD = "fakepwd";
@@ -454,6 +455,27 @@ public class ProtocolProcessorTest {
         assertEquals(1, subscriptions.size());
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
         assertTrue(subscriptions.contains(expectedSubscription));
+    }
+
+
+    @Test
+    public void testSubscribeWithBadFormattedTopic() {
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), BAD_FORMATTED_TOPIC));
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        subscriptions.clearAllSubscriptions();
+        assertEquals(0, subscriptions.size());
+
+        //Exercise
+        m_processor.processSubscribe(m_session, msg);
+
+        //Verify
+        assertEquals(0, subscriptions.size());
+        assertTrue(m_receivedMessage instanceof SubAckMessage);
+        List<QOSType> qosSubAcked = ((SubAckMessage) m_receivedMessage).types();
+        assertEquals(1, qosSubAcked.size());
+        assertEquals(QOSType.FAILURE, qosSubAcked.get(0));
     }
 
     

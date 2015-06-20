@@ -30,6 +30,19 @@ import org.slf4j.LoggerFactory;
  */
 public class SubscriptionsStore {
 
+    /**
+     * Check if the topic filter of the subscription is well formed
+     * */
+    public static boolean validate(Subscription newSubscription) {
+        try {
+            parseTopic(newSubscription.topicFilter);
+            return true;
+        } catch (ParseException pex) {
+            LOG.info("Bad matching topic filter <{}>", newSubscription.topicFilter);
+            return false;
+        }
+    }
+
     public static interface IVisitor<T> {
         void visit(TreeNode node);
         

@@ -18,6 +18,7 @@ package org.eclipse.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
 import org.eclipse.moquette.proto.messages.SubAckMessage;
 
 /**
@@ -38,8 +39,9 @@ class SubAckEncoder extends DemuxEncoder<SubAckMessage> {
             buff.writeByte(AbstractMessage.SUBACK << 4 );
             buff.writeBytes(Utils.encodeRemainingLength(variableHeaderSize));
             buff.writeShort(message.getMessageID());
-            for (AbstractMessage.QOSType c : message.types()) {
-                buff.writeByte(c.ordinal());
+            for (QOSType c : message.types()) {
+                int qosValue = (c == QOSType.FAILURE) ? qosValue = 0x80 : c.ordinal();
+                buff.writeByte(qosValue);
             }
 
             out.writeBytes(buff);

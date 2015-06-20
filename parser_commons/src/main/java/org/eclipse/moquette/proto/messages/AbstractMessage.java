@@ -38,7 +38,7 @@ public abstract class AbstractMessage {
     public static final byte DISCONNECT = 14; //Client is Disconnecting
 
     public static enum QOSType {
-        MOST_ONE, LEAST_ONE, EXACTLY_ONCE, RESERVED;
+        MOST_ONE, LEAST_ONE, EXACTLY_ONCE, RESERVED, FAILURE;
         
         public static String formatQoS(QOSType qos) {
             return String.format("%d - %s", qos.ordinal(), qos.name());
