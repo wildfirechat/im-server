@@ -15,6 +15,7 @@ Version 0.7:
     Added ACL file for topic read|write operations.
     Removed cause of leakage of Netty Sessions (fix issue #39)
     Cleaned Netty's stuff reference from Events used in Disruptor (fix issue #40)
+    Bad assignment of PacketID during publish to subscribed QoS0 topics (fix issue #38)
 
 Version 0.6:
     Fix issue #42, bad password file path composition

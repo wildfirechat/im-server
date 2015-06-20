@@ -16,6 +16,7 @@
 package org.eclipse.moquette.spi.impl.events;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
+import org.eclipse.moquette.proto.messages.PublishMessage;
 
 import java.nio.ByteBuffer;
 
@@ -44,7 +45,18 @@ public class PublishEvent extends MessagingEvent {
             m_msgID = msgID;
         }
     }
-    
+
+    public PublishEvent(String clientID, PublishMessage msg) {
+        m_clientID = clientID;
+        m_topic = msg.getTopicName();
+        m_qos = msg.getQos();
+        m_message = msg.getPayload();
+        m_retain = msg.isRetainFlag();
+        if (msg.getQos() != QOSType.MOST_ONE) {
+            m_msgID = msg.getMessageID();
+        }
+    }
+
     public String getTopic() {
         return m_topic;
     }

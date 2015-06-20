@@ -291,32 +291,33 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     @MQTTMessage(message = PublishMessage.class)
     void processPublish(ServerChannel session, PublishMessage msg) {
-        LOG.trace("PUB --PUBLISH--> SRV processPublish invoked with {}", msg);
+        LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         final String topic = msg.getTopicName();
-        final AbstractMessage.QOSType qos = msg.getQos();
-        final ByteBuffer message = msg.getPayload();
-        boolean retain = msg.isRetainFlag();
         //check if the topic can be wrote
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
         if (m_authorizator.canWrite(topic, user, clientID)) {
-            processPublish(clientID, topic, qos, message, retain, msg.getMessageID());
+            executePublish(clientID, msg);
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
         }
     }
         
-    private void processPublish(String clientID, String topic, QOSType qos, ByteBuffer message, boolean retain, Integer messageID) { 
+    private void executePublish(String clientID, PublishMessage msg) {
+        final String topic = msg.getTopicName();
+        final AbstractMessage.QOSType qos = msg.getQos();
+        final ByteBuffer message = msg.getPayload();
+        boolean retain = msg.isRetainFlag();
+        final Integer messageID = msg.getMessageID();
         LOG.info("PUBLISH from clientID <{}> on topic <{}> with QoS {}", clientID, topic, qos);
 
+        PublishEvent publishEvt = new PublishEvent(clientID, msg);
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
-            forward2Subscribers(topic, qos, message, retain, messageID);
+            forward2Subscribers(publishEvt);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            PublishEvent inFlightEvt = new PublishEvent(topic, qos, message, retain,
-                        clientID, messageID);
             //TODO use a message store for TO PUBLISH MESSAGES it has nothing to do with inFlight!!
-            m_messagesStore.addInFlight(inFlightEvt, clientID, messageID);
-            forward2Subscribers(topic, qos, message, retain, messageID);
+            m_messagesStore.addInFlight(publishEvt, clientID, messageID);
+            forward2Subscribers(publishEvt);
             m_messagesStore.cleanInFlight(clientID, messageID);
             //NB the PUB_ACK could be sent also after the addInFlight
             sendPubAck(new PubAckEvent(messageID, clientID));
@@ -324,9 +325,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             String publishKey = String.format("%s%d", clientID, messageID);
             //store the message in temp store
-            PublishEvent qos2Persistent = new PublishEvent(topic, qos, message, retain,
-                        clientID, messageID);
-            m_messagesStore.persistQoS2Message(publishKey, qos2Persistent);
+            m_messagesStore.persistQoS2Message(publishKey, publishEvt);
             sendPubRec(clientID, messageID);
             //Next the client will send us a pub rel
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
@@ -347,25 +346,27 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      */
     private void forwardPublishWill(WillMessage will, String clientID) {
         //it has just to publish the message downstream to the subscribers
-        final String topic = will.getTopic();
-        final AbstractMessage.QOSType qos = will.getQos();
-        final ByteBuffer message = will.getPayload();
-        boolean retain = will.isRetained();
         //NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
-        if (qos == AbstractMessage.QOSType.MOST_ONE) {
-            forward2Subscribers(topic, qos, message, retain, null);
-        } else {
-            int messageId = m_messagesStore.nextPacketID(clientID);
-            forward2Subscribers(topic, qos, message, retain, messageId);
+        Integer messageId = null;
+        if (will.getQos() != AbstractMessage.QOSType.MOST_ONE) {
+            messageId = m_messagesStore.nextPacketID(clientID);
         }
 
+        PublishEvent pub = new PublishEvent(will.getTopic(), will.getQos(), will.getPayload(), will.isRetained(),
+                clientID, messageId);
+        forward2Subscribers(pub);
     }
-    
+
+
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    private void forward2Subscribers(String topic, AbstractMessage.QOSType qos, ByteBuffer origMessage,
-                                     boolean retain, Integer messageID) {
+    private void forward2Subscribers(PublishEvent pubEvt) {
+        final String topic = pubEvt.getTopic();
+        AbstractMessage.QOSType qos = pubEvt.getQos();
+        final ByteBuffer origMessage = pubEvt.getMessage();
+        boolean retain = pubEvt.isRetain();
+        final Integer messageID = pubEvt.getMessageID();
         LOG.debug("forward2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(origMessage));
@@ -491,15 +492,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         String publishKey = String.format("%s%d", clientID, messageID);
         PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
-
-        final String topic = evt.getTopic();
-        final AbstractMessage.QOSType qos = evt.getQos();
-
-        forward2Subscribers(topic, qos, evt.getMessage(), evt.isRetain(), evt.getMessageID());
-
+        forward2Subscribers(evt);
         m_messagesStore.removeQoS2Message(publishKey);
 
         if (evt.isRetain()) {
+            final String topic = evt.getTopic();
+            final AbstractMessage.QOSType qos = evt.getQos();
             m_messagesStore.storeRetained(topic, evt.getMessage(), qos);
         }
 
@@ -561,13 +559,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     void processConnectionLost(LostConnectionEvent evt) {
         String clientID = evt.clientID;
-//        if (m_clientIDs.containsKey(clientID)) {
-//            if (!m_clientIDs.get(clientID).getSession().equals(evt.session)) {
-//                LOG.info("Received a lost connection with client <{}> for a not matching session", clientID);
-//                return;
-//            }
-//        }
-
         //If already removed a disconnect message was already processed for this clientID
         if (m_clientIDs.remove(clientID) != null) {
 
