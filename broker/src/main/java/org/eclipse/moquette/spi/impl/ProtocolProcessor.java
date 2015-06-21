@@ -238,7 +238,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         session.write(okResp);
 
         LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
-        m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true), msg.getClientID()); //null means EmptySubscription
+        m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true)); //null means EmptySubscription
         LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2
@@ -621,13 +621,12 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("<{}> subscribed to topic <{}> with QoS {}", 
                 newSubscription.getClientId(), topic, 
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
-        String clientID = newSubscription.getClientId();
         boolean validTopic = SubscriptionsStore.validate(newSubscription);
         if (!validTopic) {
             //send SUBACK with 0x80 for this topic filter
             return false;
         }
-        m_sessionsStore.addNewSubscription(newSubscription, clientID);
+        m_sessionsStore.addNewSubscription(newSubscription);
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription

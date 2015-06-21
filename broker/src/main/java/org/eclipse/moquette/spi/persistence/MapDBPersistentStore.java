@@ -221,8 +221,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         return nextPacketId;
     }
 
-    public void addNewSubscription(Subscription newSubscription, String clientID) {
-        LOG.debug("addNewSubscription invoked with subscription {} for client {}", newSubscription, clientID);
+    public void addNewSubscription(Subscription newSubscription) {
+        LOG.debug("addNewSubscription invoked with subscription {}", newSubscription);
+        final String clientID = newSubscription.getClientId();
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             LOG.debug("clientID {} is a newcome, creating it's subscriptions set", clientID);
             m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());

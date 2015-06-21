@@ -159,7 +159,8 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void addNewSubscription(Subscription newSubscription, String clientID) {
+    public void addNewSubscription(Subscription newSubscription) {
+        final String clientID = newSubscription.getClientId();
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
         }
