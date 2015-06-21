@@ -221,6 +221,29 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         return nextPacketId;
     }
 
+    @Override
+    public void removeSubscription(String topic, String clientID) {
+        LOG.debug("removeSubscription topic filter: {} for clientID: {}", topic, clientID);
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            return;
+        }
+        Set<Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
+        //search for the subscription to remove
+        Subscription toBeRemoved = null;
+        for (Subscription sub : clientSubscriptions) {
+            if (sub.getTopicFilter().equals(topic)) {
+                toBeRemoved = sub;
+                break;
+            }
+        }
+
+        if (toBeRemoved != null) {
+            clientSubscriptions.remove(toBeRemoved);
+        }
+        m_persistentSubscriptions.put(clientID, clientSubscriptions);
+        m_db.commit();
+    }
+
     public void addNewSubscription(Subscription newSubscription) {
         LOG.debug("addNewSubscription invoked with subscription {}", newSubscription);
         final String clientID = newSubscription.getClientId();

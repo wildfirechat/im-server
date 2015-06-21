@@ -16,7 +16,8 @@ Version 0.7:
     Removed cause of leakage of Netty Sessions (fix issue #39)
     Cleaned Netty's stuff reference from Events used in Disruptor (fix issue #40)
     Bad assignment of PacketID during publish to subscribed QoS0 topics (fix issue #38)
-    Fixed duplicated subscription with different QoS same client and topic (fix issue #
+    Fixed duplicated subscription with different QoS same client and topic (fix issue #49)
+    Fixed UNSUBSCRIBE that missed to remove the subscription from the persistent store (fix issue #50)
 
 Version 0.6:
     Fix issue #42, bad password file path composition

@@ -33,6 +33,11 @@ public interface ISessionsStore {
     void addNewSubscription(Subscription newSubscription);
 
     /**
+     * Removed a specific subscription
+     * */
+    void removeSubscription(String topic, String clientID);
+
+    /**
      * Remove all the subscriptions of the session
      */
     void wipeSubscriptions(String sessionID);

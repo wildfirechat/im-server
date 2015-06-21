@@ -587,7 +587,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         for (String topic : topics) {
             subscriptions.removeSubscription(topic, clientID);
+            m_sessionsStore.removeSubscription(topic, clientID);
         }
+
         //ack the client
         UnsubAckMessage ackMessage = new UnsubAckMessage();
         ackMessage.setMessageID(messageID);

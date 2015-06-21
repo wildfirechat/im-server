@@ -159,6 +159,27 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
+    public void removeSubscription(String topic, String clientID) {
+        LOG.debug("removeSubscription topic filter: {} for clientID: {}", topic, clientID);
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            return;
+        }
+        Set<Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
+        //search for the subscription to remove
+        Subscription toBeRemoved = null;
+        for (Subscription sub : clientSubscriptions) {
+            if (sub.getTopicFilter().equals(topic)) {
+                toBeRemoved = sub;
+                break;
+            }
+        }
+
+        if (toBeRemoved != null) {
+            clientSubscriptions.remove(toBeRemoved);
+        }
+    }
+
+    @Override
     public void addNewSubscription(Subscription newSubscription) {
         final String clientID = newSubscription.getClientId();
         if (!m_persistentSubscriptions.containsKey(clientID)) {

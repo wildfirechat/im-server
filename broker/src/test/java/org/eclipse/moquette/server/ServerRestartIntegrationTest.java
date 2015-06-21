@@ -140,6 +140,44 @@ public class ServerRestartIntegrationTest {
         m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), QoS.AT_MOST_ONCE, false);
     }
 
+    @Test
+    public void testClientDoesntRemainSubscribedAfterASubscriptionAndServerRestart() throws Exception {
+        m_mqtt.setClientId("Subscriber");
+        //subscribe to /topic
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+        Topic[] topics = new Topic[]{new Topic("/topic", QoS.AT_MOST_ONCE)};
+        //subscribe /topic
+        m_subscriber.subscribe(topics);
+        //unsubscribe from /topic
+        m_subscriber.unsubscribe(new String[]{"/topic"});
+        m_subscriber.disconnect();
+
+        //shutdown the server
+        m_server.stopServer();
+
+        //restart the server
+        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        //subscriber reconnects
+        MQTT mqttSub = new MQTT();
+        mqttSub.setHost("localhost", 1883);
+        mqttSub.setClientId("Subscriber");
+        m_subscriber = mqttSub.blockingConnection();
+        m_subscriber.connect();
+
+        //publisher publishes on /topic
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883);
+        mqtt.setClientId("Publisher");
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), QoS.AT_LEAST_ONCE, false);
+
+        //Expected
+        //the subscriber doesn't get notified (it's fully unsubscribed)
+        assertNull(m_subscriber.receive(1, TimeUnit.SECONDS));
+    }
+
     /**
      * Connect subscribe to topic and publish on the same topic
      * */
