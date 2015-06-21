@@ -356,6 +356,28 @@ public class SubscriptionsStoreTest {
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
     }
 
+    /*
+    Test for Issue #49
+    * */
+    @Test
+    public void duplicatedSubscriptionsWithDifferentQos() {
+        Subscription client2Sub = new Subscription("client2", "client/test/b", AbstractMessage.QOSType.MOST_ONE, true);
+        store.add(client2Sub);
+        Subscription client1SubQoS0 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.MOST_ONE, true);
+        store.add(client1SubQoS0);
+
+        Subscription client1SubQoS2 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.EXACTLY_ONCE, true);
+        store.add(client1SubQoS2);
+
+        System.out.println(store.dumpTree());
+
+        //Verify
+        List<Subscription> subscriptions = store.matches("client/test/b");
+        assertTrue(subscriptions.contains(client1SubQoS2));
+        assertTrue(subscriptions.contains(client2Sub));
+        assertFalse(subscriptions.contains(client1SubQoS0)); //client1SubQoS2 should override client1SubQoS0
+    }
+
     private static Token[] asArray(Object... l) {
         Token[] tokens = new Token[l.length];
         for (int i = 0; i < l.length; i++) {
