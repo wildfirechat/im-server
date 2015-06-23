@@ -18,6 +18,7 @@ Version 0.7:
     Bad assignment of PacketID during publish to subscribed QoS0 topics (fix issue #38)
     Fixed duplicated subscription with different QoS same client and topic (fix issue #49)
     Fixed UNSUBSCRIBE that missed to remove the subscription from the persistent store (fix issue #50)
+    Fixed issue on multiple publish for overlapping subscription by the same client (fix issue #52).
 
 Version 0.6:
     Fix issue #42, bad password file path composition

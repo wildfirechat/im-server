@@ -67,6 +67,7 @@ public class SubscriptionsStore {
             String s = "";
             for (int i=0; i < deep; i++) {
                 s += "\t";
+//                s += "--";
             }
             return s;
         }
@@ -225,10 +226,20 @@ public class SubscriptionsStore {
             return Collections.emptyList();
         }
 
-        Queue<Token> tokenQueue = new LinkedBlockingDeque<Token>(tokens);
-        List<Subscription> matchingSubs = new ArrayList<Subscription>();
+        Queue<Token> tokenQueue = new LinkedBlockingDeque<>(tokens);
+        List<Subscription> matchingSubs = new ArrayList<>();
         subscriptions.matches(tokenQueue, matchingSubs);
-        return matchingSubs;
+
+        //remove the overlapping subscriptions, selecting ones with greatest qos
+        Map<String, Subscription> subsForClient = new HashMap<>();
+        for (Subscription sub : matchingSubs) {
+            Subscription existingSub = subsForClient.get(sub.getClientId());
+            //update the selected subscriptions if not present or if has a greater qos
+            if (existingSub == null || existingSub.getRequestedQos().ordinal() < sub.getRequestedQos().ordinal()) {
+                subsForClient.put(sub.getClientId(), sub);
+            }
+        }
+        return /*matchingSubs*/new ArrayList<>(subsForClient.values());
     }
 
     public boolean contains(Subscription sub) {

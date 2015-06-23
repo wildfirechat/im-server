@@ -245,4 +245,41 @@ public class ServerIntegrationFuseTest {
         msg.ack();
         assertEquals("Hello2", new String(msg.getPayload()));
     }
+
+    /**
+     * subscriber connect and subscribe on "a/b" QoS 1 and "a/+" QoS 2
+     * publisher connects and send a message "hello" on "a/b"
+     * subscriber must receive only a single message not twice
+     */
+    @Test
+    public void checkSinglePublishOnOverlappingSubscriptions() throws Exception {
+        LOG.info("*** checkSinglePublishOnOverlappingSubscriptions ***");
+        MQTT mqtt = new MQTT();
+        mqtt.setHost("localhost", 1883);
+        mqtt.setClientId("Publisher");
+        m_publisher = mqtt.blockingConnection();
+        m_publisher.connect();
+
+        m_mqtt.setHost("localhost", 1883);
+        m_mqtt.setCleanSession(false);
+        m_mqtt.setClientId("Subscriber");
+        m_subscriber = m_mqtt.blockingConnection();
+        m_subscriber.connect();
+        Topic[] topics = new Topic[]{
+                new Topic("a/+", QoS.EXACTLY_ONCE),
+                new Topic("a/b", QoS.AT_LEAST_ONCE)};
+        m_subscriber.subscribe(topics);
+
+        //force the publisher to send
+        m_publisher.publish("a/b", "Hello world MQTT!!".getBytes(), QoS.AT_LEAST_ONCE, false);
+
+        //reconnect and expect to receive the hello 2 message
+        Message msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        assertNotNull(msg);
+        msg.ack();
+        assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
+        //try to listen a second publish
+        msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        assertNull(msg);
+    }
 }

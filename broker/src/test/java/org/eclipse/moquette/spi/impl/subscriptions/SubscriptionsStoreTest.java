@@ -117,7 +117,7 @@ public class SubscriptionsStoreTest {
         store.add(anySub);
         assertTrue(store.matches("finance").contains(anySub));
         
-        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_2", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(financeAnySub);
         assertTrue(store.matches("finance").containsAll(Arrays.asList(financeAnySub, anySub)));
     }
@@ -125,7 +125,7 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchingDeepMulti_one_layer() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
-        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription financeAnySub = new Subscription("FAKE_CLI_ID_2", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(anySub);
         store.add(financeAnySub);
         
@@ -184,7 +184,7 @@ public class SubscriptionsStoreTest {
         Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/finance/+/ibm", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashPlusSub);
         
-        Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_1", "/+/stock/+", AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_2", "/+/stock/+", AbstractMessage.QOSType.MOST_ONE, false);
         store.add(slashPlusDeepSub);
         
         //Verify
@@ -268,6 +268,19 @@ public class SubscriptionsStoreTest {
         
         //Verify
         assertEquals(1, store.size());
+    }
+
+    @Test
+    public void testOverlappingSubscriptions() {
+        Subscription genericSub = new Subscription("FAKE_CLI_ID_1", "a/+", AbstractMessage.QOSType.EXACTLY_ONCE, false);
+        store.add(genericSub);
+        Subscription specificSub = new Subscription("FAKE_CLI_ID_1", "a/b", AbstractMessage.QOSType.LEAST_ONE, false);
+        store.add(specificSub);
+
+        //Verify
+        assertEquals(1, store.matches("a/b").size());
+        //assertTrue(store.matches("/finance").contains(slashPlusSub));
+        //assertFalse(store.matches("/finance").contains(anySub));
     }
 
     @Test
