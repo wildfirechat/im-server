@@ -21,6 +21,7 @@ Version 0.7:
     Fixed issue on multiple publish for overlapping subscription by the same client (fix issue #52).
     Moved the authorization check before dropping an already connected client with same clientID (fix issue #44).
     Fixed subscription tree that was unable to update clean session flag on subs with same client, topic and qos (fix issue #55)
+    Fixed overwriting of published qos in forward publish loop (fix issue #56)
 
 Version 0.6:
     Fix issue #42, bad password file path composition

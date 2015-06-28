@@ -34,13 +34,13 @@ import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
  */
 public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     
-    private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<String, Set<Subscription>>();
-    private Map<String, StoredMessage> m_retainedStore = new HashMap<String, StoredMessage>();
+    private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
+    private Map<String, StoredMessage> m_retainedStore = new HashMap<>();
     //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
-    private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<String, List<PublishEvent>>();
-    private Map<String, PublishEvent> m_inflightStore = new HashMap<String, PublishEvent>();
+    private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<>();
+    private Map<String, PublishEvent> m_inflightStore = new HashMap<>();
     private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
-    private Map<String, PublishEvent> m_qos2Store = new HashMap<String, PublishEvent>();
+    private Map<String, PublishEvent> m_qos2Store = new HashMap<>();
     
     private static final Logger LOG = LoggerFactory.getLogger(MemoryStorageService.class);
     

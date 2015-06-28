@@ -17,6 +17,7 @@ package org.eclipse.moquette.server;
 
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+import org.fusesource.mqtt.client.QoS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -359,6 +360,49 @@ public class ServerIntegrationPahoTest {
         message = m_callback.getMessage(true);
         assertNotNull(message);
         assertEquals("Hello MQTT 2", message.toString());
+    }
+
+    /**
+     * subscriber A connect and subscribe on "a/b" QoS 1
+     * subscriber B connect and subscribe on "a/+"  BUT with QoS 2
+     * publisher connects and send a message "hello" on "a/b"
+     * subscriber A must receive a notification with QoS1
+     * subscriber B must receive a notification with QoS2
+     */
+    @Test
+    public void checkSubscribersGetCorrectQosNotifications() throws Exception {
+        LOG.info("*** checkSubscribersGetCorrectQosNotifications ***");
+        String tmpDir = System.getProperty("java.io.tmpdir");
+
+        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberA");
+
+        MqttClient subscriberA = new MqttClient("tcp://localhost:1883", "SubscriberA", dsSubscriberA);
+        TestCallback cbSubscriberA = new TestCallback();
+        subscriberA.setCallback(cbSubscriberA);
+        subscriberA.connect();
+        subscriberA.subscribe("a/b", 1);
+
+        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberB");
+
+        MqttClient subscriberB = new MqttClient("tcp://localhost:1883", "SubscriberB", dsSubscriberB);
+        TestCallback cbSubscriberB = new TestCallback();
+        subscriberB.setCallback(cbSubscriberB);
+        subscriberB.connect();
+        subscriberB.subscribe("a/+", 2);
+
+
+        m_client.connect();
+        m_client.publish("a/b", "Hello world MQTT!!".getBytes(), 2, false);
+
+        MqttMessage messageOnA = cbSubscriberA.getMessage(true);
+        assertEquals("Hello world MQTT!!", new String(messageOnA.getPayload()));
+        assertEquals(1, messageOnA.getQos());
+        subscriberA.disconnect();
+
+        MqttMessage messageOnB = cbSubscriberB.getMessage(true);
+        assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload()));
+        assertEquals(2, messageOnB.getQos());
+        subscriberB.disconnect();
     }
 
 }

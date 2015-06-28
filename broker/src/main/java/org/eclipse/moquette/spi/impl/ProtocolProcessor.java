@@ -221,25 +221,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             m_willStore.put(msg.getClientID(), will);
         }
 
-//        //handle user authentication
-//        if (msg.isUserFlag()) {
-//            String pwd = null;
-//            if (msg.isPasswordFlag()) {
-//                pwd = msg.getPassword();
-//            } else if (!this.allowAnonymous) {
-//                failedCredentials(session);
-//                return;
-//            }
-//            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
-//                failedCredentials(session);
-//                return;
-//            }
-//            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
-//        } else if (!this.allowAnonymous) {
-//            failedCredentials(session);
-//            return;
-//        }
-
         subscriptions.activate(msg.getClientID());
 
         //handle clean session flag
@@ -381,9 +362,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    private void forward2Subscribers(PublishEvent pubEvt) {
+    void forward2Subscribers(PublishEvent pubEvt) {
         final String topic = pubEvt.getTopic();
-        AbstractMessage.QOSType qos = pubEvt.getQos();
+        final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
         final ByteBuffer origMessage = pubEvt.getMessage();
         boolean retain = pubEvt.isRetain();
         final Integer messageID = pubEvt.getMessageID();
@@ -393,6 +374,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.debug("subscription tree {}", subscriptions.dumpTree());
         }
         for (final Subscription sub : subscriptions.matches(topic)) {
+            AbstractMessage.QOSType qos = publishingQos;
             if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
                 qos = sub.getRequestedQos();
             }
@@ -428,7 +410,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
 
-    private void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
+    protected void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
         LOG.debug("sendPublish invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);

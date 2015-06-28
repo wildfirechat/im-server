@@ -695,4 +695,39 @@ public class ProtocolProcessorTest {
         });
         assertTrue(messages.isEmpty());
     }
+
+    List<PublishEvent> publishedForwarded = new ArrayList<>();
+
+    @Test
+    public void testForwardPublishWithCorrectQos() {
+        ByteBuffer payload = ByteBuffer.wrap("Hello world MQTT!!".getBytes());
+        PublishEvent forwardPublish = new PublishEvent("a/b", QOSType.EXACTLY_ONCE, payload, true, "Publisher", 1);
+        IMessagesStore memoryMessageStore = new MemoryStorageService();
+
+        Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
+        Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
+        SubscriptionsStore subscriptions = new SubscriptionsStore();
+        subscriptions.add(subQos1);
+        subscriptions.add(subQos2);
+
+
+        ProtocolProcessor processor = new ProtocolProcessor() {
+            @Override
+            protected void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
+                                       boolean retained, Integer messageID) {
+                publishedForwarded.add(new PublishEvent(topic, qos, message, retained, clientId, messageID));
+            }
+        };
+        processor.init(subscriptions, memoryMessageStore, null, null, true, null);
+
+        //Exercise
+        processor.forward2Subscribers(forwardPublish);
+
+        //Verify
+        assertEquals(2, publishedForwarded.size());
+        assertEquals(subQos1.getClientId(), publishedForwarded.get(0).getClientID());
+        assertEquals(subQos1.getRequestedQos(), publishedForwarded.get(0).getQos());
+        assertEquals(subQos2.getClientId(), publishedForwarded.get(1).getClientID());
+        assertEquals(subQos2.getRequestedQos(), publishedForwarded.get(1).getQos());
+    }
 }
