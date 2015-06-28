@@ -72,33 +72,27 @@ public class Subscription implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Subscription other = (Subscription) obj;
-        if (this.requestedQos != other.requestedQos) {
-            return false;
-        }
-        if ((this.clientId == null) ? (other.clientId != null) : !this.clientId.equals(other.clientId)) {
-            return false;
-        }
-        if ((this.topicFilter == null) ? (other.topicFilter != null) : !this.topicFilter.equals(other.topicFilter)) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Subscription that = (Subscription) o;
+
+        if (cleanSession != that.cleanSession) return false;
+        if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
+        if (requestedQos != that.requestedQos) return false;
+        if (topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null) return false;
+
         return true;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 37 * hash + (this.requestedQos != null ? this.requestedQos.hashCode() : 0);
-        hash = 37 * hash + (this.clientId != null ? this.clientId.hashCode() : 0);
-        hash = 37 * hash + (this.topicFilter != null ? this.topicFilter.hashCode() : 0);
-        return hash;
+        int result = requestedQos.hashCode();
+        result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
+        result = 31 * result + (topicFilter != null ? topicFilter.hashCode() : 0);
+        result = 31 * result + (cleanSession ? 1 : 0);
+        return result;
     }
 
     /**

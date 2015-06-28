@@ -113,7 +113,7 @@ class TreeNode {
             if (n.getToken().match(t)) {
                 //Create a copy of token, else if navigate 2 sibling it
                 //consumes 2 elements on the queue instead of one
-                n.matches(new LinkedBlockingQueue<Token>(tokens), matchingSubs);
+                n.matches(new LinkedBlockingQueue<>(tokens), matchingSubs);
                 //TODO don't create a copy n.matches(tokens, matchingSubs);
             }
         }
@@ -132,7 +132,7 @@ class TreeNode {
 
     void removeClientSubscriptions(String clientID) {
         //collect what to delete and then delete to avoid ConcurrentModification
-        List<Subscription> subsToRemove = new ArrayList<Subscription>();
+        List<Subscription> subsToRemove = new ArrayList<>();
         for (Subscription s : m_subscriptions) {
             if (s.clientId.equals(clientID)) {
                 subsToRemove.add(s);
@@ -185,7 +185,7 @@ class TreeNode {
      * @return the set of subscriptions for the given client.
      * */
     Set<Subscription> findAllByClientID(String clientID) {
-        Set<Subscription> subs = new HashSet<Subscription>();
+        Set<Subscription> subs = new HashSet<>();
         for (Subscription s : m_subscriptions) {
             if (s.clientId.equals(clientID)) {
                 subs.add(s);
