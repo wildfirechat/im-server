@@ -25,7 +25,6 @@ import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
 import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
@@ -58,8 +57,10 @@ public class ProtocolProcessorTest {
     
     final static String TEST_USER = "fakeuser";
     final static String TEST_PWD = "fakepwd";
+    final static String EVIL_TEST_USER = "eviluser";
+    final static String EVIL_TEST_PWD = "unsecret";
     
-    ServerChannel m_session;
+    DummyChannel m_session;
     byte m_returnCode;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
@@ -71,8 +72,10 @@ public class ProtocolProcessorTest {
     MockAuthenticator m_mockAuthenticator;
     
     class DummyChannel implements ServerChannel {
+
+        private boolean m_channelClosed = false;
         
-        private Map<Object, Object> m_attributes = new HashMap<Object, Object>();
+        private Map<Object, Object> m_attributes = new HashMap<>();
 
         public Object getAttribute(AttributeKey<Object> key) {
             return m_attributes.get(key);
@@ -86,7 +89,11 @@ public class ProtocolProcessorTest {
         }
 
         public void close(boolean immediately) {
-            
+            m_channelClosed = true;
+        }
+
+        boolean isClosed() {
+            return this.m_channelClosed;
         }
 
         public void write(Object value) {
@@ -108,7 +115,7 @@ public class ProtocolProcessorTest {
     class MockReceiverChannel implements ServerChannel {
 //        byte m_returnCode;
         AbstractMessage m_receivedMessage;
-        private Map<Object, Object> m_attributes = new HashMap<Object, Object>();
+        private Map<Object, Object> m_attributes = new HashMap<>();
 
         public Object getAttribute(AttributeKey<Object> key) {
             return m_attributes.get(key);
@@ -158,7 +165,7 @@ public class ProtocolProcessorTest {
         m_sessionStore = memStorage;
         //m_storageService.initStore();
         
-        Map<String, String> users = new HashMap<String, String>();
+        Map<String, String> users = new HashMap<>();
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(users);
 
@@ -208,7 +215,7 @@ public class ProtocolProcessorTest {
         /*verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()),
                 any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));*/
     }
-    
+
     @Test
     public void validAuthentication() {
         connMsg.setClientID("123");
@@ -290,8 +297,40 @@ public class ProtocolProcessorTest {
         //Verify
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
     }
-    
-    
+
+    @Test
+    public void connectWithSameClientIDBadCredentialsDoesntDropExistingClient() {
+        //Connect a client1
+        connMsg.setClientID("Client1");
+        connMsg.setUserFlag(true);
+        connMsg.setPasswordFlag(true);
+        connMsg.setUsername(TEST_USER);
+        connMsg.setPassword(TEST_PWD);
+        m_processor.processConnect(m_session, connMsg);
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
+
+        //create another connect same clientID but with bad credentials
+        ConnectMessage evilClientConnMsg = new ConnectMessage();
+        evilClientConnMsg.setProcotolVersion((byte) 0x03);
+        evilClientConnMsg.setClientID("Client1");
+        evilClientConnMsg.setUserFlag(true);
+        evilClientConnMsg.setPasswordFlag(true);
+        evilClientConnMsg.setUsername(EVIL_TEST_USER);
+        evilClientConnMsg.setPassword(EVIL_TEST_PWD);
+        DummyChannel evilSession = new DummyChannel();
+
+        //Exercise
+        m_processor.processConnect(evilSession, evilClientConnMsg);
+
+        //Verify
+        //the evil client gets a not auth notification
+        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
+        //the good client remains connected
+        assertFalse(m_session.isClosed());
+        assertTrue(evilSession.isClosed());
+    }
+
+
     @Test
     public void testConnAckContainsSessionPresentFlag() throws InterruptedException {
         connMsg = new ConnectMessage();

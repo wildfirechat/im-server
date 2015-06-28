@@ -164,6 +164,25 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             return;
         }
 
+        //handle user authentication
+        if (msg.isUserFlag()) {
+            String pwd = null;
+            if (msg.isPasswordFlag()) {
+                pwd = msg.getPassword();
+            } else if (!this.allowAnonymous) {
+                failedCredentials(session);
+                return;
+            }
+            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
+                failedCredentials(session);
+                return;
+            }
+            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
+        } else if (!this.allowAnonymous) {
+            failedCredentials(session);
+            return;
+        }
+
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
@@ -202,24 +221,24 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             m_willStore.put(msg.getClientID(), will);
         }
 
-        //handle user authentication
-        if (msg.isUserFlag()) {
-            String pwd = null;
-            if (msg.isPasswordFlag()) {
-                pwd = msg.getPassword();
-            } else if (!this.allowAnonymous) {
-                failedCredentials(session);
-                return;
-            }
-            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
-                failedCredentials(session);
-                return;
-            }
-            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
-        } else if (!this.allowAnonymous) {
-            failedCredentials(session);
-            return;
-        }
+//        //handle user authentication
+//        if (msg.isUserFlag()) {
+//            String pwd = null;
+//            if (msg.isPasswordFlag()) {
+//                pwd = msg.getPassword();
+//            } else if (!this.allowAnonymous) {
+//                failedCredentials(session);
+//                return;
+//            }
+//            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
+//                failedCredentials(session);
+//                return;
+//            }
+//            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
+//        } else if (!this.allowAnonymous) {
+//            failedCredentials(session);
+//            return;
+//        }
 
         subscriptions.activate(msg.getClientID());
 
@@ -250,6 +269,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.write(okResp);
+        session.close(false);
     }
 
     /**
