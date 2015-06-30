@@ -38,8 +38,9 @@ import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.*;
 import java.net.URL;
-import java.security.KeyStore;
+import java.security.*;
 
+import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Properties;
 import javax.net.ssl.KeyManagerFactory;
@@ -198,49 +199,20 @@ public class NettyAcceptor implements ServerAcceptor {
             LOG.info("SSL is disabled");
             return;
         }
-        final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
-        if (jksPath == null || jksPath.isEmpty()) {
-            //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
-            return;
-        }
-        
-        //if we have the port also the jks then keyStorePassword and keyManagerPassword 
-        //has to be defined
-        final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
-        final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
-        if (keyStorePassword == null || keyStorePassword.isEmpty()) {
-            //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
-            return;
-        }
-        if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
-            //key_manager_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
-            return;
-        }
 
         int sslPort = Integer.parseInt(sslPortProp);
-        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
-        LOG.info("Starting SSL on port {} using keystore at {}", sslPort, jksPath);
+        final SslHandler sslHandler = initSSLHandler(sslPort, props);
+        if (sslHandler == null) {
+            LOG.error("Can't initialize SSLHandler layer! Exiting, check your configuration of jks");
+            return;
+        }
 
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
+        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                InputStream jksInputStream = jksDatastore(jksPath);
-                SSLContext serverContext = SSLContext.getInstance("TLS");
-                final KeyStore ks = KeyStore.getInstance("JKS");
-                ks.load(jksInputStream, keyStorePassword.toCharArray());
-                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(ks, keyManagerPassword.toCharArray());
-                serverContext.init(kmf.getKeyManagers(), null, null);
-
-                SSLEngine engine = serverContext.createSSLEngine();
-                engine.setUseClientMode(false);
-                final SslHandler sslHandler = new SslHandler(engine);
-
                 pipeline.addLast("ssl", sslHandler);
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
@@ -269,6 +241,52 @@ public class NettyAcceptor implements ServerAcceptor {
 
         BytesMetrics bytesMetrics = m_bytesMetricsCollector.computeMetrics();
         LOG.info(String.format("Bytes read: %d, bytes wrote: %d", bytesMetrics.readBytes(), bytesMetrics.wroteBytes()));
+    }
+
+
+    private SslHandler initSSLHandler(int sslPort, Properties props) {
+        final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
+        LOG.info("Starting SSL on port {} using keystore at {}", sslPort, jksPath);
+        if (jksPath == null || jksPath.isEmpty()) {
+            //key_store_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
+            return null;
+        }
+
+        //if we have the port also the jks then keyStorePassword and keyManagerPassword
+        //has to be defined
+        final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
+        final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
+        if (keyStorePassword == null || keyStorePassword.isEmpty()) {
+            //key_store_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
+            return null;
+        }
+        if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
+            //key_manager_password or key_manager_password are empty
+            LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
+            return null;
+        }
+
+        LOG.info("Starting SSL on port {} using keystore at {}", sslPort, jksPath);
+
+        try {
+            InputStream jksInputStream = jksDatastore(jksPath);
+            SSLContext serverContext = SSLContext.getInstance("TLS");
+            final KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(jksInputStream, keyStorePassword.toCharArray());
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, keyManagerPassword.toCharArray());
+            serverContext.init(kmf.getKeyManagers(), null, null);
+
+            SSLEngine engine = serverContext.createSSLEngine();
+            engine.setUseClientMode(false);
+            return new SslHandler(engine);
+        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
+                | KeyManagementException | IOException ex) {
+            LOG.error("Can't start SSL layer!", ex);
+            return null;
+        }
     }
 
     private InputStream jksDatastore(String jksPath) throws FileNotFoundException {
