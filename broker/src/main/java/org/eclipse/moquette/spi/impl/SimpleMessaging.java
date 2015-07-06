@@ -35,15 +35,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.eclipse.moquette.commons.Constants;
 
 import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
@@ -203,20 +202,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
         
         if(!authenticatorClassName.isEmpty()) {
-
-            try {
-                
-                authenticator = this.getClass().getClassLoader()
-                        .loadClass(authenticatorClassName)
-                        .asSubclass(IAuthenticator.class)
-                        .newInstance();
-                
+                authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
                 LOG.info("Loaded custom authenticator {}", authenticatorClassName);
-
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.error("Cannot load custom authenticator class " + authenticatorClassName, ex);
-            }
-
         }
         
         if(authenticator == null) {
@@ -233,18 +220,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         String authorizatorClassName = props.getProperty(Constants.AUTHORIZATOR_CLASS_NAME, "");
         if(!authorizatorClassName.isEmpty()) {
-            try {
-                
-                authorizator = this.getClass().getClassLoader()
-                        .loadClass(authorizatorClassName)
-                        .asSubclass(IAuthorizator.class)
-                        .newInstance();
-                
-                LOG.info("Loaded custom authorizator {}", authorizatorClassName);
-                
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.error("Cannot load custom authorizator class " + authenticatorClassName, ex);
-            }
+            authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
+            LOG.info("Loaded custom authorizator {}", authorizatorClassName);
         }        
         
         if(authorizator == null) {
@@ -269,8 +246,49 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator);
     }
+    
+    private Object loadClass(String className, Class<?> cls) {
+        
+        Object instance = null;
+        
+        try {
 
+            Class<?> clazz = Class.forName(className);
 
+            // check if method getInstance exists
+            Method method = clazz.getMethod("getInstace", new Class[] {});
+            try {
+                instance = method.invoke(null, new Object[] {});
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
+                LOG.error(null, ex);
+                throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
+            }
+
+        }
+        catch (NoSuchMethodException noMethodEx) {
+
+            try {
+                instance = this.getClass().getClassLoader()
+                        .loadClass(className)
+                        .asSubclass(cls)
+                        .newInstance();
+
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                LOG.error(null, ex);
+                throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
+            }
+
+        } catch (ClassNotFoundException ex) {
+            LOG.error(null, ex);
+            throw new RuntimeException("Class " + className + " not found", ex);
+        } catch (SecurityException ex) {
+            LOG.error(null, ex);
+            throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
+        }
+
+        return instance;
+    }
+    
     private void processStop() {
         LOG.debug("processStop invoked");
         m_storageService.close();
