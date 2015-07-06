@@ -43,6 +43,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import org.eclipse.moquette.commons.Constants;
 
 import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
@@ -195,31 +197,75 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
 
-        String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
-        String configPath = System.getProperty("moquette.path", null);
-        IAuthenticator authenticator;
-        if (passwdPath.isEmpty()) {
-            authenticator = new AcceptAllAuthenticator();
-        } else {
-            authenticator = new FileAuthenticator(configPath, passwdPath);
-        }
+        IAuthenticator authenticator = null;
+        
+        String configPath = System.getProperty("moquette.path", null);        
+        String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
+        
+        if(!authenticatorClassName.isEmpty()) {
 
-        String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
-        IAuthorizator authorizator;
-        if (aclFilePath != null && !aclFilePath.isEmpty()) {
-            authorizator = new DenyAllAuthorizator();
-            File aclFile = new File(configPath, aclFilePath);
             try {
-                authorizator = ACLFileParser.parse(aclFile);
-            } catch (ParseException pex) {
-                LOG.error(String.format("Format error in parsing acl file %s", aclFile), pex);
-            }
-            LOG.info("Using acl file defined at path {}", aclFilePath);
-        } else {
-            authorizator = new PermitAllAuthorizator();
-            LOG.info("Starting without ACL definition");
-        }
+                
+                authenticator = this.getClass().getClassLoader()
+                        .loadClass(authenticatorClassName)
+                        .asSubclass(IAuthenticator.class)
+                        .newInstance();
+                
+                LOG.info("Loaded custom authenticator {}", authenticatorClassName);
 
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                LOG.error("Cannot load custom authenticator class " + authenticatorClassName, ex);
+            }
+
+        }
+        
+        if(authenticator == null) {
+            String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
+            if (passwdPath.isEmpty()) {
+                authenticator = new AcceptAllAuthenticator();
+            } else {
+                authenticator = new FileAuthenticator(configPath, passwdPath);
+            }
+        }
+        
+        
+        IAuthorizator authorizator = null;
+
+        String authorizatorClassName = props.getProperty(Constants.AUTHORIZATOR_CLASS_NAME, "");
+        if(!authorizatorClassName.isEmpty()) {
+            try {
+                
+                authorizator = this.getClass().getClassLoader()
+                        .loadClass(authorizatorClassName)
+                        .asSubclass(IAuthorizator.class)
+                        .newInstance();
+                
+                LOG.info("Loaded custom authorizator {}", authorizatorClassName);
+                
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                LOG.error("Cannot load custom authorizator class " + authenticatorClassName, ex);
+            }
+        }        
+        
+        if(authorizator == null) {
+
+            String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
+            if (aclFilePath != null && !aclFilePath.isEmpty()) {
+                authorizator = new DenyAllAuthorizator();
+                File aclFile = new File(configPath, aclFilePath);
+                try {
+                    authorizator = ACLFileParser.parse(aclFile);
+                } catch (ParseException pex) {
+                    LOG.error(String.format("Format error in parsing acl file %s", aclFile), pex);
+                }
+                LOG.info("Using acl file defined at path {}", aclFilePath);
+            } else {
+                authorizator = new PermitAllAuthorizator();
+                LOG.info("Starting without ACL definition");
+            }
+
+        }
+        
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator);
     }
