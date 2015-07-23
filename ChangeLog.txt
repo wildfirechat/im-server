@@ -1,3 +1,5 @@
+Version 0.8:
+
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1
     Refactored big event switch to @Annotation dispatcher

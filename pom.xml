@@ -9,16 +9,36 @@
         <target.version>1.7</target.version>
         <bintray.repo>andsel/maven</bintray.repo>
         <bintray.parent.package>org.dna.mqtt.moquette-parent</bintray.parent.package>
+        <moquette.version>0.8-SNAPSHOT</moquette.version>
     </properties>
     
     <groupId>org.eclipse.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.7</version>
+    <version>${moquette.version}</version>
     <name>Moquette MQTT parent</name>
     <url>https://github.com/andsel/moquette/</url>
 
+    <developers>
+        <developer>
+            <id>andsel</id>
+            <name>Andrea Selva</name>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+                <role>founder</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Igor Yova</name>
+            <url>https://github.com/Fameing</url>
+        </contributor>
+    </contributors>
 
     <modules>
         <module>parser_commons</module>

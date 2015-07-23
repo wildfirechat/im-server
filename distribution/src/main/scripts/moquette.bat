@@ -1,6 +1,6 @@
 @ECHO OFF
 rem #
-rem # Copyright (c) 2012-2015 Igor Yova
+rem # Copyright (c) 2012-2015 Andrea Selva
 rem #
 
 echo "                                                                         "

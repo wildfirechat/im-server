@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2012-2014 Andrea Selva
+# Copyright (c) 2012-2015 Andrea Selva
 #
 
 echo "                                                                         "

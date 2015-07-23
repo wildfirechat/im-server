@@ -6,7 +6,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.eclipse.moquette</groupId>
-        <version>0.7</version>
+        <version>${moquette.version}</version>
     </parent>
 
     <artifactId>distribution</artifactId>
@@ -18,19 +18,19 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-broker</artifactId>
-            <version>${project.version}</version>
+            <version>${moquette.version}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-parser-commons</artifactId>
-            <version>${project.version}</version>
+            <version>${moquette.version}</version>
         </dependency>
         
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-netty-parser</artifactId>
-            <version>${project.version}</version>
+            <version>${moquette.version}</version>
         </dependency>
 
          <dependency>
