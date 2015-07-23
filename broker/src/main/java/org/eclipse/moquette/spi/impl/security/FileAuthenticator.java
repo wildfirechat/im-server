@@ -107,6 +107,10 @@ public class FileAuthenticator implements IAuthenticator {
     }
     
     public boolean checkValid(String username, String password) {
+        if (username == null || password == null) {
+            LOG.info("username or password was null");
+            return false;
+        }
         String foundPwq = m_identities.get(username);
         if (foundPwq == null) {
             return false;
