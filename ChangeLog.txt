@@ -1,4 +1,5 @@
 Version 0.8:
+    Introduced authenticator and authorizator implementations.
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

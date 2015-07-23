@@ -196,17 +196,16 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
 
-        IAuthenticator authenticator = null;
-        
-        String configPath = System.getProperty("moquette.path", null);        
+        String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
-        
-        if(!authenticatorClassName.isEmpty()) {
-                authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
-                LOG.info("Loaded custom authenticator {}", authenticatorClassName);
+
+        IAuthenticator authenticator = null;
+        if (!authenticatorClassName.isEmpty()) {
+            authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
+            LOG.info("Loaded custom authenticator {}", authenticatorClassName);
         }
-        
-        if(authenticator == null) {
+
+        if (authenticator == null) {
             String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
             if (passwdPath.isEmpty()) {
                 authenticator = new AcceptAllAuthenticator();
@@ -214,18 +213,15 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 authenticator = new FileAuthenticator(configPath, passwdPath);
             }
         }
-        
-        
-        IAuthorizator authorizator = null;
 
+        IAuthorizator authorizator = null;
         String authorizatorClassName = props.getProperty(Constants.AUTHORIZATOR_CLASS_NAME, "");
-        if(!authorizatorClassName.isEmpty()) {
+        if (!authorizatorClassName.isEmpty()) {
             authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
             LOG.info("Loaded custom authorizator {}", authorizatorClassName);
-        }        
-        
-        if(authorizator == null) {
+        }
 
+        if (authorizator == null) {
             String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
             if (aclFilePath != null && !aclFilePath.isEmpty()) {
                 authorizator = new DenyAllAuthorizator();
@@ -242,17 +238,14 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             }
 
         }
-        
+
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator);
     }
     
     private Object loadClass(String className, Class<?> cls) {
-        
         Object instance = null;
-        
         try {
-
             Class<?> clazz = Class.forName(className);
 
             // check if method getInstance exists
@@ -263,21 +256,17 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
                 LOG.error(null, ex);
                 throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
             }
-
         }
-        catch (NoSuchMethodException noMethodEx) {
-
+        catch (NoSuchMethodException nsmex) {
             try {
                 instance = this.getClass().getClassLoader()
                         .loadClass(className)
                         .asSubclass(cls)
                         .newInstance();
-
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
                 LOG.error(null, ex);
                 throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
             }
-
         } catch (ClassNotFoundException ex) {
             LOG.error(null, ex);
             throw new RuntimeException("Class " + className + " not found", ex);
