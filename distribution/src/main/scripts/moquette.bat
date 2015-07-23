@@ -40,4 +40,6 @@ rem  set LOG_CONSOLE_LEVEL=info
 rem  set LOG_FILE_LEVEL=fine
 set JAVA_OPTS=
 set JAVA_OPTS_SCRIPT=-XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true
-%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dmoquette.path=%MOQUETTE_PATH% -cp %MOQUETTE_HOME%\lib\moquette-broker-0.7-SNAPSHOT.jar;%MOQUETTE_HOME%\lib\* org.eclipse.moquette.server.Server
+set MOQUETTE_PATH=%MOQUETTE_HOME%
+set LOG_FILE=%MOQUETTE_HOME%\config\moquette-log.properties
+%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dmoquette.path=%MOQUETTE_PATH% -cp %MOQUETTE_HOME%\lib\* org.eclipse.moquette.server.Server

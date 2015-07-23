@@ -7,15 +7,17 @@
         <netty.version>4.0.24.Final</netty.version>
         <source.version>1.7</source.version>
         <target.version>1.7</target.version>
+        <bintray.repo>andsel/maven</bintray.repo>
+        <bintray.parent.package>org.dna.mqtt.moquette-parent</bintray.parent.package>
     </properties>
     
     <groupId>org.eclipse.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7</version>
     <name>Moquette MQTT parent</name>
-    <url>http://code.google.com/p/moquette-mqtt/</url>
+    <url>https://github.com/andsel/moquette/</url>
 
 
     <modules>
@@ -62,4 +64,11 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/${bintray.repo}/${bintray.parent.package}</url>
+        </repository>
+    </distributionManagement>
 </project>

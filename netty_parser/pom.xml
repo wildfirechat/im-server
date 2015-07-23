@@ -7,7 +7,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.eclipse.moquette</groupId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
     </parent>
 
     <artifactId>moquette-netty-parser</artifactId>
@@ -17,6 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <bintray.package>org.dna.mqtt.moquette-netty-parser</bintray.package>
     </properties>
 
     <dependencies>
@@ -89,6 +90,10 @@
         </plugins>
     </build>
     
-    <repositories>
-    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/${bintray.repo}/${bintray.package}</url>
+        </repository>
+    </distributionManagement>
 </project>
