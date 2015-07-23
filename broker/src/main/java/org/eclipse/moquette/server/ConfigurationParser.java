@@ -60,6 +60,8 @@ class ConfigurationParser {
         m_properties.put(PASSWORD_FILE_PROPERTY_NAME, "");
         m_properties.put(PERSISTENT_STORE_PROPERTY_NAME, DEFAULT_PERSISTENT_PATH);
         m_properties.put(ALLOW_ANONYMOUS_PROPERTY_NAME, true);
+        m_properties.put(AUTHENTICATOR_CLASS_NAME, "");
+        m_properties.put(AUTHORIZATOR_CLASS_NAME, "");
     }
     
     /**

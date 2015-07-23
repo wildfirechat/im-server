@@ -35,14 +35,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.eclipse.moquette.commons.Constants;
 
 import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
@@ -195,36 +196,99 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
 
-        String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
-        String configPath = System.getProperty("moquette.path", null);
-        IAuthenticator authenticator;
-        if (passwdPath.isEmpty()) {
-            authenticator = new AcceptAllAuthenticator();
-        } else {
-            authenticator = new FileAuthenticator(configPath, passwdPath);
+        IAuthenticator authenticator = null;
+        
+        String configPath = System.getProperty("moquette.path", null);        
+        String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
+        
+        if(!authenticatorClassName.isEmpty()) {
+                authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
+                LOG.info("Loaded custom authenticator {}", authenticatorClassName);
         }
-
-        String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
-        IAuthorizator authorizator;
-        if (aclFilePath != null && !aclFilePath.isEmpty()) {
-            authorizator = new DenyAllAuthorizator();
-            File aclFile = new File(configPath, aclFilePath);
-            try {
-                authorizator = ACLFileParser.parse(aclFile);
-            } catch (ParseException pex) {
-                LOG.error(String.format("Format error in parsing acl file %s", aclFile), pex);
+        
+        if(authenticator == null) {
+            String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
+            if (passwdPath.isEmpty()) {
+                authenticator = new AcceptAllAuthenticator();
+            } else {
+                authenticator = new FileAuthenticator(configPath, passwdPath);
             }
-            LOG.info("Using acl file defined at path {}", aclFilePath);
-        } else {
-            authorizator = new PermitAllAuthorizator();
-            LOG.info("Starting without ACL definition");
         }
+        
+        
+        IAuthorizator authorizator = null;
 
+        String authorizatorClassName = props.getProperty(Constants.AUTHORIZATOR_CLASS_NAME, "");
+        if(!authorizatorClassName.isEmpty()) {
+            authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
+            LOG.info("Loaded custom authorizator {}", authorizatorClassName);
+        }        
+        
+        if(authorizator == null) {
+
+            String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
+            if (aclFilePath != null && !aclFilePath.isEmpty()) {
+                authorizator = new DenyAllAuthorizator();
+                File aclFile = new File(configPath, aclFilePath);
+                try {
+                    authorizator = ACLFileParser.parse(aclFile);
+                } catch (ParseException pex) {
+                    LOG.error(String.format("Format error in parsing acl file %s", aclFile), pex);
+                }
+                LOG.info("Using acl file defined at path {}", aclFilePath);
+            } else {
+                authorizator = new PermitAllAuthorizator();
+                LOG.info("Starting without ACL definition");
+            }
+
+        }
+        
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator);
     }
+    
+    private Object loadClass(String className, Class<?> cls) {
+        
+        Object instance = null;
+        
+        try {
 
+            Class<?> clazz = Class.forName(className);
 
+            // check if method getInstance exists
+            Method method = clazz.getMethod("getInstance", new Class[] {});
+            try {
+                instance = method.invoke(null, new Object[] {});
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
+                LOG.error(null, ex);
+                throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
+            }
+
+        }
+        catch (NoSuchMethodException noMethodEx) {
+
+            try {
+                instance = this.getClass().getClassLoader()
+                        .loadClass(className)
+                        .asSubclass(cls)
+                        .newInstance();
+
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                LOG.error(null, ex);
+                throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
+            }
+
+        } catch (ClassNotFoundException ex) {
+            LOG.error(null, ex);
+            throw new RuntimeException("Class " + className + " not found", ex);
+        } catch (SecurityException ex) {
+            LOG.error(null, ex);
+            throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
+        }
+
+        return instance;
+    }
+    
     private void processStop() {
         LOG.debug("processStop invoked");
         m_storageService.close();
