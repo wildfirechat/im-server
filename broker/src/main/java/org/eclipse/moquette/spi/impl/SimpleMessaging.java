@@ -256,7 +256,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             Class<?> clazz = Class.forName(className);
 
             // check if method getInstance exists
-            Method method = clazz.getMethod("getInstace", new Class[] {});
+            Method method = clazz.getMethod("getInstance", new Class[] {});
             try {
                 instance = method.invoke(null, new Object[] {});
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
