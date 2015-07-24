@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.binary.StringUtils;
+import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -105,6 +106,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
+    private Interceptor interceptor = Interceptor.NO_HANDLER_INTERCEPTOR;
+
     //maps clientID to Will testament, if specified on CONNECT
     private Map<String, WillMessage> m_willStore = new HashMap<>();
     
@@ -113,6 +116,13 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
     ProtocolProcessor() {}
     
+    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+              ISessionsStore sessionsStore,
+              IAuthenticator authenticator,
+              boolean allowAnonymous, IAuthorizator authorizator) {
+        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, authorizator, null);
+    }
+
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -122,12 +132,16 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * @param authenticator the authenticator used in connect messages.
      * @param allowAnonymous true connection to clients without credentials.
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
+     * @param interceptor to notify events to an intercept handler
      */
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator) {
+              boolean allowAnonymous, IAuthorizator authorizator, Interceptor interceptor) {
         //m_clientIDs = clientIDs;
+        if (interceptor != null) {
+            this.interceptor = interceptor;
+        }
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
         m_authorizator = authorizator;
@@ -163,6 +177,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             session.write(okResp);
+            interceptor.notifyClientConnected(msg);
             return;
         }
 
@@ -238,6 +253,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             okResp.setSessionPresent(true);
         }
         session.write(okResp);
+        interceptor.notifyClientConnected(msg);
 
         LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
         m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true)); //null means EmptySubscription
@@ -301,6 +317,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
         if (m_authorizator.canWrite(topic, user, clientID)) {
             executePublish(clientID, msg);
+            interceptor.notifyTopicPublished(msg);
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
         }
@@ -559,6 +576,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_willStore.remove(clientID);
         
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
+        interceptor.notifyClientDisconnected(clientID);
     }
     
     void processConnectionLost(LostConnectionEvent evt) {

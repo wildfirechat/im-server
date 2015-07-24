@@ -15,6 +15,7 @@
  */
 package org.eclipse.moquette.server;
 
+import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.server.netty.NettyAcceptor;
 import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.slf4j.Logger;
@@ -86,8 +87,12 @@ public class Server {
      * </ul>
      */
     public void startServer(Properties configProps) throws IOException {
-    	ConfigurationParser confParser = new ConfigurationParser(configProps);
+        ConfigurationParser confParser = new ConfigurationParser(configProps);
     	m_properties = confParser.getProperties();
+        final String handlerProp = System.getProperty("intercept.handler");
+        if (handlerProp != null) {
+            m_properties.setProperty("intercept.handler", handlerProp);
+        }
         LOG.info("Persistent store file: " + m_properties.get(PERSISTENT_STORE_PROPERTY_NAME));
         messaging = SimpleMessaging.getInstance();
         messaging.init(m_properties);

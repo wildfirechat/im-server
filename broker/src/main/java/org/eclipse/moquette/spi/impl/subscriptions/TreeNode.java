@@ -130,7 +130,7 @@ class TreeNode {
         return res;
     }
 
-    void removeClientSubscriptions(String clientID) {
+    void removeClientSubscriptions(String clientID, List<Subscription> collect) {
         //collect what to delete and then delete to avoid ConcurrentModification
         List<Subscription> subsToRemove = new ArrayList<>();
         for (Subscription s : m_subscriptions) {
@@ -143,9 +143,11 @@ class TreeNode {
             m_subscriptions.remove(s);
         }
 
+        collect.addAll(subsToRemove);
+
         //go deep
         for (TreeNode child : m_children) {
-            child.removeClientSubscriptions(clientID);
+            child.removeClientSubscriptions(clientID, collect);
         }
     }
 
