@@ -35,7 +35,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
-        handler.onConnect(msg);
+        handler.onConnect(msg.readOnlyClone());
     }
 
     @Override
@@ -45,16 +45,16 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicPublished(final PublishMessage msg) {
-        handler.onPublish(msg);
+        handler.onPublish(msg.readOnlyClone());
     }
 
     @Override
     public void notifyTopicSubscribed(final Subscription sub) {
-        handler.onSubscribe(sub);
+        handler.onSubscribe(sub.clone());
     }
 
     @Override
     public void notifyTopicUnsubscribed(final Subscription sub) {
-        handler.onUnsubscribe(sub);
+        handler.onUnsubscribe(sub.clone());
     }
 }

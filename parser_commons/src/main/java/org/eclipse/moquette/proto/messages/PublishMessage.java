@@ -54,4 +54,14 @@ public class PublishMessage extends MessageIDMessage {
     public void setPayload(ByteBuffer payload) {
         this.m_payload = payload;
     }
+
+    public PublishMessage readOnlyClone() {
+        try {
+            final PublishMessage clone = (PublishMessage) super.clone();
+            clone.m_payload = this.m_payload.asReadOnlyBuffer();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
 }
