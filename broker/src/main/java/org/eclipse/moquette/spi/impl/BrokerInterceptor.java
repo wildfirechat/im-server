@@ -21,6 +21,9 @@ import org.eclipse.moquette.proto.messages.ConnectMessage;
 import org.eclipse.moquette.proto.messages.PublishMessage;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * An interceptor that execute the interception tasks asynchronously.
  *
@@ -28,33 +31,67 @@ import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
  */
 final class BrokerInterceptor implements Interceptor {
     private final InterceptHandler handler;
+    private final ExecutorService executor;
 
     BrokerInterceptor(InterceptHandler handler) {
         this.handler = handler;
+        executor = Executors.newFixedThreadPool(1);
+    }
+
+    /**
+     * Shutdown graciously the executor service
+     */
+    void stop() {
+        executor.shutdown();
     }
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
-        handler.onConnect(msg.readOnlyClone());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                handler.onConnect(msg.readOnlyClone());
+            }
+        });
     }
 
     @Override
     public void notifyClientDisconnected(final String clientID) {
-        handler.onDisconnect(clientID);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                handler.onDisconnect(clientID);
+            }
+        });
     }
 
     @Override
     public void notifyTopicPublished(final PublishMessage msg) {
-        handler.onPublish(msg.readOnlyClone());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                handler.onPublish(msg.readOnlyClone());
+            }
+        });
     }
 
     @Override
     public void notifyTopicSubscribed(final Subscription sub) {
-        handler.onSubscribe(sub.clone());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                handler.onSubscribe(sub.clone());
+            }
+        });
     }
 
     @Override
     public void notifyTopicUnsubscribed(final Subscription sub) {
-        handler.onUnsubscribe(sub.clone());
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                handler.onUnsubscribe(sub.clone());
+            }
+        });
     }
 }

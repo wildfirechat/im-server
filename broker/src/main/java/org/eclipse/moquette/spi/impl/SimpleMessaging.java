@@ -290,6 +290,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     private void processStop() {
         LOG.debug("processStop invoked");
+        if (interceptor != null) {
+            ((BrokerInterceptor) interceptor).stop();
+        }
         m_storageService.close();
         LOG.debug("subscription tree {}", subscriptions.dumpTree());
 //        m_eventProcessor.halt();
