@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.netty.util.internal.StringUtil;
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -144,7 +146,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         // Get the ring buffer from the Disruptor to be used for publishing.
         m_ringBuffer = disruptor.getRingBuffer();
     }
-    
+
     @MQTTMessage(message = ConnectMessage.class)
     void processConnect(ServerChannel session, ConnectMessage msg) {
         LOG.debug("CONNECT for client <{}>", msg.getClientID());

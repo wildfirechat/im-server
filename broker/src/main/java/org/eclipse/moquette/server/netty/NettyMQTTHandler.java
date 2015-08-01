@@ -20,6 +20,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.netty.handler.codec.CorruptedFrameException;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.proto.Utils;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
@@ -37,8 +39,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
     private IMessaging m_messaging;
-//    private final Map<ChannelHandlerContext, NettyChannel> m_channelMapper = new HashMap<>();
-    
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         AbstractMessage msg = (AbstractMessage) message;
@@ -54,14 +55,6 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                 case PUBREL:
                 case DISCONNECT:
                 case PUBACK:    
-//                    NettyChannel channel;
-//                    synchronized(m_channelMapper) {
-//                        if (!m_channelMapper.containsKey(ctx)) {
-//                            m_channelMapper.put(ctx, new NettyChannel(ctx));
-//                        }
-//                        channel = m_channelMapper.get(ctx);
-//                    }
-                    
                     m_messaging.handleProtocolMessage(new NettyChannel(ctx), msg);
                     break;
                 case PINGREQ:
@@ -76,16 +69,22 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-//        NettyChannel channel = m_channelMapper.get(ctx);
-//        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         String clientID = (String) NettyUtils.getAttribute(ctx, NettyChannel.ATTR_KEY_CLIENTID);
         m_messaging.lostConnection(clientID);
         ctx.close(/*false*/);
-//        synchronized(m_channelMapper) {
-//            m_channelMapper.remove(ctx);
-//        }
     }
-    
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (cause instanceof CorruptedFrameException) {
+            //something goes bad with decoding
+            LOG.warn("Error decoding a packet, probably a bad formatted packet, message: " + cause.getMessage());
+        } else {
+            LOG.error("Ugly error on networking", cause);
+        }
+        ctx.close();
+    }
+
     public void setMessaging(IMessaging messaging) {
         m_messaging = messaging;
     }

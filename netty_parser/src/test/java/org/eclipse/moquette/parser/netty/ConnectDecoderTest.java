@@ -66,7 +66,7 @@ public class ConnectDecoderTest {
     public void testBaseHeader_311() throws UnsupportedEncodingException {
         m_buff = Unpooled.buffer(12);
         initBaseHeader311(m_buff);
-        List<Object> results = new ArrayList<Object>();
+        List<Object> results = new ArrayList<>();
         
         //Excercise
         m_msgdec.decode(this.attrMap, m_buff, results);

@@ -185,7 +185,7 @@ public class ProtocolProcessorTest {
         //Verify
         assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_returnCode);
     }
-    
+
     @Test
     public void testConnect_badClientID() {
         connMsg.setClientID("extremely_long_clientID_greater_than_23");
