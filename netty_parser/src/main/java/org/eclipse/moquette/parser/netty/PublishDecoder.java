@@ -66,6 +66,7 @@ class PublishDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
+        //[MQTT-3.3.2-2] The Topic Name in the PUBLISH Packet MUST NOT contain wildcard characters.
         if (topic.contains("+") || topic.contains("#")) {
             throw new CorruptedFrameException("Received a PUBLISH with topic containing wild card chars, topic: " + topic);
         }

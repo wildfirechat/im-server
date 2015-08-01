@@ -80,6 +80,11 @@ public class SubscriptionsStoreTest {
         store.parseTopic("finance#");
     }
 
+    @Test(expected = ParseException.class)
+    public void testParseTopicMultiNotAlone() throws ParseException {
+        store.parseTopic("/finance/#closingprice");
+    }
+
     @Test
     public void testParseTopicSingleValid() throws ParseException {
         List<Token> tokens = store.parseTopic("finance/stock/+");

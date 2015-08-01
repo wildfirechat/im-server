@@ -275,9 +275,8 @@ public class SubscriptionsStore {
             List<Token> msgTokens = SubscriptionsStore.parseTopic(msgTopic);
             List<Token> subscriptionTokens = SubscriptionsStore.parseTopic(subscriptionTopic);
             int i = 0;
-            Token subToken = null;
             for (; i< subscriptionTokens.size(); i++) {
-                subToken = subscriptionTokens.get(i);
+                Token subToken = subscriptionTokens.get(i);
                 if (subToken != Token.MULTI && subToken != Token.SINGLE) {
                     if (i >= msgTokens.size()) {
                         return false;
@@ -297,7 +296,7 @@ public class SubscriptionsStore {
             }
             //if last token was a SINGLE then treat it as an empty
 //            if (subToken == Token.SINGLE && (i - msgTokens.size() == 1)) {
-//               i--; 
+//               i--;
 //            }
             return i == msgTokens.size();
         } catch (ParseException ex) {
