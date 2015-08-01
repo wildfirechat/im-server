@@ -67,7 +67,11 @@ class PublishDecoder extends DemuxDecoder {
             return;
         }
         if (topic.contains("+") || topic.contains("#")) {
-            throw new CorruptedFrameException("Received a PUBLISH with topic containting wild card chars, topic: " + topic);
+            throw new CorruptedFrameException("Received a PUBLISH with topic containing wild card chars, topic: " + topic);
+        }
+        //check topic is at least one char [MQTT-4.7.3-1]
+        if (topic.length() == 0) {
+            throw new CorruptedFrameException("Received a PUBLISH with topic without any character");
         }
         
         message.setTopicName(topic);

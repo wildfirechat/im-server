@@ -48,7 +48,7 @@ public class PublishDecoderTest {
     @Before
     public void setUp() {
         m_msgdec = new PublishDecoder();
-        m_results = new ArrayList<Object >();
+        m_results = new ArrayList<>();
         m_attrMap = new DefaultAttributeMap();
     }
     
@@ -57,7 +57,7 @@ public class PublishDecoderTest {
         m_buff = Unpooled.buffer(14);
         initHeader(m_buff);
         
-        //Excercise
+        //Exercise
         m_msgdec.decode(m_attrMap, m_buff, m_results);
 
         assertFalse(m_results.isEmpty());
@@ -105,7 +105,7 @@ public class PublishDecoderTest {
     
     @Test(expected = CorruptedFrameException.class)
     public void testDup0WithQoS0_3_1_1() throws Exception {
-        m_buff = m_buff = preparePubclishWithQosFlags((byte) 0x08);
+         m_buff = preparePubclishWithQosFlags((byte) 0x08);
         
         //Exercise
         m_msgdec.decode(m_attrMap, m_buff, m_results);
@@ -121,7 +121,7 @@ public class PublishDecoderTest {
     
     @Test(expected = CorruptedFrameException.class)
     public void testTopicWithWildCards() throws Exception {
-        byte[] overallMessage = new byte[]{0x30, 0x17, //fixed header, 25 byte lenght
+        byte[] overallMessage = new byte[]{0x30, 0x17, //fixed header, 25 byte length
             0x00, 0x06, 0x2f, 0x74, 0x6f, 0x70, 0x2B /*+*/, 0x23 /*#*/, //[/top+#] string 2 len + 6 content
             0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x79, // [Test my payload] encoding
             0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64};
@@ -134,7 +134,7 @@ public class PublishDecoderTest {
     
     @Test
     public void testBugOnRealCase() throws Exception {
-        byte[] overallMessage = new byte[]{0x30, 0x17, //fixed header, 25 byte lenght
+        byte[] overallMessage = new byte[]{0x30, 0x17, //fixed header, 25 byte length
             0x00, 0x06, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, //[/topic] string 2 len + 6 content
             0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x79, // [Test my payload] encoding
             0x20, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64};
@@ -198,12 +198,32 @@ public class PublishDecoderTest {
         Buffer expectedPayload =  ByteBuffer.allocate(15).put("Test my payload".getBytes()).flip();
         assertEquals(expectedPayload, message.getPayload());
     }
+
+    /*
+     * Check topic is at least one char [MQTT-4.7.3-1]
+     * */
+    @Test(expected = CorruptedFrameException.class)
+    public void testMinimumTopicLength() throws Exception {
+        ByteBuf packet = packetWithTopic("");
+
+        //Exercise
+        m_msgdec.decode(m_attrMap, packet, m_results);
+    }
     
     private void initHeader(ByteBuf buff) throws IllegalAccessException {
         ByteBuf tmp = Unpooled.buffer(4).writeBytes(Utils.encodeString("Fake Topic"));
         buff.clear().writeByte(AbstractMessage.PUBLISH << 4).writeBytes(Utils.encodeRemainingLength(tmp.readableBytes()));
         //topic name
         buff.writeBytes(tmp);
+    }
+
+    private ByteBuf packetWithTopic(String topicName) throws IllegalAccessException {
+        ByteBuf buff = Unpooled.buffer(14);
+        ByteBuf topicBuff = Unpooled.buffer(4).writeBytes(Utils.encodeString(topicName));
+        buff.clear().writeByte(AbstractMessage.PUBLISH << 4).writeBytes(Utils.encodeRemainingLength(topicBuff.readableBytes()));
+        //topic name
+        buff.writeBytes(topicBuff);
+        return buff;
     }
     
     private void initHeaderWithMessageID(ByteBuf buff, int messageID) throws IllegalAccessException {

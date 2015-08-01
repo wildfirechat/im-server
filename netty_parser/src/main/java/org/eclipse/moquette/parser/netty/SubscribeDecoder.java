@@ -41,16 +41,16 @@ class SubscribeDecoder extends DemuxDecoder {
         
         //check qos level
         if (message.getQos() != QOSType.LEAST_ONE) {
-            throw new CorruptedFrameException("Received Subscribe message with QoS other than LEAST_ONE, was: " + message.getQos());
+            throw new CorruptedFrameException("Received SUBSCRIBE message with QoS other than LEAST_ONE, was: " + message.getQos());
         }
             
         int start = in.readerIndex();
         //read  messageIDs
         message.setMessageID(in.readUnsignedShort());
-        int readed = in.readerIndex() - start;
-        while (readed < message.getRemainingLength()) {
+        int read = in.readerIndex() - start;
+        while (read < message.getRemainingLength()) {
             decodeSubscription(in, message);
-            readed = in.readerIndex()- start;
+            read = in.readerIndex() - start;
         }
         
         if (message.subscriptions().isEmpty()) {
@@ -65,6 +65,10 @@ class SubscribeDecoder extends DemuxDecoder {
      */
     private void decodeSubscription(ByteBuf in, SubscribeMessage message) throws UnsupportedEncodingException {
         String topic = Utils.decodeString(in);
+        //check topic is at least one char [MQTT-4.7.3-1]
+        if (topic.length() == 0) {
+            throw new CorruptedFrameException("Received a SUBSCRIBE with empty topic filter");
+        }
         byte qosByte = in.readByte();
         if ((qosByte & 0xFC) > 0) { //the first 6 bits is reserved => has to be 0
             throw new CorruptedFrameException("subscribe MUST have QoS byte with reserved buts to 0, found " + Integer.toHexString(qosByte));

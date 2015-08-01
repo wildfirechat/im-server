@@ -46,10 +46,15 @@ class UnsubscribeDecoder extends DemuxDecoder {
         int start = in.readerIndex();
         //read  messageIDs
         message.setMessageID(in.readUnsignedShort());
-        int readed = in.readerIndex()- start;
-        while (readed < message.getRemainingLength()) {
-            message.addTopicFilter(Utils.decodeString(in));
-            readed = in.readerIndex()- start;
+        int read = in.readerIndex() - start;
+        while (read < message.getRemainingLength()) {
+            String topicFilter = Utils.decodeString(in);
+            //check topic is at least one char [MQTT-4.7.3-1]
+            if (topicFilter.length() == 0) {
+                throw new CorruptedFrameException("Received an UNSUBSCRIBE with empty topic filter");
+            }
+            message.addTopicFilter(topicFilter);
+            read = in.readerIndex() - start;
         }
         if (message.topicFilters().isEmpty()) {
             throw new CorruptedFrameException("unsubscribe MUST have got at least 1 topic");

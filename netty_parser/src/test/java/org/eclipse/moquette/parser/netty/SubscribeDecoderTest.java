@@ -38,7 +38,7 @@ public class SubscribeDecoderTest {
     @Before
     public void setUp() {
         m_msgdec = new SubscribeDecoder();
-        m_results = new ArrayList<Object >();
+        m_results = new ArrayList<>();
     }
     
     @Test(expected = CorruptedFrameException.class)
@@ -46,7 +46,7 @@ public class SubscribeDecoderTest {
         m_buff = Unpooled.buffer(2);
         initHeaderBadQos(m_buff);
 
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
     }
     
@@ -57,7 +57,7 @@ public class SubscribeDecoderTest {
         SubscribeMessage.Couple c2 = new SubscribeMessage.Couple((byte)1, "c/d/e");
         initMultiTopic(m_buff, 123, c1, c2);
         
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
 
         //Verify
@@ -72,7 +72,7 @@ public class SubscribeDecoderTest {
         m_buff = Unpooled.buffer(4);
         initMultiTopic(m_buff, 123);
         
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
 
         //Verify
@@ -88,7 +88,7 @@ public class SubscribeDecoderTest {
         SubscribeMessage.Couple c1 = new SubscribeMessage.Couple((byte)2, "a/b");
         initPollutedTopic(m_buff, 123, c1);
         
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
 
         //Verify
@@ -96,6 +96,19 @@ public class SubscribeDecoderTest {
         SubscribeMessage message = (SubscribeMessage)m_results.get(0); 
         assertEquals(2, message.subscriptions().size());
         assertEquals(AbstractMessage.SUBSCRIBE, message.getMessageType());
+    }
+
+    /*
+     * Check topic is at least one char [MQTT-4.7.3-1]
+     * */
+    @Test(expected = CorruptedFrameException.class)
+    public void testMinimumTopicLength() throws Exception {
+        m_buff = Unpooled.buffer(4);
+        SubscribeMessage.Couple c1 = new SubscribeMessage.Couple((byte)2, "");
+        initMultiTopic(m_buff, 123, c1);
+
+        //Exercise
+        m_msgdec.decode(null, m_buff, m_results);
     }
     
     private void initHeaderBadQos(ByteBuf buff) {

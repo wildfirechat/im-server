@@ -39,7 +39,7 @@ public class UnsubscribeDecoderTest {
     @Before
     public void setUp() {
         m_msgdec = new UnsubscribeDecoder();
-        m_results = new ArrayList<Object >();
+        m_results = new ArrayList<>();
     }
     
     
@@ -48,7 +48,7 @@ public class UnsubscribeDecoderTest {
         m_buff = Unpooled.buffer(2);
         initHeaderBadQos(m_buff);
 
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
     }
     
@@ -59,7 +59,7 @@ public class UnsubscribeDecoderTest {
         String topic2 = "c/d/e";
         initMultiTopic(m_buff, 123, topic1, topic2);
         
-        //Excercise
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
 
         //Verify
@@ -74,9 +74,21 @@ public class UnsubscribeDecoderTest {
     @Test(expected = CorruptedFrameException.class)
     public void testFailOnEmptyTopic() throws Exception {
         m_buff = Unpooled.buffer(4);
-        initMultiTopic(m_buff, 123);
+        initMultiTopic(m_buff, 123, "");
         
-        //Excercise
+        //Exercise
+        m_msgdec.decode(null, m_buff, m_results);
+    }
+
+    /*
+     * Check topic is at least one char [MQTT-4.7.3-1]
+     * */
+    @Test(expected = CorruptedFrameException.class)
+    public void testMinimumTopicLength() throws Exception {
+        m_buff = Unpooled.buffer(4);
+        initMultiTopic(m_buff, 123);
+
+        //Exercise
         m_msgdec.decode(null, m_buff, m_results);
     }
     
@@ -94,9 +106,9 @@ public class UnsubscribeDecoderTest {
         assertFalse(m_results.isEmpty());
         UnsubscribeMessage message = (UnsubscribeMessage)m_results.get(0); 
         assertNotNull(message);
-        assertEquals(0x01, (int)message.getMessageID());
+        assertEquals(0x01, (int) message.getMessageID());
     }
-    
+
     
     private void initHeaderBadQos(ByteBuf buff) {
         buff.clear().writeByte(AbstractMessage.UNSUBSCRIBE << 4).writeByte(0);
