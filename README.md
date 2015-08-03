@@ -17,7 +17,7 @@ Part of moquette are used into the [Vertx MQTT module] (https://github.com/giovi
 and into [WSO2 Messge broker] (http://techexplosives-pamod.blogspot.it/2014/05/mqtt-transport-architecture-wso2-mb-3x.html).
 
 ## 1 minute set up
-Start play with it, download the self distribution tar from [BinTray](http://dl.bintray.com/andsel/generic/distribution-0.6-bundle-tar.tar.gz) ,
+Start play with it, download the self distribution tar from [BinTray](http://dl.bintray.com/andsel/generic/distribution-0.7-bundle-tar.tar.gz) ,
 the un untar and start the broker listening on 1883 port and enjoy! 
 ```
 tar zxf distribution-0.7-bundle-tar.tar.gz
