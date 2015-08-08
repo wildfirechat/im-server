@@ -21,24 +21,24 @@ package org.eclipse.moquette.proto.messages;
  * @author andrea
  */
 public class ConnectMessage extends AbstractMessage {
-    String m_protocolName;
-    byte m_procotolVersion;
+    protected String m_protocolName;
+    protected byte m_protocolVersion;
     
     //Connection flags
-    boolean m_cleanSession;
-    boolean m_willFlag;
-    byte m_willQos;
-    boolean m_willRetain;
-    boolean m_passwordFlag;
-    boolean m_userFlag;
-    int m_keepAlive;
+    protected boolean m_cleanSession;
+    protected boolean m_willFlag;
+    protected byte m_willQos;
+    protected boolean m_willRetain;
+    protected boolean m_passwordFlag;
+    protected boolean m_userFlag;
+    protected int m_keepAlive;
     
     //Variable part
-    String m_username;
-    String m_password;
-    String m_clientID;
-    String m_willtopic;
-    String m_willMessage;
+    protected String m_username;
+    protected String m_password;
+    protected String m_clientID;
+    protected String m_willtopic;
+    protected String m_willMessage;
     
     public ConnectMessage() {
         m_messageType = AbstractMessage.CONNECT;
@@ -68,12 +68,12 @@ public class ConnectMessage extends AbstractMessage {
         this.m_passwordFlag = passwordFlag;
     }
 
-    public byte getProcotolVersion() {
-        return m_procotolVersion;
+    public byte getProtocolVersion() {
+        return m_protocolVersion;
     }
 
-    public void setProcotolVersion(byte procotolVersion) {
-        this.m_procotolVersion = procotolVersion;
+    public void setProtocolVersion(byte protocolVersion) {
+        this.m_protocolVersion = protocolVersion;
     }
 
     public String getProtocolName() {
@@ -158,18 +158,11 @@ public class ConnectMessage extends AbstractMessage {
 
     @Override
     public String toString() {
-        String base = String.format("Connect [clientID: %s, prot: %s, ver: %02X, clean: %b]", m_clientID, m_protocolName, m_procotolVersion, m_cleanSession);
+        String base = String.format("Connect [clientID: %s, prot: %s, ver: %02X, clean: %b]", m_clientID, m_protocolName, m_protocolVersion, m_cleanSession);
         if (m_willFlag) {
              base += String.format(" Will [QoS: %d, retain: %b]", m_willQos, m_willRetain);
         }
         return base;
     }
 
-    public ConnectMessage readOnlyClone() {
-        try {
-            return (ConnectMessage) super.clone();
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
 }

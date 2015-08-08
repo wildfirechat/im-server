@@ -94,8 +94,8 @@ public class ConnectDecoder extends DemuxDecoder {
         }
         
         //ProtocolVersion 1 byte (value 0x03 for 3.1, 0x04 for 3.1.1)
-        message.setProcotolVersion(in.readByte());
-        if (message.getProcotolVersion() == VERSION_3_1_1) {
+        message.setProtocolVersion(in.readByte());
+        if (message.getProtocolVersion() == VERSION_3_1_1) {
             //if 3.1.1, check the flags (dup, retain and qos == 0)
             if (message.isDupFlag() || message.isRetainFlag() || message.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 throw new CorruptedFrameException("Received a CONNECT with fixed header flags != 0");
@@ -114,7 +114,7 @@ public class ConnectDecoder extends DemuxDecoder {
 
         //Connection flag
         byte connFlags = in.readByte();
-        if (message.getProcotolVersion() == VERSION_3_1_1) { 
+        if (message.getProtocolVersion() == VERSION_3_1_1) {
             if ((connFlags & 0x01) != 0) { //bit(0) of connection flags is != 0
                 throw new CorruptedFrameException("Received a CONNECT with connectionFlags[0(bit)] != 0");
             }
@@ -147,8 +147,8 @@ public class ConnectDecoder extends DemuxDecoder {
         int keepAlive = in.readUnsignedShort();
         message.setKeepAlive(keepAlive);
 
-        if ((remainingLength == 12 && message.getProcotolVersion() == VERSION_3_1) || 
-            (remainingLength == 10 && message.getProcotolVersion() == VERSION_3_1_1)) {
+        if ((remainingLength == 12 && message.getProtocolVersion() == VERSION_3_1) ||
+            (remainingLength == 10 && message.getProtocolVersion() == VERSION_3_1_1)) {
             out.add(message);
             return;
         }

@@ -77,7 +77,7 @@ public class ServerLowlevelMessagesIntegrationTests {
     public void elapseKeepAliveTime() throws InterruptedException {
         int keepAlive = 2; //secs
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID("FAKECLNT");
         connectMessage.setKeepAlive(keepAlive);
         m_client.sendMessage(connectMessage);
@@ -101,7 +101,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         
         int keepAlive = 2; //secs
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID("FAKECLNT");
         connectMessage.setKeepAlive(keepAlive);
         connectMessage.setWillFlag(true);
@@ -145,7 +145,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         
         int keepAlive = 2; //secs
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProcotolVersion((byte) 4);
+        connectMessage.setProtocolVersion((byte) 4);
         connectMessage.setClientID("");
         connectMessage.setKeepAlive(keepAlive);
         connectMessage.setWillFlag(false);

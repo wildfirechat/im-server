@@ -158,7 +158,7 @@ public class ProtocolProcessorTest {
     @Before
     public void setUp() throws InterruptedException {
         connMsg = new ConnectMessage();
-        connMsg.setProcotolVersion((byte) 0x03);
+        connMsg.setProtocolVersion((byte) 0x03);
 
         m_session = new DummyChannel();
 
@@ -182,7 +182,7 @@ public class ProtocolProcessorTest {
     
     @Test
     public void testHandleConnect_BadProtocol() {
-        connMsg.setProcotolVersion((byte) 0x02);
+        connMsg.setProtocolVersion((byte) 0x02);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -316,7 +316,7 @@ public class ProtocolProcessorTest {
 
         //create another connect same clientID but with bad credentials
         ConnectMessage evilClientConnMsg = new ConnectMessage();
-        evilClientConnMsg.setProcotolVersion((byte) 0x03);
+        evilClientConnMsg.setProtocolVersion((byte) 0x03);
         evilClientConnMsg.setClientID("Client1");
         evilClientConnMsg.setUserFlag(true);
         evilClientConnMsg.setPasswordFlag(true);
@@ -339,7 +339,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testConnAckContainsSessionPresentFlag() throws InterruptedException {
         connMsg = new ConnectMessage();
-        connMsg.setProcotolVersion(VERSION_3_1_1);
+        connMsg.setProtocolVersion(VERSION_3_1_1);
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
@@ -383,7 +383,7 @@ public class ProtocolProcessorTest {
         subs.init(new MemoryStorageService());
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
@@ -429,7 +429,7 @@ public class ProtocolProcessorTest {
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(firstReceiverSession, connectMessage);
@@ -437,7 +437,7 @@ public class ProtocolProcessorTest {
         //connect the second fake subscriber
         MockReceiverChannel secondReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage2 = new ConnectMessage();
-        connectMessage2.setProcotolVersion((byte)3);
+        connectMessage2.setProtocolVersion((byte) 3);
         connectMessage2.setClientID(FAKE_CLIENT_ID2);
         connectMessage2.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(secondReceiverSession, connectMessage2);
@@ -567,7 +567,7 @@ public class ProtocolProcessorTest {
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -606,7 +606,7 @@ public class ProtocolProcessorTest {
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
-        connectMessage.setProcotolVersion((byte)3);
+        connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setCleanSession(false);
         m_processor.processConnect(m_session, connectMessage);
 

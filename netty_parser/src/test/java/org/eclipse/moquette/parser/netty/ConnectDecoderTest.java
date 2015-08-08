@@ -238,7 +238,7 @@ public class ConnectDecoderTest {
     private void verifyBaseHeader(ConnectMessage connMessage) {
         assertNotNull(connMessage);
         assertEquals("MQIsdp", connMessage.getProtocolName());
-        assertEquals(VERSION_3_1, connMessage.getProcotolVersion());
+        assertEquals(VERSION_3_1, connMessage.getProtocolVersion());
         assertTrue(connMessage.isUserFlag());
         assertTrue(connMessage.isPasswordFlag());
         assertTrue(connMessage.isCleanSession());
@@ -251,7 +251,7 @@ public class ConnectDecoderTest {
     private void verifyBaseHeader311(ConnectMessage connMessage) {
         assertNotNull(connMessage);
         assertEquals("MQTT", connMessage.getProtocolName());
-        assertEquals(VERSION_3_1_1, connMessage.getProcotolVersion());
+        assertEquals(VERSION_3_1_1, connMessage.getProtocolVersion());
         assertTrue(connMessage.isUserFlag());
         assertTrue(connMessage.isPasswordFlag());
         assertTrue(connMessage.isCleanSession());

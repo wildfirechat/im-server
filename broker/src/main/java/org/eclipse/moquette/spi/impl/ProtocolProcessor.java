@@ -152,7 +152,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     @MQTTMessage(message = ConnectMessage.class)
     void processConnect(ServerChannel session, ConnectMessage msg) {
         LOG.debug("CONNECT for client <{}>", msg.getClientID());
-        if (msg.getProcotolVersion() != VERSION_3_1 && msg.getProcotolVersion() != VERSION_3_1_1) {
+        if (msg.getProtocolVersion() != VERSION_3_1 && msg.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
             LOG.warn("processConnect sent bad proto ConnAck");
