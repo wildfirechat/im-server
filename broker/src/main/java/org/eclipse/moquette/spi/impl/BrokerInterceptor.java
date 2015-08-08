@@ -48,11 +48,12 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
+        final ConnectMessage copied = new UnmodifiableConnectMessage(msg);
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onConnect(msg.readOnlyClone());
+                    handler.onConnect(copied);
                 }
             });
         }
