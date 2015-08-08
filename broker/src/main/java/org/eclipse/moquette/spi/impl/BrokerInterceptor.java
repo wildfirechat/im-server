@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The original author or authors
+ * Copyright (c) 2012-2015 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -73,11 +73,12 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicPublished(final PublishMessage msg) {
+        final PublishMessage copied = new UnmodifiablePublishMessage(msg);
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onPublish(msg.readOnlyClone());
+                    handler.onPublish(copied);
                 }
             });
         }

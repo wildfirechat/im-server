@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The original author or authors
+ * Copyright (c) 2012-2015 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -23,18 +23,9 @@ import java.nio.ByteBuffer;
  */
 public class PublishMessage extends MessageIDMessage {
 
-    private String m_topicName;
-//    private Integer m_messageID; //could be null if Qos is == 0
-    private ByteBuffer m_payload;
+    protected String m_topicName;
+    protected ByteBuffer m_payload;
 
-    /*public Integer getMessageID() {
-        return m_messageID;
-    }
-
-    public void setMessageID(Integer messageID) {
-        this.m_messageID = messageID;
-    }*/
-    
     public PublishMessage() {
         m_messageType = AbstractMessage.PUBLISH;
     }
@@ -55,13 +46,4 @@ public class PublishMessage extends MessageIDMessage {
         this.m_payload = payload;
     }
 
-    public PublishMessage readOnlyClone() {
-        try {
-            final PublishMessage clone = (PublishMessage) super.clone();
-            clone.m_payload = this.m_payload.asReadOnlyBuffer();
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
 }
