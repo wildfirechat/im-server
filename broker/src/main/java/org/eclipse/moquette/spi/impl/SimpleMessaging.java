@@ -18,9 +18,9 @@ package org.eclipse.moquette.spi.impl;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
+import io.netty.util.internal.StringUtil;
 import org.HdrHistogram.Histogram;
 import org.eclipse.moquette.interception.InterceptHandler;
-import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.spi.impl.security.*;
 import org.eclipse.moquette.server.ServerChannel;
@@ -40,6 +40,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -75,7 +77,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private ExecutorService m_executor;
     private Disruptor<ValueEvent> m_disruptor;
-    private Interceptor interceptor;
+    private BrokerInterceptor m_interceptor;
 
     private static SimpleMessaging INSTANCE;
     
@@ -194,14 +196,18 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         m_sessionsStore = mapStorage;
 
         m_storageService.initStore();
-        
-        try {
-            final InterceptHandler handler = Class.forName(props.getProperty("intercept.handler"))
-                    .asSubclass(InterceptHandler.class).newInstance();
-            interceptor = new BrokerInterceptor(handler);
-        } catch (Throwable ex) {
-            LOG.error("Can't load the intercept handler {}", ex);
+
+        List<InterceptHandler> observers = new ArrayList<>();
+        String interceptorClassName = props.getProperty("intercept.handler");
+        if (interceptorClassName != null && !interceptorClassName.isEmpty()) {
+            try {
+                InterceptHandler handler = Class.forName(interceptorClassName).asSubclass(InterceptHandler.class).newInstance();
+                observers.add(handler);
+            } catch (Throwable ex) {
+                LOG.error("Can't load the intercept handler {}", ex);
+            }
         }
+        m_interceptor = new BrokerInterceptor(observers);
 
         //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         //subscriptions.init(storedSubscriptions);
@@ -251,7 +257,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator, interceptor);
+        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
     }
     
     private Object loadClass(String className, Class<?> cls) {
@@ -291,8 +297,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     private void processStop() {
         LOG.debug("processStop invoked");
-        if (interceptor != null) {
-            ((BrokerInterceptor) interceptor).stop();
+        if (m_interceptor != null) {
+            this.m_interceptor.stop();
         }
         m_storageService.close();
         LOG.debug("subscription tree {}", subscriptions.dumpTree());

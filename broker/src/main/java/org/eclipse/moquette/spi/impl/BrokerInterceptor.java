@@ -21,6 +21,7 @@ import org.eclipse.moquette.proto.messages.ConnectMessage;
 import org.eclipse.moquette.proto.messages.PublishMessage;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,11 +31,11 @@ import java.util.concurrent.Executors;
  * @author Wagner Macedo
  */
 final class BrokerInterceptor implements Interceptor {
-    private final InterceptHandler handler;
+    private final List<InterceptHandler> handlers;
     private final ExecutorService executor;
 
-    BrokerInterceptor(InterceptHandler handler) {
-        this.handler = handler;
+    BrokerInterceptor(List<InterceptHandler> handlers) {
+        this.handlers = handlers;
         executor = Executors.newFixedThreadPool(1);
     }
 
@@ -47,51 +48,61 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handler.onConnect(msg.readOnlyClone());
-            }
-        });
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onConnect(msg.readOnlyClone());
+                }
+            });
+        }
     }
 
     @Override
     public void notifyClientDisconnected(final String clientID) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handler.onDisconnect(clientID);
-            }
-        });
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onDisconnect(clientID);
+                }
+            });
+        }
     }
 
     @Override
     public void notifyTopicPublished(final PublishMessage msg) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handler.onPublish(msg.readOnlyClone());
-            }
-        });
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onPublish(msg.readOnlyClone());
+                }
+            });
+        }
     }
 
     @Override
     public void notifyTopicSubscribed(final Subscription sub) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handler.onSubscribe(sub.clone());
-            }
-        });
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onSubscribe(sub);
+                }
+            });
+        }
     }
 
     @Override
     public void notifyTopicUnsubscribed(final String sub) {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handler.onUnsubscribe(sub);
-            }
-        });
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onUnsubscribe(sub);
+                }
+            });
+        }
     }
 }

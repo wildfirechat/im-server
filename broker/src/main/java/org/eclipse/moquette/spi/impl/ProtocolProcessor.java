@@ -23,9 +23,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.netty.util.internal.StringUtil;
-import org.apache.commons.codec.binary.StringUtils;
-import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -106,7 +103,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
-    private Interceptor interceptor = null;
+    private BrokerInterceptor m_interceptor;
 
     //maps clientID to Will testament, if specified on CONNECT
     private Map<String, WillMessage> m_willStore = new HashMap<>();
@@ -116,13 +113,6 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
     ProtocolProcessor() {}
     
-    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
-              ISessionsStore sessionsStore,
-              IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator) {
-        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, authorizator, null);
-    }
-
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -137,11 +127,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator, Interceptor interceptor) {
+              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
         //m_clientIDs = clientIDs;
-        if (interceptor != null) {
-            this.interceptor = interceptor;
-        }
+        this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
         m_authorizator = authorizator;
@@ -177,7 +165,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             session.write(okResp);
-            interceptor.notifyClientConnected(msg);
+            m_interceptor.notifyClientConnected(msg);
             return;
         }
 
@@ -233,7 +221,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
             byte[] willPayload = msg.getWillMessage().getBytes();
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
-            //save the will testment in the clientID store
+            //save the will testament in the clientID store
             WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos );
             m_willStore.put(msg.getClientID(), will);
         }
@@ -253,7 +241,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
             okResp.setSessionPresent(true);
         }
         session.write(okResp);
-        interceptor.notifyClientConnected(msg);
+        m_interceptor.notifyClientConnected(msg);
 
         LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
         m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true)); //null means EmptySubscription
@@ -317,7 +305,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
         if (m_authorizator.canWrite(topic, user, clientID)) {
             executePublish(clientID, msg);
-            interceptor.notifyTopicPublished(msg);
+            m_interceptor.notifyTopicPublished(msg);
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
         }
@@ -576,7 +564,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_willStore.remove(clientID);
         
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
-        interceptor.notifyClientDisconnected(clientID);
+        m_interceptor.notifyClientDisconnected(clientID);
     }
     
     void processConnectionLost(LostConnectionEvent evt) {
@@ -610,7 +598,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (String topic : topics) {
             subscriptions.removeSubscription(topic, clientID);
             m_sessionsStore.removeSubscription(topic, clientID);
-            interceptor.notifyTopicUnsubscribed(topic);
+            m_interceptor.notifyTopicUnsubscribed(topic);
         }
 
         //ack the client
@@ -655,7 +643,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         subscriptions.add(newSubscription);
 
         //notify the Observables
-        interceptor.notifyTopicSubscribed(newSubscription);
+        m_interceptor.notifyTopicSubscribed(newSubscription);
 
         //scans retained messages to be published to the new subscription
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {

@@ -23,8 +23,7 @@ import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
  * This interface is to be used internally by the broker components.
  * <p>
  * An interface is used instead of a class to allow more flexibility in changing
- * an implementation. For instance, this interface provide a lightweight
- * no-handler interceptor.
+ * an implementation.
  * <p>
  * Interceptor implementations forward notifications to a <code>InterceptHandler</code>,
  * that is normally a field. So, the implementations should act as a proxy to a custom
@@ -34,9 +33,6 @@ import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
  * @author Wagner Macedo
  */
 public interface Interceptor {
-    /**
-     * When no custom handler is provided, this interceptor should be used.
-     */
 
     void notifyClientConnected(ConnectMessage msg);
 

@@ -19,7 +19,6 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

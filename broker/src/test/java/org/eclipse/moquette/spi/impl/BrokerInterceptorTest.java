@@ -24,6 +24,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -36,7 +37,7 @@ public class BrokerInterceptorTest {
     private static final AtomicInteger n = new AtomicInteger(0);
 
     // Interceptor loaded with a custom InterceptHandler special for the tests
-    private static final BrokerInterceptor interceptor = new BrokerInterceptor(new InterceptHandler() {
+    private static final class MockObserver implements InterceptHandler {
         @Override
         public void onConnect(ConnectMessage msg) {
             n.set(40);
@@ -61,7 +62,9 @@ public class BrokerInterceptorTest {
         public void onUnsubscribe(String topic) {
             n.set(80);
         }
-    });
+    }
+
+    private static final BrokerInterceptor interceptor = new BrokerInterceptor(Arrays.<InterceptHandler>asList(new MockObserver()));
 
     @BeforeClass
     public static void beforeAllTests() {
