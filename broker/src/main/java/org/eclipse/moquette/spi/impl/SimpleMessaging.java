@@ -199,12 +199,13 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
             final InterceptHandler handler = Class.forName(props.getProperty("intercept.handler"))
                     .asSubclass(InterceptHandler.class).newInstance();
             interceptor = new BrokerInterceptor(handler);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NullPointerException | ClassCastException ignored) {
+        } catch (Throwable ex) {
+            LOG.error("Can't load the intercept handler {}", ex);
         }
 
         //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         //subscriptions.init(storedSubscriptions);
-        subscriptions.init(m_sessionsStore, interceptor);
+        subscriptions.init(m_sessionsStore);
 
         String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");

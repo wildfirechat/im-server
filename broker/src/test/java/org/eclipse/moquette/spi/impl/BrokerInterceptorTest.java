@@ -58,7 +58,7 @@ public class BrokerInterceptorTest {
         }
 
         @Override
-        public void onUnsubscribe(Subscription sub) {
+        public void onUnsubscribe(String topic) {
             n.set(80);
         }
     });
@@ -109,7 +109,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicUnsubscribed() throws Exception {
-        interceptor.notifyTopicUnsubscribed(new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE, true));
+        interceptor.notifyTopicUnsubscribed("o2");
         interval();
         assertEquals(80, n.get());
     }

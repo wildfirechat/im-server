@@ -40,5 +40,5 @@ public interface InterceptHandler {
 
     void onSubscribe(Subscription sub);
 
-    void onUnsubscribe(Subscription sub);
+    void onUnsubscribe(String topic);
 }

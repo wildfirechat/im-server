@@ -106,7 +106,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
-    private Interceptor interceptor = Interceptor.NO_HANDLER_INTERCEPTOR;
+    private Interceptor interceptor = null;
 
     //maps clientID to Will testament, if specified on CONNECT
     private Map<String, WillMessage> m_willStore = new HashMap<>();
@@ -610,6 +610,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         for (String topic : topics) {
             subscriptions.removeSubscription(topic, clientID);
             m_sessionsStore.removeSubscription(topic, clientID);
+            interceptor.notifyTopicUnsubscribed(topic);
         }
 
         //ack the client
@@ -652,6 +653,9 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
         m_sessionsStore.addNewSubscription(newSubscription);
         subscriptions.add(newSubscription);
+
+        //notify the Observables
+        interceptor.notifyTopicSubscribed(newSubscription);
 
         //scans retained messages to be published to the new subscription
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {

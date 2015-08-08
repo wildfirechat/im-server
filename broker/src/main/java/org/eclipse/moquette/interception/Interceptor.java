@@ -37,7 +37,6 @@ public interface Interceptor {
     /**
      * When no custom handler is provided, this interceptor should be used.
      */
-    Interceptor NO_HANDLER_INTERCEPTOR = new NoHandlerInterceptor();
 
     void notifyClientConnected(ConnectMessage msg);
 
@@ -47,6 +46,6 @@ public interface Interceptor {
 
     void notifyTopicSubscribed(Subscription sub);
 
-    void notifyTopicUnsubscribed(Subscription sub);
+    void notifyTopicUnsubscribed(String topic);
 
 }

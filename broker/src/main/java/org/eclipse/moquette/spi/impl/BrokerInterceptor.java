@@ -86,11 +86,11 @@ final class BrokerInterceptor implements Interceptor {
     }
 
     @Override
-    public void notifyTopicUnsubscribed(final Subscription sub) {
+    public void notifyTopicUnsubscribed(final String sub) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                handler.onUnsubscribe(sub.clone());
+                handler.onUnsubscribe(sub);
             }
         });
     }
