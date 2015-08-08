@@ -19,6 +19,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,8 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class SubscriptionsStore {
+
+    private Interceptor interceptor = Interceptor.NO_HANDLER_INTERCEPTOR;
 
     /**
      * Check if the topic filter of the subscription is well formed
@@ -96,9 +99,20 @@ public class SubscriptionsStore {
 
     /**
      * Initialize the subscription tree with the list of subscriptions.
+     * Maintained for compatibility reasons.
      */
     public void init(ISessionsStore sessionsStore) {
+        init(sessionsStore, null);
+    }
+
+    /**
+     * Initialize the subscription tree with the list of subscriptions and an interceptor.
+     */
+    public void init(ISessionsStore sessionsStore, Interceptor interceptor) {
         LOG.debug("init invoked");
+        if (interceptor != null) {
+            this.interceptor = interceptor;
+        }
         m_sessionsStore = sessionsStore;
         List<Subscription> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any subscriptions persisted
@@ -118,6 +132,7 @@ public class SubscriptionsStore {
     protected void addDirect(Subscription newSubscription) {
         TreeNode current = findMatchingNode(newSubscription.topicFilter);
         current.addSubscription(newSubscription);
+        interceptor.notifyTopicSubscribed(newSubscription);
     }
     
     private TreeNode findMatchingNode(String topic) {
@@ -171,6 +186,7 @@ public class SubscriptionsStore {
         
         if (toBeRemoved != null) {
             matchNode.subscriptions().remove(toBeRemoved);
+            interceptor.notifyTopicUnsubscribed(toBeRemoved);
         }
     }
     
@@ -184,6 +200,7 @@ public class SubscriptionsStore {
         List<Subscription> allSubscriptions = subsCollector.getResult();
         for (Subscription subscription : allSubscriptions) {
             removeSubscription(subscription.getTopicFilter(), subscription.getClientId());
+            interceptor.notifyTopicUnsubscribed(subscription);
         }
     }
 
@@ -191,9 +208,16 @@ public class SubscriptionsStore {
      * Visit the topics tree to remove matching subscriptions with clientID
      */
     public void removeForClient(String clientID) {
-        subscriptions.removeClientSubscriptions(clientID);
+        final List<Subscription> clientSubscriptions = new ArrayList<>();
+
+        subscriptions.removeClientSubscriptions(clientID, clientSubscriptions);
         //persist the update
         m_sessionsStore.wipeSubscriptions(clientID);
+
+        // Notify the unsubscribe event
+        for (Subscription sub : clientSubscriptions) {
+            interceptor.notifyTopicUnsubscribed(sub);
+        }
     }
 
     public void deactivate(String clientID) {

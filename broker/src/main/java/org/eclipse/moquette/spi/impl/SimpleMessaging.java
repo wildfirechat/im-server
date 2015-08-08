@@ -19,6 +19,8 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import org.HdrHistogram.Histogram;
+import org.eclipse.moquette.interception.InterceptHandler;
+import org.eclipse.moquette.interception.Interceptor;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.spi.impl.security.*;
 import org.eclipse.moquette.server.ServerChannel;
@@ -55,7 +57,7 @@ import static org.eclipse.moquette.commons.Constants.ACL_FILE_PROPERTY_NAME;
  * Singleton class that orchestrate the execution of the protocol.
  *
  * Uses the LMAX Disruptor to serialize the incoming, requests, because it work in a evented fashion;
- * the requests income from front Netty connectors and are dispatched to the 
+ * the requests income from front Netty connectors and are dispatched to the
  * ProtocolProcessor.
  *
  * @author andrea
@@ -63,9 +65,9 @@ import static org.eclipse.moquette.commons.Constants.ACL_FILE_PROPERTY_NAME;
 public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMessaging.class);
-    
+
     private SubscriptionsStore subscriptions;
-    
+
     private RingBuffer<ValueEvent> m_ringBuffer;
 
     private IMessagesStore m_storageService;
@@ -73,6 +75,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
     private ExecutorService m_executor;
     private Disruptor<ValueEvent> m_disruptor;
+    private Interceptor interceptor;
 
     private static SimpleMessaging INSTANCE;
     
@@ -192,9 +195,16 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         m_storageService.initStore();
         
+        try {
+            final InterceptHandler handler = Class.forName(props.getProperty("intercept.handler"))
+                    .asSubclass(InterceptHandler.class).newInstance();
+            interceptor = new BrokerInterceptor(handler);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NullPointerException | ClassCastException ignored) {
+        }
+
         //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
         //subscriptions.init(storedSubscriptions);
-        subscriptions.init(m_sessionsStore);
+        subscriptions.init(m_sessionsStore, interceptor);
 
         String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
@@ -240,7 +250,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator);
+        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator, interceptor);
     }
     
     private Object loadClass(String className, Class<?> cls) {
@@ -280,6 +290,9 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     
     private void processStop() {
         LOG.debug("processStop invoked");
+        if (interceptor != null) {
+            ((BrokerInterceptor) interceptor).stop();
+        }
         m_storageService.close();
         LOG.debug("subscription tree {}", subscriptions.dumpTree());
 //        m_eventProcessor.halt();

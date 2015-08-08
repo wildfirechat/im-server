@@ -164,4 +164,12 @@ public class ConnectMessage extends AbstractMessage {
         }
         return base;
     }
+
+    public ConnectMessage readOnlyClone() {
+        try {
+            return (ConnectMessage) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
 }

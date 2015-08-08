@@ -106,4 +106,13 @@ public class Subscription implements Serializable {
     public String toString() {
         return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos, this.active);
     }
+
+    @Override
+    public Subscription clone() {
+        try {
+            return (Subscription) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
 }
