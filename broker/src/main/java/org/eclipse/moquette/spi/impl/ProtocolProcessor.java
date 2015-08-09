@@ -289,7 +289,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     private void cleanSession(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
         //remove from log all subscriptions
-        m_sessionsStore.wipeSubscriptions(clientID);
+        //m_sessionsStore.wipeSubscriptions(clientID);
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
