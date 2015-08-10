@@ -19,6 +19,7 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -596,6 +597,14 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         for (String topic : topics) {
+            boolean validTopic = SubscriptionsStore.validate(topic);
+            if (!validTopic) {
+                //close the connection, not valid topicFilter is a protocol violation
+                session.close(true);
+                LOG.warn("UNSUBSCRIBE found an invalid topic filter <{}> for clientID <{}>", topic, clientID);
+                return;
+            }
+
             subscriptions.removeSubscription(topic, clientID);
             m_sessionsStore.removeSubscription(topic, clientID);
             m_interceptor.notifyTopicUnsubscribed(topic);
@@ -634,7 +643,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("<{}> subscribed to topic <{}> with QoS {}", 
                 newSubscription.getClientId(), topic, 
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
-        boolean validTopic = SubscriptionsStore.validate(newSubscription);
+        boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {
             //send SUBACK with 0x80 for this topic filter
             return false;

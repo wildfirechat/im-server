@@ -3,6 +3,7 @@ Version 0.8:
     Fixed bug, doesn't close the channel when connect doesn't contains a valid proto name, issue #65
     Fixed bug, does not check for zero length topic (filters) in PUBLISH, SUBSCRIBE, and UNSUBSCRIBE, issue #67
     Fixed issue #69
+    Fixed bug #68, UNSUBSCRIBE has to fail on bad topicFilter names
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.netty.util.AttributeKey;
 import org.eclipse.moquette.interception.InterceptHandler;
+import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -31,14 +32,8 @@ import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1_1;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
+
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
-import org.eclipse.moquette.proto.messages.ConnAckMessage;
-import org.eclipse.moquette.proto.messages.ConnectMessage;
-import org.eclipse.moquette.proto.messages.DisconnectMessage;
-import org.eclipse.moquette.proto.messages.PublishMessage;
-import org.eclipse.moquette.proto.messages.SubAckMessage;
-import org.eclipse.moquette.proto.messages.SubscribeMessage;
 import org.eclipse.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -505,7 +500,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
-        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), BAD_FORMATTED_TOPIC));
+        msg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), BAD_FORMATTED_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
         subscriptions.clearAllSubscriptions();
@@ -520,6 +515,24 @@ public class ProtocolProcessorTest {
         List<QOSType> qosSubAcked = ((SubAckMessage) m_receivedMessage).types();
         assertEquals(1, qosSubAcked.size());
         assertEquals(QOSType.FAILURE, qosSubAcked.get(0));
+    }
+
+    /*
+     * Check topicFilter is a valid MQTT topic filter (issue 68)
+     * */
+    @Test
+    public void testUnsubscribeWithBadFormattedTopic() {
+        UnsubscribeMessage msg = new UnsubscribeMessage();
+        msg.setMessageID(1);
+        msg.addTopicFilter(BAD_FORMATTED_TOPIC);
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+
+        //Exercise
+        m_processor.processUnsubscribe(m_session, msg);
+
+        //Verify
+        assertTrue(m_session.isClosed());
     }
 
     

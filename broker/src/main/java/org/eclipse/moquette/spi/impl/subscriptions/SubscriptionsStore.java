@@ -33,12 +33,12 @@ public class SubscriptionsStore {
     /**
      * Check if the topic filter of the subscription is well formed
      * */
-    public static boolean validate(Subscription newSubscription) {
+    public static boolean validate(String topicFilter) {
         try {
-            parseTopic(newSubscription.topicFilter);
+            parseTopic(topicFilter);
             return true;
         } catch (ParseException pex) {
-            LOG.info("Bad matching topic filter <{}>", newSubscription.topicFilter);
+            LOG.info("Bad matching topic filter <{}>", topicFilter);
             return false;
         }
     }
