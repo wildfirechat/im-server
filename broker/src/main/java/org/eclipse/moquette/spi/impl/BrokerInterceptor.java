@@ -17,6 +17,7 @@ package org.eclipse.moquette.spi.impl;
 
 import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.interception.Interceptor;
+import org.eclipse.moquette.interception.messages.*;
 import org.eclipse.moquette.proto.messages.ConnectMessage;
 import org.eclipse.moquette.proto.messages.PublishMessage;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
@@ -48,12 +49,11 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
-        final ConnectMessage copied = new UnmodifiableConnectMessage(msg);
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onConnect(copied);
+                    handler.onConnect(new InterceptConnectMessage(msg));
                 }
             });
         }
@@ -65,20 +65,19 @@ final class BrokerInterceptor implements Interceptor {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onDisconnect(clientID);
+                    handler.onDisconnect(new InterceptDisconnectMessage(clientID));
                 }
             });
         }
     }
 
     @Override
-    public void notifyTopicPublished(final PublishMessage msg) {
-        final PublishMessage copied = new UnmodifiablePublishMessage(msg);
+    public void notifyTopicPublished(final PublishMessage msg, final String clientID) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onPublish(copied);
+                    handler.onPublish(new InterceptPublishMessage(msg, clientID));
                 }
             });
         }
@@ -90,19 +89,19 @@ final class BrokerInterceptor implements Interceptor {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onSubscribe(sub);
+                    handler.onSubscribe(new InterceptSubscribeMessage(sub));
                 }
             });
         }
     }
 
     @Override
-    public void notifyTopicUnsubscribed(final String sub) {
+    public void notifyTopicUnsubscribed(final String topic, final String clientID) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onUnsubscribe(sub);
+                    handler.onUnsubscribe(new InterceptUnsubscribeMessage(topic, clientID));
                 }
             });
         }

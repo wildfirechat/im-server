@@ -15,6 +15,7 @@
  */
 package org.eclipse.moquette.spi.impl;
 
+import org.eclipse.moquette.interception.messages.*;
 import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.proto.messages.ConnectMessage;
@@ -39,27 +40,27 @@ public class BrokerInterceptorTest {
     // Interceptor loaded with a custom InterceptHandler special for the tests
     private static final class MockObserver implements InterceptHandler {
         @Override
-        public void onConnect(ConnectMessage msg) {
+        public void onConnect(InterceptConnectMessage msg) {
             n.set(40);
         }
 
         @Override
-        public void onDisconnect(String clientID) {
+        public void onDisconnect(InterceptDisconnectMessage msg) {
             n.set(50);
         }
 
         @Override
-        public void onPublish(PublishMessage msg) {
+        public void onPublish(InterceptPublishMessage msg) {
             n.set(60);
         }
 
         @Override
-        public void onSubscribe(Subscription sub) {
+        public void onSubscribe(InterceptSubscribeMessage msg) {
             n.set(70);
         }
 
         @Override
-        public void onUnsubscribe(String topic) {
+        public void onUnsubscribe(InterceptUnsubscribeMessage msg) {
             n.set(80);
         }
     }
@@ -98,7 +99,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicPublished() throws Exception {
-        interceptor.notifyTopicPublished(new PublishMessage());
+        interceptor.notifyTopicPublished(new PublishMessage(), "cli1234");
         interval();
         assertEquals(60, n.get());
     }
@@ -112,7 +113,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicUnsubscribed() throws Exception {
-        interceptor.notifyTopicUnsubscribed("o2");
+        interceptor.notifyTopicUnsubscribed("o2", "cli1234");
         interval();
         assertEquals(80, n.get());
     }
