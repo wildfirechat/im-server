@@ -57,6 +57,7 @@
         <module>netty_parser</module>
         <module>broker</module>
         <module>distribution</module>
+        <module>embedding_moquette</module>
     </modules>
     
     <reporting>

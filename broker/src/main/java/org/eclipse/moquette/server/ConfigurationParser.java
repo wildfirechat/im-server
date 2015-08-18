@@ -49,7 +49,7 @@ class ConfigurationParser {
     ConfigurationParser(Properties properties) {
     	this();
     	for (Entry<Object, Object> entrySet : properties.entrySet()) {
-                m_properties.put(entrySet.getKey(), entrySet.getValue());
+            m_properties.put(entrySet.getKey(), entrySet.getValue());
     	}
     }
         
