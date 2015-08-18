@@ -38,10 +38,10 @@ public interface Interceptor {
 
     void notifyClientDisconnected(String clientID);
 
-    void notifyTopicPublished(PublishMessage msg);
+    void notifyTopicPublished(PublishMessage msg, String clientID);
 
     void notifyTopicSubscribed(Subscription sub);
 
-    void notifyTopicUnsubscribed(String topic);
+    void notifyTopicUnsubscribed(String topic, String clientID);
 
 }

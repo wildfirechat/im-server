@@ -306,7 +306,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
         if (m_authorizator.canWrite(topic, user, clientID)) {
             executePublish(clientID, msg);
-            m_interceptor.notifyTopicPublished(msg);
+            m_interceptor.notifyTopicPublished(msg, clientID);
         } else {
             LOG.debug("topic {} doesn't have write credentials", topic);
         }
@@ -607,7 +607,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
             subscriptions.removeSubscription(topic, clientID);
             m_sessionsStore.removeSubscription(topic, clientID);
-            m_interceptor.notifyTopicUnsubscribed(topic);
+            m_interceptor.notifyTopicUnsubscribed(topic, clientID);
         }
 
         //ack the client

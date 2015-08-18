@@ -15,6 +15,11 @@
  */
 package org.eclipse.moquette.interception;
 
+import org.eclipse.moquette.interception.messages.InterceptConnectMessage;
+import org.eclipse.moquette.interception.messages.InterceptDisconnectMessage;
+import org.eclipse.moquette.interception.messages.InterceptPublishMessage;
+import org.eclipse.moquette.interception.messages.InterceptSubscribeMessage;
+import org.eclipse.moquette.interception.messages.InterceptUnsubscribeMessage;
 import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 
@@ -32,13 +37,13 @@ import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
  */
 public interface InterceptHandler {
 
-    void onConnect(ConnectMessage msg);
+    void onConnect(InterceptConnectMessage msg);
 
-    void onDisconnect(String clientID);
+    void onDisconnect(InterceptDisconnectMessage msg);
 
-    void onPublish(PublishMessage msg);
+    void onPublish(InterceptPublishMessage msg);
 
-    void onSubscribe(Subscription sub);
+    void onSubscribe(InterceptSubscribeMessage msg);
 
-    void onUnsubscribe(String topic);
+    void onUnsubscribe(InterceptUnsubscribeMessage msg);
 }
