@@ -19,7 +19,6 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import java.nio.ByteBuffer;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 class ProtocolProcessor implements EventHandler<ValueEvent> {
-    
+
     static final class WillMessage {
         private final String topic;
         private final ByteBuffer payload;
@@ -111,9 +110,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private ExecutorService m_executor;
     private RingBuffer<ValueEvent> m_ringBuffer;
+    private Disruptor<ValueEvent> m_disruptor;
 
     ProtocolProcessor() {}
-    
+
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -142,12 +142,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //init the output ringbuffer
         m_executor = Executors.newFixedThreadPool(1);
 
-        Disruptor<ValueEvent> disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
-        disruptor.handleEventsWith(this);
-        disruptor.start();
+        /*Disruptor<ValueEvent>*/ m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        m_disruptor.handleEventsWith(this);
+        m_disruptor.start();
 
         // Get the ring buffer from the Disruptor to be used for publishing.
-        m_ringBuffer = disruptor.getRingBuffer();
+        m_ringBuffer = m_disruptor.getRingBuffer();
+    }
+
+    void stop() {
+        m_executor.shutdown();
+        m_disruptor.shutdown();
     }
 
     @MQTTMessage(message = ConnectMessage.class)

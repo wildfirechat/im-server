@@ -46,6 +46,9 @@ import java.util.Properties;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Future;
 import org.eclipse.moquette.commons.Constants;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.parser.netty.MQTTDecoder;
@@ -270,8 +273,20 @@ public class NettyAcceptor implements ServerAcceptor {
         if (m_bossGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
         }
-        m_workerGroup.shutdownGracefully();
-        m_bossGroup.shutdownGracefully();
+        Future workerWaiter = m_workerGroup.shutdownGracefully();
+        Future bossWaiter = m_bossGroup.shutdownGracefully();
+
+        try {
+            workerWaiter.await(100);
+        } catch (InterruptedException iex) {
+            throw new IllegalStateException(iex);
+        }
+
+        try {
+            bossWaiter.await(100);
+        } catch (InterruptedException iex) {
+            throw new IllegalStateException(iex);
+        }
 
         MessageMetrics metrics = m_metricsCollector.computeMetrics();
         LOG.info("Msg read: {}, msg wrote: {}", metrics.messagesRead(), metrics.messagesWrote());

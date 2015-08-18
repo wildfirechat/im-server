@@ -103,8 +103,8 @@ public class Server {
     
     public void stopServer() {
     	LOG.info("Server stopping...");
-        messaging.stop();
         m_acceptor.close();
+        messaging.stop();
         LOG.info("Server stopped");
     }
     
