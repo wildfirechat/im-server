@@ -1,7 +1,7 @@
 package org.eclipse.moquette.testembedded;
 
-import org.eclipse.moquette.server.ClasspathConfig;
-import org.eclipse.moquette.server.IConfig;
+import org.eclipse.moquette.server.config.ClasspathConfig;
+import org.eclipse.moquette.server.config.IConfig;
 import org.eclipse.moquette.server.Server;
 
 import java.io.IOException;

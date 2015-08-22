@@ -13,42 +13,42 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.server;
+package org.eclipse.moquette.server.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.File;
 import java.text.ParseException;
 import java.util.Properties;
 
 /**
- * Configuration that loads file from the classpath
+ * Configuration that loads file from the file system
  *
  * @author andrea
  */
-public class ClasspathConfig implements IConfig {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ClasspathConfig.class);
+public class FilesystemConfig implements IConfig {
+    private static final Logger LOG = LoggerFactory.getLogger(FilesystemConfig.class);
 
     private final Properties m_properties;
 
-    public ClasspathConfig() {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classLoader.getResourceAsStream("config/moquette.conf");
-        if (is == null) {
-            throw new RuntimeException("Can't locate the resourse \"config/moquette.conf\"");
-        }
-        Reader configReader = new InputStreamReader(is);
+    public FilesystemConfig(File file) {
         ConfigurationParser confParser = new ConfigurationParser();
         try {
-            confParser.parse(configReader);
+            confParser.parse(file);
         } catch (ParseException pex) {
             LOG.warn("An error occurred in parsing configuration, fallback on default configuration", pex);
         }
         m_properties = confParser.getProperties();
+    }
+
+    public FilesystemConfig() {
+        this(defaultConfigFile());
+    }
+
+    private static File defaultConfigFile() {
+        String configPath = System.getProperty("moquette.path", null);
+        return new File(configPath, "config/moquette.conf");
     }
 
     @Override

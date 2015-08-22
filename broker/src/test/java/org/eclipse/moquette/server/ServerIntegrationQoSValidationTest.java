@@ -16,6 +16,8 @@
 package org.eclipse.moquette.server;
 
 
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;

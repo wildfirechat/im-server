@@ -15,19 +15,16 @@
  */
 package org.eclipse.moquette.server;
 
-import org.fusesource.mqtt.client.*;
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
 import static org.eclipse.moquette.commons.Constants.AUTHENTICATOR_CLASS_NAME;

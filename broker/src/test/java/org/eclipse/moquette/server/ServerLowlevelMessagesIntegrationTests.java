@@ -19,6 +19,8 @@ import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
 import org.eclipse.moquette.proto.messages.ConnAckMessage;
 import org.eclipse.moquette.proto.messages.ConnectMessage;
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.eclipse.moquette.testclient.Client;
 import org.fusesource.mqtt.client.*;
 import org.junit.After;

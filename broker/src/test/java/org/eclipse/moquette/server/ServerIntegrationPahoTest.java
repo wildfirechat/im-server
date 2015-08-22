@@ -15,9 +15,10 @@
  */
 package org.eclipse.moquette.server;
 
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.fusesource.mqtt.client.QoS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,8 +31,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static org.eclipse.moquette.commons.Constants.*;
-import static org.eclipse.moquette.commons.Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
-import static org.eclipse.moquette.commons.Constants.KEY_STORE_PASSWORD_PROPERTY_NAME;
 import static org.junit.Assert.*;
 
 public class ServerIntegrationPahoTest {

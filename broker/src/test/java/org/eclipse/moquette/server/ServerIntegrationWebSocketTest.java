@@ -18,6 +18,8 @@ package org.eclipse.moquette.server;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.moquette.commons.Constants;
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

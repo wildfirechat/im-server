@@ -5,6 +5,7 @@ Version 0.8:
     Fixed issue #69
     Fixed bug #68, UNSUBSCRIBE has to fail on bad topicFilter names
     Fixed bug #81, on stop of moquette broker it doesn't shutdown due to no shutdown of ringbuffer used on the back of ProtocolProcessor
+    Moved config to be not only filesystem based, but also classpath and memory (fix issue #73)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

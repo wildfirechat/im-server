@@ -15,6 +15,8 @@
  */
 package org.eclipse.moquette.server;
 
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import org.junit.Before;

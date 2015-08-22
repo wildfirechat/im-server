@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.server;
+package org.eclipse.moquette.server.config;
 
 /**
  * Base interface for all configuration implementations (filesystem, memory or classpath)

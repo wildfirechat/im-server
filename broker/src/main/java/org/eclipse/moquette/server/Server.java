@@ -15,6 +15,9 @@
  */
 package org.eclipse.moquette.server;
 
+import org.eclipse.moquette.server.config.FilesystemConfig;
+import org.eclipse.moquette.server.config.IConfig;
+import org.eclipse.moquette.server.config.MemoryConfig;
 import org.eclipse.moquette.server.netty.NettyAcceptor;
 import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.slf4j.Logger;

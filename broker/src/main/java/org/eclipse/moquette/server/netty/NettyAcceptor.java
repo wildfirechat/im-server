@@ -48,7 +48,7 @@ import javax.net.ssl.SSLEngine;
 
 import io.netty.util.concurrent.Future;
 import org.eclipse.moquette.commons.Constants;
-import org.eclipse.moquette.server.IConfig;
+import org.eclipse.moquette.server.config.IConfig;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.parser.netty.MQTTDecoder;
 import org.eclipse.moquette.parser.netty.MQTTEncoder;

@@ -13,8 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.server;
+package org.eclipse.moquette.server.config;
 
+import org.eclipse.moquette.server.config.ConfigurationParser;
 import org.junit.Before;
 import org.junit.Test;
 

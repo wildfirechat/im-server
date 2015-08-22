@@ -13,14 +13,13 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.server;
+package org.eclipse.moquette.server.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.ParseException;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import static org.eclipse.moquette.commons.Constants.*;
