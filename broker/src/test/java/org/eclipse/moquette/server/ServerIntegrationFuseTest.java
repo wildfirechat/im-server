@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
@@ -40,10 +41,13 @@ public class ServerIntegrationFuseTest {
     MQTT m_mqtt;
     BlockingConnection m_subscriber;
     BlockingConnection m_publisher;
+    IConfig m_config;
     
     protected void startServer() throws IOException {
         m_server = new Server();
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        m_config = new MemoryConfig(configProps);
+        m_server.startServer(m_config);
     }
 
     @Before
@@ -68,7 +72,7 @@ public class ServerIntegrationFuseTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(m_server.getProperties().getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

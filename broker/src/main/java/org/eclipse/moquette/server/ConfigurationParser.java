@@ -43,16 +43,6 @@ class ConfigurationParser {
     	createDefaults();
     }
 
-    /**
-     * Crate a ConfigurationParser merging the default properties with the provided ones.
-     * */
-    ConfigurationParser(Properties properties) {
-    	this();
-    	for (Entry<Object, Object> entrySet : properties.entrySet()) {
-            m_properties.put(entrySet.getKey(), entrySet.getValue());
-    	}
-    }
-        
     private void createDefaults() {
         m_properties.put(PORT_PROPERTY_NAME, Integer.toString(PORT));
         m_properties.put(HOST_PROPERTY_NAME, HOST);
@@ -117,9 +107,9 @@ class ConfigurationParser {
                     }
                     
                     //split till the first space
-                    int deilimiterIdx = line.indexOf(' ');
-                    String key = line.substring(0, deilimiterIdx).trim();
-                    String value = line.substring(deilimiterIdx).trim();
+                    int delimiterIdx = line.indexOf(' ');
+                    String key = line.substring(0, delimiterIdx).trim();
+                    String value = line.substring(delimiterIdx).trim();
                     
                     m_properties.put(key, value);
                 }

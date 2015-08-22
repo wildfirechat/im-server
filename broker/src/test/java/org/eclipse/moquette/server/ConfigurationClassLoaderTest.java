@@ -45,20 +45,19 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     private static final Logger LOG = LoggerFactory.getLogger(ConfigurationClassLoaderTest.class);
 
     Server m_server;
-    MQTT m_mqtt;
-    BlockingConnection m_subscriber;
-    BlockingConnection m_publisher;
+    IConfig m_config;
     
     protected void startServer(Properties props) throws IOException {
-        m_server = new Server();        
-        m_server.startServer(props);
+        m_server = new Server();
+        m_config = new MemoryConfig(props);
+        m_server.startServer(m_config);
     }
 
 
     @After
     public void tearDown() throws Exception {
         m_server.stopServer();
-        File dbFile = new File(m_server.getProperties().getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

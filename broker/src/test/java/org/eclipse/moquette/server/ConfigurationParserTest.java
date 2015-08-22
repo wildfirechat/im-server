@@ -82,7 +82,7 @@ public class ConfigurationParserTest {
     
     @Test
     public void parseCompleteFile() throws ParseException {
-        String content = "# This is initial config format \r\n"
+        String content = "# This is initial m_config format \r\n"
                 + "  \r\n"
                 + "port 1234 \r\n"
                 + "host   localhost \r\n"

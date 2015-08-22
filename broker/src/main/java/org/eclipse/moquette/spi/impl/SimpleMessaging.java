@@ -22,6 +22,7 @@ import io.netty.util.internal.StringUtil;
 import org.HdrHistogram.Histogram;
 import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.server.IConfig;
 import org.eclipse.moquette.spi.impl.security.*;
 import org.eclipse.moquette.server.ServerChannel;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -99,7 +100,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         return INSTANCE;
     }
 
-    public void init(Properties configProps) {
+    public void init(IConfig configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
         m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
@@ -113,10 +114,8 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         annotationSupport.processAnnotations(m_processor);
         processInit(configProps);
-//        disruptorPublish(new InitEvent(configProps));
     }
 
-    
     private void disruptorPublish(MessagingEvent msgEvent) {
         LOG.debug("disruptorPublish publishing event {}", msgEvent);
         long sequence = m_ringBuffer.next();
@@ -187,7 +186,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
     }
 
-    private void processInit(Properties props) {
+    private void processInit(IConfig props) {
         benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
 
         //TODO use a property to select the storage path

@@ -15,17 +15,15 @@
  */
 package org.eclipse.moquette.server;
 
-import java.io.IOException;
-import java.util.Properties;
-import org.eclipse.moquette.spi.IMessaging;
-
 /**
+ * Base interface for all configuration implementations (filesystem, memory or classpath)
  *
  * @author andrea
  */
-public interface ServerAcceptor {
-    
-    void initialize(IMessaging messaging, IConfig props) throws IOException;
-    
-    void close();
+public interface IConfig {
+    void setProperty(String name, String value);
+
+    String getProperty(String name);
+
+    String getProperty(String name, String defaultValue);
 }

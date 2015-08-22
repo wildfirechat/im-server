@@ -50,6 +50,7 @@ public class ServerIntegrationQoSValidationTest {
     IMqttClient m_subscriber;
     IMqttClient m_publisher;
     TestCallback m_callback;
+    IConfig m_config;
 
     @BeforeClass
     public static void beforeTests() {
@@ -60,7 +61,9 @@ public class ServerIntegrationQoSValidationTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        m_config = new MemoryConfig(configProps);
+        m_server.startServer(m_config);
     }
 
     @Before
@@ -89,7 +92,7 @@ public class ServerIntegrationQoSValidationTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(m_server.getProperties().getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

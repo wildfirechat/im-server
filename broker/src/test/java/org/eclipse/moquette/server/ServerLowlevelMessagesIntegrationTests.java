@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -45,10 +46,13 @@ public class ServerLowlevelMessagesIntegrationTests {
     Server m_server;
     Client m_client;
     MQTT m_subscriberDef;
+    IConfig m_config;
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        m_config = new MemoryConfig(configProps);
+        m_server.startServer(m_config);
     }
 
     @Before
@@ -67,7 +71,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         Thread.sleep(300); //to let the close event pass before server stop event
         m_server.stopServer();
         LOG.debug("After asked server to stop");
-        File dbFile = new File(m_server.getProperties().getProperty(PERSISTENT_STORE_PROPERTY_NAME));
+        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
         if (dbFile.exists()) {
             dbFile.delete();
         }

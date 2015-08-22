@@ -42,14 +42,13 @@ import java.security.*;
 
 import java.security.cert.CertificateException;
 import java.util.List;
-import java.util.Properties;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import org.eclipse.moquette.commons.Constants;
+import org.eclipse.moquette.server.IConfig;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.parser.netty.MQTTDecoder;
 import org.eclipse.moquette.parser.netty.MQTTEncoder;
@@ -101,7 +100,7 @@ public class NettyAcceptor implements ServerAcceptor {
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
 
     @Override
-    public void initialize(IMessaging messaging, Properties props) throws IOException {
+    public void initialize(IMessaging messaging, IConfig props) throws IOException {
         m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         
@@ -150,7 +149,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
     }
     
-    private void initializePlainTCPTransport(IMessaging messaging, Properties props) throws IOException {
+    private void initializePlainTCPTransport(IMessaging messaging, IConfig props) throws IOException {
         final NettyMQTTHandler handler = new NettyMQTTHandler();
         handler.setMessaging(messaging);
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
@@ -170,7 +169,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
     
-    private void initializeWebSocketTransport(IMessaging messaging, Properties props) throws IOException {
+    private void initializeWebSocketTransport(IMessaging messaging, IConfig props) throws IOException {
         String webSocketPortProp = props.getProperty(Constants.WEB_SOCKET_PORT_PROPERTY_NAME);
         if (webSocketPortProp == null) {
             //Do nothing no WebSocket configured
@@ -204,7 +203,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
     
-    private void initializeSSLTCPTransport(IMessaging messaging, Properties props, final SslHandler sslHandler) throws IOException {
+    private void initializeSSLTCPTransport(IMessaging messaging, IConfig props, final SslHandler sslHandler) throws IOException {
         String sslPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -234,7 +233,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
 
-    private void initializeWSSTransport(IMessaging messaging, Properties props, final SslHandler sslHandler) throws IOException {
+    private void initializeWSSTransport(IMessaging messaging, IConfig props, final SslHandler sslHandler) throws IOException {
         String sslPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -296,7 +295,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
 
-    private SslHandler initSSLHandler(Properties props) {
+    private SslHandler initSSLHandler(IConfig props) {
         final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
         LOG.info("Starting SSL using keystore at {}", jksPath);
         if (jksPath == null || jksPath.isEmpty()) {
