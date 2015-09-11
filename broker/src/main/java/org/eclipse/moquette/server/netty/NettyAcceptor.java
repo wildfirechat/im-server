@@ -19,6 +19,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -109,13 +110,13 @@ public class NettyAcceptor implements ServerAcceptor {
         String sslTcpPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         String wssPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
         if (sslTcpPortProp != null || wssPortProp != null) {
-            SslHandler sslHandler = initSSLHandler(props);
-            if (sslHandler == null) {
+            SslHandlerFactory sslHandlerFactory = initSSLHandlerFactory(props);
+            if (!sslHandlerFactory.canCreate()) {
                 LOG.error("Can't initialize SSLHandler layer! Exiting, check your configuration of jks");
                 return;
             }
-            initializeSSLTCPTransport(messaging, props, sslHandler);
-            initializeWSSTransport(messaging, props, sslHandler);
+            initializeSSLTCPTransport(messaging, props, sslHandlerFactory);
+            initializeWSSTransport(messaging, props, sslHandlerFactory);
         }
     }
 
@@ -203,7 +204,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
     
-    private void initializeSSLTCPTransport(IMessaging messaging, IConfig props, final SslHandler sslHandler) throws IOException {
+    private void initializeSSLTCPTransport(IMessaging messaging, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
         String sslPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -220,7 +221,7 @@ public class NettyAcceptor implements ServerAcceptor {
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                pipeline.addLast("ssl", sslHandler);
+                pipeline.addLast("ssl", sslHandlerFactory.create());
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
@@ -233,7 +234,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
 
-    private void initializeWSSTransport(IMessaging messaging, IConfig props, final SslHandler sslHandler) throws IOException {
+    private void initializeWSSTransport(IMessaging messaging, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
         String sslPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -247,7 +248,7 @@ public class NettyAcceptor implements ServerAcceptor {
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                pipeline.addLast("ssl", sslHandler);
+                pipeline.addLast("ssl", sslHandlerFactory.create());
                 pipeline.addLast("httpEncoder", new HttpResponseEncoder());
                 pipeline.addLast("httpDecoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
@@ -295,63 +296,84 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
 
-    private SslHandler initSSLHandler(IConfig props) {
-        final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
-        LOG.info("Starting SSL using keystore at {}", jksPath);
-        if (jksPath == null || jksPath.isEmpty()) {
-            //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
-            return null;
-        }
-
-        //if we have the port also the jks then keyStorePassword and keyManagerPassword
-        //has to be defined
-        final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
-        final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
-        if (keyStorePassword == null || keyStorePassword.isEmpty()) {
-            //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
-            return null;
-        }
-        if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
-            //key_manager_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
-            return null;
-        }
-
-        try {
-            InputStream jksInputStream = jksDatastore(jksPath);
-            SSLContext serverContext = SSLContext.getInstance("TLS");
-            final KeyStore ks = KeyStore.getInstance("JKS");
-            ks.load(jksInputStream, keyStorePassword.toCharArray());
-            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, keyManagerPassword.toCharArray());
-            serverContext.init(kmf.getKeyManagers(), null, null);
-
-            SSLEngine engine = serverContext.createSSLEngine();
-            engine.setUseClientMode(false);
-            return new SslHandler(engine);
-        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
-                | KeyManagementException | IOException ex) {
-            LOG.error("Can't start SSL layer!", ex);
-            return null;
-        }
+    private SslHandlerFactory initSSLHandlerFactory(IConfig props) {
+        SslHandlerFactory factory = new SslHandlerFactory(props);
+        return factory.canCreate() ? factory : null;
     }
 
-    private InputStream jksDatastore(String jksPath) throws FileNotFoundException {
-        URL jksUrl = getClass().getClassLoader().getResource(jksPath);
-        if (jksUrl != null) {
-            LOG.info("Starting with jks at {}, jks normal {}", jksUrl.toExternalForm(), jksUrl);
-            return getClass().getClassLoader().getResourceAsStream(jksPath);
+    private static class SslHandlerFactory {
+        
+        private SSLContext sslContext;
+
+        public SslHandlerFactory(IConfig props) {
+            this.sslContext = initSSLContext(props);
         }
-        LOG.info("jks not found in bundled resources, try on the filesystem");
-        File jksFile = new File(jksPath);
-        if (jksFile.exists()) {
-            LOG.info("Using {} ", jksFile.getAbsolutePath());
-            return new FileInputStream(jksFile);
+        
+        public boolean canCreate() {
+            return this.sslContext != null;
         }
-        LOG.warn("File {} doesn't exists", jksFile.getAbsolutePath());
-        return null;
+        private SSLContext initSSLContext(IConfig props) {
+            final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
+            LOG.info("Starting SSL using keystore at {}", jksPath);
+            if (jksPath == null || jksPath.isEmpty()) {
+                //key_store_password or key_manager_password are empty
+                LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
+                return null;
+            }
+
+            //if we have the port also the jks then keyStorePassword and keyManagerPassword
+            //has to be defined
+            final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
+            final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
+            if (keyStorePassword == null || keyStorePassword.isEmpty()) {
+                //key_store_password or key_manager_password are empty
+                LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
+                return null;
+            }
+            if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
+                //key_manager_password or key_manager_password are empty
+                LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
+                return null;
+            }
+
+            try {
+                InputStream jksInputStream = jksDatastore(jksPath);
+                SSLContext serverContext = SSLContext.getInstance("TLS");
+                final KeyStore ks = KeyStore.getInstance("JKS");
+                ks.load(jksInputStream, keyStorePassword.toCharArray());
+                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(ks, keyManagerPassword.toCharArray());
+                serverContext.init(kmf.getKeyManagers(), null, null);
+                return serverContext;
+            } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
+                    | KeyManagementException | IOException ex) {
+                LOG.error("Can't start SSL layer!", ex);
+                return null;
+            }
+        }
+        
+        private InputStream jksDatastore(String jksPath) throws FileNotFoundException {
+            URL jksUrl = getClass().getClassLoader().getResource(jksPath);
+            if (jksUrl != null) {
+                LOG.info("Starting with jks at {}, jks normal {}", jksUrl.toExternalForm(), jksUrl);
+                return getClass().getClassLoader().getResourceAsStream(jksPath);
+            }
+            LOG.info("jks not found in bundled resources, try on the filesystem");
+            File jksFile = new File(jksPath);
+            if (jksFile.exists()) {
+                LOG.info("Using {} ", jksFile.getAbsolutePath());
+                return new FileInputStream(jksFile);
+            }
+            LOG.warn("File {} doesn't exists", jksFile.getAbsolutePath());
+            return null;
+        }
+
+        public ChannelHandler create() {
+            SSLEngine sslEngine = sslContext.createSSLEngine();
+            sslEngine.setUseClientMode(false);
+            SslHandler sslHandler = new SslHandler(sslEngine);
+            return sslHandler;
+        }
+        
     }
-    
 }
