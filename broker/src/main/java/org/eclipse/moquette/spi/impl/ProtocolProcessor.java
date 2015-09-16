@@ -177,7 +177,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         //handle user authentication
         if (msg.isUserFlag()) {
-            String pwd = null;
+            byte[] pwd = null;
             if (msg.isPasswordFlag()) {
                 pwd = msg.getPassword();
             } else if (!this.allowAnonymous) {
@@ -225,7 +225,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //Handle will flag
         if (msg.isWillFlag()) {
             AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
-            byte[] willPayload = msg.getWillMessage().getBytes();
+            byte[] willPayload = msg.getWillMessage();
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
             //save the will testament in the clientID store
             WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos );

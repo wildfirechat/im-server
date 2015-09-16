@@ -65,12 +65,12 @@ public class ConnectEncoder extends DemuxEncoder<ConnectMessage> {
                 variableHeaderBuff.writeBytes(Utils.encodeString(message.getClientID()));
                 if (message.isWillFlag()) {
                     variableHeaderBuff.writeBytes(Utils.encodeString(message.getWillTopic()));
-                    variableHeaderBuff.writeBytes(Utils.encodeString(message.getWillMessage()));
+                    variableHeaderBuff.writeBytes(Utils.encodeFixedLengthContent(message.getWillMessage()));
                 }
                 if (message.isUserFlag() && message.getUsername() != null) {
                     variableHeaderBuff.writeBytes(Utils.encodeString(message.getUsername()));
                     if (message.isPasswordFlag() && message.getPassword() != null) {
-                        variableHeaderBuff.writeBytes(Utils.encodeString(message.getPassword()));
+                        variableHeaderBuff.writeBytes(Utils.encodeFixedLengthContent(message.getPassword()));
                     }
                 }
             }

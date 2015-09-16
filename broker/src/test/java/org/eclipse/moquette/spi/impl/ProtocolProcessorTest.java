@@ -52,9 +52,9 @@ public class ProtocolProcessorTest {
     final static String BAD_FORMATTED_TOPIC = "#MQTTClient";
     
     final static String TEST_USER = "fakeuser";
-    final static String TEST_PWD = "fakepwd";
+    final static byte[] TEST_PWD = "fakepwd".getBytes();
     final static String EVIL_TEST_USER = "eviluser";
-    final static String EVIL_TEST_PWD = "unsecret";
+    final static byte[] EVIL_TEST_PWD = "unsecret".getBytes();
 
     final static List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     final static BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
@@ -164,7 +164,7 @@ public class ProtocolProcessorTest {
         m_sessionStore = memStorage;
         //m_storageService.initStore();
         
-        Map<String, String> users = new HashMap<>();
+        Map<String, byte[]> users = new HashMap<>();
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(users);
 
@@ -202,7 +202,7 @@ public class ProtocolProcessorTest {
         connMsg.setClientID("123");
         connMsg.setWillFlag(true);
         connMsg.setWillTopic("topic");
-        connMsg.setWillMessage("Topic message");
+        connMsg.setWillMessage("Topic message".getBytes());
         
 
         //Exercise

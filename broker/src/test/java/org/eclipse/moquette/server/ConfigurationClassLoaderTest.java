@@ -79,7 +79,7 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     }
 
     @Override
-    public boolean checkValid(String username, String password) {
+    public boolean checkValid(String username, byte[] password) {
         return true;
     }
 

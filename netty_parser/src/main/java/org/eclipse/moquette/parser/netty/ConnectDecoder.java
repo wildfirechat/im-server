@@ -173,7 +173,7 @@ public class ConnectDecoder extends DemuxDecoder {
 
         //Decode willMessage
         if (willFlag) {
-            String willMessage = Utils.decodeString(in);
+            byte[] willMessage = Utils.readFixedLengthContent(in);
             if (willMessage == null) {
                 in.resetReaderIndex();
                 return;
@@ -207,7 +207,7 @@ public class ConnectDecoder extends DemuxDecoder {
 
         //Decode password
         if (passwordFlag) {
-            String password = Utils.decodeString(in);
+            byte[] password = Utils.readFixedLengthContent(in);
             if (password == null) {
                 in.resetReaderIndex();
                 return;

@@ -7,6 +7,7 @@ Version 0.8:
     Fixed bug #81, on stop of moquette broker it doesn't shutdown due to no shutdown of ringbuffer used on the back of ProtocolProcessor
     Moved config to be not only filesystem based, but also classpath and memory (fix issue #73)
     Switched from commit pesistence on every change to time based to fix delay in handling many msgs/sec (fix issue #79)
+    Changed willMessage and password in CONNECT message from String to byte[] (fix issue #94 and #95)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

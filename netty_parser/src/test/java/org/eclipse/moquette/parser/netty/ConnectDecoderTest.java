@@ -142,7 +142,7 @@ public class ConnectDecoderTest {
         verifyBaseHeader(message);
         assertEquals("ABCDEFGH", message.getClientID());
         assertEquals("Topic", message.getWillTopic());
-        assertEquals("Message", message.getWillMessage());
+        assertEquals("Message", new String(message.getWillMessage()));
     }
     
     
@@ -167,9 +167,9 @@ public class ConnectDecoderTest {
         assertEquals(AbstractMessage.CONNECT, message.getMessageType());
         assertEquals("ABCDEFGH", message.getClientID());
         assertEquals("Topic", message.getWillTopic());
-        assertEquals("Message", message.getWillMessage());
+        assertEquals("Message", new String(message.getWillMessage()));
         assertEquals("Fakeuser", message.getUsername());
-        assertEquals("pwd", message.getPassword());
+        assertEquals("pwd", new String(message.getPassword()));
     }
     
     @Test(expected = CorruptedFrameException.class)

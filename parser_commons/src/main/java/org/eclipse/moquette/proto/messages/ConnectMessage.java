@@ -35,10 +35,10 @@ public class ConnectMessage extends AbstractMessage {
     
     //Variable part
     protected String m_username;
-    protected String m_password;
+    protected byte[] m_password;
     protected String m_clientID;
     protected String m_willtopic;
-    protected String m_willMessage;
+    protected byte[] m_willMessage;
     
     public ConnectMessage() {
         m_messageType = AbstractMessage.CONNECT;
@@ -116,11 +116,11 @@ public class ConnectMessage extends AbstractMessage {
         this.m_willRetain = willRetain;
     }
 
-    public String getPassword() {
+    public byte[] getPassword() {
         return m_password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(byte[] password) {
         this.m_password = password;
     }
 
@@ -148,11 +148,11 @@ public class ConnectMessage extends AbstractMessage {
         this.m_willtopic = topic;
     }
 
-    public String getWillMessage() {
+    public byte[] getWillMessage() {
         return m_willMessage;
     }
 
-    public void setWillMessage(String willMessage) {
+    public void setWillMessage(byte[] willMessage) {
         this.m_willMessage = willMessage;
     }
 

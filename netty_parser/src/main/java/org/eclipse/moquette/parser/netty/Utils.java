@@ -117,10 +117,16 @@ public class Utils {
      * @return the decoded string or null if NEED_DATA
      */
     static String decodeString(ByteBuf in) throws UnsupportedEncodingException {
+        return new String(readFixedLengthContent(in), "UTF-8");
+    }
+
+    /**
+     * Read a byte array from the buffer, use two bytes as length information followed by length bytes.
+     * */
+    static byte[] readFixedLengthContent(ByteBuf in) throws UnsupportedEncodingException {
         if (in.readableBytes() < 2) {
             return null;
         }
-        //int strLen = Utils.readWord(in);
         int strLen = in.readUnsignedShort();
         if (in.readableBytes() < strLen) {
             return null;
@@ -128,16 +134,14 @@ public class Utils {
         byte[] strRaw = new byte[strLen];
         in.readBytes(strRaw);
 
-        return new String(strRaw, "UTF-8");
+        return strRaw;
     }
-    
-    
+
     /**
      * Return the IoBuffer with string encoded as MSB, LSB and UTF-8 encoded
      * string content.
      */
     public static ByteBuf encodeString(String str) {
-        ByteBuf out = Unpooled.buffer(2);
         byte[] raw;
         try {
             raw = str.getBytes("UTF-8");
@@ -147,12 +151,19 @@ public class Utils {
             LoggerFactory.getLogger(Utils.class).error(null, ex);
             return null;
         }
-        //Utils.writeWord(out, raw.length);
-        out.writeShort(raw.length);
-        out.writeBytes(raw);
+        return encodeFixedLengthContent(raw);
+    }
+
+    /**
+     * Return the IoBuffer with string encoded as MSB, LSB and bytes array content.
+     */
+    public static ByteBuf encodeFixedLengthContent(byte[] content) {
+        ByteBuf out = Unpooled.buffer(2);
+        out.writeShort(content.length);
+        out.writeBytes(content);
         return out;
     }
-    
+
     /**
      * Return the number of bytes to encode the given remaining length value
      */

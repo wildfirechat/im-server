@@ -106,7 +106,7 @@ public class FileAuthenticator implements IAuthenticator {
         }
     }
     
-    public boolean checkValid(String username, String password) {
+    public boolean checkValid(String username, byte[] password) {
         if (username == null || password == null) {
             LOG.info("username or password was null");
             return false;
@@ -115,11 +115,7 @@ public class FileAuthenticator implements IAuthenticator {
         if (foundPwq == null) {
             return false;
         }
-        try {
-            m_digest.update(password.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        m_digest.update(password);
         byte[] digest = m_digest.digest();
         String encodedPasswd = new String(Hex.encodeHex(digest));
         return foundPwq.equals(encodedPasswd);

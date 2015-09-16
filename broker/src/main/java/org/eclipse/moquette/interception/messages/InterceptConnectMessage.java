@@ -57,7 +57,7 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
         return msg.getUsername();
     }
 
-    public String getPassword() {
+    public byte[] getPassword() {
         return msg.getPassword();
     }
 
@@ -65,7 +65,7 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
         return msg.getWillTopic();
     }
 
-    public String getWillMessage() {
+    public byte[] getWillMessage() {
         return msg.getWillMessage();
     }
 }

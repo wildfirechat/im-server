@@ -111,7 +111,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         connectMessage.setClientID("FAKECLNT");
         connectMessage.setKeepAlive(keepAlive);
         connectMessage.setWillFlag(true);
-        connectMessage.setWillMessage(willTestamentMsg);
+        connectMessage.setWillMessage(willTestamentMsg.getBytes());
         connectMessage.setWillTopic(willTestamentTopic);
         connectMessage.setWillQos((byte) QOSType.MOST_ONE.ordinal());
         

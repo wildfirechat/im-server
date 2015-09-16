@@ -75,7 +75,7 @@ public class ConnectEncoderTest {
         //variable part
         msg.setClientID("ABCDEF");
         msg.setWillTopic("Topic");
-        msg.setWillMessage("Message");
+        msg.setWillMessage("Message".getBytes());
         
         ByteBuf out = Unpooled.buffer();
         
@@ -111,9 +111,9 @@ public class ConnectEncoderTest {
         //variable part
         msg.setClientID("ABCDEF");
         msg.setWillTopic("Topic");
-        msg.setWillMessage("Message");
+        msg.setWillMessage("Message".getBytes());
         msg.setUsername("Pablo");
-        msg.setPassword("PBL");
+        msg.setPassword("PBL".getBytes());
         
         ByteBuf out = Unpooled.buffer();
         

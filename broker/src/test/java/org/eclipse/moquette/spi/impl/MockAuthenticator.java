@@ -25,13 +25,13 @@ import org.eclipse.moquette.spi.impl.security.IAuthenticator;
  */
 class MockAuthenticator implements IAuthenticator {
     
-    private Map<String, String> m_userPwds;
+    private Map<String, byte[]> m_userPwds;
     
-    MockAuthenticator(Map<String, String> userPwds) {
+    MockAuthenticator(Map<String, byte[]> userPwds) {
         m_userPwds = userPwds;
     }
 
-    public boolean checkValid(String username, String password) {
+    public boolean checkValid(String username, byte[] password) {
         if (!m_userPwds.containsKey(username)) {
             return false;
         }

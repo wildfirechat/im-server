@@ -22,5 +22,5 @@ package org.eclipse.moquette.spi.impl.security;
  */
 public interface IAuthenticator {
 
-    boolean checkValid(String username, String password);
+    boolean checkValid(String username, byte[] password);
 }
