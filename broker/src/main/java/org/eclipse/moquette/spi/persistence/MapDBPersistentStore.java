@@ -84,7 +84,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 	            LOG.error(null, ex);
 	            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
 	        }
-	        m_db = DBMaker.newFileDB(tmpFile).make();
+	        m_db = DBMaker.newFileDB(tmpFile).closeOnJvmShutdown().make();
     	}
         m_retainedStore = m_db.getHashMap("retained");
         m_persistentMessageStore = m_db.getHashMap("persistedMessages");
