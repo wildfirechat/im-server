@@ -313,6 +313,7 @@ public class SubscriptionsStoreTest {
         assertTrue(SubscriptionsStore.matchTopics("/finance", "+/+"));
         assertTrue(SubscriptionsStore.matchTopics("/finance/stock/ibm", "/finance/+/ibm"));
         assertTrue(SubscriptionsStore.matchTopics("/", "+/+"));
+        assertTrue(SubscriptionsStore.matchTopics("sport/", "sport/+"));
         assertFalse(SubscriptionsStore.matchTopics("/finance/stock", "+"));
     }
     
