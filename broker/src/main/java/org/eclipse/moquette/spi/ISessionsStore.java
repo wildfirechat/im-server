@@ -53,4 +53,6 @@ public interface ISessionsStore {
      * @return true iff there are subscriptions persisted with clientID
      */
     boolean contains(String clientID);
+
+    void createNewSession(String clientID);
 }

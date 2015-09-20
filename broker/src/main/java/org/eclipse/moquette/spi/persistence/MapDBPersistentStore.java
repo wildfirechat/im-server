@@ -285,7 +285,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     public List<Subscription> listAllSubscriptions() {
-        List<Subscription> allSubscriptions = new ArrayList<Subscription>();
+        List<Subscription> allSubscriptions = new ArrayList<>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             allSubscriptions.addAll(entry.getValue());
         }
@@ -296,6 +296,17 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     @Override
     public boolean contains(String clientID) {
         return m_persistentSubscriptions.containsKey(clientID);
+    }
+
+    @Override
+    public void createNewSession(String clientID) {
+        LOG.debug("createNewSession for client <{}>", clientID);
+        if (m_persistentSubscriptions.containsKey(clientID)) {
+            LOG.error("already exists a session for client <{}>", clientID);
+            return;
+        }
+        LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
+        m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
     }
 
     public void close() {

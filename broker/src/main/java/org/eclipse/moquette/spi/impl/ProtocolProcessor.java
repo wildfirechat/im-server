@@ -243,14 +243,17 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
-        if (!msg.isCleanSession() && m_sessionsStore.contains(msg.getClientID())) {
+        boolean isSessionAlreadyStored = m_sessionsStore.contains(msg.getClientID());
+        if (!msg.isCleanSession() && isSessionAlreadyStored) {
             okResp.setSessionPresent(true);
         }
         session.write(okResp);
         m_interceptor.notifyClientConnected(msg);
 
-        LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
-        m_sessionsStore.addNewSubscription(Subscription.createEmptySubscription(msg.getClientID(), true)); //null means EmptySubscription
+        if (!isSessionAlreadyStored) {
+            LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
+            m_sessionsStore.createNewSession(msg.getClientID());
+        }
         LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2

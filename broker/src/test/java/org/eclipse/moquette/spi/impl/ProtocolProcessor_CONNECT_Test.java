@@ -15,14 +15,12 @@
  */
 package org.eclipse.moquette.spi.impl;
 
-import org.eclipse.moquette.proto.messages.AbstractMessage;
-import org.eclipse.moquette.proto.messages.ConnAckMessage;
-import org.eclipse.moquette.proto.messages.ConnectMessage;
-import org.eclipse.moquette.proto.messages.DisconnectMessage;
+import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
+import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.junit.Before;
 import org.junit.Test;
@@ -258,4 +256,34 @@ public class ProtocolProcessor_CONNECT_Test {
         assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, connAckMsg.getReturnCode());
     }
 
+
+    @Test
+    public void testMultipleReconnection() throws InterruptedException {
+        //connect with clean a false and subscribe to a topic
+        connMsg = new ConnectMessage();
+        connMsg.setProtocolVersion(VERSION_3_1_1);
+        connMsg.setClientID("CliID");
+        connMsg.setCleanSession(false);
+        m_processor.processConnect(m_session, connMsg);
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+
+        //subscribe
+        SubscribeMessage subscribeMsg = new SubscribeMessage();
+        subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
+        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_processor.processSubscribe(m_session, subscribeMsg);
+        Subscription expectedSubscription = new Subscription("CliID", FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        assertTrue(subscriptions.contains(expectedSubscription));
+
+        //disconnect
+        m_processor.processDisconnect(m_session, new DisconnectMessage());
+
+        //reconnect clean session a false
+        m_processor.processConnect(m_session, connMsg);
+        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+
+        //verify that the first subscription is still preserved
+        assertTrue(subscriptions.contains(expectedSubscription));
+    }
 }

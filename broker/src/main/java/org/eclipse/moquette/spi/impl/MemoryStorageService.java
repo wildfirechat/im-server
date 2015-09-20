@@ -209,6 +209,15 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
+    public void createNewSession(String clientID) {
+        if (m_persistentSubscriptions.containsKey(clientID)) {
+            LOG.error("already exists a session for client <{}>", clientID);
+            return;
+        }
+        m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+    }
+
+    @Override
     public List<Subscription> listAllSubscriptions() {
         List<Subscription> allSubscriptions = new ArrayList<Subscription>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
