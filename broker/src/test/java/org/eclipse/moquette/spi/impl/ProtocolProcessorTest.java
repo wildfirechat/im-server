@@ -20,7 +20,6 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import io.netty.util.AttributeKey;
 import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.server.netty.NettyChannel;
@@ -31,10 +30,8 @@ import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
-import static org.eclipse.moquette.parser.netty.Utils.VERSION_3_1_1;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
-import org.eclipse.moquette.server.ServerChannel;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,95 +57,13 @@ public class ProtocolProcessorTest {
     final static BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
     
     DummyChannel m_session;
-    byte m_returnCode;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
     
     IMessagesStore m_storageService;
     ISessionsStore m_sessionStore;
     SubscriptionsStore subscriptions;
-    AbstractMessage m_receivedMessage;
     MockAuthenticator m_mockAuthenticator;
-    
-    class DummyChannel implements ServerChannel {
-
-        private boolean m_channelClosed = false;
-        
-        private Map<Object, Object> m_attributes = new HashMap<>();
-
-        public Object getAttribute(AttributeKey<Object> key) {
-            return m_attributes.get(key);
-        }
-
-        public void setAttribute(AttributeKey<Object> key, Object value) {
-            m_attributes.put(key, value);
-        }
-
-        public void setIdleTime(int idleTime) {
-        }
-
-        public void close(boolean immediately) {
-            m_channelClosed = true;
-        }
-
-        boolean isClosed() {
-            return this.m_channelClosed;
-        }
-
-        public void write(Object value) {
-            try {
-                m_receivedMessage = (AbstractMessage) value;
-                if (m_receivedMessage instanceof ConnAckMessage) {
-                    ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
-                    m_returnCode = buf.getReturnCode();
-                }
-            } catch (Exception ex) {
-                throw new AssertionError("Wrong return code");
-            }
-        }
-    }
-    
-    /**
-     * This a synchronous channel that avoid output ring buffer from Processor
-     */
-    class MockReceiverChannel implements ServerChannel {
-//        byte m_returnCode;
-        AbstractMessage m_receivedMessage;
-        private Map<Object, Object> m_attributes = new HashMap<>();
-
-        public Object getAttribute(AttributeKey<Object> key) {
-            return m_attributes.get(key);
-        }
-
-        public void setAttribute(AttributeKey<Object> key, Object value) {
-            m_attributes.put(key, value);
-        }
-
-        public void setIdleTime(int idleTime) {
-        }
-
-        public void close(boolean immediately) {
-        }
-        
-        public AbstractMessage getMessage() {
-            return this.m_receivedMessage;
-        }
-        
-//        public byte getReturnCode() {
-//            return this.m_returnCode;
-//        }
-
-        public void write(Object value) {
-            try {
-                this.m_receivedMessage = (AbstractMessage) value;
-//                if (this.m_receivedMessage instanceof PublishMessage) {
-//                    T buf = (T) this.m_receivedMessage;
-//                }
-            } catch (Exception ex) {
-                throw new AssertionError("Wrong return code");
-            }
-        }
-    }
     
     @Before
     public void setUp() throws InterruptedException {
@@ -174,188 +89,7 @@ public class ProtocolProcessorTest {
         m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
     }
-    
-    @Test
-    public void testHandleConnect_BadProtocol() {
-        connMsg.setProtocolVersion((byte) 0x02);
 
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_returnCode);
-    }
-
-    @Test
-    public void testConnect_badClientID() {
-        connMsg.setClientID("extremely_long_clientID_greater_than_23");
-
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-    }
-
-    @Test
-    public void testWill() {
-        connMsg.setClientID("123");
-        connMsg.setWillFlag(true);
-        connMsg.setWillTopic("topic");
-        connMsg.setWillMessage("Topic message".getBytes());
-        
-
-        //Exercise
-        //m_handler.setMessaging(mockedMessaging);
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-        //TODO verify the call
-        /*verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()),
-                any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));*/
-    }
-
-    @Test
-    public void validAuthentication() {
-        connMsg.setClientID("123");
-        connMsg.setUserFlag(true);
-        connMsg.setPasswordFlag(true);
-        connMsg.setUsername(TEST_USER);
-        connMsg.setPassword(TEST_PWD);
-        
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-    }
-    
-    @Test
-    public void noPasswdAuthentication() {
-        connMsg.setClientID("123");
-        connMsg.setUserFlag(true);
-        connMsg.setPasswordFlag(false);
-        connMsg.setUsername(TEST_USER);
-        
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
-    }
-    
-    @Test
-    public void invalidAuthentication() {
-        connMsg.setClientID("123");
-        connMsg.setUserFlag(true);
-        connMsg.setPasswordFlag(true);
-        connMsg.setUsername(TEST_USER + "_fake");
-        connMsg.setPassword(TEST_PWD);
-        
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
-    }
-
-    @Test
-    public void prohibitAnonymousClient() {
-        connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
-
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
-    }
-
-    @Test
-    public void prohibitAnonymousClient_providingUsername() {
-        connMsg.setClientID("123");
-        connMsg.setUserFlag(true);
-        connMsg.setUsername(TEST_USER + "_fake");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
-
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
-    }
-
-    @Test
-    public void acceptAnonymousClient() {
-        connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
-
-        //Exercise
-        m_processor.processConnect(m_session, connMsg);
-
-        //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-    }
-
-    @Test
-    public void connectWithSameClientIDBadCredentialsDoesntDropExistingClient() {
-        //Connect a client1
-        connMsg.setClientID("Client1");
-        connMsg.setUserFlag(true);
-        connMsg.setPasswordFlag(true);
-        connMsg.setUsername(TEST_USER);
-        connMsg.setPassword(TEST_PWD);
-        m_processor.processConnect(m_session, connMsg);
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_returnCode);
-
-        //create another connect same clientID but with bad credentials
-        ConnectMessage evilClientConnMsg = new ConnectMessage();
-        evilClientConnMsg.setProtocolVersion((byte) 0x03);
-        evilClientConnMsg.setClientID("Client1");
-        evilClientConnMsg.setUserFlag(true);
-        evilClientConnMsg.setPasswordFlag(true);
-        evilClientConnMsg.setUsername(EVIL_TEST_USER);
-        evilClientConnMsg.setPassword(EVIL_TEST_PWD);
-        DummyChannel evilSession = new DummyChannel();
-
-        //Exercise
-        m_processor.processConnect(evilSession, evilClientConnMsg);
-
-        //Verify
-        //the evil client gets a not auth notification
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_returnCode);
-        //the good client remains connected
-        assertFalse(m_session.isClosed());
-        assertTrue(evilSession.isClosed());
-    }
-
-
-    @Test
-    public void testConnAckContainsSessionPresentFlag() throws InterruptedException {
-        connMsg = new ConnectMessage();
-        connMsg.setProtocolVersion(VERSION_3_1_1);
-        connMsg.setClientID("CliID");
-        connMsg.setCleanSession(false);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-
-        //Connect a first time
-        m_processor.processConnect(m_session, connMsg);
-        //disconnect
-        m_processor.processDisconnect(m_session, new DisconnectMessage());
-              
-        //Exercise, reconnect
-        MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
-        m_processor.processConnect(firstReceiverSession, connMsg);
-
-        //Verify
-        AbstractMessage recvMsg = firstReceiverSession.getMessage();
-        assertTrue(recvMsg instanceof ConnAckMessage);
-        ConnAckMessage connAckMsg = (ConnAckMessage) recvMsg;
-        assertTrue(connAckMsg.isSessionPresent());
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, connAckMsg.getReturnCode());
-    }
 
     @Test
     public void testPublish() throws InterruptedException {
@@ -395,7 +129,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, msg);
 
         //Verify
-        assertNotNull(m_receivedMessage);
+        assertNotNull(m_session.getReceivedMessage());
         //TODO check received message attributes
     }
     
@@ -471,7 +205,7 @@ public class ProtocolProcessorTest {
         m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
 
         //Verify
-        assertTrue(m_receivedMessage instanceof SubAckMessage);
+        assertTrue(m_session.getReceivedMessage() instanceof SubAckMessage);
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
@@ -511,8 +245,8 @@ public class ProtocolProcessorTest {
 
         //Verify
         assertEquals(0, subscriptions.size());
-        assertTrue(m_receivedMessage instanceof SubAckMessage);
-        List<QOSType> qosSubAcked = ((SubAckMessage) m_receivedMessage).types();
+        assertTrue(m_session.getReceivedMessage() instanceof SubAckMessage);
+        List<QOSType> qosSubAcked = ((SubAckMessage) m_session.getReceivedMessage()).types();
         assertEquals(1, qosSubAcked.size());
         assertEquals(QOSType.FAILURE, qosSubAcked.get(0));
     }
@@ -601,9 +335,9 @@ public class ProtocolProcessorTest {
         //Verify
         //wait the latch
         assertTrue(publishRecvSignal.await(1, TimeUnit.SECONDS)); //no timeout
-        assertNotNull(m_receivedMessage); 
-        assertTrue(m_receivedMessage instanceof PublishMessage);
-        PublishMessage pubMessage = (PublishMessage) m_receivedMessage;
+        assertNotNull(m_session.getReceivedMessage());
+        assertTrue(m_session.getReceivedMessage() instanceof PublishMessage);
+        PublishMessage pubMessage = (PublishMessage) m_session.getReceivedMessage();
         assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
     }
 
@@ -648,7 +382,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
-        assertNull(m_receivedMessage); 
+        assertNull(m_session.getReceivedMessage());
     }
     
     
@@ -673,7 +407,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
-        assertNull(m_receivedMessage); 
+        assertNull(m_session.getReceivedMessage());
     }
     
     
