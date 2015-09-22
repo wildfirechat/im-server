@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.netty.handler.codec.CorruptedFrameException;
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.proto.Utils;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
@@ -70,7 +71,11 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String clientID = (String) NettyUtils.getAttribute(ctx, NettyChannel.ATTR_KEY_CLIENTID);
-        m_messaging.lostConnection(clientID);
+        if (clientID != null && !clientID.isEmpty()) {
+            //if the channel was of a correctly connected client, inform messagin
+            //else it was of a not completed CONNECT message
+            m_messaging.lostConnection(clientID);
+        }
         ctx.close(/*false*/);
     }
 

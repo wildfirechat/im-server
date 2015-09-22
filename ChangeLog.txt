@@ -9,6 +9,7 @@ Version 0.8:
     Switched from commit persistence on every change to time based to fix delay in handling many msgs/sec (fix issue #79)
     Changed willMessage and password in CONNECT message from String to byte[] (fix issue #94 and #95)
     Fixed ugly empty session storage, avoid fake NullObject empty subscription subscription
+    Added check to avoid creation of LostConnectionEvents for not yet completed connects (fix issue #88)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1
