@@ -15,10 +15,36 @@
  */
 package org.eclipse.moquette.server;
 
+import static org.eclipse.moquette.commons.Constants.JKS_PATH_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.KEY_STORE_PASSWORD_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.SSL_PORT_PROPERTY_NAME;
+import static org.junit.Assert.assertFalse;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Properties;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
 import org.junit.Before;
@@ -26,17 +52,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.util.Properties;
-
-import static org.eclipse.moquette.commons.Constants.*;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Check that Moquette could also handle SSL.
@@ -116,6 +131,25 @@ public class ServerIntegrationSSLTest {
         m_client.disconnect();
     }
 
+    @Test
+    public void checkSupportSSLForMultipleClient() throws Exception {
+        LOG.info("*** checkSupportSSLForMultipleClient ***");
+        SSLSocketFactory ssf = configureSSLSocketFactory();
+        
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setSocketFactory(ssf);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 0);
+        
+        MqttClient secondClient = new MqttClient("ssl://localhost:8883", "secondTestClient", new MemoryPersistence());
+        MqttConnectOptions secondClientOptions = new MqttConnectOptions();
+        secondClientOptions.setSocketFactory(ssf);
+        secondClient.connect(secondClientOptions);
+        secondClient.publish("/topic", new MqttMessage("message".getBytes()));
+        secondClient.disconnect();
+        
+        m_client.disconnect();
+    }
     /**
      * keystore generated into test/resources with command:
      * 
