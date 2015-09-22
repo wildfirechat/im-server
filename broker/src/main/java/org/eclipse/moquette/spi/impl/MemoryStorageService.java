@@ -104,6 +104,9 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     @Override
     public void removeMessageInSession(String clientID, Integer messageID) {
         List<PublishEvent> events = m_persistentMessageStore.get(clientID);
+        if (events == null) {
+            return;
+        }
         PublishEvent toRemoveEvt = null;
         for (PublishEvent evt : events) {
             if (evt.getMessageID() == null && messageID == null) {
