@@ -35,14 +35,14 @@ class PublishDecoder extends DemuxDecoder {
 
     @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
-        LOG.info("decode invoked with buffer {}", in);
+        LOG.debug("decode invoked with buffer {}", in);
         in.resetReaderIndex();
         int startPos = in.readerIndex();
 
         //Common decoding part
         PublishMessage message = new PublishMessage();
         if (!decodeCommonHeader(message, in)) {
-            LOG.info("decode ask for more data after {}", in);
+            LOG.debug("decode ask for more data after {}", in);
             in.resetReaderIndex();
             return;
         }
@@ -89,7 +89,6 @@ class PublishDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
-//        byte[] b = new byte[payloadSize];
         ByteBuf bb = Unpooled.buffer(payloadSize);
         in.readBytes(bb);
         message.setPayload(bb.nioBuffer());
