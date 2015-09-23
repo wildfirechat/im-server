@@ -49,7 +49,7 @@ class SubAckDecoder extends DemuxDecoder {
         }
         for (int i = 0; i < remainingLength; i++) {
             byte qos = in.readByte();
-            message.addType(AbstractMessage.QOSType.values()[qos]);
+            message.addType(AbstractMessage.QOSType.valueOf(qos));
         }
         
         out.add(message);
