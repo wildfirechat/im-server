@@ -73,7 +73,11 @@ abstract class DemuxDecoder {
 
         message.setMessageType(messageType);
         message.setDupFlag(dupFlag);
-        message.setQos(AbstractMessage.QOSType.values()[qosLevel]);
+        try {
+            message.setQos(AbstractMessage.QOSType.valueOf(qosLevel));
+        } catch(IllegalArgumentException e) {
+            throw new CorruptedFrameException(String.format("Received an invalid QOS: %s", e.getMessage()), e);
+        }
         message.setRetainFlag(retainFlag);
         message.setRemainingLength(remainingLength);
         return true;

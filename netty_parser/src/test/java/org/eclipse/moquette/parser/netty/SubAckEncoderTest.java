@@ -49,7 +49,7 @@ public class SubAckEncoderTest {
         //Exercise
         m_encoder.encode(m_mockedContext, msg, m_out);
     }
-    
+
     @Test
     public void testEncodeWithMultipleQos() throws Exception {
         SubAckMessage msg = new SubAckMessage();
@@ -70,8 +70,29 @@ public class SubAckEncoderTest {
         //Variable part
         assertEquals((byte)0xAA, m_out.readByte()); //MessageID MSB
         assertEquals((byte)0xBB, m_out.readByte()); //MessageID LSB
-        assertEquals((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), m_out.readByte());
-        assertEquals((byte)AbstractMessage.QOSType.LEAST_ONE.ordinal(), m_out.readByte());
-        assertEquals((byte)AbstractMessage.QOSType.EXACTLY_ONCE.ordinal(), m_out.readByte());
+        assertEquals(AbstractMessage.QOSType.MOST_ONE.byteValue(), m_out.readByte());
+        assertEquals(AbstractMessage.QOSType.LEAST_ONE.byteValue(), m_out.readByte());
+        assertEquals(AbstractMessage.QOSType.EXACTLY_ONCE.byteValue(), m_out.readByte());
+    }
+
+    @Test
+    public void testEncodeWithFailureQOS() throws Exception {
+        SubAckMessage msg = new SubAckMessage();
+
+        int messageID = 0xAABB;
+        msg.setMessageID(messageID);
+        msg.addType(AbstractMessage.QOSType.FAILURE);
+
+        //Exercise
+        m_encoder.encode(m_mockedContext, msg, m_out);
+
+        //Verify
+        assertEquals((byte) (AbstractMessage.SUBACK << 4 ), m_out.readByte()); //1 byte
+        assertEquals(3, m_out.readByte()); //remaining length
+
+        //Variable part
+        assertEquals((byte)0xAA, m_out.readByte()); //MessageID MSB
+        assertEquals((byte)0xBB, m_out.readByte()); //MessageID LSB
+        assertEquals((byte)0x80, m_out.readByte()); //Failure return code
     }
 }

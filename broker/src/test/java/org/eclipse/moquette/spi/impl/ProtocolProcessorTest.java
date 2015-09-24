@@ -199,7 +199,7 @@ public class ProtocolProcessorTest {
     public void testSubscribe() {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
-        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
         m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
@@ -213,7 +213,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
-        msg.addSubscription(new SubscribeMessage.Couple((byte)AbstractMessage.QOSType.MOST_ONE.ordinal(), FAKE_TOPIC));
+        msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
         subscriptions.clearAllSubscriptions();
@@ -234,7 +234,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
-        msg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), BAD_FORMATTED_TOPIC));
+        msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
         subscriptions.clearAllSubscriptions();
@@ -329,7 +329,7 @@ public class ProtocolProcessorTest {
         
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
-        msg.addSubscription(new SubscribeMessage.Couple((byte)QOSType.MOST_ONE.ordinal(), "#"));
+        msg.addSubscription(new SubscribeMessage.Couple(QOSType.MOST_ONE.byteValue(), "#"));
         m_processor.processSubscribe(m_session, msg/*, FAKE_PUBLISHER_ID, false*/);
         
         //Verify

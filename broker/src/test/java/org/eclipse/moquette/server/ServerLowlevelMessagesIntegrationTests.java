@@ -113,7 +113,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         connectMessage.setWillFlag(true);
         connectMessage.setWillMessage(willTestamentMsg.getBytes());
         connectMessage.setWillTopic(willTestamentTopic);
-        connectMessage.setWillQos((byte) QOSType.MOST_ONE.ordinal());
+        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
         
         //Execute
         m_client.sendMessage(connectMessage);
@@ -155,7 +155,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         connectMessage.setClientID("");
         connectMessage.setKeepAlive(keepAlive);
         connectMessage.setWillFlag(false);
-        connectMessage.setWillQos((byte) QOSType.MOST_ONE.ordinal());
+        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
         
         //Execute
         m_client.sendMessage(connectMessage);

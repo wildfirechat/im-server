@@ -237,7 +237,7 @@ public class SubscriptionsStore {
         for (Subscription sub : matchingSubs) {
             Subscription existingSub = subsForClient.get(sub.getClientId());
             //update the selected subscriptions if not present or if has a greater qos
-            if (existingSub == null || existingSub.getRequestedQos().ordinal() < sub.getRequestedQos().ordinal()) {
+            if (existingSub == null || existingSub.getRequestedQos().byteValue() < sub.getRequestedQos().byteValue()) {
                 subsForClient.put(sub.getClientId(), sub);
             }
         }
