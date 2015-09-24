@@ -55,11 +55,7 @@ public class NettyChannel implements ServerChannel {
         if (m_channel.pipeline().names().contains("idleStateHandler")) {
             m_channel.pipeline().remove("idleStateHandler");
         }
-        if (m_channel.pipeline().names().contains("idleEventHandler")) {
-            m_channel.pipeline().remove("idleEventHandler");
-        }
         m_channel.pipeline().addFirst("idleStateHandler", new IdleStateHandler(0, 0, idleTime));
-        m_channel.pipeline().addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
     }
 
     public void close(boolean immediately) {

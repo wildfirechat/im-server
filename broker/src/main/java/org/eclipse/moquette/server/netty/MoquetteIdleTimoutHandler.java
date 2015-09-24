@@ -16,10 +16,12 @@
 package org.eclipse.moquette.server.netty;
 
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+@Sharable
 class MoquetteIdleTimoutHandler extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -29,9 +31,9 @@ class MoquetteIdleTimoutHandler extends ChannelDuplexHandler {
                 //fire a channelInactive to trigger publish of Will
                 ctx.fireChannelInactive();
                 ctx.close();
-            } /*else if (e.getState() == IdleState.WRITER_IDLE) {
-                    ctx.writeAndFlush(new PingMessage());
-                }*/
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 }

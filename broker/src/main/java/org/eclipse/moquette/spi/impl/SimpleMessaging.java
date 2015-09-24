@@ -101,7 +101,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void init(IConfig configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
-        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 128, m_executor); //1024 * 32
         /*Disruptor<ValueEvent> m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
                 ProducerType.MULTI, new BusySpinWaitStrategy());*/
         m_disruptor.handleEventsWith(this);
@@ -115,13 +115,11 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     }
 
     private void disruptorPublish(MessagingEvent msgEvent) {
-        LOG.debug("disruptorPublish publishing event {}", msgEvent);
+        LOG.debug("disruptorPublish publishing event {}, remaining capacity {}", msgEvent, m_ringBuffer.remainingCapacity());
         long sequence = m_ringBuffer.next();
         ValueEvent event = m_ringBuffer.get(sequence);
-
         event.setEvent(msgEvent);
-        
-        m_ringBuffer.publish(sequence); 
+        m_ringBuffer.publish(sequence);
     }
     
     @Override
