@@ -81,9 +81,9 @@ public interface IMessagesStore {
 
     void dropMessagesInSession(String clientID);
 
-    void cleanInFlight(String clientID, int packetID);
+    void cleanTemporaryPublish(String clientID, int packetID);
 
-    void addInFlight(PublishEvent evt, String clientID, int packetID);
+    void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID);
 
     /**
      * Return the next valid packetIdentifer for the given client session.

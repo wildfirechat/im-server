@@ -188,7 +188,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     //----------------- In flight methods -----------------
     @Override
-    public void cleanInFlight(String clientID, int packetID) {
+    public void cleanTemporaryPublish(String clientID, int packetID) {
         String publishKey = String.format("%s%d", clientID, packetID);
         m_inflightStore.remove(publishKey);
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
@@ -198,7 +198,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void addInFlight(PublishEvent evt, String clientID, int packetID) {
+    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
         String publishKey = String.format("%s%d", clientID, packetID);
         StoredPublishEvent storedEvt = convertToStored(evt);
         m_inflightStore.put(publishKey, storedEvt);

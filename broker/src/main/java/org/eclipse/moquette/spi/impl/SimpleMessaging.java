@@ -101,7 +101,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
     public void init(IConfig configProps) {
         subscriptions = new SubscriptionsStore();
         m_executor = Executors.newFixedThreadPool(1);
-        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 128, m_executor); //1024 * 32
+        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor); //128 to break the broker
         /*Disruptor<ValueEvent> m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
                 ProducerType.MULTI, new BusySpinWaitStrategy());*/
         m_disruptor.handleEventsWith(this);

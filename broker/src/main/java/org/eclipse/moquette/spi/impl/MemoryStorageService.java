@@ -127,7 +127,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void cleanInFlight(String clientID, int packetID) {
+    public void cleanTemporaryPublish(String clientID, int packetID) {
         String publishKey = String.format("%s%d", clientID, packetID);
         m_inflightStore.remove(publishKey);
         Set<Integer> inFlightForClient = m_inflightIDs.get(clientID);
@@ -137,7 +137,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void addInFlight(PublishEvent evt, String clientID, int packetID) {
+    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
         String publishKey = String.format("%s%d", clientID, packetID);
         m_inflightStore.put(publishKey, evt);
     }

@@ -142,7 +142,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //init the output ringbuffer
         m_executor = Executors.newFixedThreadPool(1);
 
-        /*Disruptor<ValueEvent>*/ m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor);
+        /*Disruptor<ValueEvent>*/ m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor); //128 to break the broker
         m_disruptor.handleEventsWith(this);
         m_disruptor.start();
 
@@ -332,10 +332,10 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
             forward2Subscribers(publishEvt);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            //TODO use a message store for TO PUBLISH MESSAGES it has nothing to do with inFlight!!
-            m_messagesStore.addInFlight(publishEvt, clientID, messageID);
+            //TODO implement inFlight!!
+            m_messagesStore.storeTemporaryPublish(publishEvt, clientID, messageID);
             forward2Subscribers(publishEvt);
-            m_messagesStore.cleanInFlight(clientID, messageID);
+            m_messagesStore.cleanTemporaryPublish(clientID, messageID);
             //NB the PUB_ACK could be sent also after the addInFlight
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
@@ -414,7 +414,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
                     //if QoS 2 then store it in temp memory
                     if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
                         PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
-                        m_messagesStore.addInFlight(newPublishEvt, sub.getClientId(), messageID);
+                        m_messagesStore.storeTemporaryPublish(newPublishEvt, sub.getClientId(), messageID);
                     }
                     //publish
                     if (sub.isActive()) {
@@ -552,7 +552,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
-        m_messagesStore.cleanInFlight(clientID, messageID);
+        m_messagesStore.cleanTemporaryPublish(clientID, messageID);
     }
     
     @MQTTMessage(message = DisconnectMessage.class)
