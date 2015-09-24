@@ -184,7 +184,7 @@ public class Utils {
             flags |= 0x01;
         }
         
-        flags |= ((message.getQos().ordinal() & 0x03) << 1);
+        flags |= ((message.getQos().byteValue() & 0x03) << 1);
         return flags;
     }
     

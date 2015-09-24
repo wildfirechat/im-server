@@ -224,7 +224,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
 
         //Handle will flag
         if (msg.isWillFlag()) {
-            AbstractMessage.QOSType willQos = AbstractMessage.QOSType.values()[msg.getWillQos()];
+            AbstractMessage.QOSType willQos = AbstractMessage.QOSType.valueOf(msg.getWillQos());
             byte[] willPayload = msg.getWillMessage();
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
             //save the will testament in the clientID store
@@ -391,7 +391,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
         for (final Subscription sub : subscriptions.matches(topic)) {
             AbstractMessage.QOSType qos = publishingQos;
-            if (qos.ordinal() > sub.getRequestedQos().ordinal()) {
+            if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
                 qos = sub.getRequestedQos();
             }
 
@@ -637,7 +637,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         ackMessage.setMessageID(msg.getMessageID());
 
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            AbstractMessage.QOSType qos = AbstractMessage.QOSType.values()[req.getQos()];
+            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.getQos());
             Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
             boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);

@@ -81,13 +81,31 @@ public class SubAckDecoderTest {
         assertEquals(AbstractMessage.QOSType.LEAST_ONE, message.types().get(0));
     }
 
+    @Test
+    public void testEncodeWithFailureQOS() throws Exception {
+        initHeaderQos(m_buff, 0xAABB, AbstractMessage.QOSType.FAILURE);
+
+        //Exercise
+        m_msgdec.decode(null, m_buff, m_results);
+
+        //Verify
+        assertFalse(m_results.isEmpty());
+        SubAckMessage message = (SubAckMessage)m_results.get(0);
+        assertNotNull(message);
+        assertEquals(0xAABB, message.getMessageID().intValue());
+        List<AbstractMessage.QOSType> qoses = message.types();
+        assertEquals(1, qoses.size());
+        assertEquals(AbstractMessage.QOSType.FAILURE, qoses.get(0));
+        assertEquals(AbstractMessage.SUBACK, message.getMessageType());
+    }
+
     private void initHeaderQos(ByteBuf buff, int messageID, AbstractMessage.QOSType... qoss) throws IllegalAccessException {
         buff.clear().writeByte(AbstractMessage.SUBACK << 4).
                 writeBytes(Utils.encodeRemainingLength(2 + qoss.length));
         
         buff.writeShort(messageID);
         for (AbstractMessage.QOSType qos : qoss) {
-            buff.writeByte(qos.ordinal());
+            buff.writeByte(qos.byteValue());
         }
     }
 }
