@@ -312,6 +312,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         LOG.debug("persisted subscriptions {}", m_persistentSubscriptions);
         this.m_db.close();
         LOG.debug("closed disk storage");
+        this.m_scheduler.shutdown();
+        LOG.debug("Persistence commit scheduler is shutdown");
     }
 
     /*-------- QoS 2  storage management --------------*/
