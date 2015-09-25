@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author andrea
  */
-class ProtocolProcessor implements EventHandler<ValueEvent> {
+public class ProtocolProcessor implements EventHandler<ValueEvent> {
 
     static final class WillMessage {
         private final String topic;
@@ -155,8 +155,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_disruptor.shutdown();
     }
 
-    @MQTTMessage(message = ConnectMessage.class)
-    void processConnect(ServerChannel session, ConnectMessage msg) {
+    public void processConnect(ServerChannel session, ConnectMessage msg) {
         LOG.debug("CONNECT for client <{}>", msg.getClientID());
         if (msg.getProtocolVersion() != VERSION_3_1 && msg.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
@@ -287,8 +286,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
     }
     
-    @MQTTMessage(message = PubAckMessage.class)
-    void processPubAck(ServerChannel session, PubAckMessage msg) {
+    public void processPubAck(ServerChannel session, PubAckMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //Remove the message from message store
@@ -304,9 +302,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //remove also the messages stored of type QoS1/2
         m_messagesStore.dropMessagesInSession(clientID);
     }
-    
-    @MQTTMessage(message = PublishMessage.class)
-    void processPublish(ServerChannel session, PublishMessage msg) {
+
+    public void processPublish(ServerChannel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         final String topic = msg.getTopicName();
@@ -503,8 +500,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
      * */
-    @MQTTMessage(message = PubRelMessage.class)
-    void processPubRel(ServerChannel session, PubRelMessage msg) {
+    public void processPubRel(ServerChannel session, PubRelMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
@@ -531,8 +527,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubCompMessage));
     }
     
-    @MQTTMessage(message = PubRecMessage.class)
-    void processPubRec(ServerChannel session, PubRecMessage msg) {
+    public void processPubRec(ServerChannel session, PubRecMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //once received a PUBREC reply with a PUBREL(messageID)
@@ -545,9 +540,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         //disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRelMessage));
         session.write(pubRelMessage);
     }
-    
-    @MQTTMessage(message = PubCompMessage.class)
-    void processPubComp(ServerChannel session, PubCompMessage msg) {
+
+    public void processPubComp(ServerChannel session, PubCompMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
@@ -555,8 +549,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_messagesStore.cleanTemporaryPublish(clientID, messageID);
     }
     
-    @MQTTMessage(message = DisconnectMessage.class)
-    void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
+    public void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         if (cleanSession) {
@@ -575,8 +568,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
         m_interceptor.notifyClientDisconnected(clientID);
     }
-    
-    void processConnectionLost(LostConnectionEvent evt) {
+
+    public void processConnectionLost(LostConnectionEvent evt) {
         String clientID = evt.clientID;
         //If already removed a disconnect message was already processed for this clientID
         if (m_clientIDs.remove(clientID) != null) {
@@ -597,8 +590,7 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
      */
-    @MQTTMessage(message = UnsubscribeMessage.class)
-    void processUnsubscribe(ServerChannel session, UnsubscribeMessage msg) {
+    public void processUnsubscribe(ServerChannel session, UnsubscribeMessage msg) {
         List<String> topics = msg.topicFilters();
         int messageID = msg.getMessageID();
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
@@ -625,9 +617,8 @@ class ProtocolProcessor implements EventHandler<ValueEvent> {
         LOG.info("replying with UnsubAck to MSG ID {}", messageID);
         session.write(ackMessage);
     }
-    
-    @MQTTMessage(message = SubscribeMessage.class)
-    void processSubscribe(ServerChannel session, SubscribeMessage msg) {
+
+    public void processSubscribe(ServerChannel session, SubscribeMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());

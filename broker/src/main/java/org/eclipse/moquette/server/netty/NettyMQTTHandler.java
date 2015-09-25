@@ -18,16 +18,16 @@ package org.eclipse.moquette.server.netty;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import java.util.HashMap;
-import java.util.Map;
 
 import io.netty.handler.codec.CorruptedFrameException;
-import org.apache.commons.codec.binary.StringUtils;
+import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.proto.Utils;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
+
 import static org.eclipse.moquette.proto.messages.AbstractMessage.*;
-import org.eclipse.moquette.proto.messages.PingRespMessage;
+
+import org.eclipse.moquette.spi.impl.ProtocolProcessor;
+import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +40,16 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
     private IMessaging m_messaging;
+    private final ProtocolProcessor m_processor;
+
+    private NettyMQTTHandler() {
+        m_processor = null;
+    }
+
+    public NettyMQTTHandler(ProtocolProcessor processor) {
+        m_processor = processor;
+    }
+
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
@@ -48,15 +58,31 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
+                    m_processor.processConnect(new NettyChannel(ctx), (ConnectMessage) msg);
+                    break;
                 case SUBSCRIBE:
+                    m_processor.processSubscribe(new NettyChannel(ctx), (SubscribeMessage) msg);
+                    break;
                 case UNSUBSCRIBE:
+                    m_processor.processUnsubscribe(new NettyChannel(ctx), (UnsubscribeMessage) msg);
+                    break;
                 case PUBLISH:
+                    m_processor.processPublish(new NettyChannel(ctx), (PublishMessage) msg);
+                    break;
                 case PUBREC:
+                    m_processor.processPubRec(new NettyChannel(ctx), (PubRecMessage) msg);
+                    break;
                 case PUBCOMP:
+                    m_processor.processPubComp(new NettyChannel(ctx), (PubCompMessage) msg);
+                    break;
                 case PUBREL:
+                    m_processor.processPubRel(new NettyChannel(ctx), (PubRelMessage) msg);
+                    break;
                 case DISCONNECT:
-                case PUBACK:    
-                    m_messaging.handleProtocolMessage(new NettyChannel(ctx), msg);
+                    m_processor.processDisconnect(new NettyChannel(ctx), (DisconnectMessage) msg);
+                    break;
+                case PUBACK:
+                    m_processor.processPubAck(new NettyChannel(ctx), (PubAckMessage) msg);
                     break;
                 case PINGREQ:
                     PingRespMessage pingResp = new PingRespMessage();
@@ -74,7 +100,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         if (clientID != null && !clientID.isEmpty()) {
             //if the channel was of a correctly connected client, inform messagin
             //else it was of a not completed CONNECT message
-            m_messaging.lostConnection(clientID);
+            m_processor.processConnectionLost(new LostConnectionEvent(clientID));
         }
         ctx.close(/*false*/);
     }
@@ -88,9 +114,5 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             LOG.error("Ugly error on networking", cause);
         }
         ctx.close();
-    }
-
-    public void setMessaging(IMessaging messaging) {
-        m_messaging = messaging;
     }
 }

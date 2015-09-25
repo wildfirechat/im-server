@@ -15,9 +15,6 @@
  */
 package org.eclipse.moquette.spi;
 
-import org.eclipse.moquette.proto.messages.AbstractMessage;
-import org.eclipse.moquette.server.ServerChannel;
-
 /**
  * Callback interface used to be notified of some events from the input event queue.
  * 
@@ -27,10 +24,4 @@ import org.eclipse.moquette.server.ServerChannel;
  * @author andrea
  */
 public interface IMessaging {
-
-    void stop();
-
-    void lostConnection(String clientID);
-
-    void handleProtocolMessage(ServerChannel session, AbstractMessage msg);
 }

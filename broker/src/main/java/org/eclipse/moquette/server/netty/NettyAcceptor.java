@@ -55,6 +55,8 @@ import org.eclipse.moquette.parser.netty.MQTTDecoder;
 import org.eclipse.moquette.parser.netty.MQTTEncoder;
 import org.eclipse.moquette.server.ServerAcceptor;
 import org.eclipse.moquette.server.netty.metrics.*;
+import org.eclipse.moquette.spi.impl.ProtocolProcessor;
+import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,12 +103,13 @@ public class NettyAcceptor implements ServerAcceptor {
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
 
     @Override
-    public void initialize(IMessaging messaging, IConfig props) throws IOException {
+    public void initialize(ProtocolProcessor processor, IConfig props) throws IOException {
         m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
+        final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
         
-        initializePlainTCPTransport(messaging, props);
-        initializeWebSocketTransport(messaging, props);
+        initializePlainTCPTransport(handler, props);
+        initializeWebSocketTransport(handler, props);
         String sslTcpPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         String wssPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
         if (sslTcpPortProp != null || wssPortProp != null) {
@@ -115,8 +118,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 LOG.error("Can't initialize SSLHandler layer! Exiting, check your configuration of jks");
                 return;
             }
-            initializeSSLTCPTransport(messaging, props, sslHandlerFactory);
-            initializeWSSTransport(messaging, props, sslHandlerFactory);
+            initializeSSLTCPTransport(handler, props, sslHandlerFactory);
+            initializeWSSTransport(handler, props, sslHandlerFactory);
         }
     }
 
@@ -150,10 +153,8 @@ public class NettyAcceptor implements ServerAcceptor {
         }
     }
     
-    private void initializePlainTCPTransport(IMessaging messaging, IConfig props) throws IOException {
-        final NettyMQTTHandler handler = new NettyMQTTHandler();
+    private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        handler.setMessaging(messaging);
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         int port = Integer.parseInt(props.getProperty(Constants.PORT_PROPERTY_NAME));
         initFactory(host, port, new PipelineInitializer() {
@@ -171,7 +172,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
     
-    private void initializeWebSocketTransport(IMessaging messaging, IConfig props) throws IOException {
+    private void initializeWebSocketTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
         String webSocketPortProp = props.getProperty(Constants.WEB_SOCKET_PORT_PROPERTY_NAME);
         if (webSocketPortProp == null) {
             //Do nothing no WebSocket configured
@@ -180,9 +181,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
         int port = Integer.parseInt(webSocketPortProp);
         
-        final NettyMQTTHandler handler = new NettyMQTTHandler();
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        handler.setMessaging(messaging);
 
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         initFactory(host, port, new PipelineInitializer() {
@@ -205,7 +204,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
     
-    private void initializeSSLTCPTransport(IMessaging messaging, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
+    private void initializeSSLTCPTransport(final NettyMQTTHandler handler, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
         String sslPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -216,9 +215,7 @@ public class NettyAcceptor implements ServerAcceptor {
         int sslPort = Integer.parseInt(sslPortProp);
         LOG.info("Starting SSL on port {}", sslPort);
 
-        final NettyMQTTHandler handler = new NettyMQTTHandler();
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        handler.setMessaging(messaging);
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
@@ -236,7 +233,7 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
 
-    private void initializeWSSTransport(IMessaging messaging, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
+    private void initializeWSSTransport(final NettyMQTTHandler handler, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
         String sslPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
@@ -244,9 +241,7 @@ public class NettyAcceptor implements ServerAcceptor {
             return;
         }
         int sslPort = Integer.parseInt(sslPortProp);
-        final NettyMQTTHandler handler = new NettyMQTTHandler();
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        handler.setMessaging(messaging);
         String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override

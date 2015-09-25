@@ -15,22 +15,12 @@
  */
 package org.eclipse.moquette.spi.impl;
 
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.dsl.Disruptor;
-import org.HdrHistogram.Histogram;
+import org.eclipse.moquette.commons.Constants;
 import org.eclipse.moquette.interception.InterceptHandler;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.server.config.IConfig;
-import org.eclipse.moquette.spi.impl.security.*;
-import org.eclipse.moquette.server.ServerChannel;
 import org.eclipse.moquette.spi.IMessagesStore;
-import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
-import org.eclipse.moquette.spi.impl.events.MessagingEvent;
-import org.eclipse.moquette.spi.impl.events.ProtocolEvent;
-import org.eclipse.moquette.spi.impl.events.StopEvent;
+import org.eclipse.moquette.spi.impl.security.*;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
 import org.slf4j.Logger;
@@ -42,16 +32,7 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import org.eclipse.moquette.commons.Constants;
-
-import static org.eclipse.moquette.commons.Constants.PASSWORD_FILE_PROPERTY_NAME;
-import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
-import static org.eclipse.moquette.commons.Constants.ALLOW_ANONYMOUS_PROPERTY_NAME;
-import static org.eclipse.moquette.commons.Constants.ACL_FILE_PROPERTY_NAME;
+import static org.eclipse.moquette.commons.Constants.*;
 
 /**
  *
@@ -63,31 +44,22 @@ import static org.eclipse.moquette.commons.Constants.ACL_FILE_PROPERTY_NAME;
  *
  * @author andrea
  */
-public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
+public class SimpleMessaging {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleMessaging.class);
 
     private SubscriptionsStore subscriptions;
 
-    private RingBuffer<ValueEvent> m_ringBuffer;
 
     private IMessagesStore m_storageService;
     private ISessionsStore m_sessionsStore;
 
-    private ExecutorService m_executor;
-    private Disruptor<ValueEvent> m_disruptor;
     private BrokerInterceptor m_interceptor;
 
     private static SimpleMessaging INSTANCE;
     
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
-    private final AnnotationSupport annotationSupport = new AnnotationSupport();
-    private boolean benchmarkEnabled = false;
-    
-    CountDownLatch m_stopLatch;
 
-    Histogram histogram = new Histogram(5);
-    
     private SimpleMessaging() {
     }
 
@@ -98,93 +70,12 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         return INSTANCE;
     }
 
-    public void init(IConfig configProps) {
+    public ProtocolProcessor init(IConfig configProps) {
         subscriptions = new SubscriptionsStore();
-        m_executor = Executors.newFixedThreadPool(1);
-        m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor); //128 to break the broker
-        /*Disruptor<ValueEvent> m_disruptor = new Disruptor<ValueEvent>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor,
-                ProducerType.MULTI, new BusySpinWaitStrategy());*/
-        m_disruptor.handleEventsWith(this);
-        m_disruptor.start();
-
-        // Get the ring buffer from the Disruptor to be used for publishing.
-        m_ringBuffer = m_disruptor.getRingBuffer();
-
-        annotationSupport.processAnnotations(m_processor);
-        processInit(configProps);
+        return processInit(configProps);
     }
 
-    private void disruptorPublish(MessagingEvent msgEvent) {
-        LOG.debug("disruptorPublish publishing event {}, remaining capacity {}", msgEvent, m_ringBuffer.remainingCapacity());
-        long sequence = m_ringBuffer.next();
-        ValueEvent event = m_ringBuffer.get(sequence);
-        event.setEvent(msgEvent);
-        m_ringBuffer.publish(sequence);
-    }
-    
-    @Override
-    public void lostConnection(String clientID) {
-        disruptorPublish(new LostConnectionEvent(clientID));
-    }
-
-    @Override
-    public void handleProtocolMessage(ServerChannel session, AbstractMessage msg) {
-        disruptorPublish(new ProtocolEvent(session, msg));
-    }
-
-    @Override
-    public void stop() {
-        m_stopLatch = new CountDownLatch(1);
-        disruptorPublish(new StopEvent());
-        try {
-            //wait the callback notification from the protocol processor thread
-            LOG.debug("waiting 10 sec to m_stopLatch");
-            boolean elapsed = !m_stopLatch.await(10, TimeUnit.SECONDS);
-            LOG.debug("after m_stopLatch");
-            m_executor.shutdown();
-            m_disruptor.shutdown();
-            if (elapsed) {
-                LOG.error("Can't stop the server in 10 seconds");
-            }
-        } catch (InterruptedException ex) {
-            LOG.error(null, ex);
-        }
-    }
-    
-    @Override
-    public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
-        MessagingEvent evt = t.getEvent();
-        t.setEvent(null); //free the reference to all Netty stuff
-        LOG.info("onEvent processing messaging event from input ringbuffer {}", evt);
-        if (evt instanceof StopEvent) {
-            processStop();
-            return;
-        } 
-        if (evt instanceof LostConnectionEvent) {
-            LostConnectionEvent lostEvt = (LostConnectionEvent) evt;
-            m_processor.processConnectionLost(lostEvt);
-            return;
-        }
-        
-        if (evt instanceof ProtocolEvent) {
-            ServerChannel session = ((ProtocolEvent) evt).getSession();
-            AbstractMessage message = ((ProtocolEvent) evt).getMessage();
-            try {
-                long startTime = System.nanoTime();
-                annotationSupport.dispatch(session, message);
-                if (benchmarkEnabled) {
-                    long delay = System.nanoTime() - startTime;
-                    histogram.recordValue(delay);
-                }
-            } catch (Throwable th) {
-                LOG.error("Serious error processing the message {} for {}", message, session, th);
-            }
-        }
-    }
-
-    private void processInit(IConfig props) {
-        benchmarkEnabled = Boolean.parseBoolean(System.getProperty("moquette.processor.benchmark", "false"));
-
+    private ProtocolProcessor processInit(IConfig props) {
         //TODO use a property to select the storage path
         MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
         m_storageService = mapStorage;
@@ -204,8 +95,6 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
         m_interceptor = new BrokerInterceptor(observers);
 
-        //List<Subscription> storedSubscriptions = m_sessionsStore.listAllSubscriptions();
-        //subscriptions.init(storedSubscriptions);
         subscriptions.init(m_sessionsStore);
 
         String configPath = System.getProperty("moquette.path", null);
@@ -253,6 +142,7 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
+        return m_processor;
     }
     
     private Object loadClass(String className, Class<?> cls) {
@@ -288,25 +178,5 @@ public class SimpleMessaging implements IMessaging, EventHandler<ValueEvent> {
         }
 
         return instance;
-    }
-    
-    private void processStop() {
-        LOG.debug("processStop invoked");
-        m_processor.stop();
-
-        if (m_interceptor != null) {
-            this.m_interceptor.stop();
-            LOG.debug("interceptor firer stopped");
-        }
-        m_storageService.close();
-        LOG.debug("subscription tree {}", subscriptions.dumpTree());
-
-        subscriptions = null;
-        m_stopLatch.countDown();
-
-        if (benchmarkEnabled) {
-            //log metrics
-            histogram.outputPercentileDistribution(System.out, 1000.0);
-        }
     }
 }

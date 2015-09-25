@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import org.eclipse.moquette.server.config.IConfig;
 import org.eclipse.moquette.spi.IMessaging;
+import org.eclipse.moquette.spi.impl.ProtocolProcessor;
+import org.eclipse.moquette.spi.impl.SimpleMessaging;
 
 /**
  *
@@ -26,7 +28,7 @@ import org.eclipse.moquette.spi.IMessaging;
  */
 public interface ServerAcceptor {
     
-    void initialize(IMessaging messaging, IConfig props) throws IOException;
+    void initialize(ProtocolProcessor processor, IConfig props) throws IOException;
     
     void close();
 }

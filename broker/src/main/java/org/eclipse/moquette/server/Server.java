@@ -19,6 +19,7 @@ import org.eclipse.moquette.server.config.FilesystemConfig;
 import org.eclipse.moquette.server.config.IConfig;
 import org.eclipse.moquette.server.config.MemoryConfig;
 import org.eclipse.moquette.server.netty.NettyAcceptor;
+import org.eclipse.moquette.spi.impl.ProtocolProcessor;
 import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,6 @@ public class Server {
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
     private ServerAcceptor m_acceptor;
-    SimpleMessaging messaging;
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -93,17 +93,15 @@ public class Server {
             config.setProperty("intercept.handler", handlerProp);
         }
         LOG.info("Persistent store file: " + config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        messaging = SimpleMessaging.getInstance();
-        messaging.init(config);
+        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config);
 
         m_acceptor = new NettyAcceptor();
-        m_acceptor.initialize(messaging, config);
+        m_acceptor.initialize(processor, config);
     }
     
     public void stopServer() {
     	LOG.info("Server stopping...");
         m_acceptor.close();
-        messaging.stop();
         LOG.info("Server stopped");
     }
 }
