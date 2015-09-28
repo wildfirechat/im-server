@@ -20,6 +20,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -96,7 +97,7 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    private Map<String, ConnectionDescriptor> m_clientIDs = new HashMap<>();
+    private Map<String, ConnectionDescriptor> m_clientIDs = new ConcurrentHashMap<>();
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private IAuthorizator m_authorizator;
@@ -106,7 +107,7 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
     private BrokerInterceptor m_interceptor;
 
     //maps clientID to Will testament, if specified on CONNECT
-    private Map<String, WillMessage> m_willStore = new HashMap<>();
+    private Map<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
     
     private ExecutorService m_executor;
     private RingBuffer<ValueEvent> m_ringBuffer;

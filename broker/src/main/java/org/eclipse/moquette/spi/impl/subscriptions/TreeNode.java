@@ -64,9 +64,22 @@ class TreeNode {
     void addChild(TreeNode child) {
         m_children.add(child);
     }
+//
+//    boolean isLeaf() {
+//        return m_children.isEmpty();
+//    }
 
-    boolean isLeaf() {
-        return m_children.isEmpty();
+    /**
+     * Creates a shallow copy of the current node.
+     * Copy the token and the children.
+     * */
+    TreeNode copy() {
+        final TreeNode copy = new TreeNode(this);
+        copy.m_parent = m_parent;
+        copy.m_children = new ArrayList<>(m_children);
+        copy.m_subscriptions = new ArrayList<>(m_subscriptions);
+        copy.m_token = m_token;
+        return copy;
     }
 
     /**
@@ -81,6 +94,11 @@ class TreeNode {
         }
 
         return null;
+    }
+
+    void updateChild(TreeNode oldChild, TreeNode newChild) {
+        m_children.remove(oldChild);
+        m_children.add(newChild);
     }
 
     List<Subscription> subscriptions() {

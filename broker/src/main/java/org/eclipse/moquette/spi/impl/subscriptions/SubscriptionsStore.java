@@ -18,6 +18,7 @@ package org.eclipse.moquette.spi.impl.subscriptions;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
@@ -29,6 +30,16 @@ import org.slf4j.LoggerFactory;
  * @author andrea
  */
 public class SubscriptionsStore {
+
+    public static class NodeCouple {
+        final TreeNode root;
+        final TreeNode createdNode;
+
+        public NodeCouple(TreeNode root, TreeNode createdNode) {
+            this.root = root;
+            this.createdNode = createdNode;
+        }
+    }
 
     /**
      * Check if the topic filter of the subscription is well formed
@@ -43,7 +54,7 @@ public class SubscriptionsStore {
         }
     }
 
-    public static interface IVisitor<T> {
+    public interface IVisitor<T> {
         void visit(TreeNode node, int deep);
         
         T getResult();
@@ -90,7 +101,7 @@ public class SubscriptionsStore {
         }
     }
 
-    private TreeNode subscriptions = new TreeNode(null);
+    private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode(null));
     private ISessionsStore m_sessionsStore;
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
@@ -115,12 +126,19 @@ public class SubscriptionsStore {
             LOG.debug("Finished loading. Subscription tree after {}", dumpTree());
         }
     }
-    
+
+    //TODO modify the data structure
     protected void addDirect(Subscription newSubscription) {
-        TreeNode current = findMatchingNode(newSubscription.topicFilter);
-        current.addSubscription(newSubscription);
+        TreeNode oldRoot;
+        NodeCouple couple;
+        do {
+            oldRoot = subscriptions.get();
+            couple = recreatePath(newSubscription.topicFilter, oldRoot);
+            couple.createdNode.addSubscription(newSubscription); //createdNode could be null?
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
     }
-    
+
     private TreeNode findMatchingNode(String topic) {
         List<Token> tokens = new ArrayList<>();
         try {
@@ -131,13 +149,44 @@ public class SubscriptionsStore {
 //            return;
         }
 
-        TreeNode current = subscriptions;
+        TreeNode current = subscriptions.get();
         for (Token token : tokens) {
             TreeNode matchingChildren;
 
             //check if a children with the same token already exists
             if ((matchingChildren = current.childWithToken(token)) != null) {
                 current = matchingChildren;
+            } else {
+                //can't find any match
+                return null;
+            }
+        }
+        return current;
+    }
+
+    protected NodeCouple recreatePath(String topic, final TreeNode oldRoot) {
+        List<Token> tokens = new ArrayList<>();
+        try {
+            tokens = parseTopic(topic);
+        } catch (ParseException ex) {
+            //TODO handle the parse exception
+            LOG.error(null, ex);
+        }
+
+        final TreeNode newRoot = oldRoot.copy();
+        TreeNode parent = newRoot;
+        TreeNode current = newRoot;
+        for (Token token : tokens) {
+            TreeNode matchingChildren;
+
+            //check if a children with the same token already exists
+            if ((matchingChildren = current.childWithToken(token)) != null) {
+                //copy the traversed node
+                current = matchingChildren.copy();
+                current.m_parent = parent;
+                //update the child just added in the children list
+                parent.updateChild(matchingChildren, current);
+                parent = current;
             } else {
                 //create a new node for the newly inserted token
                 matchingChildren = new TreeNode(current);
@@ -146,15 +195,11 @@ public class SubscriptionsStore {
                 current = matchingChildren;
             }
         }
-        return current;
+        return new NodeCouple(newRoot, current);
     }
 
     public void add(Subscription newSubscription) {
         addDirect(newSubscription);
-
-        //log the subscription
-//        String clientID = newSubscription.getClientId();
-//        m_storageService.addNewSubscription(newSubscription, clientID);
     }
 
 
@@ -176,15 +221,15 @@ public class SubscriptionsStore {
     }
     
     /**
-     * TODO implement testing
      * It's public because needed in tests :-( bleah
      */
     public void clearAllSubscriptions() {
         SubscriptionTreeCollector subsCollector = new SubscriptionTreeCollector();
-        bfsVisit(subscriptions, subsCollector, 0);
+        bfsVisit(subscriptions.get(), subsCollector, 0);
         
         List<Subscription> allSubscriptions = subsCollector.getResult();
         for (Subscription subscription : allSubscriptions) {
+            //TODO modify the data structure
             removeSubscription(subscription.getTopicFilter(), subscription.getClientId());
         }
     }
@@ -192,24 +237,27 @@ public class SubscriptionsStore {
     /**
      * Visit the topics tree to remove matching subscriptions with clientID
      */
+    //TODO modify the data structure
     public void removeForClient(String clientID) {
-        subscriptions.removeClientSubscriptions(clientID);
+        subscriptions.get().removeClientSubscriptions(clientID);
         //persist the update
         m_sessionsStore.wipeSubscriptions(clientID);
     }
 
+    //TODO modify the data structure
     public void deactivate(String clientID) {
-        subscriptions.deactivate(clientID);
+        subscriptions.get().deactivate(clientID);
         //persist the update
-        Set<Subscription> subs = subscriptions.findAllByClientID(clientID);
+        Set<Subscription> subs = subscriptions.get().findAllByClientID(clientID);
         m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 
+    //TODO modify the data structure
     public void activate(String clientID) {
         LOG.debug("Activating subscriptions for clientID <{}>", clientID);
-        subscriptions.activate(clientID);
+        subscriptions.get().activate(clientID);
         //persist the update
-        Set<Subscription> subs = subscriptions.findAllByClientID(clientID);
+        Set<Subscription> subs = subscriptions.get().findAllByClientID(clientID);
         m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 
@@ -230,7 +278,7 @@ public class SubscriptionsStore {
 
         Queue<Token> tokenQueue = new LinkedBlockingDeque<>(tokens);
         List<Subscription> matchingSubs = new ArrayList<>();
-        subscriptions.matches(tokenQueue, matchingSubs);
+        subscriptions.get().matches(tokenQueue, matchingSubs);
 
         //remove the overlapping subscriptions, selecting ones with greatest qos
         Map<String, Subscription> subsForClient = new HashMap<>();
@@ -249,12 +297,12 @@ public class SubscriptionsStore {
     }
 
     public int size() {
-        return subscriptions.size();
+        return subscriptions.get().size();
     }
     
     public String dumpTree() {
         DumpTreeVisitor visitor = new DumpTreeVisitor();
-        bfsVisit(subscriptions, visitor, 0);
+        bfsVisit(subscriptions.get(), visitor, 0);
         return visitor.getResult();
     }
     

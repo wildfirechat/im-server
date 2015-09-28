@@ -23,7 +23,7 @@ public class Token {
     static final Token EMPTY = new Token("");
     static final Token MULTI = new Token("#");
     static final Token SINGLE = new Token("+");
-    String name;
+    final String name;
 
     protected Token(String s) {
         name = s;
