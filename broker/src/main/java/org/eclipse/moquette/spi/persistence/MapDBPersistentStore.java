@@ -59,7 +59,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     private DB m_db;
     private String m_storePath;
 
-    private final ScheduledExecutorService m_scheduler = Executors.newScheduledThreadPool(1);
+    protected final ScheduledExecutorService m_scheduler = Executors.newScheduledThreadPool(1);
 
     /*
      * The default constructor will create an in memory store as no file path was specified
@@ -311,6 +311,10 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     public void close() {
+        if (this.m_db.isClosed()) {
+            LOG.debug("already closed");
+            return;
+        }
         this.m_db.commit();
         LOG.debug("persisted subscriptions {}", m_persistentSubscriptions);
         this.m_db.close();
