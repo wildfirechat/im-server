@@ -81,8 +81,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 	        File tmpFile;
 	        try {
 	            tmpFile = new File(m_storePath);
-	            boolean fileAlreadyExists = tmpFile.createNewFile();
-                if (fileAlreadyExists) {
+	            boolean fileNewlyCreated = tmpFile.createNewFile();
+                if (!fileNewlyCreated) {
                     LOG.warn("File [{}] already exists", m_storePath);
                 }
 	        } catch (IOException ex) {
