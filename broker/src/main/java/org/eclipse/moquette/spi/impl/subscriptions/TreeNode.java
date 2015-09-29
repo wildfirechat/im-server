@@ -64,10 +64,6 @@ class TreeNode {
     void addChild(TreeNode child) {
         m_children.add(child);
     }
-//
-//    boolean isLeaf() {
-//        return m_children.isEmpty();
-//    }
 
     /**
      * Creates a shallow copy of the current node.

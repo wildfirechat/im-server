@@ -127,7 +127,6 @@ public class SubscriptionsStore {
         }
     }
 
-    //TODO modify the data structure
     protected void addDirect(Subscription newSubscription) {
         TreeNode oldRoot;
         NodeCouple couple;
