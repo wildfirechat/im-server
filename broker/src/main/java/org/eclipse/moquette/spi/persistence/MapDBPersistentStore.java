@@ -124,7 +124,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
-        List<StoredMessage> results = new ArrayList<StoredMessage>();
+        List<StoredMessage> results = new ArrayList<>();
 
         for (Map.Entry<String, StoredMessage> entry : m_retainedStore.entrySet()) {
             StoredMessage storedMsg = entry.getValue();
@@ -174,7 +174,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
                 //was a qos0 message (no ID)
                 toRemoveEvt = evt;
             }
-            if (evt.getMessageID() == messageID) {
+            if (evt.getMessageID().equals(messageID)) {
                 toRemoveEvt = evt;
             }
         }
@@ -333,16 +333,14 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     private StoredPublishEvent convertToStored(PublishEvent evt) {
-        StoredPublishEvent storedEvt = new StoredPublishEvent(evt);
-        return storedEvt;
+        return new StoredPublishEvent(evt);
     }
 
     private PublishEvent convertFromStored(StoredPublishEvent evt) {
         byte[] message = evt.getMessage();
         ByteBuffer bbmessage = ByteBuffer.wrap(message);
         //bbmessage.flip();
-        PublishEvent liveEvt = new PublishEvent(evt.getTopic(), evt.getQos(),
+        return new PublishEvent(evt.getTopic(), evt.getQos(),
                 bbmessage, evt.isRetain(), evt.getClientID(), evt.getMessageID());
-        return liveEvt;
     }
 }

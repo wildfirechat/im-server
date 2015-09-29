@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2015 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package org.eclipse.moquette.server;
 
 import org.junit.Test;
@@ -24,10 +39,9 @@ public class ServerShutdownTest {
 
     @Test
     public void testShutdown() throws IOException, InterruptedException {
-
         final int initialThreadCount = Thread.activeCount();
         LOG.info("*** testShutdown ***");
-        LOG.debug("Initial Thread Count = " + initialThreadCount);
+        LOG.debug("Initial threads count {}", initialThreadCount);
 
         //Start the server
         Server broker = new Server();
@@ -40,12 +54,12 @@ public class ServerShutdownTest {
         threadCounter.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                int threadCount = Thread.activeCount();
-                LOG.debug("Current Thread Count = " + threadCount);
-                //plus 1 for this thread
-                if (threadCount == initialThreadCount + 1) {
-                    threadsStoppedLatch.countDown();
-                }
+            int threadCount = Thread.activeCount();
+            LOG.debug("Current Thread Count = " + threadCount);
+            //plus 1 for this thread
+            if (threadCount == initialThreadCount + 1) {
+                threadsStoppedLatch.countDown();
+            }
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
 
