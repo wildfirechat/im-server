@@ -81,7 +81,10 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 	        File tmpFile;
 	        try {
 	            tmpFile = new File(m_storePath);
-	            tmpFile.createNewFile();
+	            boolean fileAlreadyExists = tmpFile.createNewFile();
+                if (fileAlreadyExists) {
+                    LOG.warn("File [{}] already exists", m_storePath);
+                }
 	        } catch (IOException ex) {
 	            LOG.error(null, ex);
 	            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
