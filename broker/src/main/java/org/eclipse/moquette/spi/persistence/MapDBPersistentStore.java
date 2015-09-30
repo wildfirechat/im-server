@@ -82,9 +82,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 	        try {
 	            tmpFile = new File(m_storePath);
 	            boolean fileNewlyCreated = tmpFile.createNewFile();
-                if (!fileNewlyCreated) {
-                    LOG.warn("File [{}] already exists", m_storePath);
-                }
+                LOG.info("Starting with {} [{}] db file", fileNewlyCreated ? "fresh" : "existing", m_storePath);
 	        } catch (IOException ex) {
 	            LOG.error(null, ex);
 	            throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
@@ -248,6 +246,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_persistentSubscriptions.put(clientID, clientSubscriptions);
     }
 
+    @Override
     public void addNewSubscription(Subscription newSubscription) {
         LOG.debug("addNewSubscription invoked with subscription {}", newSubscription);
         final String clientID = newSubscription.getClientId();
@@ -276,6 +275,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         }
     }
 
+    @Override
     public void wipeSubscriptions(String clientID) {
         m_persistentSubscriptions.remove(clientID);
     }
@@ -310,6 +310,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
     }
 
+    @Override
     public void close() {
         if (this.m_db.isClosed()) {
             LOG.debug("already closed");
@@ -324,11 +325,13 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     /*-------- QoS 2  storage management --------------*/
+    @Override
     public void persistQoS2Message(String publishKey, PublishEvent evt) {
         LOG.debug("persistQoS2Message store pubKey: {}, evt: {}", publishKey, evt);
         m_qos2Store.put(publishKey, convertToStored(evt));
     }
 
+    @Override
     public void removeQoS2Message(String publishKey) {
         LOG.debug("Removing stored Q0S2 message <{}>", publishKey);
         m_qos2Store.remove(publishKey);

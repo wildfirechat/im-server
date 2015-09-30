@@ -179,4 +179,8 @@ public class SimpleMessaging {
 
         return instance;
     }
+
+    public void shutdown() {
+        this.m_storageService.close();
+    }
 }

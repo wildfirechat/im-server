@@ -102,6 +102,7 @@ public class Server {
     public void stopServer() {
     	LOG.info("Server stopping...");
         m_acceptor.close();
+        SimpleMessaging.getInstance().shutdown();
         LOG.info("Server stopped");
     }
 }
