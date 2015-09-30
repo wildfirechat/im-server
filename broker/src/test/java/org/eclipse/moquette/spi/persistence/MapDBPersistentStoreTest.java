@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH;
 import static org.junit.Assert.*;
@@ -104,10 +105,12 @@ public class MapDBPersistentStoreTest {
     }
 
     @Test
-    public void testCloseShutdownCommitTask() {
+    public void testCloseShutdownCommitTask() throws InterruptedException {
         m_storageService.close();
 
         //verify the executor is shutdown
+        assertTrue("Storage service scheduler can't be stopped in 3 seconds",
+                m_storageService.m_scheduler.awaitTermination(3, TimeUnit.SECONDS));
         assertTrue(m_storageService.m_scheduler.isTerminated());
     }
 }
