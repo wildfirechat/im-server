@@ -15,14 +15,10 @@
  */
 package org.eclipse.moquette.spi.impl;
 
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.dsl.Disruptor;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
@@ -62,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author andrea
  */
-public class ProtocolProcessor implements EventHandler<ValueEvent> {
+public class ProtocolProcessor {
 
     static final class WillMessage {
         private final String topic;
@@ -109,10 +105,6 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
     //maps clientID to Will testament, if specified on CONNECT
     private Map<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
     
-    private ExecutorService m_executor;
-    private RingBuffer<ValueEvent> m_ringBuffer;
-    private Disruptor<ValueEvent> m_disruptor;
-
     ProtocolProcessor() {}
 
     /**
@@ -139,21 +131,6 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
-        
-        //init the output ringbuffer
-        m_executor = Executors.newFixedThreadPool(1);
-
-        /*Disruptor<ValueEvent>*/ m_disruptor = new Disruptor<>(ValueEvent.EVENT_FACTORY, 1024 * 32, m_executor); //128 to break the broker
-        m_disruptor.handleEventsWith(this);
-        m_disruptor.start();
-
-        // Get the ring buffer from the Disruptor to be used for publishing.
-        m_ringBuffer = m_disruptor.getRingBuffer();
-    }
-
-    void stop() {
-        m_executor.shutdown();
-        m_disruptor.shutdown();
     }
 
     public void processConnect(ServerChannel session, ConnectMessage msg) {
@@ -460,24 +437,19 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
             LOG.debug("topic {} doesn't have read credentials", topic);
             return;
         }
-
-        disruptorPublish(new OutputMessagingEvent(session, pubMessage));
+        session.write(pubMessage);
     }
     
     private void sendPubRec(String clientID, int messageID) {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-
-//        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
-        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRecMessage));
+        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
     }
     
     private void sendPubAck(PubAckEvent evt) {
         LOG.trace("sendPubAck invoked");
-
         String clientId = evt.getClientID();
-
         PubAckMessage pubAckMessage = new PubAckMessage();
         pubAckMessage.setMessageID(evt.getMessageId());
 
@@ -490,8 +462,7 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
 //            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
-//            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
-            disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientId).getSession(), pubAckMessage));
+            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
         }catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -524,8 +495,7 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
-//        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
-        disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubCompMessage));
+        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
     }
     
     public void processPubRec(ServerChannel session, PubRecMessage msg) {
@@ -671,27 +641,4 @@ public class ProtocolProcessor implements EventHandler<ValueEvent> {
         }
         return true;
     }
-    
-    private void disruptorPublish(OutputMessagingEvent msgEvent) {
-        LOG.debug("disruptorPublish publishing event on output {}", msgEvent);
-        long sequence = m_ringBuffer.next();
-        ValueEvent event = m_ringBuffer.get(sequence);
-
-        event.setEvent(msgEvent);
-        
-        m_ringBuffer.publish(sequence); 
-    }
-
-    public void onEvent(ValueEvent t, long l, boolean bln) throws Exception {
-        try {
-            MessagingEvent evt = t.getEvent();
-            //It's always of type OutputMessagingEvent
-            OutputMessagingEvent outEvent = (OutputMessagingEvent) evt;
-            LOG.debug("Output event, sending {}", outEvent.getMessage());
-            outEvent.getChannel().write(outEvent.getMessage());
-        } finally {
-            t.setEvent(null); //free the reference to all Netty stuff
-        }
-    }
-
 }
