@@ -95,13 +95,6 @@ public class Subscription implements Serializable {
         return result;
     }
 
-    /**
-     * Trivial match method
-     */
-    boolean match(String topic) {
-        return this.topicFilter.equals(topic);
-    }
-    
     @Override
     public String toString() {
         return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos, this.active);
