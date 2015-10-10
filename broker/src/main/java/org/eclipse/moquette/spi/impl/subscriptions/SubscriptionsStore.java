@@ -64,6 +64,7 @@ public class SubscriptionsStore {
         
         String s = "";
 
+        @Override
         public void visit(TreeNode node, int deep) {
             String subScriptionsStr = "";
             String indentTabs = indentTabs(deep);
@@ -82,7 +83,8 @@ public class SubscriptionsStore {
             }
             return s;
         }
-        
+
+        @Override
         public String getResult() {
             return s;
         }
@@ -90,12 +92,14 @@ public class SubscriptionsStore {
     
     private class SubscriptionTreeCollector implements IVisitor<List<Subscription>> {
         
-        private List<Subscription> m_allSubscriptions = new ArrayList<Subscription>();
+        private List<Subscription> m_allSubscriptions = new ArrayList<>();
 
+        @Override
         public void visit(TreeNode node, int deep) {
             m_allSubscriptions.addAll(node.subscriptions());
         }
-        
+
+        @Override
         public List<Subscription> getResult() {
             return m_allSubscriptions;
         }
@@ -136,32 +140,9 @@ public class SubscriptionsStore {
             couple.createdNode.addSubscription(newSubscription); //createdNode could be null?
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, couple.root));
+        LOG.debug("root ref {}, original root was {}", couple.root, oldRoot);
     }
 
-    private TreeNode findMatchingNode(String topic) {
-        List<Token> tokens = new ArrayList<>();
-        try {
-            tokens = parseTopic(topic);
-        } catch (ParseException ex) {
-            //TODO handle the parse exception
-            LOG.error(null, ex);
-//            return;
-        }
-
-        TreeNode current = subscriptions.get();
-        for (Token token : tokens) {
-            TreeNode matchingChildren;
-
-            //check if a children with the same token already exists
-            if ((matchingChildren = current.childWithToken(token)) != null) {
-                current = matchingChildren;
-            } else {
-                //can't find any match
-                return null;
-            }
-        }
-        return current;
-    }
 
     protected NodeCouple recreatePath(String topic, final TreeNode oldRoot) {
         List<Token> tokens = new ArrayList<>();
@@ -203,20 +184,27 @@ public class SubscriptionsStore {
 
 
     public void removeSubscription(String topic, String clientID) {
-        TreeNode matchNode = findMatchingNode(topic);
-        
-        //search for the subscription to remove
-        Subscription toBeRemoved = null;
-        for (Subscription sub : matchNode.subscriptions()) {
-            if (sub.topicFilter.equals(topic) && sub.getClientId().equals(clientID)) {
-                toBeRemoved = sub;
-                break;
+        TreeNode oldRoot;
+        NodeCouple couple;
+        do {
+            oldRoot = subscriptions.get();
+            couple = recreatePath(topic, oldRoot);
+
+            //do the job
+            //search for the subscription to remove
+            Subscription toBeRemoved = null;
+            for (Subscription sub : couple.createdNode.subscriptions()) {
+                if (sub.topicFilter.equals(topic) && sub.getClientId().equals(clientID)) {
+                    toBeRemoved = sub;
+                    break;
+                }
             }
-        }
-        
-        if (toBeRemoved != null) {
-            matchNode.subscriptions().remove(toBeRemoved);
-        }
+
+            if (toBeRemoved != null) {
+                couple.createdNode.subscriptions().remove(toBeRemoved);
+            }
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
     }
     
     /**
@@ -228,35 +216,61 @@ public class SubscriptionsStore {
         
         List<Subscription> allSubscriptions = subsCollector.getResult();
         for (Subscription subscription : allSubscriptions) {
-            //TODO modify the data structure
             removeSubscription(subscription.getTopicFilter(), subscription.getClientId());
         }
     }
 
     /**
-     * Visit the topics tree to remove matching subscriptions with clientID
+     * Visit the topics tree to remove matching subscriptions with clientID.
+     * It's a mutating structure operation so create a new subscription tree (partial or total).
      */
-    //TODO modify the data structure
     public void removeForClient(String clientID) {
-        subscriptions.get().removeClientSubscriptions(clientID);
+        TreeNode oldRoot;
+        TreeNode newRoot;
+        do {
+            oldRoot = subscriptions.get();
+            newRoot = oldRoot.removeClientSubscriptions(clientID);
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, newRoot));
         //persist the update
         m_sessionsStore.wipeSubscriptions(clientID);
     }
 
-    //TODO modify the data structure
+    /**
+     * Visit the topics tree to deactivate matching subscriptions with clientID.
+     * It's a mutating structure operation so create a new subscription tree (partial or total).
+     */
     public void deactivate(String clientID) {
-        subscriptions.get().deactivate(clientID);
+        LOG.debug("Disactivating subscriptions for clientID <{}>", clientID);
+        TreeNode oldRoot;
+        TreeNode newRoot;
+        do {
+            oldRoot = subscriptions.get();
+            newRoot = oldRoot.deactivate(clientID);
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, newRoot));
+
         //persist the update
-        Set<Subscription> subs = subscriptions.get().findAllByClientID(clientID);
+        Set<Subscription> subs = newRoot.findAllByClientID(clientID);
         m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 
-    //TODO modify the data structure
+    /**
+     * Visit the topics tree to activate matching subscriptions with clientID.
+     * It's a mutating structure operation so create a new subscription tree (partial or total).
+     */
     public void activate(String clientID) {
         LOG.debug("Activating subscriptions for clientID <{}>", clientID);
-        subscriptions.get().activate(clientID);
+        TreeNode oldRoot;
+        TreeNode newRoot;
+        do {
+            oldRoot = subscriptions.get();
+            newRoot = oldRoot.activate(clientID);
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, newRoot));
+
         //persist the update
-        Set<Subscription> subs = subscriptions.get().findAllByClientID(clientID);
+        Set<Subscription> subs = newRoot.findAllByClientID(clientID);
         m_sessionsStore.updateSubscriptions(clientID, subs);
     }
 

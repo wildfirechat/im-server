@@ -39,7 +39,15 @@ public class Subscription implements Serializable {
         this.topicFilter = topicFilter;
         this.cleanSession = cleanSession;
     }
-    
+
+    public Subscription(Subscription orig) {
+        this.requestedQos = orig.requestedQos;
+        this.clientId = orig.clientId;
+        this.topicFilter = orig.topicFilter;
+        this.cleanSession = orig.cleanSession;
+        this.active = orig.active;
+    }
+
     /**
      * Factory method for empty subscriptions
      */

@@ -18,7 +18,6 @@ package org.eclipse.moquette.spi.impl;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 
 import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.IMatchingCondition;
@@ -427,6 +426,8 @@ public class ProtocolProcessor {
         }
         LOG.debug("clientIDs are {}", m_clientIDs);
         if (m_clientIDs.get(clientId) == null) {
+            //TODO while we were publishing to the target client, that client disconnected,
+            // could happen is not an error HANDLE IT
             throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
         }
         ServerChannel session = m_clientIDs.get(clientId).getSession();
