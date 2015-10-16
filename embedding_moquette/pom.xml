@@ -7,7 +7,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.eclipse.moquette</groupId>
-        <version>${moquette.version}</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>moquette-embedded-test</artifactId>

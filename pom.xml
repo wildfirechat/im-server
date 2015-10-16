@@ -9,14 +9,13 @@
         <target.version>1.7</target.version>
         <bintray.repo>andsel/maven</bintray.repo>
         <bintray.parent.package>org.dna.mqtt.moquette-parent</bintray.parent.package>
-        <moquette.version>0.8-SNAPSHOT</moquette.version>
     </properties>
     
     <groupId>org.eclipse.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>${moquette.version}</version>
+    <version>0.8-SNAPSHOT</version>
     <name>Moquette MQTT parent</name>
     <url>https://github.com/andsel/moquette/</url>
 
