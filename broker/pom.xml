@@ -7,7 +7,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.eclipse.moquette</groupId>
-        <version>${moquette.version}</version>
+        <version>0.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
@@ -24,13 +24,13 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-parser-commons</artifactId>
-            <version>${moquette.version}</version>
+            <version>0.8-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-netty-parser</artifactId>
-            <version>${moquette.version}</version>
+            <version>0.8-SNAPSHOT</version>
         </dependency>
         
         <!--<dependency>-->
