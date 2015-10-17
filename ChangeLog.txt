@@ -10,6 +10,8 @@ Version 0.8:
     Changed willMessage and password in CONNECT message from String to byte[] (fix issue #94 and #95)
     Fixed ugly empty session storage, avoid fake NullObject empty subscription subscription
     Added check to avoid creation of LostConnectionEvents for not yet completed connects (fix issue #88)
+    Removed LMAX ringbuffer to use multi threading with persistent (copy on write) data structures
+    Fixed bug that on connection stolen dropped also the new connection (fix issue #108)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

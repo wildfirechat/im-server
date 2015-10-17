@@ -274,7 +274,6 @@ public class ProtocolProcessor {
     private void cleanSession(String clientID) {
         LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
         //remove from log all subscriptions
-        //m_sessionsStore.wipeSubscriptions(clientID);
         subscriptions.removeForClient(clientID);
 
         //remove also the messages stored of type QoS1/2
@@ -578,7 +577,6 @@ public class ProtocolProcessor {
             }
 
             subscriptions.removeSubscription(topic, clientID);
-            m_sessionsStore.removeSubscription(topic, clientID);
             m_interceptor.notifyTopicUnsubscribed(topic, clientID);
         }
 
@@ -619,7 +617,6 @@ public class ProtocolProcessor {
             //send SUBACK with 0x80 for this topic filter
             return false;
         }
-        m_sessionsStore.addNewSubscription(newSubscription);
         subscriptions.add(newSubscription);
 
         //notify the Observables

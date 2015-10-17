@@ -179,6 +179,7 @@ public class SubscriptionsStore {
     }
 
     public void add(Subscription newSubscription) {
+        m_sessionsStore.addNewSubscription(newSubscription);
         addDirect(newSubscription);
     }
 
@@ -205,6 +206,7 @@ public class SubscriptionsStore {
             }
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, couple.root));
+        m_sessionsStore.removeSubscription(topic, clientID);
     }
     
     /**
@@ -213,7 +215,7 @@ public class SubscriptionsStore {
     public void clearAllSubscriptions() {
         SubscriptionTreeCollector subsCollector = new SubscriptionTreeCollector();
         bfsVisit(subscriptions.get(), subsCollector, 0);
-        
+
         List<Subscription> allSubscriptions = subsCollector.getResult();
         for (Subscription subscription : allSubscriptions) {
             removeSubscription(subscription.getTopicFilter(), subscription.getClientId());

@@ -459,6 +459,7 @@ public class ProtocolProcessorTest {
         Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
         SubscriptionsStore subscriptions = new SubscriptionsStore();
+        subscriptions.init(new MemorySessionStore());
         subscriptions.add(subQos1);
         subscriptions.add(subQos2);
 
