@@ -15,19 +15,21 @@
  */
 package org.eclipse.moquette.spi.impl.events;
 
-import org.eclipse.moquette.server.ServerChannel;
-
 /**
  * Used to model the connection lost event
  * 
  * @author andrea
  */
 public class LostConnectionEvent extends MessagingEvent {
-//    public final ServerChannel session;
     public final String clientID;
+    public final boolean sessionStolen;
 
-    public LostConnectionEvent(/*ServerChannel session, */String clientID) {
-//        this.session = session;
+    public LostConnectionEvent(String clientID) {
+        this(clientID, false);
+    }
+
+    public LostConnectionEvent(String clientID, boolean stolen) {
         this.clientID = clientID;
+        this.sessionStolen = stolen;
     }
 }

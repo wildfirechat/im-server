@@ -31,11 +31,13 @@ public class NettyChannel implements ServerChannel {
     private ChannelHandlerContext m_channel;
 
     public static final String ATTR_USERNAME = "username";
+    public static final String ATTR_SESSION_STOLEN = "sessionStolen";
 
     public static final AttributeKey<Object> ATTR_KEY_KEEPALIVE = AttributeKey.valueOf(Constants.KEEP_ALIVE);
     public static final AttributeKey<Object> ATTR_KEY_CLEANSESSION = AttributeKey.valueOf(Constants.CLEAN_SESSION);
     public static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf(Constants.ATTR_CLIENTID);
     public static final AttributeKey<Object> ATTR_KEY_USERNAME = AttributeKey.valueOf(ATTR_USERNAME);
+    public static final AttributeKey<Object> ATTR_KEY_SESSION_STOLEN = AttributeKey.valueOf(ATTR_SESSION_STOLEN);
 
     NettyChannel(ChannelHandlerContext ctx) {
         m_channel = ctx;
