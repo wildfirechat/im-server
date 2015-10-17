@@ -4,7 +4,6 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <relativePath>../</relativePath>
-        <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>moquette-parent</artifactId>
         <groupId>org.eclipse.moquette</groupId>
         <version>0.8-SNAPSHOT</version>
@@ -12,7 +11,6 @@
 
     <artifactId>moquette-netty-parser</artifactId>
     <packaging>jar</packaging>
-    <!--<version>${moquette-version}</version>-->
     <name>Moquette - Netty Parser</name>
 
     <properties>
@@ -24,7 +22,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>moquette-parser-commons</artifactId>
-            <version>0.8-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         
         <dependency>
