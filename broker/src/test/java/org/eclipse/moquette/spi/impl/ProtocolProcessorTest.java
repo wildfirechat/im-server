@@ -216,13 +216,12 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        subscriptions.clearAllSubscriptions();
         assertEquals(0, subscriptions.size());
         
-        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
+        m_processor.processSubscribe(m_session, msg);
                 
         //Exercise
-        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
+        m_processor.processSubscribe(m_session, msg);
 
         //Verify
         assertEquals(1, subscriptions.size());
@@ -237,7 +236,6 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        subscriptions.clearAllSubscriptions();
         assertEquals(0, subscriptions.size());
 
         //Exercise

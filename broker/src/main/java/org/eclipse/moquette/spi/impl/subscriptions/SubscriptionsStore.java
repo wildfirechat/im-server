@@ -90,21 +90,6 @@ public class SubscriptionsStore {
         }
     }
     
-    private class SubscriptionTreeCollector implements IVisitor<List<Subscription>> {
-        
-        private List<Subscription> m_allSubscriptions = new ArrayList<>();
-
-        @Override
-        public void visit(TreeNode node, int deep) {
-            m_allSubscriptions.addAll(node.subscriptions());
-        }
-
-        @Override
-        public List<Subscription> getResult() {
-            return m_allSubscriptions;
-        }
-    }
-
     private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode(null));
     private ISessionsStore m_sessionsStore;
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
@@ -209,19 +194,6 @@ public class SubscriptionsStore {
         m_sessionsStore.removeSubscription(topic, clientID);
     }
     
-    /**
-     * It's public because needed in tests :-( bleah
-     */
-    public void clearAllSubscriptions() {
-        SubscriptionTreeCollector subsCollector = new SubscriptionTreeCollector();
-        bfsVisit(subscriptions.get(), subsCollector, 0);
-
-        List<Subscription> allSubscriptions = subsCollector.getResult();
-        for (Subscription subscription : allSubscriptions) {
-            removeSubscription(subscription.getTopicFilter(), subscription.getClientId());
-        }
-    }
-
     /**
      * Visit the topics tree to remove matching subscriptions with clientID.
      * It's a mutating structure operation so create a new subscription tree (partial or total).
