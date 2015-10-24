@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.moquette.server.netty.NettyChannel;
+import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
@@ -220,7 +221,9 @@ public class ProtocolProcessor {
 
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
-        boolean isSessionAlreadyStored = m_sessionsStore.contains(msg.getClientID());
+
+        ClientSession clientSession = m_sessionsStore.sessionForClient(msg.getClientID());
+        boolean isSessionAlreadyStored = clientSession != null;
         if (!msg.isCleanSession() && isSessionAlreadyStored) {
             okResp.setSessionPresent(true);
         }
@@ -229,12 +232,12 @@ public class ProtocolProcessor {
 
         if (!isSessionAlreadyStored) {
             LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
-            m_sessionsStore.createNewSession(msg.getClientID());
+            clientSession = m_sessionsStore.createNewSession(msg.getClientID());
         }
         LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2
-            republishStoredInSession(msg.getClientID());
+            republishStoredInSession(clientSession);
         }
     }
 
@@ -248,19 +251,19 @@ public class ProtocolProcessor {
     /**
      * Republish QoS1 and QoS2 messages stored into the session for the clientID.
      * */
-    private void republishStoredInSession(String clientID) {
-        LOG.trace("republishStoredInSession for client <{}>", clientID);
-        List<PublishEvent> publishedEvents = m_messagesStore.listMessagesInSession(clientID);
+    private void republishStoredInSession(ClientSession clientSession) {
+        LOG.trace("republishStoredInSession for client <{}>", clientSession);
+        List<PublishEvent> publishedEvents = clientSession.storedMessages();
         if (publishedEvents.isEmpty()) {
-            LOG.info("No stored messages for client <{}>", clientID);
+            LOG.info("No stored messages for client <{}>", clientSession.clientID);
             return;
         }
 
-        LOG.info("republishing stored messages to client <{}>", clientID);
+        LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         for (PublishEvent pubEvt : publishedEvents) {
             sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
                    pubEvt.getMessage(), false, pubEvt.getMessageID());
-            m_messagesStore.removeMessageInSession(clientID, pubEvt.getMessageID());
+            clientSession.removeDelivered(pubEvt.getMessageID());
         }
     }
     

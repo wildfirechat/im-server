@@ -28,7 +28,7 @@ import java.util.List;
  */
 public interface IMessagesStore {
 
-    public static class StoredMessage implements Serializable {
+    class StoredMessage implements Serializable {
         final AbstractMessage.QOSType m_qos;
         final byte[] m_payload;
         final String m_topic;

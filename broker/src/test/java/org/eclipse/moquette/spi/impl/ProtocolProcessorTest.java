@@ -75,6 +75,7 @@ public class ProtocolProcessorTest {
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService();
+        memStorage.initStore();
         m_storageService = memStorage;
         m_sessionStore = memStorage;
         //m_storageService.initStore();
@@ -84,7 +85,7 @@ public class ProtocolProcessorTest {
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(new MemoryStorageService());
+        subscriptions.init(memStorage);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
@@ -109,7 +110,9 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(new MemoryStorageService());
+        MemoryStorageService storageService = new MemoryStorageService();
+        storageService.initStore();
+        subs.init(storageService);
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
@@ -153,7 +156,9 @@ public class ProtocolProcessorTest {
         };
         
         //simulate a connect that register a clientID to an IoSession
-        subs.init(new MemoryStorageService());
+        MemoryStorageService storageService = new MemoryStorageService();
+        storageService.initStore();
+        subs.init(storageService);
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
@@ -306,8 +311,10 @@ public class ProtocolProcessorTest {
                 }
             }
         };
-        subs.init(new MemoryStorageService());
-        
+        MemoryStorageService storageService = new MemoryStorageService();
+        storageService.initStore();
+        subs.init(storageService);
+
         //simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
@@ -457,7 +464,7 @@ public class ProtocolProcessorTest {
         Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
         SubscriptionsStore subscriptions = new SubscriptionsStore();
-        subscriptions.init(new MemorySessionStore());
+        subscriptions.init(new MemorySessionStore(memoryMessageStore));
         subscriptions.add(subQos1);
         subscriptions.add(subQos2);
 

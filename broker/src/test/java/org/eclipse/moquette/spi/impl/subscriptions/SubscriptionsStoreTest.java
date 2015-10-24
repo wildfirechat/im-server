@@ -41,7 +41,9 @@ public class SubscriptionsStoreTest {
     @Before
     public void setUp() throws IOException {
         store = new SubscriptionsStore();
-        store.init(new MemoryStorageService());
+        MemoryStorageService storageService = new MemoryStorageService();
+        storageService.initStore();
+        store.init(storageService);
     }
     
     @Test

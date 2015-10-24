@@ -59,6 +59,7 @@ public class ProtocolProcessor_CONNECT_Test {
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService();
+        memStorage.initStore();
         m_storageService = memStorage;
         m_sessionStore = memStorage;
         //m_storageService.initStore();
@@ -68,7 +69,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(new MemoryStorageService());
+        subscriptions.init(memStorage);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);

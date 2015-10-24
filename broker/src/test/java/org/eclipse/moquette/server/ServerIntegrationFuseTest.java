@@ -96,8 +96,8 @@ public class ServerIntegrationFuseTest {
     }
     
     @Test
-    public void checkWillTestmaentIsPublishedOnConnectionKill_noRetain() throws Exception {
-        LOG.info("checkWillTestmaentIsPublishedOnConnectionKill");
+    public void checkWillTestamentIsPublishedOnConnectionKill_noRetain() throws Exception {
+        LOG.info("checkWillTestamentIsPublishedOnConnectionKill");
         
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";

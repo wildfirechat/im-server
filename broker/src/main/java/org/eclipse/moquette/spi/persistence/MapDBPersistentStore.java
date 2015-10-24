@@ -17,6 +17,7 @@
 package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.proto.MQTTException;
+import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
@@ -257,7 +258,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
         Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
         if (!subs.contains(newSubscription)) {
-            LOG.debug("updating clientID {} subscriptions set with new subscription", clientID);
+            LOG.debug("updating <{}> subscriptions set with new subscription", clientID);
             //TODO check the subs doesn't contain another subscription to the same topic with different
             Subscription existingSubscription = null;
             for (Subscription scanSub : subs) {
@@ -300,14 +301,24 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void createNewSession(String clientID) {
+    public ClientSession createNewSession(String clientID) {
         LOG.debug("createNewSession for client <{}>", clientID);
         if (m_persistentSubscriptions.containsKey(clientID)) {
-            LOG.error("already exists a session for client <{}>", clientID);
-            return;
+            LOG.error("already exists a session for client <{}>, bad condition", clientID);
+            throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+        return new ClientSession(clientID, this);
+    }
+
+    @Override
+    public ClientSession sessionForClient(String clientID) {
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            return null;
+        }
+
+        return new ClientSession(clientID, this);
     }
 
     @Override

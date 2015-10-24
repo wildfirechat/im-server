@@ -15,6 +15,8 @@
  */
 package org.eclipse.moquette.spi.impl;
 
+import org.eclipse.moquette.spi.ClientSession;
+import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.slf4j.Logger;
@@ -24,12 +26,18 @@ import java.util.*;
 
 /**
  *
- * @author andrea
+ * @author andream_messagesStore
  */
 public class MemorySessionStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
+
+    private final IMessagesStore m_messagesStore;
+
+    public MemorySessionStore(IMessagesStore messagesStore) {
+        this.m_messagesStore = messagesStore;
+    }
 
     @Override
     public void removeSubscription(String topic, String clientID) {
@@ -82,12 +90,24 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void createNewSession(String clientID) {
+    public ClientSession createNewSession(String clientID) {
+        LOG.debug("createNewSession for client <{}>", clientID);
         if (m_persistentSubscriptions.containsKey(clientID)) {
-            LOG.error("already exists a session for client <{}>", clientID);
-            return;
+            LOG.error("already exists a session for client <{}>, bad condition", clientID);
+            throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
+        LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+        return new ClientSession(clientID, m_messagesStore);
+    }
+
+    @Override
+    public ClientSession sessionForClient(String clientID) {
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            return null;
+        }
+
+        return new ClientSession(clientID, m_messagesStore);
     }
 
     @Override
