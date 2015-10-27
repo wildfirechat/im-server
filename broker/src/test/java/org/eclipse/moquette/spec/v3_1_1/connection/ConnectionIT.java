@@ -15,6 +15,12 @@
  */
 package org.eclipse.moquette.spec.v3_1_1.connection;
 
+import static org.eclipse.moquette.commons.Constants.DEFAULT_PERSISTENT_PATH;
+import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.moquette.server.Server;
@@ -47,6 +53,12 @@ public class ConnectionIT {
     @After
     public void tearDown() throws Exception {
         m_server.stopServer();
+
+        File dbFile = new File(DEFAULT_PERSISTENT_PATH);
+        if (dbFile.exists()) {
+        	assertTrue("Error deleting the moquette db file " + DEFAULT_PERSISTENT_PATH, dbFile.delete());
+        }
+        assertFalse(dbFile.exists());
     }
 
     @Test(timeout = 3000)
