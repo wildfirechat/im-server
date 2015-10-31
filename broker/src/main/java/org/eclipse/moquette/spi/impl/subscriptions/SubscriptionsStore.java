@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,8 +164,14 @@ public class SubscriptionsStore {
         return new NodeCouple(newRoot, current);
     }
 
+//    public void save(ClientSession clientSession) {
+//        for(Subscription subscription : clientSession.getSubscriptions()) {
+//            add(subscription);
+//        }
+//    }
+
     public void add(Subscription newSubscription) {
-        m_sessionsStore.addNewSubscription(newSubscription);
+//        m_sessionsStore.addNewSubscription(newSubscription);
         addDirect(newSubscription);
     }
 

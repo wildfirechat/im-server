@@ -98,7 +98,7 @@ public class MemorySessionStore implements ISessionsStore {
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        return new ClientSession(clientID, m_messagesStore);
+        return new ClientSession(clientID, m_messagesStore, this);
     }
 
     @Override
@@ -107,12 +107,12 @@ public class MemorySessionStore implements ISessionsStore {
             return null;
         }
 
-        return new ClientSession(clientID, m_messagesStore);
+        return new ClientSession(clientID, m_messagesStore, this);
     }
 
     @Override
     public List<Subscription> listAllSubscriptions() {
-        List<Subscription> allSubscriptions = new ArrayList<Subscription>();
+        List<Subscription> allSubscriptions = new ArrayList<>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             allSubscriptions.addAll(entry.getValue());
         }

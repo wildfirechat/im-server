@@ -309,7 +309,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        return new ClientSession(clientID, this);
+        return new ClientSession(clientID, this, this);
     }
 
     @Override
@@ -318,7 +318,7 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
             return null;
         }
 
-        return new ClientSession(clientID, this);
+        return new ClientSession(clientID, this, this);
     }
 
     @Override

@@ -465,9 +465,8 @@ public class ProtocolProcessor {
             if (m_clientIDs.get(clientId) == null) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
-//            LOG.debug("Session for clientId " + clientId + " is " + m_clientIDs.get(clientId).getSession());
             m_clientIDs.get(clientId).getSession().write(pubAckMessage);
-        }catch(Throwable t) {
+        } catch(Throwable t) {
             LOG.error(null, t);
         }
     }
@@ -531,7 +530,6 @@ public class ProtocolProcessor {
             //cleanup topic subscriptions
             cleanSession(clientID);
         }
-//        m_notifier.disconnect(evt.getSession());
         m_clientIDs.remove(clientID);
         session.close(true);
 
@@ -596,34 +594,35 @@ public class ProtocolProcessor {
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
+        List<Subscription> newSubscriptions = new ArrayList<>();
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.getQos());
             Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
-            boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
+            //boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
+            boolean valid = clientSession.subscribe(req.getTopicFilter(), newSubscription);
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
+            if (valid) {
+                newSubscriptions.add(newSubscription);
+            }
         }
 
+        //save session, persist subscriptions from session
         LOG.debug("SUBACK for packetID {}", msg.getMessageID());
         session.write(ackMessage);
+
+        //fire the publish
+        for(Subscription subscription : newSubscriptions) {
+            subscribeSingleTopic(subscription, subscription.getTopicFilter());
+        }
     }
     
     private boolean subscribeSingleTopic(Subscription newSubscription, final String topic) {
-        LOG.info("<{}> subscribed to topic <{}> with QoS {}", 
-                newSubscription.getClientId(), topic, 
-                AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
-        boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
-        if (!validTopic) {
-            //send SUBACK with 0x80 for this topic filter
-            return false;
-        }
         subscriptions.add(newSubscription);
-
-        //notify the Observables
-        m_interceptor.notifyTopicSubscribed(newSubscription);
 
         //scans retained messages to be published to the new subscription
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
@@ -640,6 +639,9 @@ public class ProtocolProcessor {
                     m_messagesStore.nextPacketID(newSubscription.getClientId());
             sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
+
+        //notify the Observables
+        m_interceptor.notifyTopicSubscribed(newSubscription);
         return true;
     }
 }

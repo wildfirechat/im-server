@@ -238,7 +238,9 @@ public class SubscriptionsStoreTest {
     
     private void assertMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
-        store.init(new MemoryStorageService());
+        MemoryStorageService memStore = new MemoryStorageService();
+        memStore.initStore();
+        store.init(memStore);
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertFalse(store.matches(topic).isEmpty());
@@ -246,7 +248,9 @@ public class SubscriptionsStoreTest {
     
     private void assertNotMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
-        store.init(new MemoryStorageService());
+        MemoryStorageService memStore = new MemoryStorageService();
+        memStore.initStore();
+        store.init(memStore);
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertTrue(store.matches(topic).isEmpty());
@@ -345,7 +349,9 @@ public class SubscriptionsStoreTest {
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
         SubscriptionsStore aStore = new SubscriptionsStore();
-        aStore.init(new MemoryStorageService());
+        MemoryStorageService memStore = new MemoryStorageService();
+        memStore.initStore();
+        aStore.init(memStore);
         //subscribe a not active clientID1 to /topic
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
         aStore.add(slashSub);

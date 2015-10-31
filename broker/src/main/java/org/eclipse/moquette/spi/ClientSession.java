@@ -15,22 +15,36 @@
  */
 package org.eclipse.moquette.spi;
 
+import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.spi.impl.events.PublishEvent;
+import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
+import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author andrea
  */
 public class ClientSession {
 
+    private final static Logger LOG = LoggerFactory.getLogger(ClientSession.class);
+
     public final String clientID;
 
     private final IMessagesStore messagesStore;
 
-    public ClientSession(String clientID, IMessagesStore messagesStore) {
+    private final ISessionsStore m_sessionsStore;
+
+    private Set<Subscription> subscriptions = new HashSet<>();
+
+    public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore) {
         this.clientID = clientID;
         this.messagesStore = messagesStore;
+        this.m_sessionsStore = sessionsStore;
     }
     //List of client's subscriptions
     //list of messages not acknowledged by client
@@ -55,5 +69,19 @@ public class ClientSession {
         return "ClientSession{" +
                 "clientID='" + clientID + '\'' +
                 '}';
+    }
+
+    public boolean subscribe(String topicFilter, Subscription newSubscription) {
+        LOG.info("<{}> subscribed to topicFilter <{}> with QoS {}",
+                newSubscription.getClientId(), topicFilter,
+                AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
+        boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
+        if (!validTopic) {
+            //send SUBACK with 0x80 for this topic filter
+            return false;
+        }
+        subscriptions.add(newSubscription);
+        m_sessionsStore.addNewSubscription(newSubscription);
+        return true;
     }
 }

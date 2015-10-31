@@ -207,6 +207,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
         m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
 
         //Verify
@@ -221,6 +222,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
         assertEquals(0, subscriptions.size());
         
         m_processor.processSubscribe(m_session, msg);
@@ -241,6 +243,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
         assertEquals(0, subscriptions.size());
 
         //Exercise
