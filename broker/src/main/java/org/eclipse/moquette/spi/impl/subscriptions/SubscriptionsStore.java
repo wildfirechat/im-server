@@ -198,7 +198,6 @@ public class SubscriptionsStore {
             }
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, couple.root));
-        m_sessionsStore.removeSubscription(topic, clientID);
     }
     
     /**

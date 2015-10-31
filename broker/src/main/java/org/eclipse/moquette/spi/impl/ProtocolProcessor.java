@@ -568,6 +568,8 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+
         for (String topic : topics) {
             boolean validTopic = SubscriptionsStore.validate(topic);
             if (!validTopic) {
@@ -578,6 +580,7 @@ public class ProtocolProcessor {
             }
 
             subscriptions.removeSubscription(topic, clientID);
+            clientSession.unsubscribeFrom(topic);
             m_interceptor.notifyTopicUnsubscribed(topic, clientID);
         }
 

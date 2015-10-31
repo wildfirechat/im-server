@@ -22,6 +22,7 @@ import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,5 +84,16 @@ public class ClientSession {
         subscriptions.add(newSubscription);
         m_sessionsStore.addNewSubscription(newSubscription);
         return true;
+    }
+
+    public void unsubscribeFrom(String topicFilter) {
+        m_sessionsStore.removeSubscription(topicFilter, clientID);
+        Set<Subscription> subscriptionsToRemove = new HashSet<>();
+        for (Subscription sub : this.subscriptions) {
+            if (sub.getTopicFilter().equals(topicFilter)) {
+                subscriptionsToRemove.add(sub);
+            }
+        }
+        subscriptions.removeAll(subscriptionsToRemove);
     }
 }
