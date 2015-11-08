@@ -15,18 +15,21 @@
  */
 package org.eclipse.moquette.server;
 
+import org.eclipse.moquette.server.config.IConfig;
+
 import java.io.File;
 import java.util.Properties;
 
 import static org.eclipse.moquette.commons.Constants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
 import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Used to carry integration configurations.
  *
  * Created by andrea on 4/7/15.
  */
-class IntegrationUtils {
+public class IntegrationUtils {
     static String localMapDBPath() {
         String currentDir = System.getProperty("user.dir");
         return currentDir + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
@@ -36,5 +39,20 @@ class IntegrationUtils {
         Properties testProperties = new Properties();
         testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
         return testProperties;
+    }
+
+    public static void cleanPersistenceFile(IConfig config) {
+        String fileName = config.getProperty(PERSISTENT_STORE_PROPERTY_NAME);
+        cleanPersistenceFile(fileName);
+    }
+
+    public static void cleanPersistenceFile(String fileName) {
+        File dbFile = new File(fileName);
+        if (dbFile.exists()) {
+            dbFile.delete();
+            new File(fileName + ".p").delete();
+            new File(fileName + ".t").delete();
+        }
+        assertFalse(dbFile.exists());
     }
 }

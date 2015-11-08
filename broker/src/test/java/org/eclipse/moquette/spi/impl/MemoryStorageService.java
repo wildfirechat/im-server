@@ -18,11 +18,11 @@ package org.eclipse.moquette.spi.impl;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import jdk.nashorn.internal.objects.NativeJava;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.impl.events.PublishEvent;
+import org.eclipse.moquette.spi.persistence.MemorySessionStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 
@@ -211,12 +211,22 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public ClientSession createNewSession(String clientID) {
-        return m_sessionsStore.createNewSession(clientID);
+    public ClientSession createNewSession(String clientID, boolean cleanSession) {
+        return m_sessionsStore.createNewSession(clientID, cleanSession);
     }
 
     @Override
     public ClientSession sessionForClient(String clientID) {
         return m_sessionsStore.sessionForClient(clientID);
+    }
+
+    @Override
+    public void activate(String clientID) {
+        m_sessionsStore.activate(clientID);
+    }
+
+    @Override
+    public void deactivate(String clientID) {
+        m_sessionsStore.deactivate(clientID);
     }
 }

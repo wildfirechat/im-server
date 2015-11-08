@@ -110,14 +110,14 @@ public class SubscriptionsStore {
 
         for (Subscription subscription : subscriptions) {
             LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
-            addDirect(subscription);
+            add(subscription);
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Finished loading. Subscription tree after {}", dumpTree());
         }
     }
 
-    protected void addDirect(Subscription newSubscription) {
+    public void add(Subscription newSubscription) {
         TreeNode oldRoot;
         NodeCouple couple;
         do {
@@ -164,18 +164,6 @@ public class SubscriptionsStore {
         return new NodeCouple(newRoot, current);
     }
 
-//    public void save(ClientSession clientSession) {
-//        for(Subscription subscription : clientSession.getSubscriptions()) {
-//            add(subscription);
-//        }
-//    }
-
-    public void add(Subscription newSubscription) {
-//        m_sessionsStore.addNewSubscription(newSubscription);
-        addDirect(newSubscription);
-    }
-
-
     public void removeSubscription(String topic, String clientID) {
         TreeNode oldRoot;
         NodeCouple couple;
@@ -212,47 +200,8 @@ public class SubscriptionsStore {
             newRoot = oldRoot.removeClientSubscriptions(clientID);
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, newRoot));
-        //persist the update
-        m_sessionsStore.wipeSubscriptions(clientID);
     }
 
-    /**
-     * Visit the topics tree to deactivate matching subscriptions with clientID.
-     * It's a mutating structure operation so create a new subscription tree (partial or total).
-     */
-    public void deactivate(String clientID) {
-        LOG.debug("Disactivating subscriptions for clientID <{}>", clientID);
-        TreeNode oldRoot;
-        TreeNode newRoot;
-        do {
-            oldRoot = subscriptions.get();
-            newRoot = oldRoot.deactivate(clientID);
-            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while(!subscriptions.compareAndSet(oldRoot, newRoot));
-
-        //persist the update
-        Set<Subscription> subs = newRoot.findAllByClientID(clientID);
-        m_sessionsStore.updateSubscriptions(clientID, subs);
-    }
-
-    /**
-     * Visit the topics tree to activate matching subscriptions with clientID.
-     * It's a mutating structure operation so create a new subscription tree (partial or total).
-     */
-    public void activate(String clientID) {
-        LOG.debug("Activating subscriptions for clientID <{}>", clientID);
-        TreeNode oldRoot;
-        TreeNode newRoot;
-        do {
-            oldRoot = subscriptions.get();
-            newRoot = oldRoot.activate(clientID);
-            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while(!subscriptions.compareAndSet(oldRoot, newRoot));
-
-        //persist the update
-        Set<Subscription> subs = newRoot.findAllByClientID(clientID);
-        m_sessionsStore.updateSubscriptions(clientID, subs);
-    }
 
     /**
      * Given a topic string return the clients subscriptions that matches it.
@@ -282,7 +231,7 @@ public class SubscriptionsStore {
                 subsForClient.put(sub.getClientId(), sub);
             }
         }
-        return /*matchingSubs*/new ArrayList<>(subsForClient.values());
+        return new ArrayList<>(subsForClient.values());
     }
 
     public boolean contains(Subscription sub) {

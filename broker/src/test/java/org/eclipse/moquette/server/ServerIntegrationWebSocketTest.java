@@ -66,10 +66,7 @@ public class ServerIntegrationWebSocketTest {
         client.stop();
         
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
+        IntegrationUtils.cleanPersistenceFile(m_config);
     }
     
     @Test

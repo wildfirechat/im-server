@@ -73,10 +73,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         Thread.sleep(300); //to let the close event pass before server stop event
         m_server.stopServer();
         LOG.debug("After asked server to stop");
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
+        IntegrationUtils.cleanPersistenceFile(m_config);
     }
     
     @Test

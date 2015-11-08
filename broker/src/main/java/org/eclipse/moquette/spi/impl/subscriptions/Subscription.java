@@ -48,13 +48,6 @@ public class Subscription implements Serializable {
         this.active = orig.active;
     }
 
-    /**
-     * Factory method for empty subscriptions
-     */
-    public static final Subscription createEmptySubscription(String clientId, boolean cleanSession) {
-        return new Subscription(clientId, "", QOSType.MOST_ONE, cleanSession);
-    }
-
     public String getClientId() {
         return clientId;
     }
@@ -69,14 +62,6 @@ public class Subscription implements Serializable {
 
     public boolean isCleanSession() {
         return this.cleanSession;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     @Override

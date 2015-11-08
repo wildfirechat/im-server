@@ -93,7 +93,7 @@ public class ProtocolProcessor {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    private Map<String, ConnectionDescriptor> m_clientIDs = new ConcurrentHashMap<>();
+    private Map<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private IAuthorizator m_authorizator;
@@ -123,6 +123,7 @@ public class ProtocolProcessor {
               IAuthenticator authenticator,
               boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
         //m_clientIDs = clientIDs;
+        this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
@@ -176,12 +177,8 @@ public class ProtocolProcessor {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
             ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).getSession();
-            boolean cleanSession = (Boolean) oldSession.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
-            if (cleanSession) {
-                //cleanup topic subscriptions
-                cleanSession(msg.getClientID());
-            }
-
+            ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
+            oldClientSession.disconnect();
             oldSession.setAttribute(NettyChannel.ATTR_KEY_SESSION_STOLEN, true);
             oldSession.close(false);
             LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
@@ -210,15 +207,6 @@ public class ProtocolProcessor {
             m_willStore.put(msg.getClientID(), will);
         }
 
-        subscriptions.activate(msg.getClientID());
-
-        //handle clean session flag
-        if (msg.isCleanSession()) {
-            //remove all prev subscriptions
-            //cleanup topic subscriptions
-            cleanSession(msg.getClientID());
-        }
-
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
 
@@ -232,7 +220,11 @@ public class ProtocolProcessor {
 
         if (!isSessionAlreadyStored) {
             LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
-            clientSession = m_sessionsStore.createNewSession(msg.getClientID());
+            clientSession = m_sessionsStore.createNewSession(msg.getClientID(), msg.isCleanSession());
+        }
+        clientSession.activate();
+        if (msg.isCleanSession()) {
+            clientSession.cleanSession();
         }
         LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         if (!msg.isCleanSession()) {
@@ -274,15 +266,6 @@ public class ProtocolProcessor {
         m_messagesStore.removeMessageInSession(clientID, messageID);
     }
     
-    private void cleanSession(String clientID) {
-        LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
-        //remove from log all subscriptions
-        subscriptions.removeForClient(clientID);
-
-        //remove also the messages stored of type QoS1/2
-        m_messagesStore.dropMessagesInSession(clientID);
-    }
-
     public void processPublish(ServerChannel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
@@ -371,18 +354,18 @@ public class ProtocolProcessor {
             if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
                 qos = sub.getRequestedQos();
             }
+            ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), qos, sub.isActive());
+                    sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
             ByteBuffer message = origMessage.duplicate();
-            if (qos == AbstractMessage.QOSType.MOST_ONE && sub.isActive()) {
+            if (qos == AbstractMessage.QOSType.MOST_ONE && targetSession.isActive()) {
                 //QoS 0
-                //forwardPublishQoS0(sub.getClientId(), topic, qos, message, false);
                 sendPublish(sub.getClientId(), topic, qos, message, false, null);
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
-                if (!sub.isCleanSession() && !sub.isActive()) {
+                if (!sub.isCleanSession() && !targetSession.isActive()) {
                     //clone the event with matching clientID
                     PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
                     m_messagesStore.storePublishForFuture(newPublishEvt);
@@ -394,7 +377,7 @@ public class ProtocolProcessor {
                         m_messagesStore.storeTemporaryPublish(newPublishEvt, sub.getClientId(), messageID);
                     }
                     //publish
-                    if (sub.isActive()) {
+                    if (targetSession.isActive()) {
                         int messageId = m_messagesStore.nextPacketID(sub.getClientId());
                         sendPublish(sub.getClientId(), topic, qos, message, false, messageId);
                     }
@@ -510,8 +493,6 @@ public class ProtocolProcessor {
         pubRelMessage.setMessageID(messageID);
         pubRelMessage.setQos(AbstractMessage.QOSType.LEAST_ONE);
 
-//        m_clientIDs.get(clientID).getSession().write(pubRelMessage);
-        //disruptorPublish(new OutputMessagingEvent(m_clientIDs.get(clientID).getSession(), pubRelMessage));
         session.write(pubRelMessage);
     }
 
@@ -526,20 +507,18 @@ public class ProtocolProcessor {
     public void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
-        if (cleanSession) {
-            //cleanup topic subscriptions
-            cleanSession(clientID);
-        }
+        LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        clientSession.disconnect();
+
         m_clientIDs.remove(clientID);
         session.close(true);
 
-        //de-activate the subscriptions for this ClientID
-        subscriptions.deactivate(clientID);
         //cleanup the will store
         m_willStore.remove(clientID);
         
-        LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
         m_interceptor.notifyClientDisconnected(clientID);
+        LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
     public void processConnectionLost(LostConnectionEvent evt) {
@@ -547,7 +526,8 @@ public class ProtocolProcessor {
         //If already removed a disconnect message was already processed for this clientID
         if (evt.sessionStolen && m_clientIDs.remove(clientID) != null) {
             //de-activate the subscriptions for this ClientID
-            subscriptions.deactivate(clientID);
+            ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+            clientSession.deactivate();
             LOG.info("Lost connection with client <{}>", clientID);
         }
         //publish the Will message (if any) for the clientID

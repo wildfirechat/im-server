@@ -21,15 +21,9 @@ import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -38,8 +32,7 @@ import static org.junit.Assert.assertNull;
  * @author andrea
  */
 public class ServerRestartIntegrationTest {
-    private static Logger LOG = LoggerFactory.getLogger(ServerRestartIntegrationTest.class);
-    
+
     Server m_server;
     MQTT m_mqtt;
     BlockingConnection m_subscriber;
@@ -74,10 +67,7 @@ public class ServerRestartIntegrationTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
+        IntegrationUtils.cleanPersistenceFile(m_config);
     }
     
     
@@ -93,11 +83,8 @@ public class ServerRestartIntegrationTest {
         
         //shutdown the server
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
-        
+        IntegrationUtils.cleanPersistenceFile(m_config);
+
         //restart the server
         m_server.startServer(IntegrationUtils.prepareTestPropeties());
         

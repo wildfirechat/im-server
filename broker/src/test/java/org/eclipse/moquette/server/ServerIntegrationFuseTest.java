@@ -62,9 +62,6 @@ public class ServerIntegrationFuseTest {
 
     @After
     public void tearDown() throws Exception {
-//        if (m_mqtt.isConnected()) {
-//            m_mqtt.disconnect();
-//        }
         if (m_subscriber != null) {
             m_subscriber.disconnect();
         }
@@ -74,10 +71,7 @@ public class ServerIntegrationFuseTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
+        IntegrationUtils.cleanPersistenceFile(m_config);
     }
     
     @Test

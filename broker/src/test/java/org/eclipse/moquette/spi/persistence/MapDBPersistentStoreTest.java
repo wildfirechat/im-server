@@ -16,8 +16,8 @@
 package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage;
+import org.eclipse.moquette.server.IntegrationUtils;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-import org.eclipse.moquette.spi.persistence.MapDBPersistentStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,12 +36,10 @@ import static org.junit.Assert.*;
 public class MapDBPersistentStoreTest {
 
     MapDBPersistentStore m_storageService;
-        
+
     @Before
     public void setUp() throws Exception {
-        File dbFile = new File(DEFAULT_PERSISTENT_PATH);
-        assertFalse(String.format("The DB storage file %s already exists", DEFAULT_PERSISTENT_PATH), dbFile.exists());
-        
+        IntegrationUtils.cleanPersistenceFile(DEFAULT_PERSISTENT_PATH);
         m_storageService = new MapDBPersistentStore(DEFAULT_PERSISTENT_PATH);
         m_storageService.initStore();
     }
@@ -51,12 +49,8 @@ public class MapDBPersistentStoreTest {
         if (m_storageService != null) {
             m_storageService.close();
         }
-        
-        File dbFile = new File(DEFAULT_PERSISTENT_PATH);
-        if (dbFile.exists()) {
-        	assertTrue("Error deleting the moquette db file " + DEFAULT_PERSISTENT_PATH, dbFile.delete());
-        }
-        assertFalse(dbFile.exists());
+
+        IntegrationUtils.cleanPersistenceFile(DEFAULT_PERSISTENT_PATH);
     }
 
     @Test

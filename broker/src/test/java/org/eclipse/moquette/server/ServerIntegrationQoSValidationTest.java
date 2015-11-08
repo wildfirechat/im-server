@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -78,8 +77,6 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.connect();
         
         m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
-//        m_callback = new TestCallback();
-//        m_subscriber.setCallback(m_callback);
         m_publisher.connect();
     }
 
@@ -94,10 +91,7 @@ public class ServerIntegrationQoSValidationTest {
         }
 
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
+        IntegrationUtils.cleanPersistenceFile(m_config);
     }
     
     @Test

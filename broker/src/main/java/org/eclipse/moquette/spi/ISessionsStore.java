@@ -54,10 +54,14 @@ public interface ISessionsStore {
      */
     boolean contains(String clientID);
 
-    ClientSession createNewSession(String clientID);
+    ClientSession createNewSession(String clientID, boolean cleanSession);
 
     /**
      * @return the session for the given clientID, null if not found.
      * */
     ClientSession sessionForClient(String clientID);
+
+    void activate(String clientID);
+
+    void deactivate(String clientID);
 }

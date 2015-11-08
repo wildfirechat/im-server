@@ -27,6 +27,7 @@ import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.events.PublishEvent;
+import org.eclipse.moquette.spi.persistence.MemorySessionStore;
 import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -117,6 +118,7 @@ public class ProtocolProcessorTest {
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         connectMessage.setCleanSession(subscription.isCleanSession());
         m_processor.processConnect(m_session, connectMessage);
         
@@ -207,7 +209,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
 
         //Verify
@@ -222,7 +224,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
         
         m_processor.processSubscribe(m_session, msg);
@@ -243,7 +245,7 @@ public class ProtocolProcessorTest {
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
 
         //Exercise
@@ -279,7 +281,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
         final CountDownLatch publishRecvSignal = new CountDownLatch(1);
-        /*ServerChannel */m_session = new DummyChannel() {
+        m_session = new DummyChannel() {
             @Override
             public void write(Object value) {
                 try {
@@ -370,10 +372,12 @@ public class ProtocolProcessorTest {
     }
     
     @Test
-    public void publishNoPublishToInactiveSubscriptions() {
+    public void publishNoPublishToInactiveSession() {
+        //create an inactive session for Subscriber
+        m_sessionStore.createNewSession("Subscriber", false).deactivate();
+
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
         Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, false); 
-        inactiveSub.setActive(false);
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
@@ -396,14 +400,16 @@ public class ProtocolProcessorTest {
     
     @Test
     public void publishToAnInactiveSubscriptionsCleanSession() {
+        //create an inactive session for Subscriber
+        m_sessionStore.createNewSession("Subscriber", false).deactivate();
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
         Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, true); 
-        inactiveSub.setActive(false);
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
-        
+        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(),
+                NO_OBSERVERS_INTERCEPTOR);
+
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage msg = new PublishMessage();
@@ -463,11 +469,14 @@ public class ProtocolProcessorTest {
         ByteBuffer payload = ByteBuffer.wrap("Hello world MQTT!!".getBytes());
         PublishEvent forwardPublish = new PublishEvent("a/b", QOSType.EXACTLY_ONCE, payload, true, "Publisher", 1);
         IMessagesStore memoryMessageStore = new MemoryStorageService();
+        ISessionsStore sessionsStore = new MemorySessionStore(memoryMessageStore);
+        sessionsStore.createNewSession("Sub A", false).activate();
+        sessionsStore.createNewSession("Sub B", false).activate();
 
         Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
         SubscriptionsStore subscriptions = new SubscriptionsStore();
-        subscriptions.init(new MemorySessionStore(memoryMessageStore));
+        subscriptions.init(sessionsStore);
         subscriptions.add(subQos1);
         subscriptions.add(subQos2);
 
@@ -479,7 +488,7 @@ public class ProtocolProcessorTest {
                 publishedForwarded.add(new PublishEvent(topic, qos, message, retained, clientId, messageID));
             }
         };
-        processor.init(subscriptions, memoryMessageStore, null, null, true, null, NO_OBSERVERS_INTERCEPTOR);
+        processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         processor.forward2Subscribers(forwardPublish);

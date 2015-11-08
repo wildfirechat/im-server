@@ -22,7 +22,6 @@ import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,10 +41,16 @@ public class ClientSession {
 
     private Set<Subscription> subscriptions = new HashSet<>();
 
-    public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore) {
+    public final boolean cleanSession;
+
+    private boolean active = false;
+
+    public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore,
+                         boolean cleanSession) {
         this.clientID = clientID;
         this.messagesStore = messagesStore;
         this.m_sessionsStore = sessionsStore;
+        this.cleanSession = cleanSession;
     }
     //List of client's subscriptions
     //list of messages not acknowledged by client
@@ -95,5 +100,37 @@ public class ClientSession {
             }
         }
         subscriptions.removeAll(subscriptionsToRemove);
+    }
+
+    public void disconnect() {
+        if (this.cleanSession) {
+            //cleanup topic subscriptions
+            cleanSession();
+        }
+
+        //deactivate the session
+        deactivate();
+    }
+
+    public void cleanSession() {
+        LOG.info("cleaning old saved subscriptions for client <{}>", this.clientID);
+        m_sessionsStore.wipeSubscriptions(this.clientID);
+
+        //remove also the messages stored of type QoS1/2
+        messagesStore.dropMessagesInSession(this.clientID);
+    }
+
+    public void activate() {
+        this.active = true;
+        this.m_sessionsStore.activate(this.clientID);
+    }
+
+    public void deactivate() {
+        this.active = false;
+        this.m_sessionsStore.deactivate(this.clientID);
+    }
+
+    public boolean isActive() {
+        return this.active;
     }
 }

@@ -174,46 +174,6 @@ class TreeNode {
     }
 
     /**
-     * Deactivate all topic subscriptions for the given clientID.
-     * */
-    TreeNode deactivate(String clientID) {
-        TreeNode newSubRoot = this.copy();
-        for (Subscription s : newSubRoot.m_subscriptions) {
-            if (s.clientId.equals(clientID)) {
-                s.setActive(false);
-            }
-        }
-
-        //go deep
-        List<TreeNode> newChildren = new ArrayList<>(newSubRoot.m_children.size());
-        for (TreeNode child : newSubRoot.m_children) {
-            newChildren.add(child.deactivate(clientID));
-        }
-        newSubRoot.m_children = newChildren;
-        return newSubRoot;
-    }
-
-    /**
-     * Activate all topic subscriptions for the given clientID.
-     * */
-    TreeNode activate(String clientID) {
-        TreeNode newSubRoot = this.copy();
-        for (Subscription s : newSubRoot.m_subscriptions) {
-            if (s.clientId.equals(clientID)) {
-                s.setActive(true);
-            }
-        }
-
-        //go deep
-        List<TreeNode> newChildren = new ArrayList<>(newSubRoot.m_children.size());
-        for (TreeNode child : newSubRoot.m_children) {
-            newChildren.add(child.activate(clientID));
-        }
-        newSubRoot.m_children = newChildren;
-        return newSubRoot;
-    }
-
-    /**
      * @return the set of subscriptions for the given client.
      * */
     Set<Subscription> findAllByClientID(String clientID) {

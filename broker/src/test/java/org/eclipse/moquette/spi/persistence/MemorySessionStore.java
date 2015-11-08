@@ -13,12 +13,13 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package org.eclipse.moquette.spi.impl;
+package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
+import static org.eclipse.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,8 @@ public class MemorySessionStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
+
+    private Map<String, PersistentSession> m_persistentSessions = new HashMap<>();
 
     private final IMessagesStore m_messagesStore;
 
@@ -90,24 +93,30 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public ClientSession createNewSession(String clientID) {
+    public ClientSession createNewSession(String clientID, boolean cleanSession) {
         LOG.debug("createNewSession for client <{}>", clientID);
-        if (m_persistentSubscriptions.containsKey(clientID)) {
+        if (m_persistentSessions.containsKey(clientID)) {
             LOG.error("already exists a session for client <{}>, bad condition", clientID);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        return new ClientSession(clientID, m_messagesStore, this);
+        m_persistentSessions.put(clientID, new PersistentSession(cleanSession, false));
+        return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
     @Override
     public ClientSession sessionForClient(String clientID) {
-        if (!m_persistentSubscriptions.containsKey(clientID)) {
+        if (!m_persistentSessions.containsKey(clientID)) {
             return null;
         }
 
-        return new ClientSession(clientID, m_messagesStore, this);
+        PersistentSession storedSession = m_persistentSessions.get(clientID);
+        ClientSession clientSession = new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
+        if (storedSession.active) {
+            clientSession.activate();
+        }
+        return clientSession;
     }
 
     @Override
@@ -117,5 +126,24 @@ public class MemorySessionStore implements ISessionsStore {
             allSubscriptions.addAll(entry.getValue());
         }
         return allSubscriptions;
+    }
+
+    @Override
+    public void activate(String clientID) {
+        activationHelper(clientID, true);
+    }
+
+    @Override
+    public void deactivate(String clientID) {
+        activationHelper(clientID, false);
+    }
+
+    private void activationHelper(String clientID, boolean activation) {
+        PersistentSession storedSession = m_persistentSessions.get(clientID);
+        if (storedSession == null) {
+            throw new IllegalStateException((activation ? "activating" : "deactivating") + " a session never stored/created, clientID <"+ clientID + ">", null);
+        }
+        PersistentSession newStoredSession = new PersistentSession(storedSession.cleanSession, activation);
+        m_persistentSessions.put(clientID, newStoredSession);
     }
 }

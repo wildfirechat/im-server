@@ -58,11 +58,6 @@ public class SubscriptionsStoreTest {
         assertEqualsSeq(asArray(Token.EMPTY, Token.EMPTY), tokens);
     }
 
-//    @Test(expected = ParseException.class)
-//    public void testSplitTopicTwinsSlashAvoided() throws ParseException {
-//        store.parseTopic("/finance//stock/ibm");
-//    }
-
     @Test
     public void testParseTopicMultiValid() throws ParseException {
         List<Token> tokens = store.parseTopic("finance/stock/#");
@@ -355,8 +350,8 @@ public class SubscriptionsStoreTest {
         //subscribe a not active clientID1 to /topic
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
         aStore.add(slashSub);
-        aStore.deactivate(slashSub.getClientId());
-        
+        memStore.createNewSession("FAKE_CLI_ID_1", true).deactivate();
+
         //subscribe an active clientID2 to /topic
         Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
         aStore.add(slashSub2);
