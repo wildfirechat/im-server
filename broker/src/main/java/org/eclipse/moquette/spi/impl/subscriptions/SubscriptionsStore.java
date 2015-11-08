@@ -92,7 +92,6 @@ public class SubscriptionsStore {
     }
     
     private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode(null));
-    private ISessionsStore m_sessionsStore;
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
     /**
@@ -101,7 +100,6 @@ public class SubscriptionsStore {
      */
     public void init(ISessionsStore sessionsStore) {
         LOG.debug("init invoked");
-        m_sessionsStore = sessionsStore;
         List<Subscription> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any subscriptions persisted
         if (LOG.isDebugEnabled()) {
