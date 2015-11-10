@@ -67,7 +67,7 @@ public class ClientSession {
      * Remove a message previously stored for delivery.
      * */
     public void removeDelivered(int messageID) {
-        messagesStore.removeMessageInSession(clientID, messageID);
+        messagesStore.removeMessage(clientID, messageID);
     }
 
     @Override

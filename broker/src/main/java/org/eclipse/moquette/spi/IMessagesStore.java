@@ -77,7 +77,7 @@ public interface IMessagesStore {
      */
     List<PublishEvent> listMessagesInSession(String clientID);
     
-    void removeMessageInSession(String clientID, Integer packetID);
+    void removeMessage(String clientID, Integer packetID);
 
     void dropMessagesInSession(String clientID);
 

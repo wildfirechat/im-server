@@ -16,38 +16,26 @@
 package org.eclipse.moquette.server;
 
 /**
- * Maintains the information of single connection, like ClientID, IoSession,
- * and other connection related flags.
+ * Value object to maintain the information of single connection, like ClientID, IoSession,
+ * and other clean session fla.
  * 
  * 
  * @author andrea
  */
 public class ConnectionDescriptor {
     
-    private String m_clientID;
-    private ServerChannel m_session;
-    private boolean m_cleanSession;
+    public final String clientID;
+    public final ServerChannel session;
+    public final boolean cleanSession;
     
     public ConnectionDescriptor(String clientID, ServerChannel session, boolean cleanSession) {
-        this.m_clientID = clientID;
-        this.m_session = session;
-        this.m_cleanSession = cleanSession;
-    }
-    
-    public boolean isCleanSession() {
-        return m_cleanSession;
-    }
-
-    public String getClientID() {
-        return m_clientID;
-    }
-
-    public ServerChannel getSession() {
-        return m_session;
+        this.clientID = clientID;
+        this.session = session;
+        this.cleanSession = cleanSession;
     }
 
     @Override
     public String toString() {
-        return "ConnectionDescriptor{" + "m_clientID=" + m_clientID + ", m_cleanSession=" + m_cleanSession + '}';
+        return "ConnectionDescriptor{" + "clientID=" + clientID + ", cleanSession=" + cleanSession + '}';
     }
 }

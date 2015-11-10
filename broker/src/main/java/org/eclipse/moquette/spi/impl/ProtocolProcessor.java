@@ -176,7 +176,7 @@ public class ProtocolProcessor {
         if (m_clientIDs.containsKey(msg.getClientID())) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
-            ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).getSession();
+            ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).session;
             ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
             oldClientSession.disconnect();
             oldSession.setAttribute(NettyChannel.ATTR_KEY_SESSION_STOLEN, true);
@@ -263,7 +263,7 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //Remove the message from message store
-        m_messagesStore.removeMessageInSession(clientID, messageID);
+        m_messagesStore.removeMessage(clientID, messageID);
     }
     
     public void processPublish(ServerChannel session, PublishMessage msg) {
@@ -416,7 +416,7 @@ public class ProtocolProcessor {
             // could happen is not an error HANDLE IT
             throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
         }
-        ServerChannel session = m_clientIDs.get(clientId).getSession();
+        ServerChannel session = m_clientIDs.get(clientId).session;
         LOG.debug("Session for clientId {} is {}", clientId, session);
 
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
@@ -431,7 +431,7 @@ public class ProtocolProcessor {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-        m_clientIDs.get(clientID).getSession().write(pubRecMessage);
+        m_clientIDs.get(clientID).session.write(pubRecMessage);
     }
     
     private void sendPubAck(PubAckEvent evt) {
@@ -448,7 +448,7 @@ public class ProtocolProcessor {
             if (m_clientIDs.get(clientId) == null) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
-            m_clientIDs.get(clientId).getSession().write(pubAckMessage);
+            m_clientIDs.get(clientId).session.write(pubAckMessage);
         } catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -481,7 +481,7 @@ public class ProtocolProcessor {
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).getSession().write(pubCompMessage);
+        m_clientIDs.get(clientID).session.write(pubCompMessage);
     }
     
     public void processPubRec(ServerChannel session, PubRecMessage msg) {

@@ -85,7 +85,7 @@ public class PublishEvent extends MessagingEvent {
     public String toString() {
         return "PublishEvent{" +
                 "m_msgID=" + m_msgID +
-                ", m_clientID='" + m_clientID + '\'' +
+                ", clientID='" + m_clientID + '\'' +
                 ", m_retain=" + m_retain +
                 ", m_qos=" + m_qos +
                 ", m_topic='" + m_topic + '\'' +
