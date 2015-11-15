@@ -243,7 +243,7 @@ public class ProtocolProcessor_CONNECT_Test {
         //Connect a first time
         m_processor.processConnect(m_session, connMsg);
         //disconnect
-        m_processor.processDisconnect(m_session, new DisconnectMessage());
+        m_processor.processDisconnect(m_session);
 
         //Exercise, reconnect
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
@@ -278,7 +278,7 @@ public class ProtocolProcessor_CONNECT_Test {
         assertTrue(subscriptions.contains(expectedSubscription));
 
         //disconnect
-        m_processor.processDisconnect(m_session, new DisconnectMessage());
+        m_processor.processDisconnect(m_session);
 
         //reconnect clean session a false
         m_processor.processConnect(m_session, connMsg);

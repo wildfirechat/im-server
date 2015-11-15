@@ -156,8 +156,8 @@ public class ServerIntegrationFuseTest {
         //reconnect and expect to receive the hello 2 message
         m_subscriber = m_mqtt.blockingConnection();
         m_subscriber.connect();
-        topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
-        m_subscriber.subscribe(topics);
+        //topics = new Topic[]{new Topic("/topic", QoS.AT_LEAST_ONCE)};
+        //m_subscriber.subscribe(topics);
         msg = m_subscriber.receive();
         msg.ack();
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));

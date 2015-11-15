@@ -33,6 +33,7 @@ public class PublishEvent extends MessagingEvent {
     String m_clientID;
     //Optional attribute, available only fo QoS 1 and 2
     Integer m_msgID;
+    private String guid;
 
     public PublishEvent(String topic, QOSType qos, ByteBuffer message, boolean retain,
                         String clientID, Integer msgID) {
@@ -79,6 +80,14 @@ public class PublishEvent extends MessagingEvent {
 
     public Integer getMessageID() {
         return m_msgID;
+    }
+
+    public void setGuid(String guid) {
+        this.guid = guid;
+    }
+
+    public String getGuid() {
+        return guid;
     }
 
     @Override

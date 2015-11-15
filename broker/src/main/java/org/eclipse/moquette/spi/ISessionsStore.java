@@ -15,6 +15,7 @@
  */
 package org.eclipse.moquette.spi;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -64,4 +65,30 @@ public interface ISessionsStore {
     void activate(String clientID);
 
     void deactivate(String clientID);
+
+    void inFlightAck(String clientID, int messageID);
+
+    /**
+     * Save the binding messageID, clientID <-> guid
+     * */
+    void inFlight(String clientID, int messageID, String guid);
+
+    /**
+     * Store the guid to be later published.
+     * */
+    void bindToDeliver(String guid, String clientID);
+
+    /**
+     * List the guids for retained messages for the session
+     * */
+    Collection<String> enqueued(String clientID);
+
+    /**
+     * Remove form the queue of stored messages for session.
+     * */
+    void removeEnqueued(String clientID, String guid);
+
+    void secondPhaseAcknowledged(String clientID, int messageID);
+
+    void secondPhaseAckWaiting(String clientID, int messageID);
 }

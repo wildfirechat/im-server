@@ -91,7 +91,7 @@ public class MapDBPersistentStoreTest {
         assertEquals(1, packetId);
 
         //release the ID
-        m_storageService.cleanTemporaryPublish("CLIENT", packetId);
+//        m_storageService.cleanTemporaryPublish("CLIENT", packetId);
 
         //request a second packetID, counter restarts from 0
         packetId = m_storageService.nextPacketID("CLIENT");

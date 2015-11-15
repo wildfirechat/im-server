@@ -368,7 +368,8 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_session, connectMessage);
 
         //Verify no messages are still stored
-        assertTrue(m_storageService.listMessagesInSession(FAKE_PUBLISHER_ID).isEmpty());
+        Collection<String> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
+        assertTrue(m_storageService.listMessagesInSession(guids).isEmpty());
     }
     
     @Test
@@ -483,8 +484,8 @@ public class ProtocolProcessorTest {
 
         ProtocolProcessor processor = new ProtocolProcessor() {
             @Override
-            protected void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
-                                       boolean retained, Integer messageID) {
+            protected void directSend(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
+                                      boolean retained, Integer messageID) {
                 publishedForwarded.add(new PublishEvent(topic, qos, message, retained, clientId, messageID));
             }
         };

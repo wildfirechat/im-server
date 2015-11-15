@@ -38,8 +38,13 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     
     private Map<String, StoredMessage> m_retainedStore = new HashMap<>();
     //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
-    private Map<String, List<PublishEvent>> m_persistentMessageStore = new HashMap<>();
-    private Map<String, PublishEvent> m_inflightStore = new HashMap<>();
+    private Map<String, PublishEvent> m_persistentMessageStore = new HashMap<>();
+    //maps clientID->[MessageId -> guid]
+    private Map<String, Map<Integer, String>> m_inflightStore = new HashMap<>();
+    //maps clientID->[guid*]
+    private Map<String, Set<String>> m_enqueuedStore = new HashMap<>();
+    //maps clientID->[messageID*]
+    private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
     private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     private Map<String, PublishEvent> m_qos2Store = new HashMap<>();
     private MemorySessionStore m_sessionsStore;
@@ -85,58 +90,26 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void storePublishForFuture(PublishEvent evt) {
+    public String storePublishForFuture(PublishEvent evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
-        String clientID = evt.getClientID();
-        List<PublishEvent> storedEvents = defaultGet(m_persistentMessageStore, clientID, new ArrayList<PublishEvent>());
-        storedEvents.add(evt);
-        m_persistentMessageStore.put(clientID, storedEvents);
+        String guid = UUID.randomUUID().toString();
+        evt.setGuid(guid);
+        m_persistentMessageStore.put(guid, evt);
+        return guid;
     }
 
     @Override
-    public List<PublishEvent> listMessagesInSession(String clientID) {
-        return new ArrayList<>(defaultGet(m_persistentMessageStore, clientID, Collections.<PublishEvent>emptyList()));
-    }
-    
-    @Override
-    public void removeMessage(String clientID, Integer messageID) {
-        List<PublishEvent> events = m_persistentMessageStore.get(clientID);
-        if (events == null) {
-            return;
+    public List<PublishEvent> listMessagesInSession(Collection<String> guids) {
+        List<PublishEvent> ret = new ArrayList<>();
+        for (String guid : guids) {
+            ret.add(m_persistentMessageStore.get(guid));
         }
-        PublishEvent toRemoveEvt = null;
-        for (PublishEvent evt : events) {
-            if (evt.getMessageID() == null && messageID == null) {
-                //was a qos0 message (no ID)
-                toRemoveEvt = evt;
-            }
-            if (evt.getMessageID() == messageID) {
-                toRemoveEvt = evt;
-            }
-        }
-        events.remove(toRemoveEvt);
-        m_persistentMessageStore.put(clientID, events);
+        return ret;
     }
 
     @Override
     public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
-    }
-
-    @Override
-    public void cleanTemporaryPublish(String clientID, int packetID) {
-        String publishKey = String.format("%s%d", clientID, packetID);
-        m_inflightStore.remove(publishKey);
-        Set<Integer> inFlightForClient = m_inflightIDs.get(clientID);
-        if (inFlightForClient != null) {
-            inFlightForClient.remove(packetID);
-        }
-    }
-
-    @Override
-    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
-        String publishKey = String.format("%s%d", clientID, packetID);
-        m_inflightStore.put(publishKey, evt);
     }
 
     /**
@@ -228,5 +201,58 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     @Override
     public void deactivate(String clientID) {
         m_sessionsStore.deactivate(clientID);
+    }
+
+    @Override
+    public void inFlightAck(String clientID, int messageID) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            LOG.error("Can't find the inFlight record for client <{}>", clientID);
+            return;
+        }
+        m.remove(messageID);
+    }
+
+    @Override
+    public void inFlight(String clientID, int messageID, String guid) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            m = new HashMap<>();
+        }
+        m.put(messageID, guid);
+        this.m_inflightStore.put(clientID, m);
+    }
+
+    @Override
+    public void bindToDeliver(String guid, String clientID) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.add(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public Collection<String> enqueued(String clientID) {
+        return defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+    }
+
+    @Override
+    public void removeEnqueued(String clientID, String guid) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.remove(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public void secondPhaseAcknowledged(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.remove(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
+    }
+
+    @Override
+    public void secondPhaseAckWaiting(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.add(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
     }
 }

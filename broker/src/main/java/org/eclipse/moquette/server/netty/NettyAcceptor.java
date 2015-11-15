@@ -17,13 +17,7 @@ package org.eclipse.moquette.server.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -36,29 +30,25 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-
-import java.io.*;
-import java.net.URL;
-import java.security.*;
-
-import java.security.cert.CertificateException;
-import java.util.List;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-
 import io.netty.util.concurrent.Future;
 import org.eclipse.moquette.commons.Constants;
-import org.eclipse.moquette.server.config.IConfig;
-import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.parser.netty.MQTTDecoder;
 import org.eclipse.moquette.parser.netty.MQTTEncoder;
 import org.eclipse.moquette.server.ServerAcceptor;
+import org.eclipse.moquette.server.config.IConfig;
 import org.eclipse.moquette.server.netty.metrics.*;
 import org.eclipse.moquette.spi.impl.ProtocolProcessor;
-import org.eclipse.moquette.spi.impl.SimpleMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import java.io.*;
+import java.net.URL;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.util.List;
 
 /**
  *

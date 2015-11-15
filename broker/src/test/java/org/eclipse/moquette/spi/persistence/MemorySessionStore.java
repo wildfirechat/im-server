@@ -19,6 +19,8 @@ import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
+
+import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
 import static org.eclipse.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,13 @@ public class MemorySessionStore implements ISessionsStore {
     private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
 
     private Map<String, PersistentSession> m_persistentSessions = new HashMap<>();
+
+    //maps clientID->[MessageId -> guid]
+    private Map<String, Map<Integer, String>> m_inflightStore = new HashMap<>();
+    //maps clientID->[guid*]
+    private Map<String, Set<String>> m_enqueuedStore = new HashMap<>();
+    //maps clientID->[messageID*]
+    private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
 
     private final IMessagesStore m_messagesStore;
 
@@ -145,5 +154,58 @@ public class MemorySessionStore implements ISessionsStore {
         }
         PersistentSession newStoredSession = new PersistentSession(storedSession.cleanSession, activation);
         m_persistentSessions.put(clientID, newStoredSession);
+    }
+
+    @Override
+    public void inFlightAck(String clientID, int messageID) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            LOG.error("Can't find the inFlight record for client <{}>", clientID);
+            return;
+        }
+        m.remove(messageID);
+    }
+
+    @Override
+    public void inFlight(String clientID, int messageID, String guid) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            m = new HashMap<>();
+        }
+        m.put(messageID, guid);
+        this.m_inflightStore.put(clientID, m);
+    }
+
+    @Override
+    public void bindToDeliver(String guid, String clientID) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.add(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public Collection<String> enqueued(String clientID) {
+        return defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+    }
+
+    @Override
+    public void removeEnqueued(String clientID, String guid) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.remove(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public void secondPhaseAcknowledged(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.remove(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
+    }
+
+    @Override
+    public void secondPhaseAckWaiting(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.add(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
     }
 }

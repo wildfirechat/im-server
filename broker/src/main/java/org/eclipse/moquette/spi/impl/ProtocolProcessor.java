@@ -34,7 +34,6 @@ import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
 import org.eclipse.moquette.proto.messages.ConnAckMessage;
 import org.eclipse.moquette.proto.messages.ConnectMessage;
-import org.eclipse.moquette.proto.messages.DisconnectMessage;
 import org.eclipse.moquette.proto.messages.PubAckMessage;
 import org.eclipse.moquette.proto.messages.PubCompMessage;
 import org.eclipse.moquette.proto.messages.PubRecMessage;
@@ -231,6 +230,7 @@ public class ProtocolProcessor {
             //force the republish of stored QoS1 and QoS2
             republishStoredInSession(clientSession);
         }
+        LOG.info("CONNECT processed");
     }
 
     private void failedCredentials(ServerChannel session) {
@@ -253,9 +253,10 @@ public class ProtocolProcessor {
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         for (PublishEvent pubEvt : publishedEvents) {
-            sendPublish(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
-                   pubEvt.getMessage(), false, pubEvt.getMessageID());
-            clientSession.removeDelivered(pubEvt.getMessageID());
+            //TODO put in flight zone
+            directSend(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+                    pubEvt.getMessage(), false, pubEvt.getMessageID());
+            clientSession.removeEnqueued(pubEvt.getGuid());
         }
     }
     
@@ -263,7 +264,8 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         //Remove the message from message store
-        m_messagesStore.removeMessage(clientID, messageID);
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        targetSession.inFlightAcknowledged(messageID);
     }
     
     public void processPublish(ServerChannel session, PublishMessage msg) {
@@ -292,10 +294,11 @@ public class ProtocolProcessor {
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
             forward2Subscribers(publishEvt);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            //TODO implement inFlight!!
-            m_messagesStore.storeTemporaryPublish(publishEvt, clientID, messageID);
+            //TODO implement inFlight!!boolean retain = pubEvt.isRetain();
+//            final Integer messageID = pubEvt.getMessageID();
+//            m_messagesStore.storeTemporaryPublish(publishEvt, clientID, messageID);
             forward2Subscribers(publishEvt);
-            m_messagesStore.cleanTemporaryPublish(clientID, messageID);
+//            m_messagesStore.cleanTemporaryPublish(clientID, messageID);
             //NB the PUB_ACK could be sent also after the addInFlight
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
@@ -338,17 +341,24 @@ public class ProtocolProcessor {
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
+    //TODO rename to route2Subscribers
     void forward2Subscribers(PublishEvent pubEvt) {
         final String topic = pubEvt.getTopic();
         final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
         final ByteBuffer origMessage = pubEvt.getMessage();
-        boolean retain = pubEvt.isRetain();
-        final Integer messageID = pubEvt.getMessageID();
+//        boolean retain = pubEvt.isRetain();
+//        final Integer messageID = pubEvt.getMessageID();
         LOG.debug("forward2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(origMessage));
             LOG.debug("subscription tree {}", subscriptions.dumpTree());
         }
+        //if QoS 1 or 2 store the message
+        String guid = null;
+        if (publishingQos == QOSType.EXACTLY_ONCE || publishingQos == QOSType.LEAST_ONE) {
+            guid = m_messagesStore.storePublishForFuture(pubEvt);
+        }
+
         for (final Subscription sub : subscriptions.matches(topic)) {
             AbstractMessage.QOSType qos = publishingQos;
             if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
@@ -361,33 +371,34 @@ public class ProtocolProcessor {
             ByteBuffer message = origMessage.duplicate();
             if (qos == AbstractMessage.QOSType.MOST_ONE && targetSession.isActive()) {
                 //QoS 0
-                sendPublish(sub.getClientId(), topic, qos, message, false, null);
+                directSend(sub.getClientId(), topic, qos, message, false, null);
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
                 if (!sub.isCleanSession() && !targetSession.isActive()) {
-                    //clone the event with matching clientID
-                    PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
-                    m_messagesStore.storePublishForFuture(newPublishEvt);
+                    //store the message in targetSession queue to deliver
+                    targetSession.enqueueToDeliver(guid);
                 } else  {
                     //TODO also QoS 1 has to be stored in Flight Zone
                     //if QoS 2 then store it in temp memory
-                    if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
-                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
-                        m_messagesStore.storeTemporaryPublish(newPublishEvt, sub.getClientId(), messageID);
-                    }
+//                    if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
+//                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
+//                        m_messagesStore.storeTemporaryPublish(newPublishEvt, sub.getClientId(), messageID);
+//                    }
                     //publish
                     if (targetSession.isActive()) {
-                        int messageId = m_messagesStore.nextPacketID(sub.getClientId());
-                        sendPublish(sub.getClientId(), topic, qos, message, false, messageId);
+//                        int messageId = m_messagesStore.nextPacketID(sub.getClientId());
+                        int messageId = targetSession.nextPacketId();
+                        targetSession.inFlightAckWaiting(guid, messageId);
+                        directSend(sub.getClientId(), topic, qos, message, false, messageId);
                     }
                 }
             }
         }
     }
 
-    protected void sendPublish(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
-        LOG.debug("sendPublish invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
+    protected void directSend(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
+        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
@@ -487,6 +498,10 @@ public class ProtocolProcessor {
     public void processPubRec(ServerChannel session, PubRecMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        //remove from the inflight and move to the QoS2 second phase queue
+        targetSession.inFlightAcknowledged(messageID);
+        targetSession.secondPhaseAckWaiting(messageID);
         //once received a PUBREC reply with a PUBREL(messageID)
         LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
         PubRelMessage pubRelMessage = new PubRelMessage();
@@ -501,10 +516,12 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
-        m_messagesStore.cleanTemporaryPublish(clientID, messageID);
+//        m_messagesStore.cleanTemporaryPublish(clientID, messageID);
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        targetSession.secondPhaseAcknowledged(messageID);
     }
     
-    public void processDisconnect(ServerChannel session, DisconnectMessage msg) throws InterruptedException {
+    public void processDisconnect(ServerChannel session) throws InterruptedException {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
@@ -620,7 +637,7 @@ public class ProtocolProcessor {
             //forwardPublishQoS0(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
             Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null :
                     m_messagesStore.nextPacketID(newSubscription.getClientId());
-            sendPublish(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
+            directSend(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
 
         //notify the Observables

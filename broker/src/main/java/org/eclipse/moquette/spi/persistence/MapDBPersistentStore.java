@@ -17,6 +17,7 @@
 package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.proto.MQTTException;
+import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
@@ -24,10 +25,6 @@ import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.storage.StoredPublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
-
-import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
-
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
@@ -38,7 +35,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
 
 /**
  * MapDB main persistence implementation
@@ -62,10 +64,10 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MapDBPersistentStore.class);
 
     private ConcurrentMap<String, StoredMessage> m_retainedStore;
-    //maps clientID to the list of pending messages stored
-    private ConcurrentMap<String, List<StoredPublishEvent>> m_persistentMessageStore;
-    //bind clientID+MsgID -> evt message published
-    private ConcurrentMap<String, StoredPublishEvent> m_inflightStore;
+    //maps guid to message, it's message store
+    private ConcurrentMap<String, StoredPublishEvent> m_persistentMessageStore;
+    //maps clientID->[MessageId -> guid]
+    private ConcurrentMap<String, Map<Integer, String>> m_inflightStore;
     //map clientID <-> set of currently in flight packet identifiers
     Map<String, Set<Integer>> m_inFlightIds;
     //bind clientID+MsgID -> evt message published
@@ -73,6 +75,12 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     //persistent Map of clientID, set of Subscriptions
     private ConcurrentMap<String, Set<Subscription>> m_persistentSubscriptions;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
+
+    //maps clientID->[guid*]
+    private ConcurrentMap<String, Set<String>> m_enqueuedStore;
+    //maps clientID->[messageID*]
+    private ConcurrentMap<String, Set<Integer>> m_secondPhaseStore;
+
     private DB m_db;
     private String m_storePath;
 
@@ -113,6 +121,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_persistentSubscriptions = m_db.getHashMap("subscriptions");
         m_qos2Store = m_db.getHashMap("qos2Store");
         m_persistentSessions = m_db.getHashMap("sessions");
+        m_enqueuedStore = m_db.getHashMap("sessionQueue");
+        m_secondPhaseStore = m_db.getHashMap("secondPhase");
         m_scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -155,72 +165,75 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void storePublishForFuture(PublishEvent evt) {
-        List<StoredPublishEvent> storedEvents;
-        String clientID = evt.getClientID();
-        if (!m_persistentMessageStore.containsKey(clientID)) {
-            storedEvents = new ArrayList<>();
-        } else {
-            storedEvents = m_persistentMessageStore.get(clientID);
-        }
-        storedEvents.add(convertToStored(evt));
-        m_persistentMessageStore.put(clientID, storedEvents);
-        //NB rewind the evt message content
-        LOG.debug("Stored published message for client <{}> on topic <{}>", clientID, evt.getTopic());
+    public String storePublishForFuture(PublishEvent evt) {
+        LOG.debug("storePublishForFuture store evt {}", evt);
+        String guid = UUID.randomUUID().toString();
+        evt.setGuid(guid);
+        m_persistentMessageStore.put(guid, convertToStored(evt));
+        return guid;
     }
 
     @Override
-    public List<PublishEvent> listMessagesInSession(String clientID) {
-        List<PublishEvent> liveEvts = new ArrayList<>();
-        List<StoredPublishEvent> storedEvts = defaultGet(m_persistentMessageStore, clientID, Collections.<StoredPublishEvent>emptyList());
-
-        for (StoredPublishEvent storedEvt : storedEvts) {
-            liveEvts.add(convertFromStored(storedEvt));
+    public List<PublishEvent> listMessagesInSession(Collection<String> guids) {
+        List<PublishEvent> ret = new ArrayList<>();
+        for (String guid : guids) {
+            ret.add(convertFromStored(m_persistentMessageStore.get(guid))) ;
         }
-        return liveEvts;
+        return ret;
     }
 
-    @Override
-    public void removeMessage(String clientID, Integer messageID) {
-        List<StoredPublishEvent> events = m_persistentMessageStore.get(clientID);
-        if (events == null) {
-            return;
-        }
-        StoredPublishEvent toRemoveEvt = null;
-        for (StoredPublishEvent evt : events) {
-            if (evt.getMessageID() == null && messageID == null) {
-                //was a qos0 message (no ID)
-                toRemoveEvt = evt;
-            }
-            if (evt.getMessageID().equals(messageID)) {
-                toRemoveEvt = evt;
-            }
-        }
-        events.remove(toRemoveEvt);
-        m_persistentMessageStore.put(clientID, events);
-    }
+//    @Override
+//    public List<PublishEvent> listMessagesInSession(String clientID) {
+//        List<PublishEvent> liveEvts = new ArrayList<>();
+//        List<StoredPublishEvent> storedEvts = defaultGet(m_persistentMessageStore, clientID, Collections.<StoredPublishEvent>emptyList());
+//
+//        for (StoredPublishEvent storedEvt : storedEvts) {
+//            liveEvts.add(convertFromStored(storedEvt));
+//        }
+//        return liveEvts;
+//    }
+//
+//    @Override
+//    public void removeMessage(String clientID, Integer messageID) {
+//        List<StoredPublishEvent> events = m_persistentMessageStore.get(clientID);
+//        if (events == null) {
+//            return;
+//        }
+//        StoredPublishEvent toRemoveEvt = null;
+//        for (StoredPublishEvent evt : events) {
+//            if (evt.getMessageID() == null && messageID == null) {
+//                //was a qos0 message (no ID)
+//                toRemoveEvt = evt;
+//            }
+//            if (evt.getMessageID().equals(messageID)) {
+//                toRemoveEvt = evt;
+//            }
+//        }
+//        events.remove(toRemoveEvt);
+//        m_persistentMessageStore.put(clientID, events);
+//    }
 
     public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
     }
 
     //----------------- In flight methods -----------------
-    @Override
-    public void cleanTemporaryPublish(String clientID, int packetID) {
-        String publishKey = String.format("%s%d", clientID, packetID);
-        m_inflightStore.remove(publishKey);
-        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
-        if (inFlightForClient != null) {
-            inFlightForClient.remove(packetID);
-        }
-    }
-
-    @Override
-    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
-        String publishKey = String.format("%s%d", clientID, packetID);
-        StoredPublishEvent storedEvt = convertToStored(evt);
-        m_inflightStore.put(publishKey, storedEvt);
-    }
+//    @Override
+//    public void cleanTemporaryPublish(String clientID, int packetID) {
+//        String publishKey = String.format("%s%d", clientID, packetID);
+//        m_inflightStore.remove(publishKey);
+//        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
+//        if (inFlightForClient != null) {
+//            inFlightForClient.remove(packetID);
+//        }
+//    }
+//
+//    @Override
+//    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
+//        String publishKey = String.format("%s%d", clientID, packetID);
+//        StoredPublishEvent storedEvt = convertToStored(evt);
+//        m_inflightStore.put(publishKey, storedEvt);
+//    }
 
     /**
      * Return the next valid packetIdentifier for the given client session.
@@ -354,6 +367,59 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     @Override
     public void deactivate(String clientID) {
         activationHelper(clientID, false);
+    }
+
+    @Override
+    public void inFlightAck(String clientID, int messageID) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            LOG.error("Can't find the inFlight record for client <{}>", clientID);
+            return;
+        }
+        m.remove(messageID);
+    }
+
+    @Override
+    public void inFlight(String clientID, int messageID, String guid) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            m = new HashMap<>();
+        }
+        m.put(messageID, guid);
+        this.m_inflightStore.put(clientID, m);
+    }
+
+    @Override
+    public void bindToDeliver(String guid, String clientID) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.add(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public Collection<String> enqueued(String clientID) {
+        return defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+    }
+
+    @Override
+    public void removeEnqueued(String clientID, String guid) {
+        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        guids.remove(guid);
+        m_enqueuedStore.put(clientID, guids);
+    }
+
+    @Override
+    public void secondPhaseAcknowledged(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.remove(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
+    }
+
+    @Override
+    public void secondPhaseAckWaiting(String clientID, int messageID) {
+        Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
+        messageIDs.add(messageID);
+        m_secondPhaseStore.put(clientID, messageIDs);
     }
 
     private void activationHelper(String clientID, boolean activation) {

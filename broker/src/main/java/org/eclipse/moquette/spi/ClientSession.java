@@ -22,11 +22,25 @@ import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
+ * Model a Session like describe on page 25 of MQTT 3.1.1 specification:
+ * The Session state in the Server consists of:
+ * <ul>
+ *     <li>The existence of a Session, even if the rest of the Session state is empty.</li>
+ *     <li>The Client’s subscriptions.</li>
+ *     <li>QoS 1 and QoS 2 messages which have been sent to the Client, but have not been
+ *     completely acknowledged.</li>
+ *     <li>QoS 1 and QoS 2 messages pending transmission to the Client.</li>
+ *     <li>QoS 2 messages which have been received from the Client, but have not been
+ *     completely acknowledged.</li>
+ *     <li>Optionally, QoS 0 messages pending transmission to the Client.</li>
+ * </ul>
+ *
  * @author andrea
  */
 public class ClientSession {
@@ -60,21 +74,21 @@ public class ClientSession {
      * @return the list of messages to be delivered for client related to the session.
      * */
     public List<PublishEvent> storedMessages() {
-        return messagesStore.listMessagesInSession(clientID);
+        //read all messages from enqueued store
+        Collection<String> guids = this.m_sessionsStore.enqueued(clientID);
+        return messagesStore.listMessagesInSession(guids);
     }
 
     /**
-     * Remove a message previously stored for delivery.
-     * */
-    public void removeDelivered(int messageID) {
-        messagesStore.removeMessage(clientID, messageID);
+     * Remove the messages stored in a cleanSession false.
+     */
+    public void removeEnqueued(String guid) {
+        this.m_sessionsStore.removeEnqueued(this.clientID, guid);
     }
 
     @Override
     public String toString() {
-        return "ClientSession{" +
-                "clientID='" + clientID + '\'' +
-                '}';
+        return "ClientSession{clientID='" + clientID + '\'' +"}";
     }
 
     public boolean subscribe(String topicFilter, Subscription newSubscription) {
@@ -132,5 +146,29 @@ public class ClientSession {
 
     public boolean isActive() {
         return this.active;
+    }
+
+    public int nextPacketId() {
+        return this.messagesStore.nextPacketID(this.clientID);
+    }
+
+    public void inFlightAcknowledged(int messageID) {
+        m_sessionsStore.inFlightAck(this.clientID, messageID);
+    }
+
+    public void inFlightAckWaiting(String guid, int messageID) {
+        m_sessionsStore.inFlight(this.clientID, messageID, guid);
+    }
+
+    public void secondPhaseAcknowledged(int messageID) {
+        m_sessionsStore.secondPhaseAcknowledged(clientID, messageID);
+    }
+
+    public void secondPhaseAckWaiting(int messageID) {
+        m_sessionsStore.secondPhaseAckWaiting(clientID, messageID);
+    }
+
+    public void enqueueToDeliver(String guid) {
+        this.m_sessionsStore.bindToDeliver(guid, this.clientID);
     }
 }

@@ -68,22 +68,26 @@ public interface IMessagesStore {
      */
     Collection<StoredMessage> searchMatching(IMatchingCondition condition);
 
-    void storePublishForFuture(PublishEvent evt);
+    /**
+     * Persist the message.
+     * @return the unique id in the storage (guid).
+     * */
+    String storePublishForFuture(PublishEvent evt);
 
     /**
      * Return the list of persisted publishes for the given clientID.
      * For QoS1 and QoS2 with clean session flag, this method return the list of 
      * missed publish events while the client was disconnected.
      */
-    List<PublishEvent> listMessagesInSession(String clientID);
+    List<PublishEvent> listMessagesInSession(Collection<String> guids);
     
-    void removeMessage(String clientID, Integer packetID);
+//    void removeMessage(String clientID, Integer packetID);
 
     void dropMessagesInSession(String clientID);
 
-    void cleanTemporaryPublish(String clientID, int packetID);
+//    void cleanTemporaryPublish(String clientID, int packetID);
 
-    void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID);
+//    void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID);
 
     /**
      * Return the next valid packetIdentifer for the given client session.
