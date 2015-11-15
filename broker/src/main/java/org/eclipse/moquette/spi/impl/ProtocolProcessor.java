@@ -254,7 +254,7 @@ public class ProtocolProcessor {
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         for (PublishEvent pubEvt : publishedEvents) {
             //TODO put in flight zone
-            directSend(pubEvt.getClientID(), pubEvt.getTopic(), pubEvt.getQos(),
+            directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID());
             clientSession.removeEnqueued(pubEvt.getGuid());
         }
@@ -371,7 +371,7 @@ public class ProtocolProcessor {
             ByteBuffer message = origMessage.duplicate();
             if (qos == AbstractMessage.QOSType.MOST_ONE && targetSession.isActive()) {
                 //QoS 0
-                directSend(sub.getClientId(), topic, qos, message, false, null);
+                directSend(targetSession, topic, qos, message, false, null);
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
@@ -390,14 +390,15 @@ public class ProtocolProcessor {
 //                        int messageId = m_messagesStore.nextPacketID(sub.getClientId());
                         int messageId = targetSession.nextPacketId();
                         targetSession.inFlightAckWaiting(guid, messageId);
-                        directSend(sub.getClientId(), topic, qos, message, false, messageId);
+                        directSend(targetSession, topic, qos, message, false, messageId);
                     }
                 }
             }
         }
     }
 
-    protected void directSend(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
+    protected void directSend(ClientSession clientsession, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
+        String clientId = clientsession.clientID;
         LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
@@ -631,13 +632,15 @@ public class ProtocolProcessor {
             }
         });
 
+        ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
+
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("send publish message for topic {}", topic);
             //forwardPublishQoS0(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
             Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null :
                     m_messagesStore.nextPacketID(newSubscription.getClientId());
-            directSend(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
+            directSend(targetSession, storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
 
         //notify the Observables

@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.moquette.interception.InterceptHandler;
 import org.eclipse.moquette.proto.messages.*;
 import org.eclipse.moquette.server.netty.NettyChannel;
+import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
@@ -484,9 +485,9 @@ public class ProtocolProcessorTest {
 
         ProtocolProcessor processor = new ProtocolProcessor() {
             @Override
-            protected void directSend(String clientId, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
+            protected void directSend(ClientSession session, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
                                       boolean retained, Integer messageID) {
-                publishedForwarded.add(new PublishEvent(topic, qos, message, retained, clientId, messageID));
+                publishedForwarded.add(new PublishEvent(topic, qos, message, retained, session.clientID, messageID));
             }
         };
         processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
