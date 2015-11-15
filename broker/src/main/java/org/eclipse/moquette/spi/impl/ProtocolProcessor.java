@@ -294,12 +294,7 @@ public class ProtocolProcessor {
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
             forward2Subscribers(publishEvt);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            //TODO implement inFlight!!boolean retain = pubEvt.isRetain();
-//            final Integer messageID = pubEvt.getMessageID();
-//            m_messagesStore.storeTemporaryPublish(publishEvt, clientID, messageID);
             forward2Subscribers(publishEvt);
-//            m_messagesStore.cleanTemporaryPublish(clientID, messageID);
-            //NB the PUB_ACK could be sent also after the addInFlight
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
@@ -346,8 +341,6 @@ public class ProtocolProcessor {
         final String topic = pubEvt.getTopic();
         final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
         final ByteBuffer origMessage = pubEvt.getMessage();
-//        boolean retain = pubEvt.isRetain();
-//        final Integer messageID = pubEvt.getMessageID();
         LOG.debug("forward2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(origMessage));
@@ -379,15 +372,8 @@ public class ProtocolProcessor {
                     //store the message in targetSession queue to deliver
                     targetSession.enqueueToDeliver(guid);
                 } else  {
-                    //TODO also QoS 1 has to be stored in Flight Zone
-                    //if QoS 2 then store it in temp memory
-//                    if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) {
-//                        PublishEvent newPublishEvt = new PublishEvent(topic, qos, message, retain, sub.getClientId(), messageID != null ? messageID : 0);
-//                        m_messagesStore.storeTemporaryPublish(newPublishEvt, sub.getClientId(), messageID);
-//                    }
                     //publish
                     if (targetSession.isActive()) {
-//                        int messageId = m_messagesStore.nextPacketID(sub.getClientId());
                         int messageId = targetSession.nextPacketId();
                         targetSession.inFlightAckWaiting(guid, messageId);
                         directSend(targetSession, topic, qos, message, false, messageId);
@@ -517,7 +503,6 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
-//        m_messagesStore.cleanTemporaryPublish(clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         targetSession.secondPhaseAcknowledged(messageID);
     }
