@@ -22,7 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -87,11 +86,13 @@ public class MapDBPersistentStoreTest {
     @Test
     public void testNextPacketID() {
         //request a first ID
+
         int packetId = m_storageService.nextPacketID("CLIENT");
+        m_storageService.inFlight("CLIENT", packetId, "ABCDE"); //simulate an inflight
         assertEquals(1, packetId);
 
         //release the ID
-//        m_storageService.cleanTemporaryPublish("CLIENT", packetId);
+        m_storageService.inFlightAck("CLIENT", packetId);
 
         //request a second packetID, counter restarts from 0
         packetId = m_storageService.nextPacketID("CLIENT");

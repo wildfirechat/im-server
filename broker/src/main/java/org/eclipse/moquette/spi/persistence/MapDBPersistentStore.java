@@ -76,8 +76,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     private ConcurrentMap<String, Set<Subscription>> m_persistentSubscriptions;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
 
-    //maps clientID->[guid*]
-    private ConcurrentMap<String, Set<String>> m_enqueuedStore;
+    //maps clientID->[guid*], insertion order cares, it's queue
+    private ConcurrentMap<String, List<String>> m_enqueuedStore;
     //maps clientID->[messageID*]
     private ConcurrentMap<String, Set<Integer>> m_secondPhaseStore;
 
@@ -182,58 +182,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         return ret;
     }
 
-//    @Override
-//    public List<PublishEvent> listMessagesInSession(String clientID) {
-//        List<PublishEvent> liveEvts = new ArrayList<>();
-//        List<StoredPublishEvent> storedEvts = defaultGet(m_persistentMessageStore, clientID, Collections.<StoredPublishEvent>emptyList());
-//
-//        for (StoredPublishEvent storedEvt : storedEvts) {
-//            liveEvts.add(convertFromStored(storedEvt));
-//        }
-//        return liveEvts;
-//    }
-//
-//    @Override
-//    public void removeMessage(String clientID, Integer messageID) {
-//        List<StoredPublishEvent> events = m_persistentMessageStore.get(clientID);
-//        if (events == null) {
-//            return;
-//        }
-//        StoredPublishEvent toRemoveEvt = null;
-//        for (StoredPublishEvent evt : events) {
-//            if (evt.getMessageID() == null && messageID == null) {
-//                //was a qos0 message (no ID)
-//                toRemoveEvt = evt;
-//            }
-//            if (evt.getMessageID().equals(messageID)) {
-//                toRemoveEvt = evt;
-//            }
-//        }
-//        events.remove(toRemoveEvt);
-//        m_persistentMessageStore.put(clientID, events);
-//    }
-
     public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
     }
-
-    //----------------- In flight methods -----------------
-//    @Override
-//    public void cleanTemporaryPublish(String clientID, int packetID) {
-//        String publishKey = String.format("%s%d", clientID, packetID);
-//        m_inflightStore.remove(publishKey);
-//        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
-//        if (inFlightForClient != null) {
-//            inFlightForClient.remove(packetID);
-//        }
-//    }
-//
-//    @Override
-//    public void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID) {
-//        String publishKey = String.format("%s%d", clientID, packetID);
-//        StoredPublishEvent storedEvt = convertToStored(evt);
-//        m_inflightStore.put(publishKey, storedEvt);
-//    }
 
     /**
      * Return the next valid packetIdentifier for the given client session.
@@ -377,6 +328,12 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
             return;
         }
         m.remove(messageID);
+
+        //remove from the ids store
+        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
+        if (inFlightForClient != null) {
+            inFlightForClient.remove(messageID);
+        }
     }
 
     @Override
@@ -391,19 +348,19 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     @Override
     public void bindToDeliver(String guid, String clientID) {
-        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        List<String> guids = defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.add(guid);
         m_enqueuedStore.put(clientID, guids);
     }
 
     @Override
     public Collection<String> enqueued(String clientID) {
-        return defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        return defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
     }
 
     @Override
     public void removeEnqueued(String clientID, String guid) {
-        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        List<String> guids = defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
     }
