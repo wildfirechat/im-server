@@ -81,13 +81,7 @@ public interface IMessagesStore {
      */
     List<PublishEvent> listMessagesInSession(Collection<String> guids);
     
-//    void removeMessage(String clientID, Integer packetID);
-
     void dropMessagesInSession(String clientID);
-
-//    void cleanTemporaryPublish(String clientID, int packetID);
-
-//    void storeTemporaryPublish(PublishEvent evt, String clientID, int packetID);
 
     /**
      * Return the next valid packetIdentifer for the given client session.

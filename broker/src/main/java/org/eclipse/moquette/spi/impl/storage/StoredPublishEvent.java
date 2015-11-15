@@ -33,6 +33,7 @@ public class StoredPublishEvent implements Serializable {
     String m_clientID;
     //Optional attribute, available only fo QoS 1 and 2
     Integer m_msgID;
+    String m_guid;
     
     public StoredPublishEvent(PublishEvent wrapped) {
         m_topic = wrapped.getTopic();
@@ -45,6 +46,7 @@ public class StoredPublishEvent implements Serializable {
         m_message = new byte[buffer.remaining()];
         buffer.get(m_message);
         buffer.rewind();
+        m_guid = wrapped.getGuid();
     }
     
     public String getTopic() {
@@ -69,5 +71,9 @@ public class StoredPublishEvent implements Serializable {
 
     public Integer getMessageID() {
         return m_msgID;
+    }
+
+    public String getGuid() {
+        return m_guid;
     }
 }

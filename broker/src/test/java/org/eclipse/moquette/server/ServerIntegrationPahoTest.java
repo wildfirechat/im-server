@@ -61,8 +61,9 @@ public class ServerIntegrationPahoTest {
     @Before
     public void setUp() throws Exception {
         String dbPath = IntegrationUtils.localMapDBPath();
-        File dbFile = new File(dbPath);
-        assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
+        IntegrationUtils.cleanPersistenceFile(dbPath);
+//        File dbFile = new File(dbPath);
+//        assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
     	
         startServer();
 

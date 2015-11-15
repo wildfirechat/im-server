@@ -428,7 +428,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         byte[] message = evt.getMessage();
         ByteBuffer bbmessage = ByteBuffer.wrap(message);
         //bbmessage.flip();
-        return new PublishEvent(evt.getTopic(), evt.getQos(),
+        PublishEvent pubEvt = new PublishEvent(evt.getTopic(), evt.getQos(),
                 bbmessage, evt.isRetain(), evt.getClientID(), evt.getMessageID());
+        pubEvt.setGuid(evt.getGuid());
+        return pubEvt;
     }
 }
