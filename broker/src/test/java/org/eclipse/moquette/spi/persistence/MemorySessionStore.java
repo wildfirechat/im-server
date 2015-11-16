@@ -18,6 +18,7 @@ package org.eclipse.moquette.spi.persistence;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
+import org.eclipse.moquette.spi.impl.MemoryStorageService;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 
 import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
@@ -29,7 +30,7 @@ import java.util.*;
 
 /**
  *
- * @author andream_messagesStore
+ * @author andrea
  */
 public class MemorySessionStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
@@ -207,5 +208,10 @@ public class MemorySessionStore implements ISessionsStore {
         Set<Integer> messageIDs = defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
         messageIDs.add(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
+    }
+
+    @Override
+    public String mapToGuid(String clientID, int messageID) {
+        return ((MemoryStorageService) m_messagesStore).mapToGuid(clientID, messageID);
     }
 }

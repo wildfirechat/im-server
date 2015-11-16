@@ -24,12 +24,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static org.eclipse.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
 import static org.junit.Assert.*;
 
 /**
@@ -208,8 +206,8 @@ public class ServerIntegrationFuseTest {
      * subscriber connects again and receive "hello1" "hello2"
      */
     @Test
-    public void checkQoS2SuscriberDisconnectReceivePersistedPublishes() throws Exception {
-        LOG.info("*** checkQoS2SuscriberDisconnectReceivePersistedPublishes ***");
+    public void checkQoS2SubscriberDisconnectReceivePersistedPublishes() throws Exception {
+        LOG.info("*** checkQoS2SubscriberDisconnectReceivePersistedPublishes ***");
         m_mqtt.setHost("localhost", 1883); 
         m_mqtt.setCleanSession(false);
         m_mqtt.setClientId("Subscriber");

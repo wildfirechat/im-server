@@ -47,6 +47,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
     private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     private Map<String, PublishEvent> m_qos2Store = new HashMap<>();
+    private Map<String, Map<Integer, String>> m_messageToGuids = new HashMap<>();
     private MemorySessionStore m_sessionsStore;
     
     private static final Logger LOG = LoggerFactory.getLogger(MemoryStorageService.class);
@@ -95,6 +96,9 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         String guid = UUID.randomUUID().toString();
         evt.setGuid(guid);
         m_persistentMessageStore.put(guid, evt);
+        HashMap<Integer, String> guids = (HashMap<Integer, String>) defaultGet(m_messageToGuids,
+                evt.getClientID(), new HashMap<Integer, String>());
+        guids.put(evt.getMessageID(), guid);
         return guid;
     }
 
@@ -110,6 +114,18 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     @Override
     public void dropMessagesInSession(String clientID) {
         m_persistentMessageStore.remove(clientID);
+    }
+
+    @Override
+    public PublishEvent getMessageByGuid(String guid) {
+        return m_persistentMessageStore.get(guid);
+    }
+
+    @Override
+    public String mapToGuid(String clientID, int messageID) {
+        HashMap<Integer, String> guids = (HashMap<Integer, String>) defaultGet(m_messageToGuids,
+                clientID, new HashMap<Integer, String>());
+        return guids.get(messageID);
     }
 
     /**

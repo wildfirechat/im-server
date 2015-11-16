@@ -121,7 +121,6 @@ public class ProtocolProcessor {
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
               boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
-        //m_clientIDs = clientIDs;
         this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
@@ -274,16 +273,10 @@ public class ProtocolProcessor {
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
         String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
-        if (m_authorizator.canWrite(topic, user, clientID)) {
-            executePublish(clientID, msg);
-            m_interceptor.notifyTopicPublished(msg, clientID);
-        } else {
+        if (!m_authorizator.canWrite(topic, user, clientID)) {
             LOG.debug("topic {} doesn't have write credentials", topic);
+            return;
         }
-    }
-        
-    private void executePublish(String clientID, PublishMessage msg) {
-        final String topic = msg.getTopicName();
         final AbstractMessage.QOSType qos = msg.getQos();
         final ByteBuffer message = msg.getPayload();
         boolean retain = msg.isRetainFlag();
@@ -298,9 +291,11 @@ public class ProtocolProcessor {
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
-            String publishKey = String.format("%s%d", clientID, messageID);
+//            String publishKey = String.format("%s%d", clientID, messageID);
             //store the message in temp store
-            m_messagesStore.persistQoS2Message(publishKey, publishEvt);
+//TODO use the global message store
+//            m_messagesStore.persistQoS2Message(publishKey, publishEvt);
+            m_messagesStore.storePublishForFuture(publishEvt);
             sendPubRec(clientID, messageID);
             //Next the client will send us a pub rel
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
@@ -308,14 +303,15 @@ public class ProtocolProcessor {
 
         if (retain) {
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                //QoS == 0 && retain => clean old retained 
+                //QoS == 0 && retain => clean old retained
                 m_messagesStore.cleanRetained(topic);
             } else {
                 m_messagesStore.storeRetained(topic, message, qos);
             }
         }
+        m_interceptor.notifyTopicPublished(msg, clientID);
     }
-    
+        
     /**
      * Specialized version to publish will testament message.
      */
@@ -460,10 +456,13 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
-        String publishKey = String.format("%s%d", clientID, messageID);
-        PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
+//        String publishKey = String.format("%s%d", clientID, messageID);
+//        PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
+        //get guid, get message
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        PublishEvent evt = targetSession.storedMessage(messageID);
         forward2Subscribers(evt);
-        m_messagesStore.removeQoS2Message(publishKey);
+//        m_messagesStore.removeQoS2Message(publishKey);
 
         if (evt.isRetain()) {
             final String topic = evt.getTopic();

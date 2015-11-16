@@ -91,4 +91,6 @@ public interface ISessionsStore {
     void secondPhaseAcknowledged(String clientID, int messageID);
 
     void secondPhaseAckWaiting(String clientID, int messageID);
+
+    String mapToGuid(String clientID, int messageID);
 }

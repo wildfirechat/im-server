@@ -171,4 +171,9 @@ public class ClientSession {
     public void enqueueToDeliver(String guid) {
         this.m_sessionsStore.bindToDeliver(guid, this.clientID);
     }
+
+    public PublishEvent storedMessage(int messageID) {
+        final String guid = m_sessionsStore.mapToGuid(clientID, messageID);
+        return messagesStore.getMessageByGuid(guid);
+    }
 }

@@ -170,6 +170,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         String guid = UUID.randomUUID().toString();
         evt.setGuid(guid);
         m_persistentMessageStore.put(guid, convertToStored(evt));
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap("guidsMapping" + evt.getClientID());
+        messageIdToGuid.put(evt.getMessageID(), guid);
         return guid;
     }
 
@@ -182,8 +184,21 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         return ret;
     }
 
+    @Override
     public void dropMessagesInSession(String clientID) {
+        m_db.getHashMap("guidsMapping" + clientID).clear();
         m_persistentMessageStore.remove(clientID);
+    }
+
+    @Override
+    public PublishEvent getMessageByGuid(String guid) {
+        return convertFromStored(m_persistentMessageStore.get(guid));
+    }
+
+    @Override
+    public String mapToGuid(String clientID, int messageID) {
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap("guidsMapping" + clientID);
+        return messageIdToGuid.get(messageID);
     }
 
     /**

@@ -83,8 +83,10 @@ public interface IMessagesStore {
     
     void dropMessagesInSession(String clientID);
 
+    PublishEvent getMessageByGuid(String guid);
+
     /**
-     * Return the next valid packetIdentifer for the given client session.
+     * Return the next valid packetIdentifier for the given client session.
      * */
     int nextPacketID(String clientID);
 
