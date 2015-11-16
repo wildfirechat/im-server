@@ -92,11 +92,5 @@ public interface IMessagesStore {
 
     void close();
 
-    void persistQoS2Message(String publishKey, PublishEvent evt);
-
-    void removeQoS2Message(String publishKey);
-
-    PublishEvent retrieveQoS2Message(String publishKey);
-
     void cleanRetained(String topic);
 }

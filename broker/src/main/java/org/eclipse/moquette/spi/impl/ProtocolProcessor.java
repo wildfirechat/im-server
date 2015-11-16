@@ -291,10 +291,6 @@ public class ProtocolProcessor {
             sendPubAck(new PubAckEvent(messageID, clientID));
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
-//            String publishKey = String.format("%s%d", clientID, messageID);
-            //store the message in temp store
-//TODO use the global message store
-//            m_messagesStore.persistQoS2Message(publishKey, publishEvt);
             m_messagesStore.storePublishForFuture(publishEvt);
             sendPubRec(clientID, messageID);
             //Next the client will send us a pub rel
@@ -456,13 +452,9 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
-//        String publishKey = String.format("%s%d", clientID, messageID);
-//        PublishEvent evt = m_messagesStore.retrieveQoS2Message(publishKey);
-        //get guid, get message
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         PublishEvent evt = targetSession.storedMessage(messageID);
         forward2Subscribers(evt);
-//        m_messagesStore.removeQoS2Message(publishKey);
 
         if (evt.isRetain()) {
             final String topic = evt.getTopic();

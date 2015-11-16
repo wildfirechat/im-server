@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  * @author andreaorg.eclipse.moquette.commons.Constants.
  */
 public class ServerIntegrationWebSocketTest {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationPahoTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationWebSocketTest.class);
 
     Server m_server;
     WebSocketClient client;
@@ -79,7 +79,7 @@ public class ServerIntegrationWebSocketTest {
         URI echoUri = new URI(destUri);
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         client.connect(socket, echoUri, request);
-        LOG.info("Connecting to : %s%n", echoUri);
+        LOG.info("Connecting to : %s", echoUri);
         boolean connected = socket.awaitConnected(4, TimeUnit.SECONDS);
         
         assertTrue(connected);

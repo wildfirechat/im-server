@@ -70,8 +70,6 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     private ConcurrentMap<String, Map<Integer, String>> m_inflightStore;
     //map clientID <-> set of currently in flight packet identifiers
     Map<String, Set<Integer>> m_inFlightIds;
-    //bind clientID+MsgID -> evt message published
-    private ConcurrentMap<String, StoredPublishEvent> m_qos2Store;
     //persistent Map of clientID, set of Subscriptions
     private ConcurrentMap<String, Set<Subscription>> m_persistentSubscriptions;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
@@ -119,7 +117,6 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         m_inflightStore = m_db.getHashMap("inflight");
         m_inFlightIds = m_db.getHashMap("inflightPacketIDs");
         m_persistentSubscriptions = m_db.getHashMap("subscriptions");
-        m_qos2Store = m_db.getHashMap("qos2Store");
         m_persistentSessions = m_db.getHashMap("sessions");
         m_enqueuedStore = m_db.getHashMap("sessionQueue");
         m_secondPhaseStore = m_db.getHashMap("secondPhase");
@@ -415,24 +412,6 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         LOG.debug("closed disk storage");
         this.m_scheduler.shutdown();
         LOG.debug("Persistence commit scheduler is shutdown");
-    }
-
-    /*-------- QoS 2  storage management --------------*/
-    @Override
-    public void persistQoS2Message(String publishKey, PublishEvent evt) {
-        LOG.debug("persistQoS2Message store pubKey: {}, evt: {}", publishKey, evt);
-        m_qos2Store.put(publishKey, convertToStored(evt));
-    }
-
-    @Override
-    public void removeQoS2Message(String publishKey) {
-        LOG.debug("Removing stored Q0S2 message <{}>", publishKey);
-        m_qos2Store.remove(publishKey);
-    }
-
-    public PublishEvent retrieveQoS2Message(String publishKey) {
-        StoredPublishEvent storedEvt = m_qos2Store.get(publishKey);
-        return convertFromStored(storedEvt);
     }
 
     private StoredPublishEvent convertToStored(PublishEvent evt) {

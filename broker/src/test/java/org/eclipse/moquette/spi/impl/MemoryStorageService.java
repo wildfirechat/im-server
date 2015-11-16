@@ -46,7 +46,6 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     //maps clientID->[messageID*]
     private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
     private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
-    private Map<String, PublishEvent> m_qos2Store = new HashMap<>();
     private Map<String, Map<Integer, String>> m_messageToGuids = new HashMap<>();
     private MemorySessionStore m_sessionsStore;
     
@@ -147,26 +146,9 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
         return nextPacketId;
     }
 
-
     @Override
     public void close() {
         //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void persistQoS2Message(String publishKey, PublishEvent evt) {
-        LOG.debug("persistQoS2Message store pubKey {}, evt {}", publishKey, evt);
-        m_qos2Store.put(publishKey, evt);
-    }
-
-    @Override
-    public void removeQoS2Message(String publishKey) {
-        m_qos2Store.remove(publishKey);
-    }
-
-    @Override
-    public PublishEvent retrieveQoS2Message(String publishKey) {
-        return m_qos2Store.get(publishKey);
     }
 
     @Override
