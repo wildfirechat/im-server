@@ -288,7 +288,7 @@ public class ProtocolProcessor {
             forward2Subscribers(publishEvt);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
             forward2Subscribers(publishEvt);
-            sendPubAck(new PubAckEvent(messageID, clientID));
+            sendPubAck(clientID, messageID);
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             m_messagesStore.storePublishForFuture(publishEvt);
@@ -424,11 +424,10 @@ public class ProtocolProcessor {
         m_clientIDs.get(clientID).session.write(pubRecMessage);
     }
     
-    private void sendPubAck(PubAckEvent evt) {
+    private void sendPubAck(String clientId, int messageID) {
         LOG.trace("sendPubAck invoked");
-        String clientId = evt.getClientID();
         PubAckMessage pubAckMessage = new PubAckMessage();
-        pubAckMessage.setMessageID(evt.getMessageId());
+        pubAckMessage.setMessageID(messageID);
 
         try {
             if (m_clientIDs == null) {
@@ -515,17 +514,16 @@ public class ProtocolProcessor {
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
-    public void processConnectionLost(LostConnectionEvent evt) {
-        String clientID = evt.clientID;
+    public void processConnectionLost(String clientID, boolean sessionStolen) {
         //If already removed a disconnect message was already processed for this clientID
-        if (evt.sessionStolen && m_clientIDs.remove(clientID) != null) {
+        if (sessionStolen && m_clientIDs.remove(clientID) != null) {
             //de-activate the subscriptions for this ClientID
             ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
             clientSession.deactivate();
             LOG.info("Lost connection with client <{}>", clientID);
         }
         //publish the Will message (if any) for the clientID
-        if (!evt.sessionStolen && m_willStore.containsKey(clientID)) {
+        if (!sessionStolen && m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);
             forwardPublishWill(will, clientID);
             m_willStore.remove(clientID);

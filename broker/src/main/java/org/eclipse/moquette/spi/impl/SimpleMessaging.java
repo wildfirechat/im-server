@@ -38,9 +38,7 @@ import static org.eclipse.moquette.commons.Constants.*;
  *
  * Singleton class that orchestrate the execution of the protocol.
  *
- * Uses the LMAX Disruptor to serialize the incoming, requests, because it work in a evented fashion;
- * the requests income from front Netty connectors and are dispatched to the
- * ProtocolProcessor.
+ * It's main responsibility is instantiate the ProtocolProcessor.
  *
  * @author andrea
  */
@@ -70,12 +68,9 @@ public class SimpleMessaging {
         return INSTANCE;
     }
 
-    public ProtocolProcessor init(IConfig configProps) {
+    public ProtocolProcessor init(IConfig props) {
         subscriptions = new SubscriptionsStore();
-        return processInit(configProps);
-    }
 
-    private ProtocolProcessor processInit(IConfig props) {
         //TODO use a property to select the storage path
         MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
         m_storageService = mapStorage;

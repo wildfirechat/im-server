@@ -24,7 +24,7 @@ import java.nio.ByteBuffer;
  *
  * @author andrea
  */
-public class PublishEvent extends MessagingEvent {
+public class PublishEvent {
     String m_topic;
     QOSType m_qos;
     //byte[] m_message;

@@ -21,13 +21,11 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import io.netty.handler.codec.CorruptedFrameException;
 import org.eclipse.moquette.proto.messages.*;
-import org.eclipse.moquette.spi.IMessaging;
 import org.eclipse.moquette.proto.Utils;
 
 import static org.eclipse.moquette.proto.messages.AbstractMessage.*;
 
 import org.eclipse.moquette.spi.impl.ProtocolProcessor;
-import org.eclipse.moquette.spi.impl.events.LostConnectionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,17 +37,11 @@ import org.slf4j.LoggerFactory;
 public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
-    private IMessaging m_messaging;
     private final ProtocolProcessor m_processor;
-
-    private NettyMQTTHandler() {
-        m_processor = null;
-    }
 
     public NettyMQTTHandler(ProtocolProcessor processor) {
         m_processor = processor;
     }
-
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
@@ -105,7 +97,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             if (stolenAttr != null && stolenAttr == Boolean.TRUE) {
                 stolen = stolenAttr;
             }
-            m_processor.processConnectionLost(new LostConnectionEvent(clientID, stolen));
+            m_processor.processConnectionLost(clientID, stolen);
         }
         ctx.close(/*false*/);
     }
