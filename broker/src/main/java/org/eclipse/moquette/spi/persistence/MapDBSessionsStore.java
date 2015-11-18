@@ -18,38 +18,83 @@ package org.eclipse.moquette.spi.persistence;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.MemoryStorageService;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-
-import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
-import static org.eclipse.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
+import org.eclipse.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
+import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
 
 /**
+ * ISessionsStore implementation backed by MapDB.
  *
  * @author andrea
  */
-public class MemorySessionStore implements ISessionsStore {
-    private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
+class MapDBSessionsStore implements ISessionsStore {
 
-    private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
-
-    private Map<String, PersistentSession> m_persistentSessions = new HashMap<>();
+    private static final Logger LOG = LoggerFactory.getLogger(MapDBSessionsStore.class);
 
     //maps clientID->[MessageId -> guid]
-    private Map<String, Map<Integer, String>> m_inflightStore = new HashMap<>();
-    //maps clientID->[guid*]
-    private Map<String, Set<String>> m_enqueuedStore = new HashMap<>();
+    private ConcurrentMap<String, Map<Integer, String>> m_inflightStore;
+    //map clientID <-> set of currently in flight packet identifiers
+    private Map<String, Set<Integer>> m_inFlightIds;
+    //persistent Map of clientID, set of Subscriptions
+    private ConcurrentMap<String, Set<Subscription>> m_persistentSubscriptions;
+    private ConcurrentMap<String, PersistentSession> m_persistentSessions;
+    //maps clientID->[guid*], insertion order cares, it's queue
+    private ConcurrentMap<String, List<String>> m_enqueuedStore;
     //maps clientID->[messageID*]
-    private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
+    private ConcurrentMap<String, Set<Integer>> m_secondPhaseStore;
 
+    private final DB m_db;
     private final IMessagesStore m_messagesStore;
 
-    public MemorySessionStore(IMessagesStore messagesStore) {
-        this.m_messagesStore = messagesStore;
+    MapDBSessionsStore(DB db, IMessagesStore messagesStore) {
+        m_db = db;
+        m_messagesStore = messagesStore;
+    }
+
+    @Override
+    public void initStore() {
+        m_inflightStore = m_db.getHashMap("inflight");
+        m_inFlightIds = m_db.getHashMap("inflightPacketIDs");
+        m_persistentSubscriptions = m_db.getHashMap("subscriptions");
+        m_persistentSessions = m_db.getHashMap("sessions");
+        m_enqueuedStore = m_db.getHashMap("sessionQueue");
+        m_secondPhaseStore = m_db.getHashMap("secondPhase");
+    }
+
+    @Override
+    public void addNewSubscription(Subscription newSubscription) {
+        LOG.debug("addNewSubscription invoked with subscription {}", newSubscription);
+        final String clientID = newSubscription.getClientId();
+        if (!m_persistentSubscriptions.containsKey(clientID)) {
+            LOG.debug("subscriptions for clientID <{}> not present, empty subscriptions set", clientID);
+            m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+        }
+
+        Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
+        if (!subs.contains(newSubscription)) {
+            LOG.debug("updating <{}> subscriptions set with new subscription", clientID);
+            //TODO check the subs doesn't contain another subscription to the same topic with different
+            Subscription existingSubscription = null;
+            for (Subscription scanSub : subs) {
+                if (newSubscription.getTopicFilter().equals(scanSub.getTopicFilter())) {
+                    existingSubscription = scanSub;
+                    break;
+                }
+            }
+            if (existingSubscription != null) {
+                subs.remove(existingSubscription);
+            }
+            subs.add(newSubscription);
+            m_persistentSubscriptions.put(clientID, subs);
+            LOG.debug("clientID {} subscriptions set now is {}", clientID, subs);
+        }
     }
 
     @Override
@@ -71,24 +116,9 @@ public class MemorySessionStore implements ISessionsStore {
         if (toBeRemoved != null) {
             clientSubscriptions.remove(toBeRemoved);
         }
-    }
-
-    @Override
-    public void initStore() {
-
-    }
-
-    @Override
-    public void addNewSubscription(Subscription newSubscription) {
-        final String clientID = newSubscription.getClientId();
-        if (!m_persistentSubscriptions.containsKey(clientID)) {
-            m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        }
-
-        Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
-        if (!subs.contains(newSubscription)) {
-            subs.add(newSubscription);
-            m_persistentSubscriptions.put(clientID, subs);
+        m_persistentSubscriptions.put(clientID, clientSubscriptions);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("persisted subscriptions {}", m_persistentSubscriptions);
         }
     }
 
@@ -103,20 +133,30 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public List<Subscription> listAllSubscriptions() {
+        List<Subscription> allSubscriptions = new ArrayList<>();
+        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+            allSubscriptions.addAll(entry.getValue());
+        }
+        LOG.debug("retrieveAllSubscriptions returning subs {}", allSubscriptions);
+        return allSubscriptions;
+    }
+
+    @Override
     public boolean contains(String clientID) {
         return m_persistentSubscriptions.containsKey(clientID);
     }
 
     @Override
     public ClientSession createNewSession(String clientID, boolean cleanSession) {
-        LOG.debug("createNewSession for client <{}>", clientID);
+        LOG.debug("createNewSession for client <{}> with clean flag <{}>", clientID, cleanSession);
         if (m_persistentSessions.containsKey(clientID)) {
             LOG.error("already exists a session for client <{}>, bad condition", clientID);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        m_persistentSessions.put(clientID, new PersistentSession(cleanSession, false));
+        m_persistentSessions.putIfAbsent(clientID, new PersistentSession(cleanSession, false));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
@@ -132,15 +172,6 @@ public class MemorySessionStore implements ISessionsStore {
             clientSession.activate();
         }
         return clientSession;
-    }
-
-    @Override
-    public List<Subscription> listAllSubscriptions() {
-        List<Subscription> allSubscriptions = new ArrayList<>();
-        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
-            allSubscriptions.addAll(entry.getValue());
-        }
-        return allSubscriptions;
     }
 
     @Override
@@ -170,6 +201,12 @@ public class MemorySessionStore implements ISessionsStore {
             return;
         }
         m.remove(messageID);
+
+        //remove from the ids store
+        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
+        if (inFlightForClient != null) {
+            inFlightForClient.remove(messageID);
+        }
     }
 
     @Override
@@ -184,19 +221,19 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void bindToDeliver(String guid, String clientID) {
-        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        List<String> guids = defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.add(guid);
         m_enqueuedStore.put(clientID, guids);
     }
 
     @Override
     public Collection<String> enqueued(String clientID) {
-        return defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        return defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
     }
 
     @Override
     public void removeEnqueued(String clientID, String guid) {
-        Set<String> guids = defaultGet(m_enqueuedStore, clientID, new HashSet<String>());
+        List<String> guids = defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
     }
@@ -217,6 +254,11 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public String mapToGuid(String clientID, int messageID) {
-        return ((MemoryStorageService) m_messagesStore).mapToGuid(clientID, messageID);
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
+        return messageIdToGuid.get(messageID);
+    }
+
+    static String messageId2GuidsMapName(String clientID) {
+        return "guidsMapping_" + clientID;
     }
 }

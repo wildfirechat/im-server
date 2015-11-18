@@ -28,6 +28,8 @@ import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
  */
 public interface ISessionsStore {
 
+    void initStore();
+
     /**
      * Add a new subscription to the session
      */

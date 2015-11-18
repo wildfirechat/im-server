@@ -48,9 +48,7 @@ public class SimpleMessaging {
 
     private SubscriptionsStore subscriptions;
 
-
-    private IMessagesStore m_storageService;
-    private ISessionsStore m_sessionsStore;
+    private MapDBPersistentStore m_mapStorage;
 
     private BrokerInterceptor m_interceptor;
 
@@ -72,11 +70,10 @@ public class SimpleMessaging {
         subscriptions = new SubscriptionsStore();
 
         //TODO use a property to select the storage path
-        MapDBPersistentStore mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
-        m_storageService = mapStorage;
-        m_sessionsStore = mapStorage;
-
-        m_storageService.initStore();
+        m_mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
+        m_mapStorage.initStore();
+        IMessagesStore messagesStore = m_mapStorage.messagesStore();
+        ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);
 
         List<InterceptHandler> observers = new ArrayList<>();
         String interceptorClassName = props.getProperty("intercept.handler");
@@ -90,7 +87,7 @@ public class SimpleMessaging {
         }
         m_interceptor = new BrokerInterceptor(observers);
 
-        subscriptions.init(m_sessionsStore);
+        subscriptions.init(sessionsStore);
 
         String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
@@ -136,7 +133,7 @@ public class SimpleMessaging {
         }
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        m_processor.init(subscriptions, m_storageService, m_sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
+        m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
         return m_processor;
     }
     
@@ -176,6 +173,6 @@ public class SimpleMessaging {
     }
 
     public void shutdown() {
-        this.m_storageService.close();
+        this.m_mapStorage.close();
     }
 }

@@ -17,6 +17,8 @@ package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.server.IntegrationUtils;
+import org.eclipse.moquette.spi.IMessagesStore;
+import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.junit.After;
 import org.junit.Before;
@@ -35,12 +37,16 @@ import static org.junit.Assert.*;
 public class MapDBPersistentStoreTest {
 
     MapDBPersistentStore m_storageService;
+    ISessionsStore m_sessionsStore;
+    IMessagesStore m_messagesStore;
 
     @Before
     public void setUp() throws Exception {
         IntegrationUtils.cleanPersistenceFile(DEFAULT_PERSISTENT_PATH);
         m_storageService = new MapDBPersistentStore(DEFAULT_PERSISTENT_PATH);
         m_storageService.initStore();
+        m_messagesStore = m_storageService.messagesStore();
+        m_sessionsStore = m_storageService.sessionsStore(m_messagesStore);
     }
 
     @After
@@ -55,12 +61,12 @@ public class MapDBPersistentStoreTest {
     @Test
     public void overridingSubscriptions() {
         Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
-        m_storageService.addNewSubscription(oldSubscription);
+        m_sessionsStore.addNewSubscription(oldSubscription);
         Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE, false);
-        m_storageService.addNewSubscription(overrindingSubscription);
+        m_sessionsStore.addNewSubscription(overrindingSubscription);
         
         //Verify
-        List<Subscription> subscriptions = m_storageService.listAllSubscriptions();
+        List<Subscription> subscriptions = m_sessionsStore.listAllSubscriptions();
         assertEquals(1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
@@ -68,18 +74,18 @@ public class MapDBPersistentStoreTest {
 
     @Test
     public void testNextPacketID_notExistingClientSession() {
-        int packetId = m_storageService.nextPacketID("NOT_EXISTING_CLI");
+        int packetId = m_messagesStore.nextPacketID("NOT_EXISTING_CLI");
         assertEquals(1, packetId);
     }
 
     @Test
     public void testNextPacketID_existingClientSession() {
         //Force creation of inflight map for the CLIENT session
-        int packetId = m_storageService.nextPacketID("CLIENT");
+        int packetId = m_messagesStore.nextPacketID("CLIENT");
         assertEquals(1, packetId);
 
         //request a second packetID
-        packetId = m_storageService.nextPacketID("CLIENT");
+        packetId = m_messagesStore.nextPacketID("CLIENT");
         assertEquals(2, packetId);
     }
 
@@ -87,15 +93,15 @@ public class MapDBPersistentStoreTest {
     public void testNextPacketID() {
         //request a first ID
 
-        int packetId = m_storageService.nextPacketID("CLIENT");
-        m_storageService.inFlight("CLIENT", packetId, "ABCDE"); //simulate an inflight
+        int packetId = m_messagesStore.nextPacketID("CLIENT");
+        m_sessionsStore.inFlight("CLIENT", packetId, "ABCDE"); //simulate an inflight
         assertEquals(1, packetId);
 
         //release the ID
-        m_storageService.inFlightAck("CLIENT", packetId);
+        m_sessionsStore.inFlightAck("CLIENT", packetId);
 
         //request a second packetID, counter restarts from 0
-        packetId = m_storageService.nextPacketID("CLIENT");
+        packetId = m_messagesStore.nextPacketID("CLIENT");
         assertEquals(1, packetId);
     }
 

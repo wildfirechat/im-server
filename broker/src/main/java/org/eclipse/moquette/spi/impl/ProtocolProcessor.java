@@ -626,6 +626,7 @@ public class ProtocolProcessor {
         subscriptions.add(newSubscription);
 
         //scans retained messages to be published to the new subscription
+        //TODO this is ugly, it does a linear scan on potential big dataset
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return SubscriptionsStore.matchTopics(key, topic);

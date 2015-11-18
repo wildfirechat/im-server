@@ -137,11 +137,6 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void close() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void addNewSubscription(Subscription newSubscription) {
         m_sessionsStore.addNewSubscription(newSubscription);
     }

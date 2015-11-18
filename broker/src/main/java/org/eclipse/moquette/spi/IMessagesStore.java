@@ -141,7 +141,7 @@ public interface IMessagesStore {
      * */
     int nextPacketID(String clientID);
 
-    void close();
+//    void close();
 
     void cleanRetained(String topic);
 }
