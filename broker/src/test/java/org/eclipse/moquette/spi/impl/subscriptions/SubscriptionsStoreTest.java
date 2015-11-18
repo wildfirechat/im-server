@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.moquette.spi.ISessionsStore;
 import org.eclipse.moquette.spi.impl.MemoryStorageService;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 
@@ -43,7 +44,7 @@ public class SubscriptionsStoreTest {
         store = new SubscriptionsStore();
         MemoryStorageService storageService = new MemoryStorageService();
         storageService.initStore();
-        store.init(storageService);
+        store.init(storageService.sessionsStore());
     }
     
     @Test
@@ -235,7 +236,7 @@ public class SubscriptionsStoreTest {
         store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
         memStore.initStore();
-        store.init(memStore);
+        store.init(memStore.sessionsStore());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertFalse(store.matches(topic).isEmpty());
@@ -245,7 +246,7 @@ public class SubscriptionsStoreTest {
         store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
         memStore.initStore();
-        store.init(memStore);
+        store.init(memStore.sessionsStore());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
         store.add(sub);
         assertTrue(store.matches(topic).isEmpty());
@@ -346,11 +347,12 @@ public class SubscriptionsStoreTest {
         SubscriptionsStore aStore = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
         memStore.initStore();
-        aStore.init(memStore);
+        ISessionsStore sessionsStore = memStore.sessionsStore();
+        aStore.init(sessionsStore);
         //subscribe a not active clientID1 to /topic
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
         aStore.add(slashSub);
-        memStore.createNewSession("FAKE_CLI_ID_1", true).deactivate();
+        sessionsStore.createNewSession("FAKE_CLI_ID_1", true).deactivate();
 
         //subscribe an active clientID2 to /topic
         Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", AbstractMessage.QOSType.MOST_ONE, false);

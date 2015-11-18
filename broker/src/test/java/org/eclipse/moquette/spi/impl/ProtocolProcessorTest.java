@@ -15,29 +15,27 @@
  */
 package org.eclipse.moquette.spi.impl;
 
+import org.eclipse.moquette.interception.InterceptHandler;
+import org.eclipse.moquette.proto.messages.*;
+import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
+import org.eclipse.moquette.server.netty.NettyChannel;
+import org.eclipse.moquette.spi.ClientSession;
+import org.eclipse.moquette.spi.IMatchingCondition;
+import org.eclipse.moquette.spi.IMessagesStore;
+import org.eclipse.moquette.spi.IMessagesStore.StoredMessage;
+import org.eclipse.moquette.spi.ISessionsStore;
+import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
+import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
+import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.moquette.interception.InterceptHandler;
-import org.eclipse.moquette.proto.messages.*;
-import org.eclipse.moquette.server.netty.NettyChannel;
-import org.eclipse.moquette.spi.ClientSession;
-import org.eclipse.moquette.spi.IMatchingCondition;
-import org.eclipse.moquette.spi.IMessagesStore;
-import org.eclipse.moquette.spi.IMessagesStore.*;
-import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.persistence.MemorySessionStore;
-import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
-import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
-
-import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
-
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 import static org.mockito.Mockito.*;
 
 /**
@@ -63,7 +61,7 @@ public class ProtocolProcessorTest {
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
     
-    IMessagesStore m_storageService;
+    IMessagesStore m_messagesStore;
     ISessionsStore m_sessionStore;
     SubscriptionsStore subscriptions;
     MockAuthenticator m_mockAuthenticator;
@@ -79,18 +77,18 @@ public class ProtocolProcessorTest {
         Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService();
         memStorage.initStore();
-        m_storageService = memStorage;
-        m_sessionStore = memStorage;
-        //m_storageService.initStore();
+        m_messagesStore = memStorage.messagesStore();
+        m_sessionStore = memStorage.sessionsStore();
+        //m_messagesStore.initStore();
         
         Map<String, byte[]> users = new HashMap<>();
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(memStorage);
+        subscriptions.init(memStorage.sessionsStore());
         m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true,
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
     }
 
@@ -115,8 +113,8 @@ public class ProtocolProcessorTest {
         //simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService();
         storageService.initStore();
-        subs.init(storageService);
-        m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        subs.init(storageService.sessionsStore());
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
@@ -162,8 +160,8 @@ public class ProtocolProcessorTest {
         //simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService();
         storageService.initStore();
-        subs.init(storageService);
-        m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        subs.init(storageService.sessionsStore());
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         
         MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
         ConnectMessage connectMessage = new ConnectMessage();
@@ -320,10 +318,10 @@ public class ProtocolProcessorTest {
         };
         MemoryStorageService storageService = new MemoryStorageService();
         storageService.initStore();
-        subs.init(storageService);
+        subs.init(storageService.sessionsStore());
 
         //simulate a connect that register a clientID to an IoSession
-        m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProtocolVersion((byte) 3);
@@ -363,9 +361,9 @@ public class ProtocolProcessorTest {
         retainedMessage.setRetained(true);
         retainedMessage.setMessageID(120);
         retainedMessage.setClientID(FAKE_PUBLISHER_ID);
-        m_storageService.storePublishForFuture(retainedMessage);
+        m_messagesStore.storePublishForFuture(retainedMessage);
 
-        m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProtocolVersion((byte) 3);
@@ -374,7 +372,7 @@ public class ProtocolProcessorTest {
 
         //Verify no messages are still stored
         Collection<String> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
-        assertTrue(m_storageService.listMessagesInSession(guids).isEmpty());
+        assertTrue(m_messagesStore.listMessagesInSession(guids).isEmpty());
     }
     
     @Test
@@ -387,7 +385,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -413,7 +411,7 @@ public class ProtocolProcessorTest {
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(),
+        m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
@@ -460,7 +458,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_session, cleanPubMsg);
         
         //Verify
-        Collection<IMessagesStore.StoredMessage> messages = m_storageService.searchMatching(new IMatchingCondition() {
+        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
             }
@@ -476,8 +474,10 @@ public class ProtocolProcessorTest {
         forwardPublish.setRetained(true);
         forwardPublish.setMessageID(1);
 
-        IMessagesStore memoryMessageStore = new MemoryStorageService();
-        ISessionsStore sessionsStore = new MemorySessionStore(memoryMessageStore);
+        MemoryStorageService memStore = new MemoryStorageService();
+        memStore.initStore();
+        IMessagesStore memoryMessageStore = memStore.messagesStore();
+        ISessionsStore sessionsStore = memStore.sessionsStore();
         sessionsStore.createNewSession("Sub A", false).activate();
         sessionsStore.createNewSession("Sub B", false).activate();
 

@@ -37,22 +37,6 @@ import java.util.concurrent.TimeUnit;
 public class MapDBPersistentStore {
 
     /**
-     * Factory method to create message store backed by MapDB
-     * */
-    public IMessagesStore messagesStore() {
-        //TODO check m_db is valid and
-        IMessagesStore msgStore = new MapDBMessagesStore(m_db);
-        msgStore.initStore();
-        return msgStore;
-    }
-
-    public ISessionsStore sessionsStore(IMessagesStore msgStore) {
-        ISessionsStore sessionsStore = new MapDBSessionsStore(m_db, msgStore);
-        sessionsStore.initStore();
-        return sessionsStore;
-    }
-
-    /**
      * This is a DTO used to persist minimal status (clean session and activation status) of
      * a session.
      * */
@@ -75,6 +59,22 @@ public class MapDBPersistentStore {
 
     public MapDBPersistentStore(String storePath) {
         this.m_storePath = storePath;
+    }
+
+    /**
+     * Factory method to create message store backed by MapDB
+     * */
+    public IMessagesStore messagesStore() {
+        //TODO check m_db is valid and
+        IMessagesStore msgStore = new MapDBMessagesStore(m_db);
+        msgStore.initStore();
+        return msgStore;
+    }
+
+    public ISessionsStore sessionsStore(IMessagesStore msgStore) {
+        ISessionsStore sessionsStore = new MapDBSessionsStore(m_db, msgStore);
+        sessionsStore.initStore();
+        return sessionsStore;
     }
     
     public void initStore() {

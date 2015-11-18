@@ -46,9 +46,11 @@ public class MemorySessionStore implements ISessionsStore {
     //maps clientID->[messageID*]
     private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
 
+    private Map<String, Map<Integer, String>> m_messageToGuids;
     private final IMessagesStore m_messagesStore;
 
-    public MemorySessionStore(IMessagesStore messagesStore) {
+    public MemorySessionStore(IMessagesStore messagesStore, Map<String, Map<Integer, String>> messageToGuids) {
+        m_messageToGuids = messageToGuids;
         this.m_messagesStore = messagesStore;
     }
 
@@ -217,6 +219,8 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public String mapToGuid(String clientID, int messageID) {
-        return ((MemoryStorageService) m_messagesStore).mapToGuid(clientID, messageID);
+        HashMap<Integer, String> guids = (HashMap<Integer, String>) defaultGet(m_messageToGuids,
+                clientID, new HashMap<Integer, String>());
+        return guids.get(messageID);
     }
 }

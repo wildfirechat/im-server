@@ -44,7 +44,7 @@ public class ProtocolProcessor_CONNECT_Test {
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
 
-    IMessagesStore m_storageService;
+    IMessagesStore m_messagesStore;
     ISessionsStore m_sessionStore;
     SubscriptionsStore subscriptions;
     MockAuthenticator m_mockAuthenticator;
@@ -60,18 +60,18 @@ public class ProtocolProcessor_CONNECT_Test {
         Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService();
         memStorage.initStore();
-        m_storageService = memStorage;
-        m_sessionStore = memStorage;
-        //m_storageService.initStore();
+        m_messagesStore = memStorage.messagesStore();
+        m_sessionStore = memStorage.sessionsStore();
+        //m_messagesStore.initStore();
 
         Map<String, byte[]> users = new HashMap<>();
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(users);
 
         subscriptions = new SubscriptionsStore();
-        subscriptions.init(memStorage);
+        subscriptions.init(m_sessionStore);
         m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true,
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
     }
 
@@ -163,7 +163,7 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void prohibitAnonymousClient() {
         connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -177,7 +177,7 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setClientID("123");
         connMsg.setUserFlag(true);
         connMsg.setUsername(TEST_USER + "_fake");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -189,7 +189,7 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void acceptAnonymousClient() {
         connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_storageService, m_sessionStore, m_mockAuthenticator, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
