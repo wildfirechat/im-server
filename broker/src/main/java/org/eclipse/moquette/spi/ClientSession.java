@@ -16,7 +16,6 @@
 package org.eclipse.moquette.spi;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.slf4j.Logger;
@@ -73,7 +72,7 @@ public class ClientSession {
     /**
      * @return the list of messages to be delivered for client related to the session.
      * */
-    public List<PublishEvent> storedMessages() {
+    public List<IMessagesStore.StoredMessage> storedMessages() {
         //read all messages from enqueued store
         Collection<String> guids = this.m_sessionsStore.enqueued(clientID);
         return messagesStore.listMessagesInSession(guids);
@@ -172,7 +171,7 @@ public class ClientSession {
         this.m_sessionsStore.bindToDeliver(guid, this.clientID);
     }
 
-    public PublishEvent storedMessage(int messageID) {
+    public IMessagesStore.StoredMessage storedMessage(int messageID) {
         final String guid = m_sessionsStore.mapToGuid(clientID, messageID);
         return messagesStore.getMessageByGuid(guid);
     }

@@ -23,8 +23,8 @@ import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
+import org.eclipse.moquette.spi.IMessagesStore.*;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.*;
 import org.eclipse.moquette.spi.impl.security.IAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -244,14 +244,14 @@ public class ProtocolProcessor {
      * */
     private void republishStoredInSession(ClientSession clientSession) {
         LOG.trace("republishStoredInSession for client <{}>", clientSession);
-        List<PublishEvent> publishedEvents = clientSession.storedMessages();
+        List<StoredMessage> publishedEvents = clientSession.storedMessages();
         if (publishedEvents.isEmpty()) {
             LOG.info("No stored messages for client <{}>", clientSession.clientID);
             return;
         }
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
-        for (PublishEvent pubEvt : publishedEvents) {
+        for (StoredMessage pubEvt : publishedEvents) {
             //TODO put in flight zone
             directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID());
@@ -266,6 +266,19 @@ public class ProtocolProcessor {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         targetSession.inFlightAcknowledged(messageID);
     }
+
+    private static StoredMessage asStoredMessage(PublishMessage msg) {
+        StoredMessage stored = new StoredMessage(msg.getPayload().array(), msg.getQos(), msg.getTopicName());
+        stored.setRetained(msg.isRetainFlag());
+        stored.setMessageID(msg.getMessageID());
+        return stored;
+    }
+
+    private static StoredMessage asStoredMessage(WillMessage will) {
+        StoredMessage pub = new StoredMessage(will.getPayload().array(), will.getQos(), will.getTopic());
+        pub.setRetained(will.isRetained());
+        return pub;
+    }
     
     public void processPublish(ServerChannel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
@@ -278,20 +291,21 @@ public class ProtocolProcessor {
             return;
         }
         final AbstractMessage.QOSType qos = msg.getQos();
-        final ByteBuffer message = msg.getPayload();
         boolean retain = msg.isRetainFlag();
         final Integer messageID = msg.getMessageID();
         LOG.info("PUBLISH from clientID <{}> on topic <{}> with QoS {}", clientID, topic, qos);
 
-        PublishEvent publishEvt = new PublishEvent(clientID, msg);
+        String guid = null;
+        StoredMessage toStoreMsg = asStoredMessage(msg);
+        toStoreMsg.setClientID(clientID);
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
-            forward2Subscribers(publishEvt);
+            forward2Subscribers(toStoreMsg);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            forward2Subscribers(publishEvt);
+            forward2Subscribers(toStoreMsg);
             sendPubAck(clientID, messageID);
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
-            m_messagesStore.storePublishForFuture(publishEvt);
+            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
             sendPubRec(clientID, messageID);
             //Next the client will send us a pub rel
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
@@ -302,7 +316,15 @@ public class ProtocolProcessor {
                 //QoS == 0 && retain => clean old retained
                 m_messagesStore.cleanRetained(topic);
             } else {
-                m_messagesStore.storeRetained(topic, message, qos);
+                if (!msg.getPayload().hasRemaining()) {
+                    m_messagesStore.cleanRetained(topic);
+                } else {
+                    if (guid == null) {
+                        //before wasn't stored
+                        guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+                    }
+                    m_messagesStore.storeRetained(topic, guid);
+                }
             }
         }
         m_interceptor.notifyTopicPublished(msg, clientID);
@@ -319,9 +341,10 @@ public class ProtocolProcessor {
             messageId = m_messagesStore.nextPacketID(clientID);
         }
 
-        PublishEvent pub = new PublishEvent(will.getTopic(), will.getQos(), will.getPayload(), will.isRetained(),
-                clientID, messageId);
-        forward2Subscribers(pub);
+        StoredMessage tobeStored = asStoredMessage(will);
+        tobeStored.setClientID(clientID);
+        tobeStored.setMessageID(messageId);
+        forward2Subscribers(tobeStored);
     }
 
 
@@ -329,7 +352,7 @@ public class ProtocolProcessor {
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
     //TODO rename to route2Subscribers
-    void forward2Subscribers(PublishEvent pubEvt) {
+    void forward2Subscribers(StoredMessage pubEvt) {
         final String topic = pubEvt.getTopic();
         final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
         final ByteBuffer origMessage = pubEvt.getMessage();
@@ -452,13 +475,16 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        PublishEvent evt = targetSession.storedMessage(messageID);
+        StoredMessage evt = targetSession.storedMessage(messageID);
         forward2Subscribers(evt);
 
-        if (evt.isRetain()) {
+        if (evt.isRetained()) {
             final String topic = evt.getTopic();
-            final AbstractMessage.QOSType qos = evt.getQos();
-            m_messagesStore.storeRetained(topic, evt.getMessage(), qos);
+            if (!evt.getMessage().hasRemaining()) {
+                m_messagesStore.cleanRetained(topic);
+            } else {
+                m_messagesStore.storeRetained(topic, evt.getGuid());
+            }
         }
 
         sendPubComp(clientID, messageID);

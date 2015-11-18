@@ -17,7 +17,6 @@ package org.eclipse.moquette.spi;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.proto.messages.AbstractMessage;
 
 import java.util.Collection;
@@ -32,6 +31,11 @@ public interface IMessagesStore {
         final AbstractMessage.QOSType m_qos;
         final byte[] m_payload;
         final String m_topic;
+        private boolean m_retained;
+        private String m_clientID;
+        //Optional attribute, available only fo QoS 1 and 2
+        private Integer m_msgID;
+        private String m_guid;
 
         public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
             m_qos = qos;
@@ -50,6 +54,53 @@ public interface IMessagesStore {
         public String getTopic() {
             return m_topic;
         }
+
+        public void setGuid(String guid) {
+            this.m_guid = guid;
+        }
+
+        public String getGuid() {
+            return m_guid;
+        }
+
+        public String getClientID() {
+            return m_clientID;
+        }
+
+        public void setClientID(String m_clientID) {
+            this.m_clientID = m_clientID;
+        }
+
+        public void setMessageID(Integer messageID) {
+            this.m_msgID = messageID;
+        }
+
+        public Integer getMessageID() {
+            return m_msgID;
+        }
+
+        public ByteBuffer getMessage() {
+            return ByteBuffer.wrap(m_payload);
+        }
+
+        public void setRetained(boolean retained) {
+            this.m_retained = retained;
+        }
+
+        public boolean isRetained() {
+            return m_retained;
+        }
+
+        @Override
+        public String toString() {
+            return "PublishEvent{" +
+                    "m_msgID=" + m_msgID +
+                    ", clientID='" + m_clientID + '\'' +
+                    ", m_retain=" + m_retained +
+                    ", m_qos=" + m_qos +
+                    ", m_topic='" + m_topic + '\'' +
+                    '}';
+        }
     }
 
     /**
@@ -61,7 +112,7 @@ public interface IMessagesStore {
      * Persist the message. 
      * If the message is empty then the topic is cleaned, else it's stored.
      */
-    void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos);
+    void storeRetained(String topic, String guid);
 
     /**
      * Return a list of retained messages that satisfy the condition.
@@ -72,18 +123,18 @@ public interface IMessagesStore {
      * Persist the message.
      * @return the unique id in the storage (guid).
      * */
-    String storePublishForFuture(PublishEvent evt);
+    String storePublishForFuture(StoredMessage evt);
 
     /**
      * Return the list of persisted publishes for the given clientID.
      * For QoS1 and QoS2 with clean session flag, this method return the list of 
      * missed publish events while the client was disconnected.
      */
-    List<PublishEvent> listMessagesInSession(Collection<String> guids);
+    List<StoredMessage> listMessagesInSession(Collection<String> guids);
     
     void dropMessagesInSession(String clientID);
 
-    PublishEvent getMessageByGuid(String guid);
+    StoredMessage getMessageByGuid(String guid);
 
     /**
      * Return the next valid packetIdentifier for the given client session.

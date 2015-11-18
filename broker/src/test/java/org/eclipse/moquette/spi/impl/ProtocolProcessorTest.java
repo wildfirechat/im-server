@@ -26,14 +26,15 @@ import org.eclipse.moquette.server.netty.NettyChannel;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
+import org.eclipse.moquette.spi.IMessagesStore.*;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.persistence.MemorySessionStore;
 import org.eclipse.moquette.spi.impl.security.PermitAllAuthorizator;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.eclipse.moquette.spi.impl.subscriptions.SubscriptionsStore;
 
 import org.eclipse.moquette.proto.messages.AbstractMessage.QOSType;
+
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -357,8 +358,11 @@ public class ProtocolProcessorTest {
         SubscriptionsStore subs = mock(SubscriptionsStore.class);
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(anyString())).thenReturn(emptySubs);
-        PublishEvent retainedMessage = new PublishEvent("/topic", QOSType.EXACTLY_ONCE,
-                ByteBuffer.wrap("Hello".getBytes()), true, FAKE_PUBLISHER_ID, 120);
+
+        StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(), QOSType.EXACTLY_ONCE, "/topic");
+        retainedMessage.setRetained(true);
+        retainedMessage.setMessageID(120);
+        retainedMessage.setClientID(FAKE_PUBLISHER_ID);
         m_storageService.storePublishForFuture(retainedMessage);
 
         m_processor.init(subs, m_storageService, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
@@ -464,12 +468,14 @@ public class ProtocolProcessorTest {
         assertTrue(messages.isEmpty());
     }
 
-    List<PublishEvent> publishedForwarded = new ArrayList<>();
+    List<StoredMessage> publishedForwarded = new ArrayList<>();
 
     @Test
     public void testForwardPublishWithCorrectQos() {
-        ByteBuffer payload = ByteBuffer.wrap("Hello world MQTT!!".getBytes());
-        PublishEvent forwardPublish = new PublishEvent("a/b", QOSType.EXACTLY_ONCE, payload, true, "Publisher", 1);
+        StoredMessage forwardPublish = new StoredMessage("Hello world MQTT!!".getBytes(), QOSType.EXACTLY_ONCE, "a/b");
+        forwardPublish.setRetained(true);
+        forwardPublish.setMessageID(1);
+
         IMessagesStore memoryMessageStore = new MemoryStorageService();
         ISessionsStore sessionsStore = new MemorySessionStore(memoryMessageStore);
         sessionsStore.createNewSession("Sub A", false).activate();
@@ -487,7 +493,11 @@ public class ProtocolProcessorTest {
             @Override
             protected void directSend(ClientSession session, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
                                       boolean retained, Integer messageID) {
-                publishedForwarded.add(new PublishEvent(topic, qos, message, retained, session.clientID, messageID));
+                StoredMessage msgToStore = new StoredMessage(message.array(), qos, topic);
+                msgToStore.setRetained(retained);
+                msgToStore.setMessageID(messageID);
+                msgToStore.setClientID(session.clientID);
+                publishedForwarded.add(msgToStore);
             }
         };
         processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);

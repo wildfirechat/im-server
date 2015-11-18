@@ -15,16 +15,13 @@
  */
 package org.eclipse.moquette.spi.impl;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
 import org.eclipse.moquette.spi.persistence.MemorySessionStore;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
 
 import org.eclipse.moquette.spi.ISessionsStore;
 import org.slf4j.Logger;
@@ -36,9 +33,9 @@ import static org.eclipse.moquette.spi.impl.Utils.defaultGet;
  */
 public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     
-    private Map<String, StoredMessage> m_retainedStore = new HashMap<>();
+    private Map<String, String> m_retainedStore = new HashMap<>();
     //TODO move in a multimap because only Qos1 and QoS2 are stored here and they have messageID(key of secondary map)
-    private Map<String, PublishEvent> m_persistentMessageStore = new HashMap<>();
+    private Map<String, StoredMessage> m_persistentMessageStore = new HashMap<>();
     //maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, String>> m_inflightStore = new HashMap<>();
     //maps clientID->[guid*]
@@ -61,16 +58,8 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
     
     @Override
-    public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
-        if (!message.hasRemaining()) {
-            //clean the message from topic
-            m_retainedStore.remove(topic);
-        } else {
-            //store the message to the topic
-            byte[] raw = new byte[message.remaining()];
-            message.get(raw);
-            m_retainedStore.put(topic, new StoredMessage(raw, qos, topic));
-        }
+    public void storeRetained(String topic, String guid) {
+        m_retainedStore.put(topic, guid);
     }
 
     @Override
@@ -79,8 +68,9 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
 
         List<StoredMessage> results = new ArrayList<>();
 
-        for (Map.Entry<String, StoredMessage> entry : m_retainedStore.entrySet()) {
-            StoredMessage storedMsg = entry.getValue();
+        for (Map.Entry<String, String> entry : m_retainedStore.entrySet()) {
+            final String guid = entry.getValue();
+            StoredMessage storedMsg = m_persistentMessageStore.get(guid);
             if (condition.match(entry.getKey())) {
                 results.add(storedMsg);
             }
@@ -90,7 +80,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public String storePublishForFuture(PublishEvent evt) {
+    public String storePublishForFuture(StoredMessage evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
         String guid = UUID.randomUUID().toString();
         evt.setGuid(guid);
@@ -102,8 +92,8 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public List<PublishEvent> listMessagesInSession(Collection<String> guids) {
-        List<PublishEvent> ret = new ArrayList<>();
+    public List<StoredMessage> listMessagesInSession(Collection<String> guids) {
+        List<StoredMessage> ret = new ArrayList<>();
         for (String guid : guids) {
             ret.add(m_persistentMessageStore.get(guid));
         }
@@ -116,7 +106,7 @@ public class MemoryStorageService implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public PublishEvent getMessageByGuid(String guid) {
+    public StoredMessage getMessageByGuid(String guid) {
         return m_persistentMessageStore.get(guid);
     }
 

@@ -17,13 +17,10 @@
 package org.eclipse.moquette.spi.persistence;
 
 import org.eclipse.moquette.proto.MQTTException;
-import org.eclipse.moquette.proto.messages.AbstractMessage;
 import org.eclipse.moquette.spi.ClientSession;
 import org.eclipse.moquette.spi.IMatchingCondition;
 import org.eclipse.moquette.spi.IMessagesStore;
 import org.eclipse.moquette.spi.ISessionsStore;
-import org.eclipse.moquette.spi.impl.events.PublishEvent;
-import org.eclipse.moquette.spi.impl.storage.StoredPublishEvent;
 import org.eclipse.moquette.spi.impl.subscriptions.Subscription;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -63,9 +59,10 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MapDBPersistentStore.class);
 
-    private ConcurrentMap<String, StoredMessage> m_retainedStore;
+    //maps clientID -> guid
+    private ConcurrentMap<String, String> m_retainedStore;
     //maps guid to message, it's message store
-    private ConcurrentMap<String, StoredPublishEvent> m_persistentMessageStore;
+    private ConcurrentMap<String, StoredMessage> m_persistentMessageStore;
     //maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, Map<Integer, String>> m_inflightStore;
     //map clientID <-> set of currently in flight packet identifiers
@@ -87,7 +84,6 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     /*
      * The default constructor will create an in memory store as no file path was specified
      */
-    
     public MapDBPersistentStore() {
     	this.m_storePath = "";
     }
@@ -134,16 +130,8 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public void storeRetained(String topic, ByteBuffer message, AbstractMessage.QOSType qos) {
-        if (!message.hasRemaining()) {
-            //clean the message from topic
-            m_retainedStore.remove(topic);
-        } else {
-            //store the message to the topic
-            byte[] raw = new byte[message.remaining()];
-            message.get(raw);
-            m_retainedStore.put(topic, new StoredMessage(raw, qos, topic));
-        }
+    public void storeRetained(String topic, String guid) {
+        m_retainedStore.put(topic, guid);
     }
 
     @Override
@@ -151,8 +139,9 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
         List<StoredMessage> results = new ArrayList<>();
-        for (Map.Entry<String, StoredMessage> entry : m_retainedStore.entrySet()) {
-            StoredMessage storedMsg = entry.getValue();
+        for (Map.Entry<String, String> entry : m_retainedStore.entrySet()) {
+            final String guid = entry.getValue();
+            StoredMessage storedMsg = m_persistentMessageStore.get(guid);
             if (condition.match(entry.getKey())) {
                 results.add(storedMsg);
             }
@@ -162,40 +151,48 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
     }
 
     @Override
-    public String storePublishForFuture(PublishEvent evt) {
+    public String storePublishForFuture(StoredMessage evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
+        if (evt.getClientID() == null) {
+            LOG.error("persisting a message without a clientID, bad programming error msg: {}", evt);
+            throw new IllegalArgumentException("\"persisting a message without a clientID, bad programming error");
+        }
         String guid = UUID.randomUUID().toString();
         evt.setGuid(guid);
-        m_persistentMessageStore.put(guid, convertToStored(evt));
-        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap("guidsMapping" + evt.getClientID());
+        m_persistentMessageStore.put(guid, evt);
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(evt.getClientID()));
         messageIdToGuid.put(evt.getMessageID(), guid);
         return guid;
     }
 
     @Override
-    public List<PublishEvent> listMessagesInSession(Collection<String> guids) {
-        List<PublishEvent> ret = new ArrayList<>();
+    public List<StoredMessage> listMessagesInSession(Collection<String> guids) {
+        List<StoredMessage> ret = new ArrayList<>();
         for (String guid : guids) {
-            ret.add(convertFromStored(m_persistentMessageStore.get(guid))) ;
+            ret.add(m_persistentMessageStore.get(guid));
         }
         return ret;
     }
 
     @Override
     public void dropMessagesInSession(String clientID) {
-        m_db.getHashMap("guidsMapping" + clientID).clear();
+        m_db.getHashMap(messageId2GuidsMapName(clientID)).clear();
         m_persistentMessageStore.remove(clientID);
     }
 
     @Override
-    public PublishEvent getMessageByGuid(String guid) {
-        return convertFromStored(m_persistentMessageStore.get(guid));
+    public StoredMessage getMessageByGuid(String guid) {
+        return m_persistentMessageStore.get(guid);
     }
 
     @Override
     public String mapToGuid(String clientID, int messageID) {
-        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap("guidsMapping" + clientID);
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
         return messageIdToGuid.get(messageID);
+    }
+
+    private String messageId2GuidsMapName(String clientID) {
+        return "guidsMapping_" + clientID;
     }
 
     /**
@@ -412,19 +409,5 @@ public class MapDBPersistentStore implements IMessagesStore, ISessionsStore {
         LOG.debug("closed disk storage");
         this.m_scheduler.shutdown();
         LOG.debug("Persistence commit scheduler is shutdown");
-    }
-
-    private StoredPublishEvent convertToStored(PublishEvent evt) {
-        return new StoredPublishEvent(evt);
-    }
-
-    private PublishEvent convertFromStored(StoredPublishEvent evt) {
-        byte[] message = evt.getMessage();
-        ByteBuffer bbmessage = ByteBuffer.wrap(message);
-        //bbmessage.flip();
-        PublishEvent pubEvt = new PublishEvent(evt.getTopic(), evt.getQos(),
-                bbmessage, evt.isRetain(), evt.getClientID(), evt.getMessageID());
-        pubEvt.setGuid(evt.getGuid());
-        return pubEvt;
     }
 }
