@@ -53,7 +53,7 @@ Include dependency in your project:
 
 ```
 <dependency>
-      <groupId>org.eclipse.moquette</groupId>
+      <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
       <version>0.7</version>
 </dependency>

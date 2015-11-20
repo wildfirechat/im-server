@@ -5,7 +5,7 @@
     <parent>
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
-        <groupId>org.eclipse.moquette</groupId>
+        <groupId>io.moquette</groupId>
         <version>0.8-SNAPSHOT</version>
     </parent>
 

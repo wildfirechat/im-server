@@ -5,7 +5,7 @@
     <parent>
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
-        <groupId>org.eclipse.moquette</groupId>
+        <groupId>io.moquette</groupId>
         <version>0.8-SNAPSHOT</version>
     </parent>
 
@@ -79,8 +79,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>org/eclipse/moquette/parser/netty/TestUtils.java</exclude>
-                        <exclude>org/eclipse/moquette/parser/netty/TestUtils$*</exclude>
+                        <exclude>io/moquette/parser/netty/TestUtils.java</exclude>
+                        <exclude>io/moquette/parser/netty/TestUtils$*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
