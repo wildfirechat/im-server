@@ -69,8 +69,7 @@ public class SimpleMessaging {
     public ProtocolProcessor init(IConfig props) {
         subscriptions = new SubscriptionsStore();
 
-        //TODO use a property to select the storage path
-        m_mapStorage = new MapDBPersistentStore(props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, ""));
+        m_mapStorage = new MapDBPersistentStore(props);
         m_mapStorage.initStore();
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
         ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);

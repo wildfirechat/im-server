@@ -12,6 +12,8 @@ Version 0.8:
     Added check to avoid creation of LostConnectionEvents for not yet completed connects (fix issue #88)
     Removed LMAX ringbuffer to use multi threading with persistent (copy on write) data structures
     Fixed bug that on connection stolen dropped also the new connection (fix issue #108)
+    Refactored the storage part to be more rational and use ClientSession concept
+    Added config property 'autosave_interval' (issue #97)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

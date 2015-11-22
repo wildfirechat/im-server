@@ -16,7 +16,10 @@
 package io.moquette.spi.persistence;
 
 import io.moquette.commons.Constants;
+import static io.moquette.commons.Constants.*;
 import io.moquette.server.IntegrationUtils;
+import io.moquette.server.config.IConfig;
+import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.proto.messages.AbstractMessage;
@@ -25,7 +28,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -43,7 +48,10 @@ public class MapDBPersistentStoreTest {
     @Before
     public void setUp() throws Exception {
         IntegrationUtils.cleanPersistenceFile(Constants.DEFAULT_PERSISTENT_PATH);
-        m_storageService = new MapDBPersistentStore(Constants.DEFAULT_PERSISTENT_PATH);
+        Properties props = new Properties();
+        props.setProperty(PERSISTENT_STORE_PROPERTY_NAME, DEFAULT_PERSISTENT_PATH);
+        IConfig conf = new MemoryConfig(props);
+        m_storageService = new MapDBPersistentStore(conf);
         m_storageService.initStore();
         m_messagesStore = m_storageService.messagesStore();
         m_sessionsStore = m_storageService.sessionsStore(m_messagesStore);

@@ -16,6 +16,7 @@
 
 package io.moquette.spi.persistence;
 
+import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.proto.MQTTException;
@@ -30,6 +31,9 @@ import java.io.Serializable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static io.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME;
+import static io.moquette.commons.Constants.AUTOSAVE_INTERVAL_PROPERTY_NAME;
 
 /**
  * MapDB main persistence implementation
@@ -53,12 +57,14 @@ public class MapDBPersistentStore {
     private static final Logger LOG = LoggerFactory.getLogger(MapDBPersistentStore.class);
 
     private DB m_db;
-    private String m_storePath;
+    private final String m_storePath;
+    private final int m_autosaveInterval; // in seconds
 
     protected final ScheduledExecutorService m_scheduler = Executors.newScheduledThreadPool(1);
 
-    public MapDBPersistentStore(String storePath) {
-        this.m_storePath = storePath;
+    public MapDBPersistentStore(IConfig props) {
+        this.m_storePath = props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, "");
+        this.m_autosaveInterval = Integer.parseInt(props.getProperty(AUTOSAVE_INTERVAL_PROPERTY_NAME, "30"));
     }
 
     /**
@@ -97,7 +103,7 @@ public class MapDBPersistentStore {
             public void run() {
                 m_db.commit();
             }
-        }, 30, 30, TimeUnit.SECONDS);
+        }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
     }
 
     public void close() {
