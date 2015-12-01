@@ -13,7 +13,7 @@ public class TreeNodeTest {
 
     @Test
     public void testAddSubscriptionOverwriteAnExistingWithDifferentCleanSessionFlag() throws Exception {
-        TreeNode root = new TreeNode(null);
+        TreeNode root = new TreeNode();
         Subscription existingSub = new Subscription(CLIENT_ID, "/topic", LEAST_ONE, false);
         root.addSubscription(existingSub);
         Set<Subscription> subs = root.findAllByClientID(CLIENT_ID);

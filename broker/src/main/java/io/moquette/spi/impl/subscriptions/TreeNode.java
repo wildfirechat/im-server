@@ -28,13 +28,11 @@ class TreeNode {
         
     }
 
-    TreeNode m_parent;
     Token m_token;
     List<TreeNode> m_children = new ArrayList<>();
     List<Subscription> m_subscriptions = new ArrayList<>();
 
-    TreeNode(TreeNode parent) {
-        this.m_parent = parent;
+    TreeNode() {
     }
 
     Token getToken() {
@@ -70,13 +68,9 @@ class TreeNode {
      * Copy the token and the children.
      * */
     TreeNode copy() {
-        final TreeNode copy = new TreeNode(this);
-        copy.m_parent = m_parent;
+        final TreeNode copy = new TreeNode();
         copy.m_children = new ArrayList<>(m_children);
-        copy.m_subscriptions = new ArrayList<>(m_subscriptions.size());
-        for (Subscription sub : m_subscriptions) {
-            copy.m_subscriptions.add(new Subscription(sub));
-        }
+        copy.m_subscriptions = new ArrayList<>(m_subscriptions);
         copy.m_token = m_token;
         return copy;
     }

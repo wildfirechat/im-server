@@ -404,7 +404,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testRecreatePath_emptyRoot() {
-        TreeNode oldRoot = new TreeNode(null);
+        TreeNode oldRoot = new TreeNode();
         final SubscriptionsStore.NodeCouple resp = store.recreatePath("/finance", oldRoot);
 
         //Verify
@@ -416,7 +416,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testRecreatePath_1layer_tree() {
-        TreeNode oldRoot = new TreeNode(null);
+        TreeNode oldRoot = new TreeNode();
         final SubscriptionsStore.NodeCouple respFinance = store.recreatePath("/finance", oldRoot);
         final SubscriptionsStore.NodeCouple respPlus = store.recreatePath("/+", respFinance.root);
 

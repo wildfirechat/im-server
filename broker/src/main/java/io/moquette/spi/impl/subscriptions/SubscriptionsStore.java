@@ -90,7 +90,7 @@ public class SubscriptionsStore {
         }
     }
     
-    private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode(null));
+    private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode());
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
 
     /**
@@ -109,8 +109,8 @@ public class SubscriptionsStore {
             LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
             add(subscription);
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Finished loading. Subscription tree after {}", dumpTree());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Finished loading. Subscription tree after {}", dumpTree());
         }
     }
 
@@ -146,13 +146,13 @@ public class SubscriptionsStore {
             if ((matchingChildren = current.childWithToken(token)) != null) {
                 //copy the traversed node
                 current = matchingChildren.copy();
-                current.m_parent = parent;
+//                current.m_parent = parent;
                 //update the child just added in the children list
                 parent.updateChild(matchingChildren, current);
                 parent = current;
             } else {
                 //create a new node for the newly inserted token
-                matchingChildren = new TreeNode(current);
+                matchingChildren = new TreeNode(/*current*/);
                 matchingChildren.setToken(token);
                 current.addChild(matchingChildren);
                 current = matchingChildren;
