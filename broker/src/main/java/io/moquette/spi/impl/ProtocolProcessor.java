@@ -126,7 +126,7 @@ public class ProtocolProcessor {
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
         m_authorizator = authorizator;
-        LOG.debug("subscription tree on init {}", subscriptions.dumpTree());
+        LOG.trace("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
@@ -357,9 +357,9 @@ public class ProtocolProcessor {
         final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
         final ByteBuffer origMessage = pubEvt.getMessage();
         LOG.debug("forward2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", DebugUtils.payload2Str(origMessage));
-            LOG.debug("subscription tree {}", subscriptions.dumpTree());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
+            LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
         //if QoS 1 or 2 store the message
         String guid = null;
@@ -614,6 +614,9 @@ public class ProtocolProcessor {
 
         //save session, persist subscriptions from session
         LOG.debug("SUBACK for packetID {}", msg.getMessageID());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("subscription tree {}", subscriptions.dumpTree());
+        }
         session.write(ackMessage);
 
         //fire the publish
