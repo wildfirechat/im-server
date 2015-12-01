@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * @author luca <luca.capra@create-net.org> 
  */
 public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizator {
-    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationClassLoaderTest.class);
-
     Server m_server;
     IConfig m_config;
     
