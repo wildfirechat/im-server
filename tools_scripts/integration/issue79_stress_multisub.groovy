@@ -12,9 +12,11 @@ class SubscriberThread extends Thread {
 
     private final int subId
     private final String host = "localhost"
+    private final boolean oneClientPerTopic
 
-    SubscriberThread(int subId) {
+    SubscriberThread(int subId, boolean oneClientPerTopic) {
         this.subId = subId
+        this.oneClientPerTopic = oneClientPerTopic
     }
 
     @Override
@@ -28,12 +30,14 @@ class SubscriberThread extends Thread {
         mqtt.setClientId("SubscriberClient${subId}")
         BlockingConnection connection = mqtt.blockingConnection()
         connection.connect()
-        Topic[] topics = [new Topic("/topic${subId}", QoS.AT_MOST_ONCE), new Topic("/exit${subId}", QoS.AT_MOST_ONCE)]
+
+        def postFix = oneClientPerTopic ? subId : ""
+        Topic[] topics = [new Topic("/topic${postFix}", QoS.AT_MOST_ONCE), new Topic("/exit${postFix}", QoS.AT_MOST_ONCE)]
         byte[] qoses = connection.subscribe(topics)
         boolean exit = false
         while (!exit) {
             Message message = connection.receive()
-            if (message.topic == "/exit${subId}") {
+            if (message.topic == "/exit${postFix}") {
                 exit = true
             }
             message.ack()
@@ -44,12 +48,13 @@ class SubscriberThread extends Thread {
 }
 
 if (args.size() < 1) {
-    println "Usage: groovy issue79_stress_multisub.groovy num_subscribers"
+    println "Usage: groovy issue79_stress_multisub.groovy num_subscribers [single_topic]"
 }
 
 int numSubscriber = args[0] as Integer
+boolean singleTopic = (args.size() == 2 && args[1] == "single_topic")
 (1..numSubscriber).each { numSub ->
-    def subTh = new SubscriberThread(numSub)
+    def subTh = new SubscriberThread(numSub, singleTopic)
     subTh.start()
 }
 

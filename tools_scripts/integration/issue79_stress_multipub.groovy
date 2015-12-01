@@ -14,11 +14,13 @@ class PublisherThread extends Thread {
     private final String host = "localhost"
     private final byte[] payload
     private final int numToSend
+    private final boolean oneClientPerTopic
 
-    PublisherThread(int pubId, int numToSend, byte[] payload) {
+    PublisherThread(int pubId, int numToSend, byte[] payload, boolean oneClientPerTopic) {
         this.numToSend = numToSend
         this.payload = payload
         this.pubId = pubId
+        this.oneClientPerTopic = oneClientPerTopic
     }
 
     @Override
@@ -29,26 +31,28 @@ class PublisherThread extends Thread {
         mqtt.setCleanSession(true)
         mqtt.setHost(host, 1883)
 
+        def postFix = oneClientPerTopic ? subId : ""
+
         mqtt.setClientId("PublisherClient${pubId}")
         BlockingConnection connection = mqtt.blockingConnection()
         connection.connect()
         (1..numToSend).each {
-            connection.publish("/topic${pubId}", this.payload, QoS.AT_MOST_ONCE, false)
+            connection.publish("/topic${postFix}", this.payload, QoS.AT_MOST_ONCE, false)
         }
-        connection.publish("/exit${pubId}", 'Exit'.bytes, QoS.AT_MOST_ONCE, false)
+        connection.publish("/exit${postFix}", 'Exit'.bytes, QoS.AT_MOST_ONCE, false)
         connection.disconnect()
     }
 }
 
-if (args.size() < 1) {
-    println "Usage: groovy issue79_stress_multipub.groovy num_publishers"
+if (args.size() < 2) {
+    println "Usage: groovy issue79_stress_multipub.groovy num_publishers [single_topic]"
 }
-
+boolean singleTopic = (args.size() == 2 && args[1] == "single_topic")
 final byte[] payload = 'Hello world!!'.bytes
 
 int numPublishers = args[0] as Integer
 (1..numPublishers).each { numPub ->
-    def pubTh = new PublisherThread(numPub, 5, payload)
+    def pubTh = new PublisherThread(numPub, 5, payload, singleTopic)
     pubTh.start()
 }
 
