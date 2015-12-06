@@ -60,6 +60,10 @@ public class Subscription implements Serializable {
         return topicFilter;
     }
 
+    /**
+     * @deprecated this concept must be moved inside ClientSession and not subscription.
+     * */
+    @Deprecated
     public boolean isCleanSession() {
         return this.cleanSession;
     }
@@ -71,20 +75,15 @@ public class Subscription implements Serializable {
 
         Subscription that = (Subscription) o;
 
-        if (cleanSession != that.cleanSession) return false;
         if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
-        if (requestedQos != that.requestedQos) return false;
-        if (topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null) return false;
+        return !(topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = requestedQos.hashCode();
-        result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
+        int result = clientId != null ? clientId.hashCode() : 0;
         result = 31 * result + (topicFilter != null ? topicFilter.hashCode() : 0);
-        result = 31 * result + (cleanSession ? 1 : 0);
         return result;
     }
 

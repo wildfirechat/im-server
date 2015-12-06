@@ -17,7 +17,6 @@ package io.moquette.spi;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import io.moquette.spi.impl.subscriptions.Subscription;
 
@@ -27,6 +26,43 @@ import io.moquette.spi.impl.subscriptions.Subscription;
  * @author andrea
  */
 public interface ISessionsStore {
+
+    class ClientTopicCouple {
+        public final String topicFilter;
+        public final String clientID;
+
+        public ClientTopicCouple(String clientID, String topicFilter) {
+            this.clientID = clientID;
+            this.topicFilter = topicFilter;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ClientTopicCouple that = (ClientTopicCouple) o;
+
+            if (topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null) return false;
+            return !(clientID != null ? !clientID.equals(that.clientID) : that.clientID != null);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = topicFilter != null ? topicFilter.hashCode() : 0;
+            result = 31 * result + (clientID != null ? clientID.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "ClientTopicCouple{" +
+                    "topicFilter='" + topicFilter + '\'' +
+                    ", clientID='" + clientID + '\'' +
+                    '}';
+        }
+
+    }
 
     void initStore();
 
@@ -46,11 +82,14 @@ public interface ISessionsStore {
     void wipeSubscriptions(String sessionID);
 
     /**
-     * Updates the subscriptions set for the clientID
+     * Return all topic filters to recreate the subscription tree.
      * */
-    void updateSubscriptions(String clientID, Set<Subscription> subscriptions);
+    List<ClientTopicCouple> listAllSubscriptions();
 
-    List<Subscription> listAllSubscriptions();
+    /**
+     * @return the subscription stored by clientID and topicFilter, if any else null;
+     * */
+    Subscription getSubscription(ClientTopicCouple couple);
 
     /**
      * @return true iff there are subscriptions persisted with clientID

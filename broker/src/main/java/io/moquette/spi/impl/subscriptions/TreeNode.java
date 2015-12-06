@@ -15,22 +15,17 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
+
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class TreeNode {
 
-    private class ClientIDComparator implements Comparator<Subscription> {
-
-        public int compare(Subscription o1, Subscription o2) {
-            return o1.getClientId().compareTo(o2.getClientId());
-        }
-        
-    }
-
     Token m_token;
     List<TreeNode> m_children = new ArrayList<>();
-    List<Subscription> m_subscriptions = new ArrayList<>();
+    //TODO move to set of ClientIDthe set of clientIDs that has subscriptions to this topic
+    Set<ClientTopicCouple> m_subscriptions = new HashSet<>();
 
     TreeNode() {
     }
@@ -43,19 +38,7 @@ class TreeNode {
         this.m_token = topic;
     }
 
-    void addSubscription(Subscription s) {
-        //avoid double registering for same clientID, topic and QoS
-        if (m_subscriptions.contains(s)) {
-            return;
-        }
-        //remove existing subscription for same client and topic but different QoS
-        Comparator<Subscription> comparator = new ClientIDComparator();
-        Collections.sort(m_subscriptions, comparator);
-        int existingSubIdx = Collections.binarySearch(m_subscriptions, s, comparator);
-        if (existingSubIdx >= 0) {
-            m_subscriptions.remove(existingSubIdx);
-        }
-        
+    void addSubscription(ClientTopicCouple s) {
         m_subscriptions.add(s);
     }
 
@@ -70,7 +53,7 @@ class TreeNode {
     TreeNode copy() {
         final TreeNode copy = new TreeNode();
         copy.m_children = new ArrayList<>(m_children);
-        copy.m_subscriptions = new ArrayList<>(m_subscriptions);
+        copy.m_subscriptions = new HashSet<>(m_subscriptions);
         copy.m_token = m_token;
         return copy;
     }
@@ -94,11 +77,15 @@ class TreeNode {
         m_children.add(newChild);
     }
 
-    List<Subscription> subscriptions() {
+    Collection<ClientTopicCouple> subscriptions() {
         return m_subscriptions;
     }
 
-    void matches(Queue<Token> tokens, List<Subscription> matchingSubs) {
+    public void remove(ClientTopicCouple clientTopicCouple) {
+        m_subscriptions.remove(clientTopicCouple);
+    }
+
+    void matches(Queue<Token> tokens, List<ClientTopicCouple> matchingSubs) {
         Token t = tokens.poll();
 
         //check if t is null <=> tokens finished
@@ -147,14 +134,14 @@ class TreeNode {
     TreeNode removeClientSubscriptions(String clientID) {
         //collect what to delete and then delete to avoid ConcurrentModification
         TreeNode newSubRoot = this.copy();
-        List<Subscription> subsToRemove = new ArrayList<>();
-        for (Subscription s : newSubRoot.m_subscriptions) {
-            if (s.clientId.equals(clientID)) {
+        List<ClientTopicCouple> subsToRemove = new ArrayList<>();
+        for (ClientTopicCouple s : newSubRoot.m_subscriptions) {
+            if (s.clientID.equals(clientID)) {
                 subsToRemove.add(s);
             }
         }
 
-        for (Subscription s : subsToRemove) {
+        for (ClientTopicCouple s : subsToRemove) {
             newSubRoot.m_subscriptions.remove(s);
         }
 
@@ -165,22 +152,5 @@ class TreeNode {
         }
         newSubRoot.m_children = newChildren;
         return newSubRoot;
-    }
-
-    /**
-     * @return the set of subscriptions for the given client.
-     * */
-    Set<Subscription> findAllByClientID(String clientID) {
-        Set<Subscription> subs = new HashSet<>();
-        for (Subscription s : m_subscriptions) {
-            if (s.clientId.equals(clientID)) {
-                subs.add(s);
-            }
-        }
-        //go deep
-        for (TreeNode child : m_children) {
-            subs.addAll(child.findAllByClientID(clientID));
-        }
-        return subs;
     }
 }

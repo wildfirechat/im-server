@@ -99,8 +99,16 @@ public class ClientSession {
             //send SUBACK with 0x80 for this topic filter
             return false;
         }
-        subscriptions.add(newSubscription);
-        m_sessionsStore.addNewSubscription(newSubscription);
+        ISessionsStore.ClientTopicCouple matchingCouple = new ISessionsStore.ClientTopicCouple(this.clientID, newSubscription.getTopicFilter());
+        Subscription existingSub = m_sessionsStore.getSubscription(matchingCouple);
+        //update the selected subscriptions if not present or if has a greater qos
+        if (existingSub == null || existingSub.getRequestedQos().byteValue() < newSubscription.getRequestedQos().byteValue()) {
+            if (existingSub != null) {
+                subscriptions.remove(newSubscription);
+            }
+            subscriptions.add(newSubscription);
+            m_sessionsStore.addNewSubscription(newSubscription);
+        }
         return true;
     }
 

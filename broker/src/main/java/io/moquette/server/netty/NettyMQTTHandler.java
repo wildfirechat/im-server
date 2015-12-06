@@ -98,7 +98,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             }
             m_processor.processConnectionLost(clientID, stolen);
         }
-        ctx.close(/*false*/);
+        ctx.close();
     }
 
     @Override

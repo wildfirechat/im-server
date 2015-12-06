@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +69,8 @@ public class SubscriptionsStore {
         public void visit(TreeNode node, int deep) {
             String subScriptionsStr = "";
             String indentTabs = indentTabs(deep);
-            for (Subscription sub : node.m_subscriptions) {
-                subScriptionsStr += indentTabs + sub.toString() + "\n";
+            for (ClientTopicCouple couple : node.m_subscriptions) {
+                subScriptionsStr += indentTabs + couple.toString() + "\n";
             }
             s += node.getToken() == null ? "" : node.getToken().toString();
             s +=  "\n" + (node.m_subscriptions.isEmpty() ? indentTabs : "") + subScriptionsStr /*+ "\n"*/;
@@ -92,6 +93,7 @@ public class SubscriptionsStore {
     
     private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode());
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
+    private volatile ISessionsStore m_sessionsStore;
 
     /**
      * Initialize the subscription tree with the list of subscriptions.
@@ -99,22 +101,23 @@ public class SubscriptionsStore {
      */
     public void init(ISessionsStore sessionsStore) {
         LOG.debug("init invoked");
-        List<Subscription> subscriptions = sessionsStore.listAllSubscriptions();
+        m_sessionsStore = sessionsStore;
+        List<ClientTopicCouple> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any subscriptions persisted
         if (LOG.isDebugEnabled()) {
             LOG.debug("Reloading all stored subscriptions...subscription tree before {}", dumpTree());
         }
 
-        for (Subscription subscription : subscriptions) {
-            LOG.debug("Re-subscribing {} to topic {}", subscription.getClientId(), subscription.getTopicFilter());
-            add(subscription);
+        for (ClientTopicCouple clientTopic : subscriptions) {
+            LOG.debug("Re-subscribing {} to topic {}", clientTopic.clientID, clientTopic.topicFilter);
+            add(clientTopic);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("Finished loading. Subscription tree after {}", dumpTree());
         }
     }
 
-    public void add(Subscription newSubscription) {
+    public void add(ClientTopicCouple newSubscription) {
         TreeNode oldRoot;
         NodeCouple couple;
         do {
@@ -146,13 +149,12 @@ public class SubscriptionsStore {
             if ((matchingChildren = current.childWithToken(token)) != null) {
                 //copy the traversed node
                 current = matchingChildren.copy();
-//                current.m_parent = parent;
                 //update the child just added in the children list
                 parent.updateChild(matchingChildren, current);
                 parent = current;
             } else {
                 //create a new node for the newly inserted token
-                matchingChildren = new TreeNode(/*current*/);
+                matchingChildren = new TreeNode();
                 matchingChildren.setToken(token);
                 current.addChild(matchingChildren);
                 current = matchingChildren;
@@ -168,19 +170,7 @@ public class SubscriptionsStore {
             oldRoot = subscriptions.get();
             couple = recreatePath(topic, oldRoot);
 
-            //do the job
-            //search for the subscription to remove
-            Subscription toBeRemoved = null;
-            for (Subscription sub : couple.createdNode.subscriptions()) {
-                if (sub.topicFilter.equals(topic) && sub.getClientId().equals(clientID)) {
-                    toBeRemoved = sub;
-                    break;
-                }
-            }
-
-            if (toBeRemoved != null) {
-                couple.createdNode.subscriptions().remove(toBeRemoved);
-            }
+            couple.createdNode.remove(new ClientTopicCouple(clientID, topic));
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, couple.root));
     }
@@ -216,16 +206,17 @@ public class SubscriptionsStore {
         }
 
         Queue<Token> tokenQueue = new LinkedBlockingDeque<>(tokens);
-        List<Subscription> matchingSubs = new ArrayList<>();
+        List<ClientTopicCouple> matchingSubs = new ArrayList<>();
         subscriptions.get().matches(tokenQueue, matchingSubs);
 
         //remove the overlapping subscriptions, selecting ones with greatest qos
         Map<String, Subscription> subsForClient = new HashMap<>();
-        for (Subscription sub : matchingSubs) {
-            Subscription existingSub = subsForClient.get(sub.getClientId());
+        for (ClientTopicCouple matchingCouple : matchingSubs) {
+            Subscription existingSub = subsForClient.get(matchingCouple.clientID);
+            Subscription sub = m_sessionsStore.getSubscription(matchingCouple);
             //update the selected subscriptions if not present or if has a greater qos
             if (existingSub == null || existingSub.getRequestedQos().byteValue() < sub.getRequestedQos().byteValue()) {
-                subsForClient.put(sub.getClientId(), sub);
+                subsForClient.put(matchingCouple.clientID, sub);
             }
         }
         return new ArrayList<>(subsForClient.values());

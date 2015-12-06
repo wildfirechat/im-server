@@ -26,6 +26,7 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.IAuthenticator;
 import io.moquette.spi.impl.security.IAuthorizator;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -383,6 +384,7 @@ public class ProtocolProcessor {
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
+                //TODO isCleanSession MUST be on the targetSession not the Subscription
                 if (!sub.isCleanSession() && !targetSession.isActive()) {
                     //store the message in targetSession queue to deliver
                     targetSession.enqueueToDeliver(guid);
@@ -621,18 +623,19 @@ public class ProtocolProcessor {
 
         //fire the publish
         for(Subscription subscription : newSubscriptions) {
-            subscribeSingleTopic(subscription, subscription.getTopicFilter());
+            subscribeSingleTopic(subscription);
         }
     }
     
-    private boolean subscribeSingleTopic(Subscription newSubscription, final String topic) {
-        subscriptions.add(newSubscription);
+    private boolean subscribeSingleTopic(final Subscription newSubscription) {
+        final ClientTopicCouple couple = new ClientTopicCouple(newSubscription.getClientId(), newSubscription.getTopicFilter());
+        subscriptions.add(couple);
 
         //scans retained messages to be published to the new subscription
         //TODO this is ugly, it does a linear scan on potential big dataset
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
-                return SubscriptionsStore.matchTopics(key, topic);
+                return SubscriptionsStore.matchTopics(key, newSubscription.getTopicFilter());
             }
         });
 
@@ -640,7 +643,7 @@ public class ProtocolProcessor {
 
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire the as retained the message
-            LOG.debug("send publish message for topic {}", topic);
+            LOG.debug("send publish message for topic {}", newSubscription.getTopicFilter());
             //forwardPublishQoS0(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
             Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null :
                     m_messagesStore.nextPacketID(newSubscription.getClientId());

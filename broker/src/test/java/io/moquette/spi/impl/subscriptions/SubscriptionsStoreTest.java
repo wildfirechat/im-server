@@ -20,7 +20,9 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
+import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.MemoryStorageService;
 import io.moquette.proto.messages.AbstractMessage;
 
@@ -35,6 +37,7 @@ import org.junit.Test;
 public class SubscriptionsStoreTest {
     
     private SubscriptionsStore store;
+    private ISessionsStore sessionsStore;
 
     public SubscriptionsStoreTest() {
     }
@@ -44,7 +47,8 @@ public class SubscriptionsStoreTest {
         store = new SubscriptionsStore();
         MemoryStorageService storageService = new MemoryStorageService();
         storageService.initStore();
-        store.init(storageService.sessionsStore());
+        this.sessionsStore = storageService.sessionsStore();
+        store.init(sessionsStore);
     }
     
     @Test
@@ -103,11 +107,13 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSimple() {
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(slashSub);
+        sessionsStore.addNewSubscription(slashSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/"));
         assertTrue(store.matches("finance").isEmpty());
-        
+
         Subscription slashFinanceSub = new Subscription("FAKE_CLI_ID_1", "/finance", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(slashFinanceSub);
+        sessionsStore.addNewSubscription(slashFinanceSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/finance"));
         assertTrue(store.matches("finance").isEmpty());
         
         assertTrue(store.matches("/finance").contains(slashFinanceSub));
@@ -117,11 +123,13 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSimpleMulti() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(anySub);
+        sessionsStore.addNewSubscription(anySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "#"));
         assertTrue(store.matches("finance").contains(anySub));
         
         Subscription financeAnySub = new Subscription("FAKE_CLI_ID_2", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(financeAnySub);
+        sessionsStore.addNewSubscription(financeAnySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_2", "finance/#"));
         assertTrue(store.matches("finance").containsAll(Arrays.asList(financeAnySub, anySub)));
     }
     
@@ -129,8 +137,10 @@ public class SubscriptionsStoreTest {
     public void testMatchingDeepMulti_one_layer() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
         Subscription financeAnySub = new Subscription("FAKE_CLI_ID_2", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(anySub);
-        store.add(financeAnySub);
+        sessionsStore.addNewSubscription(anySub);
+        sessionsStore.addNewSubscription(financeAnySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "#"));
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_2", "finance/#"));
         
         //Verify
         assertTrue(store.matches("finance/stock").containsAll(Arrays.asList(financeAnySub, anySub)));
@@ -141,7 +151,8 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchingDeepMulti_two_layer() {
         Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/stock/#", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(financeAnySub);
+        sessionsStore.addNewSubscription(financeAnySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "finance/stock/#"));
         
         //Verify
         assertTrue(store.matches("finance/stock/ibm").contains(financeAnySub));
@@ -150,18 +161,21 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSimpleSingle() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(anySub);
+        sessionsStore.addNewSubscription(anySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "+"));
         assertTrue(store.matches("finance").contains(anySub));
         
         Subscription financeOne = new Subscription("FAKE_CLI_ID_1", "finance/+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(financeOne);
+        sessionsStore.addNewSubscription(financeOne);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "finance/+"));
         assertTrue(store.matches("finance/stock").contains(financeOne));
     }
     
     @Test
     public void testMatchManySingle() {
         Subscription manySub = new Subscription("FAKE_CLI_ID_1", "+/+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(manySub);
+        sessionsStore.addNewSubscription(manySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "+/+"));
         
         //verify
         assertTrue(store.matches("/finance").contains(manySub));
@@ -171,9 +185,11 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSlashSingle() {
         Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(slashPlusSub);
+        sessionsStore.addNewSubscription(slashPlusSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/+"));
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(anySub);
+        sessionsStore.addNewSubscription(anySub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "+"));
         
         //Verify
         assertEquals(1, store.matches("/finance").size());
@@ -185,10 +201,12 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchManyDeepSingle() {
         Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/finance/+/ibm", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(slashPlusSub);
+        sessionsStore.addNewSubscription(slashPlusSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/finance/+/ibm"));
         
         Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_2", "/+/stock/+", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(slashPlusDeepSub);
+        sessionsStore.addNewSubscription(slashPlusDeepSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_2", "/+/stock/+"));
         
         //Verify
         assertTrue(store.matches("/finance/stock/ibm").containsAll(Arrays.asList(slashPlusSub, slashPlusDeepSub)));
@@ -196,7 +214,9 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testMatchSimpleMulti_allTheTree() {
-        store.add(new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false));
+        Subscription sub = new Subscription("FAKE_CLI_ID_1", "#", AbstractMessage.QOSType.MOST_ONE, false);
+        sessionsStore.addNewSubscription(sub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "#"));
         assertFalse(store.matches("finance").isEmpty());
         assertFalse(store.matches("finance/ibm").isEmpty());
     }
@@ -204,7 +224,9 @@ public class SubscriptionsStoreTest {
     @Test
     public void testMatchSimpleMulti_zeroLevel() {
         //check  MULTI in case of zero level match
-        store.add(new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
+        Subscription sub = new Subscription("FAKE_CLI_ID_1", "finance/#", AbstractMessage.QOSType.MOST_ONE, false);
+        sessionsStore.addNewSubscription(sub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "finance/#"));
         assertFalse(store.matches("finance").isEmpty());
     }
     
@@ -236,9 +258,11 @@ public class SubscriptionsStoreTest {
         store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
         memStore.initStore();
-        store.init(memStore.sessionsStore());
+        ISessionsStore aSessionsStore = memStore.sessionsStore();
+        store.init(aSessionsStore);
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(sub);
+        aSessionsStore.addNewSubscription(sub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", subscription));
         assertFalse(store.matches(topic).isEmpty());
     }
     
@@ -248,7 +272,8 @@ public class SubscriptionsStoreTest {
         memStore.initStore();
         store.init(memStore.sessionsStore());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(sub);
+        sessionsStore.addNewSubscription(sub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", subscription));
         assertTrue(store.matches(topic).isEmpty());
     }
     
@@ -256,7 +281,8 @@ public class SubscriptionsStoreTest {
     @Test
     public void testRemoveClientSubscriptions_existingClientID() {
         String cliendID = "FAKE_CLID_1";
-        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
+        sessionsStore.addNewSubscription(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
+        store.add(new ClientTopicCouple(cliendID, "finance/#"));
         
         //Exercise
         store.removeForClient(cliendID);
@@ -267,8 +293,9 @@ public class SubscriptionsStoreTest {
     
     @Test
     public void testRemoveClientSubscriptions_notexistingClientID() {
-        String cliendID = "FAKE_CLID_1";
-        store.add(new Subscription(cliendID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
+        String clientID = "FAKE_CLID_1";
+        sessionsStore.addNewSubscription(new Subscription(clientID, "finance/#", AbstractMessage.QOSType.MOST_ONE, false));
+        store.add(new ClientTopicCouple(clientID, "finance/#"));
         
         //Exercise
         store.removeForClient("FAKE_CLID_2");
@@ -280,14 +307,14 @@ public class SubscriptionsStoreTest {
     @Test
     public void testOverlappingSubscriptions() {
         Subscription genericSub = new Subscription("FAKE_CLI_ID_1", "a/+", AbstractMessage.QOSType.EXACTLY_ONCE, false);
-        store.add(genericSub);
+        sessionsStore.addNewSubscription(genericSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "a/+"));
         Subscription specificSub = new Subscription("FAKE_CLI_ID_1", "a/b", AbstractMessage.QOSType.LEAST_ONE, false);
-        store.add(specificSub);
+        sessionsStore.addNewSubscription(specificSub);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "a/b"));
 
         //Verify
         assertEquals(1, store.matches("a/b").size());
-        //assertTrue(store.matches("/finance").contains(slashPlusSub));
-        //assertFalse(store.matches("/finance").contains(anySub));
     }
 
     @Test
@@ -350,13 +377,15 @@ public class SubscriptionsStoreTest {
         ISessionsStore sessionsStore = memStore.sessionsStore();
         aStore.init(sessionsStore);
         //subscribe a not active clientID1 to /topic
-        Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
-        aStore.add(slashSub);
         sessionsStore.createNewSession("FAKE_CLI_ID_1", true).deactivate();
+        Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
+        sessionsStore.addNewSubscription(slashSub);
+        aStore.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/topic"));
 
         //subscribe an active clientID2 to /topic
         Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
-        aStore.add(slashSub2);
+        sessionsStore.addNewSubscription(slashSub2);
+        aStore.add(new ClientTopicCouple("FAKE_CLI_ID_2", "/topic"));
         
         //Exercise
         aStore.removeSubscription("/topic", slashSub2.getClientId());
@@ -365,13 +394,17 @@ public class SubscriptionsStoreTest {
         Subscription remainedSubscription = aStore.matches("/topic").get(0);
         assertEquals(slashSub.getClientId(), remainedSubscription.getClientId());
     }
-    
+
+    //TODO this test has to be moved on ClientSession, it's not part of subscription logic
     @Test
     public void overridingSubscriptions() {
+        ClientSession session = sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
         Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
-        store.add(oldSubscription);
+        session.subscribe("/topic", oldSubscription);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/topic"));
         Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE, false);
-        store.add(overrindingSubscription);
+        session.subscribe("/topic", overrindingSubscription);
+        store.add(new ClientTopicCouple("FAKE_CLI_ID_1", "/topic"));
         
         //Verify
         List<Subscription> subscriptions = store.matches("/topic");
@@ -385,13 +418,18 @@ public class SubscriptionsStoreTest {
     * */
     @Test
     public void duplicatedSubscriptionsWithDifferentQos() {
+        ClientSession session2 = sessionsStore.createNewSession("client2", true);
         Subscription client2Sub = new Subscription("client2", "client/test/b", AbstractMessage.QOSType.MOST_ONE, true);
-        store.add(client2Sub);
+        session2.subscribe("client/test/b", client2Sub);
+        store.add(new ClientTopicCouple("client2", "client/test/b"));
+        ClientSession session1 = sessionsStore.createNewSession("client1", true);
         Subscription client1SubQoS0 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.MOST_ONE, true);
-        store.add(client1SubQoS0);
+        session1.subscribe("client/test/b", client1SubQoS0);
+        store.add(new ClientTopicCouple("client1", "client/test/b"));
 
         Subscription client1SubQoS2 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.EXACTLY_ONCE, true);
-        store.add(client1SubQoS2);
+        session1.subscribe("client/test/b", client1SubQoS2);
+        store.add(new ClientTopicCouple("client1", "client/test/b"));
 
         System.out.println(store.dumpTree());
 
@@ -399,7 +437,10 @@ public class SubscriptionsStoreTest {
         List<Subscription> subscriptions = store.matches("client/test/b");
         assertTrue(subscriptions.contains(client1SubQoS2));
         assertTrue(subscriptions.contains(client2Sub));
-        assertFalse(subscriptions.contains(client1SubQoS0)); //client1SubQoS2 should override client1SubQoS0
+
+        Subscription client1Sub = subscriptions.get(subscriptions.indexOf(client1SubQoS0));
+        assertFalse(client1SubQoS0.getRequestedQos().equals(client1Sub.getRequestedQos()));
+        assertEquals(client1SubQoS2.getRequestedQos(), client1Sub.getRequestedQos()); //client1SubQoS2 should override client1SubQoS0
     }
 
     @Test

@@ -62,9 +62,7 @@ public class ServerIntegrationPahoTest {
     public void setUp() throws Exception {
         String dbPath = IntegrationUtils.localMapDBPath();
         IntegrationUtils.cleanPersistenceFile(dbPath);
-//        File dbFile = new File(dbPath);
-//        assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
-    	
+
         startServer();
 
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
@@ -139,7 +137,7 @@ public class ServerIntegrationPahoTest {
 
     /**
      * Check that after a client has connected with clean session false, subscribed
-     * to some topic and exited, if it reconnect with clean session true, the m_server
+     * to some topic and exited, if it reconnects with clean session true, the m_server
      * correctly cleanup every previous subscription
      */
     @Test
@@ -152,7 +150,7 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         //reconnect and publish
-        m_client.connect();
+        m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
         assertEquals("Test my payload", new String(m_callback.getMessage(false).getPayload()));

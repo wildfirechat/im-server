@@ -20,8 +20,10 @@ import static io.moquette.commons.Constants.*;
 import io.moquette.server.IntegrationUtils;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import org.junit.After;
@@ -67,15 +69,16 @@ public class MapDBPersistentStoreTest {
 
     @Test
     public void overridingSubscriptions() {
+        ClientSession session1 = m_sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
         Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
-        m_sessionsStore.addNewSubscription(oldSubscription);
+        session1.subscribe("/topic", oldSubscription);
         Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE, false);
-        m_sessionsStore.addNewSubscription(overrindingSubscription);
+        session1.subscribe("/topic", overrindingSubscription);
         
         //Verify
-        List<Subscription> subscriptions = m_sessionsStore.listAllSubscriptions();
+        List<ClientTopicCouple> subscriptions = m_sessionsStore.listAllSubscriptions();
         assertEquals(1, subscriptions.size());
-        Subscription sub = subscriptions.get(0);
+        Subscription sub = m_sessionsStore.getSubscription(subscriptions.get(0));
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
     }
 

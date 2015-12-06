@@ -24,6 +24,7 @@ import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -340,7 +341,7 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(QOSType.MOST_ONE.byteValue(), "#"));
-        m_processor.processSubscribe(m_session, msg/*, FAKE_PUBLISHER_ID, false*/);
+        m_processor.processSubscribe(m_session, msg);
         
         //Verify
         //wait the latch
@@ -483,10 +484,12 @@ public class ProtocolProcessorTest {
 
         Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
+        sessionsStore.addNewSubscription(subQos1);
+        sessionsStore.addNewSubscription(subQos2);
         SubscriptionsStore subscriptions = new SubscriptionsStore();
         subscriptions.init(sessionsStore);
-        subscriptions.add(subQos1);
-        subscriptions.add(subQos2);
+        subscriptions.add(new ClientTopicCouple("Sub A", "a/b"));
+        subscriptions.add(new ClientTopicCouple("Sub B", "a/+"));
 
 
         ProtocolProcessor processor = new ProtocolProcessor() {

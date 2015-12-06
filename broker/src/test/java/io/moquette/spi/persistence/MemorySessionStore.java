@@ -86,20 +86,14 @@ public class MemorySessionStore implements ISessionsStore {
         }
 
         Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
-        if (!subs.contains(newSubscription)) {
-            subs.add(newSubscription);
-            m_persistentSubscriptions.put(clientID, subs);
-        }
+        subs.remove(newSubscription); //same topic and clientID
+        subs.add(newSubscription);
+        m_persistentSubscriptions.put(clientID, subs);
     }
 
     @Override
     public void wipeSubscriptions(String clientID) {
         m_persistentSubscriptions.remove(clientID);
-    }
-
-    @Override
-    public void updateSubscriptions(String clientID, Set<Subscription> subscriptions) {
-        m_persistentSubscriptions.put(clientID, subscriptions);
     }
 
     @Override
@@ -135,12 +129,28 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public List<Subscription> listAllSubscriptions() {
-        List<Subscription> allSubscriptions = new ArrayList<>();
+    public List<ClientTopicCouple> listAllSubscriptions() {
+        List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
-            allSubscriptions.addAll(entry.getValue());
+            for (Subscription sub : entry.getValue()) {
+                allSubscriptions.add(new ClientTopicCouple(sub.getClientId(), sub.getTopicFilter()));
+            }
         }
         return allSubscriptions;
+    }
+
+    @Override
+    public Subscription getSubscription(ClientTopicCouple couple) {
+        Set<Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
+        if (subscriptions == null || subscriptions.isEmpty()) {
+            return null;
+        }
+        for (Subscription sub : subscriptions) {
+            if (sub.getTopicFilter().equals(couple.topicFilter)) {
+                return sub;
+            }
+        }
+        return null;
     }
 
     @Override
