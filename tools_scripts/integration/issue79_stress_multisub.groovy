@@ -31,7 +31,7 @@ class SubscriberThread extends Thread {
         BlockingConnection connection = mqtt.blockingConnection()
         connection.connect()
 
-        def postFix = oneClientPerTopic ? subId : ""
+        def postFix = oneClientPerTopic ? "" : subId
         Topic[] topics = [new Topic("/topic${postFix}", QoS.AT_MOST_ONCE), new Topic("/exit${postFix}", QoS.AT_MOST_ONCE)]
         byte[] qoses = connection.subscribe(topics)
         boolean exit = false
@@ -53,6 +53,7 @@ if (args.size() < 1) {
 
 int numSubscriber = args[0] as Integer
 boolean singleTopic = (args.size() == 2 && args[1] == "single_topic")
+println "Subscribing to ${numSubscriber} topic, with single ${singleTopic}"
 (1..numSubscriber).each { numSub ->
     def subTh = new SubscriberThread(numSub, singleTopic)
     subTh.start()

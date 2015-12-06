@@ -31,7 +31,7 @@ class PublisherThread extends Thread {
         mqtt.setCleanSession(true)
         mqtt.setHost(host, 1883)
 
-        def postFix = oneClientPerTopic ? subId : ""
+        def postFix = oneClientPerTopic ? "" : pubId
 
         mqtt.setClientId("PublisherClient${pubId}")
         BlockingConnection connection = mqtt.blockingConnection()
