@@ -17,6 +17,7 @@ package io.moquette.spi.impl.subscriptions;
 
 import java.io.Serializable;
 import io.moquette.proto.messages.AbstractMessage.QOSType;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 
 /**
  * Maintain the information about which Topic a certain ClientID is subscribed 
@@ -99,5 +100,9 @@ public class Subscription implements Serializable {
         } catch (CloneNotSupportedException e) {
             return null;
         }
+    }
+
+    public ClientTopicCouple asClientTopicCouple() {
+        return new ClientTopicCouple(this.clientId, this.topicFilter);
     }
 }

@@ -133,7 +133,7 @@ public class MemorySessionStore implements ISessionsStore {
         List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             for (Subscription sub : entry.getValue()) {
-                allSubscriptions.add(new ClientTopicCouple(sub.getClientId(), sub.getTopicFilter()));
+                allSubscriptions.add(sub.asClientTopicCouple());
             }
         }
         return allSubscriptions;

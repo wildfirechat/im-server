@@ -18,6 +18,7 @@ package io.moquette.spi;
 import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,7 @@ public class ClientSession {
             //send SUBACK with 0x80 for this topic filter
             return false;
         }
-        ISessionsStore.ClientTopicCouple matchingCouple = new ISessionsStore.ClientTopicCouple(this.clientID, newSubscription.getTopicFilter());
+        ClientTopicCouple matchingCouple = new ClientTopicCouple(this.clientID, newSubscription.getTopicFilter());
         Subscription existingSub = m_sessionsStore.getSubscription(matchingCouple);
         //update the selected subscriptions if not present or if has a greater qos
         if (existingSub == null || existingSub.getRequestedQos().byteValue() < newSubscription.getRequestedQos().byteValue()) {

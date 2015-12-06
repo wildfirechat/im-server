@@ -628,8 +628,7 @@ public class ProtocolProcessor {
     }
     
     private boolean subscribeSingleTopic(final Subscription newSubscription) {
-        final ClientTopicCouple couple = new ClientTopicCouple(newSubscription.getClientId(), newSubscription.getTopicFilter());
-        subscriptions.add(couple);
+        subscriptions.add(newSubscription.asClientTopicCouple());
 
         //scans retained messages to be published to the new subscription
         //TODO this is ugly, it does a linear scan on potential big dataset

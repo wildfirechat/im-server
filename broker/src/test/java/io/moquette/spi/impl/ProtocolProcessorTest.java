@@ -488,8 +488,8 @@ public class ProtocolProcessorTest {
         sessionsStore.addNewSubscription(subQos2);
         SubscriptionsStore subscriptions = new SubscriptionsStore();
         subscriptions.init(sessionsStore);
-        subscriptions.add(new ClientTopicCouple("Sub A", "a/b"));
-        subscriptions.add(new ClientTopicCouple("Sub B", "a/+"));
+        subscriptions.add(subQos1.asClientTopicCouple());
+        subscriptions.add(subQos2.asClientTopicCouple());
 
 
         ProtocolProcessor processor = new ProtocolProcessor() {
