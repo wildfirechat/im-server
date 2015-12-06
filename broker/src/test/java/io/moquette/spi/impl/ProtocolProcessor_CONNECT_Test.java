@@ -276,7 +276,8 @@ public class ProtocolProcessor_CONNECT_Test {
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
         m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
         m_processor.processSubscribe(m_session, subscribeMsg);
-        Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC,
+                AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
 
         //disconnect

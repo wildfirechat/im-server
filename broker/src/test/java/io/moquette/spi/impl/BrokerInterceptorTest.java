@@ -106,7 +106,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicSubscribed() throws Exception {
-        interceptor.notifyTopicSubscribed(new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE, true));
+        interceptor.notifyTopicSubscribed(new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE));
         interval();
         assertEquals(70, n.get());
     }

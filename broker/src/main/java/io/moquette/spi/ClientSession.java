@@ -142,6 +142,10 @@ public class ClientSession {
         messagesStore.dropMessagesInSession(this.clientID);
     }
 
+    public boolean isCleanSession() {
+        return this.cleanSession;
+    }
+
     public void activate() {
         this.active = true;
         this.m_sessionsStore.activate(this.clientID);

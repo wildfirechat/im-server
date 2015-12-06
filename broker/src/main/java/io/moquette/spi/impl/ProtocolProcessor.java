@@ -26,7 +26,6 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.IAuthenticator;
 import io.moquette.spi.impl.security.IAuthorizator;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -384,8 +383,7 @@ public class ProtocolProcessor {
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
-                //TODO isCleanSession MUST be on the targetSession not the Subscription
-                if (!sub.isCleanSession() && !targetSession.isActive()) {
+                if (!targetSession.isCleanSession() && !targetSession.isActive()) {
                     //store the message in targetSession queue to deliver
                     targetSession.enqueueToDeliver(guid);
                 } else  {
@@ -594,7 +592,6 @@ public class ProtocolProcessor {
 
     public void processSubscribe(ServerChannel session, SubscribeMessage msg) {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
-        boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
@@ -605,7 +602,7 @@ public class ProtocolProcessor {
         List<Subscription> newSubscriptions = new ArrayList<>();
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.getQos());
-            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos, cleanSession);
+            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos);
             //boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
             boolean valid = clientSession.subscribe(req.getTopicFilter(), newSubscription);
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);

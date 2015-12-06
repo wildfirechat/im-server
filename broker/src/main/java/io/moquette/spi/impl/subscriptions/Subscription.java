@@ -31,21 +31,18 @@ public class Subscription implements Serializable {
     QOSType requestedQos; //max QoS acceptable
     String clientId;
     String topicFilter;
-    boolean cleanSession;
     boolean active = true;
     
-    public Subscription(String clientId, String topicFilter, QOSType requestedQos, boolean cleanSession) {
+    public Subscription(String clientId, String topicFilter, QOSType requestedQos) {
         this.requestedQos = requestedQos;
         this.clientId = clientId;
         this.topicFilter = topicFilter;
-        this.cleanSession = cleanSession;
     }
 
     public Subscription(Subscription orig) {
         this.requestedQos = orig.requestedQos;
         this.clientId = orig.clientId;
         this.topicFilter = orig.topicFilter;
-        this.cleanSession = orig.cleanSession;
         this.active = orig.active;
     }
 
@@ -59,14 +56,6 @@ public class Subscription implements Serializable {
 
     public String getTopicFilter() {
         return topicFilter;
-    }
-
-    /**
-     * @deprecated this concept must be moved inside ClientSession and not subscription.
-     * */
-    @Deprecated
-    public boolean isCleanSession() {
-        return this.cleanSession;
     }
 
     @Override

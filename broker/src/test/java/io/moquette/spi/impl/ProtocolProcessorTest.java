@@ -97,7 +97,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testPublish() throws InterruptedException {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
-                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
 
         //subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
@@ -120,7 +120,7 @@ public class ProtocolProcessorTest {
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
-        connectMessage.setCleanSession(subscription.isCleanSession());
+        connectMessage.setCleanSession(true);
         m_processor.processConnect(m_session, connectMessage);
         
         
@@ -142,9 +142,9 @@ public class ProtocolProcessorTest {
     @Test
     public void testPublishToMultipleSubscribers() throws InterruptedException {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
-                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         final Subscription subscriptionClient2 = new Subscription(FAKE_CLIENT_ID2, 
-                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
 
         //subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
@@ -168,7 +168,7 @@ public class ProtocolProcessorTest {
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
-        connectMessage.setCleanSession(subscription.isCleanSession());
+        connectMessage.setCleanSession(true);
         m_processor.processConnect(firstReceiverSession, connectMessage);
         
         //connect the second fake subscriber
@@ -176,7 +176,8 @@ public class ProtocolProcessorTest {
         ConnectMessage connectMessage2 = new ConnectMessage();
         connectMessage2.setProtocolVersion((byte) 3);
         connectMessage2.setClientID(FAKE_CLIENT_ID2);
-        connectMessage2.setCleanSession(subscription.isCleanSession());
+        connectMessage2.setCleanSession(true);
+        connectMessage2.setCleanSession(true);
         m_processor.processConnect(secondReceiverSession, connectMessage2);
         
         //Exercise
@@ -215,7 +216,7 @@ public class ProtocolProcessorTest {
 
         //Verify
         assertTrue(m_session.getReceivedMessage() instanceof SubAckMessage);
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
     
@@ -235,7 +236,7 @@ public class ProtocolProcessorTest {
 
         //Verify
         assertEquals(1, subscriptions.size());
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
 
@@ -304,7 +305,7 @@ public class ProtocolProcessorTest {
         
         //simulate a connect that register a clientID to an IoSession
         final Subscription subscription = new Subscription(FAKE_PUBLISHER_ID, 
-                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE, true);
+                FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
 
         //subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
@@ -326,7 +327,7 @@ public class ProtocolProcessorTest {
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProtocolVersion((byte) 3);
-        connectMessage.setCleanSession(subscription.isCleanSession());
+        connectMessage.setCleanSession(true);
         m_processor.processConnect(m_session, connectMessage);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage pubmsg = new PublishMessage();
@@ -382,7 +383,7 @@ public class ProtocolProcessorTest {
         m_sessionStore.createNewSession("Subscriber", false).deactivate();
 
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
-        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, false); 
+        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE);
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
@@ -408,7 +409,7 @@ public class ProtocolProcessorTest {
         //create an inactive session for Subscriber
         m_sessionStore.createNewSession("Subscriber", false).deactivate();
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
-        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE, true); 
+        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE);
         List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
@@ -482,8 +483,8 @@ public class ProtocolProcessorTest {
         sessionsStore.createNewSession("Sub A", false).activate();
         sessionsStore.createNewSession("Sub B", false).activate();
 
-        Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE, false);
-        Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE, false);
+        Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE);
+        Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE);
         sessionsStore.addNewSubscription(subQos1);
         sessionsStore.addNewSubscription(subQos2);
         SubscriptionsStore subscriptions = new SubscriptionsStore();

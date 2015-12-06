@@ -70,9 +70,9 @@ public class MapDBPersistentStoreTest {
     @Test
     public void overridingSubscriptions() {
         ClientSession session1 = m_sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
-        Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE, false);
+        Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE);
         session1.subscribe("/topic", oldSubscription);
-        Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE, false);
+        Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE);
         session1.subscribe("/topic", overrindingSubscription);
         
         //Verify
