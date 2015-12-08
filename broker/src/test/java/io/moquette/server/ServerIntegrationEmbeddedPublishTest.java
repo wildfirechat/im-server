@@ -129,6 +129,8 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS0IsSent ***");
 
         subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
+        //super ugly but we need the MQTT client lib finish it's job before us
+        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
@@ -154,6 +156,8 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS1IsSent ***");
 
         subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        //super ugly but we need the MQTT client lib finish it's job before us
+        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, false);
@@ -179,6 +183,8 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS1IsSent ***");
 
         subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        //super ugly but we need the MQTT client lib finish it's job before us
+        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
@@ -204,6 +210,8 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS2IsSent ***");
 
         subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        //super ugly but we need the MQTT client lib finish it's job before us
+        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, false);
@@ -229,6 +237,8 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS2IsSent ***");
 
         subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        //super ugly but we need the MQTT client lib finish it's job before us
+        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, true);
