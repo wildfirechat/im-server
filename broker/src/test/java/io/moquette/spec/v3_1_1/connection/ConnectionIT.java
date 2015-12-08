@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 
-import io.moquette.commons.Constants;
+import io.moquette.BrokerConstants;
 import io.moquette.server.Server;
 import io.moquette.testclient.RawClient;
 import org.junit.After;
@@ -52,9 +52,9 @@ public class ConnectionIT {
     public void tearDown() throws Exception {
         m_server.stopServer();
 
-        File dbFile = new File(Constants.DEFAULT_PERSISTENT_PATH);
+        File dbFile = new File(BrokerConstants.DEFAULT_PERSISTENT_PATH);
         if (dbFile.exists()) {
-        	assertTrue("Error deleting the moquette db file " + Constants.DEFAULT_PERSISTENT_PATH, dbFile.delete());
+        	assertTrue("Error deleting the moquette db file " + BrokerConstants.DEFAULT_PERSISTENT_PATH, dbFile.delete());
         }
         assertFalse(dbFile.exists());
     }

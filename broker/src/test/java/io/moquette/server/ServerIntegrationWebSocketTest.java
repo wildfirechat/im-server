@@ -15,6 +15,7 @@
  */
 package io.moquette.server;
 
+import io.moquette.BrokerConstants;
 import io.moquette.server.config.MemoryConfig;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -69,7 +70,7 @@ public class ServerIntegrationWebSocketTest {
     @Test
     public void checkPlainConnect() throws Exception {
         LOG.info("*** checkPlainConnect ***");
-        String destUri = "ws://localhost:" + io.moquette.commons.Constants.WEBSOCKET_PORT;
+        String destUri = "ws://localhost:" + BrokerConstants.WEBSOCKET_PORT;
         
         MQTTWebSocket socket = new MQTTWebSocket();
         client.start();

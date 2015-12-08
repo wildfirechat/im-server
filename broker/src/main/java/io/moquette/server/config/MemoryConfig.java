@@ -15,7 +15,7 @@
  */
 package io.moquette.server.config;
 
-import io.moquette.commons.Constants;
+import io.moquette.BrokerConstants;
 
 import java.util.Map;
 import java.util.Properties;
@@ -37,14 +37,14 @@ public class MemoryConfig implements IConfig {
     }
 
     private void createDefaults() {
-        m_properties.put(Constants.PORT_PROPERTY_NAME, Integer.toString(Constants.PORT));
-        m_properties.put(Constants.HOST_PROPERTY_NAME, Constants.HOST);
-        m_properties.put(Constants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(Constants.WEBSOCKET_PORT));
-        m_properties.put(Constants.PASSWORD_FILE_PROPERTY_NAME, "");
-        m_properties.put(Constants.PERSISTENT_STORE_PROPERTY_NAME, Constants.DEFAULT_PERSISTENT_PATH);
-        m_properties.put(Constants.ALLOW_ANONYMOUS_PROPERTY_NAME, true);
-        m_properties.put(Constants.AUTHENTICATOR_CLASS_NAME, "");
-        m_properties.put(Constants.AUTHORIZATOR_CLASS_NAME, "");
+        m_properties.put(BrokerConstants.PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.PORT));
+        m_properties.put(BrokerConstants.HOST_PROPERTY_NAME, BrokerConstants.HOST);
+        m_properties.put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
+        m_properties.put(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
+        m_properties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
+        m_properties.put(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, true);
+        m_properties.put(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
+        m_properties.put(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
     }
 
     @Override

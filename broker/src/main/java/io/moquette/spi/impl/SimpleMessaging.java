@@ -15,15 +15,14 @@
  */
 package io.moquette.spi.impl;
 
+import io.moquette.BrokerConstants;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.commons.Constants;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.persistence.MapDBPersistentStore;
-import static io.moquette.commons.Constants.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,7 @@ public class SimpleMessaging {
         subscriptions.init(sessionsStore);
 
         String configPath = System.getProperty("moquette.path", null);
-        String authenticatorClassName = props.getProperty(Constants.AUTHENTICATOR_CLASS_NAME, "");
+        String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
 
         IAuthenticator authenticator = null;
         if (!authenticatorClassName.isEmpty()) {
@@ -98,7 +97,7 @@ public class SimpleMessaging {
         }
 
         if (authenticator == null) {
-            String passwdPath = props.getProperty(PASSWORD_FILE_PROPERTY_NAME, "");
+            String passwdPath = props.getProperty(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
             if (passwdPath.isEmpty()) {
                 authenticator = new AcceptAllAuthenticator();
             } else {
@@ -107,14 +106,14 @@ public class SimpleMessaging {
         }
 
         IAuthorizator authorizator = null;
-        String authorizatorClassName = props.getProperty(Constants.AUTHORIZATOR_CLASS_NAME, "");
+        String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
         if (!authorizatorClassName.isEmpty()) {
             authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
             LOG.info("Loaded custom authorizator {}", authorizatorClassName);
         }
 
         if (authorizator == null) {
-            String aclFilePath = props.getProperty(ACL_FILE_PROPERTY_NAME, "");
+            String aclFilePath = props.getProperty(BrokerConstants.ACL_FILE_PROPERTY_NAME, "");
             if (aclFilePath != null && !aclFilePath.isEmpty()) {
                 authorizator = new DenyAllAuthorizator();
                 File aclFile = new File(configPath, aclFilePath);
@@ -131,7 +130,7 @@ public class SimpleMessaging {
 
         }
 
-        boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
+        boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
         return m_processor;
     }

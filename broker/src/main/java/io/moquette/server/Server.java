@@ -15,6 +15,7 @@
  */
 package io.moquette.server;
 
+import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -106,7 +106,7 @@ public class Server {
         if (handlerProp != null) {
             config.setProperty("intercept.handler", handlerProp);
         }
-        LOG.info("Persistent store file: " + config.getProperty(io.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
+        LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
         final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers);
 
         m_acceptor = new NettyAcceptor();

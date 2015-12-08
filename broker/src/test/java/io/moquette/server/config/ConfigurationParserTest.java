@@ -15,7 +15,7 @@
  */
 package io.moquette.server.config;
 
-import io.moquette.commons.Constants;
+import io.moquette.BrokerConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,7 +101,7 @@ public class ConfigurationParserTest {
      * Helper method to verify default options.
      */
     private void verifyDefaults(Properties props) {
-        Assert.assertEquals(Constants.PORT, Integer.parseInt(props.getProperty("port")));
-        Assert.assertEquals(Constants.HOST, props.getProperty("host"));
+        Assert.assertEquals(BrokerConstants.PORT, Integer.parseInt(props.getProperty("port")));
+        Assert.assertEquals(BrokerConstants.HOST, props.getProperty("host"));
     }
 }

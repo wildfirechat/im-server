@@ -15,6 +15,7 @@
  */
 package io.moquette.server.netty;
 
+import io.moquette.BrokerConstants;
 import io.moquette.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.server.config.IConfig;
@@ -100,8 +101,8 @@ public class NettyAcceptor implements ServerAcceptor {
         
         initializePlainTCPTransport(handler, props);
         initializeWebSocketTransport(handler, props);
-        String sslTcpPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
-        String wssPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
+        String sslTcpPortProp = props.getProperty(BrokerConstants.SSL_PORT_PROPERTY_NAME);
+        String wssPortProp = props.getProperty(BrokerConstants.WSS_PORT_PROPERTY_NAME);
         if (sslTcpPortProp != null || wssPortProp != null) {
             SslHandlerFactory sslHandlerFactory = initSSLHandlerFactory(props);
             if (!sslHandlerFactory.canCreate()) {
@@ -145,8 +146,8 @@ public class NettyAcceptor implements ServerAcceptor {
     
     private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
-        int port = Integer.parseInt(props.getProperty(Constants.PORT_PROPERTY_NAME));
+        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
+        int port = Integer.parseInt(props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         initFactory(host, port, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
@@ -163,7 +164,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
-        String webSocketPortProp = props.getProperty(Constants.WEB_SOCKET_PORT_PROPERTY_NAME);
+        String webSocketPortProp = props.getProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME);
         if (webSocketPortProp == null) {
             //Do nothing no WebSocket configured
             LOG.info("WebSocket is disabled");
@@ -173,7 +174,7 @@ public class NettyAcceptor implements ServerAcceptor {
         
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
 
-        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
+        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, port, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
@@ -195,7 +196,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeSSLTCPTransport(final NettyMQTTHandler handler, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
-        String sslPortProp = props.getProperty(Constants.SSL_PORT_PROPERTY_NAME);
+        String sslPortProp = props.getProperty(BrokerConstants.SSL_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
             LOG.info("SSL is disabled");
@@ -206,7 +207,7 @@ public class NettyAcceptor implements ServerAcceptor {
         LOG.info("Starting SSL on port {}", sslPort);
 
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
+        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
@@ -224,7 +225,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
     private void initializeWSSTransport(final NettyMQTTHandler handler, IConfig props, final SslHandlerFactory sslHandlerFactory) throws IOException {
-        String sslPortProp = props.getProperty(Constants.WSS_PORT_PROPERTY_NAME);
+        String sslPortProp = props.getProperty(BrokerConstants.WSS_PORT_PROPERTY_NAME);
         if (sslPortProp == null) {
             //Do nothing no SSL configured
             LOG.info("SSL is disabled");
@@ -232,7 +233,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
         int sslPort = Integer.parseInt(sslPortProp);
         final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
-        String host = props.getProperty(Constants.HOST_PROPERTY_NAME);
+        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
@@ -301,7 +302,7 @@ public class NettyAcceptor implements ServerAcceptor {
             return this.sslContext != null;
         }
         private SSLContext initSSLContext(IConfig props) {
-            final String jksPath = props.getProperty(Constants.JKS_PATH_PROPERTY_NAME);
+            final String jksPath = props.getProperty(BrokerConstants.JKS_PATH_PROPERTY_NAME);
             LOG.info("Starting SSL using keystore at {}", jksPath);
             if (jksPath == null || jksPath.isEmpty()) {
                 //key_store_password or key_manager_password are empty
@@ -311,8 +312,8 @@ public class NettyAcceptor implements ServerAcceptor {
 
             //if we have the port also the jks then keyStorePassword and keyManagerPassword
             //has to be defined
-            final String keyStorePassword = props.getProperty(Constants.KEY_STORE_PASSWORD_PROPERTY_NAME);
-            final String keyManagerPassword = props.getProperty(Constants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
+            final String keyStorePassword = props.getProperty(BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME);
+            final String keyManagerPassword = props.getProperty(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
             if (keyStorePassword == null || keyStorePassword.isEmpty()) {
                 //key_store_password or key_manager_password are empty
                 LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");

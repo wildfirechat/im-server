@@ -15,8 +15,7 @@
  */
 package io.moquette.spi.persistence;
 
-import io.moquette.commons.Constants;
-import static io.moquette.commons.Constants.*;
+import io.moquette.BrokerConstants;
 import io.moquette.server.IntegrationUtils;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
@@ -48,9 +47,9 @@ public class MapDBPersistentStoreTest {
 
     @Before
     public void setUp() throws Exception {
-        IntegrationUtils.cleanPersistenceFile(Constants.DEFAULT_PERSISTENT_PATH);
+        IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
         Properties props = new Properties();
-        props.setProperty(PERSISTENT_STORE_PROPERTY_NAME, DEFAULT_PERSISTENT_PATH);
+        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
         IConfig conf = new MemoryConfig(props);
         m_storageService = new MapDBPersistentStore(conf);
         m_storageService.initStore();
@@ -64,7 +63,7 @@ public class MapDBPersistentStoreTest {
             m_storageService.close();
         }
 
-        IntegrationUtils.cleanPersistenceFile(Constants.DEFAULT_PERSISTENT_PATH);
+        IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
     }
 
     @Test

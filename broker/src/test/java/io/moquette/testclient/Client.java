@@ -15,7 +15,7 @@
  */
 package io.moquette.testclient;
 
-import io.moquette.commons.Constants;
+import io.moquette.BrokerConstants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
 import io.netty.bootstrap.Bootstrap;
@@ -50,7 +50,7 @@ public class Client {
     private boolean m_connectionLost = false;
     
     public Client(String host) {
-        this(host, Constants.PORT);
+        this(host, BrokerConstants.PORT);
     }
     
     public Client(String host, int port) {
