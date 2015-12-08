@@ -93,7 +93,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     }
 
     private void verifyMessageIsReceivedSuccessfully() throws Exception {
-        Message msg = m_subscriber.receive(5, TimeUnit.SECONDS);
+        Message msg = m_subscriber.receive(2, TimeUnit.SECONDS);
         msg.ack();
         assertNotNull(msg);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
@@ -131,7 +131,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
@@ -142,7 +142,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeAfterRetainedQoS0IsSent ***");
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
         subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
 
         //Verify
@@ -181,7 +181,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
@@ -192,11 +192,11 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeAfterRetainedQoS0IsSent ***");
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
         subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
 
         //Verify
-        verifyNoMessageIsReceived();
+        verifyMessageIsReceivedSuccessfully();
     }
 
     @Test
@@ -231,7 +231,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, true);
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
@@ -242,10 +242,10 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeAfterRetainedQoS2IsSent ***");
 
         //Exercise
-        internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, false);
+        internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, true);
         subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
 
         //Verify
-        verifyNoMessageIsReceived();
+        verifyMessageIsReceivedSuccessfully();
     }
 }
