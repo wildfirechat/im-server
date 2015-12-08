@@ -66,7 +66,7 @@ public class SimpleMessaging {
         return INSTANCE;
     }
 
-    public ProtocolProcessor init(IConfig props) {
+    public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers) {
         subscriptions = new SubscriptionsStore();
 
         m_mapStorage = new MapDBPersistentStore(props);
@@ -74,7 +74,7 @@ public class SimpleMessaging {
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
         ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);
 
-        List<InterceptHandler> observers = new ArrayList<>();
+        List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty("intercept.handler");
         if (interceptorClassName != null && !interceptorClassName.isEmpty()) {
             try {

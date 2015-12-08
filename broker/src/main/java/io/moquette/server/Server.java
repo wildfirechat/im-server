@@ -15,6 +15,7 @@
  */
 package io.moquette.server;
 
+import io.moquette.interception.InterceptHandler;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;
@@ -26,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -87,12 +91,23 @@ public class Server {
      * Starts Moquette bringing the configuration files from the given Config implementation.
      */
     public void startServer(IConfig config) throws IOException {
+        startServer(config, null);
+    }
+
+    /**
+     * Starts Moquette with config provided by an implementation of IConfig class and with the set of InterceptHandler
+     * */
+    public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
+        if (handlers == null) {
+            handlers = Collections.emptyList();
+        }
+
         final String handlerProp = System.getProperty("intercept.handler");
         if (handlerProp != null) {
             config.setProperty("intercept.handler", handlerProp);
         }
         LOG.info("Persistent store file: " + config.getProperty(io.moquette.commons.Constants.PERSISTENT_STORE_PROPERTY_NAME));
-        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config);
+        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers);
 
         m_acceptor = new NettyAcceptor();
         m_acceptor.initialize(processor, config);

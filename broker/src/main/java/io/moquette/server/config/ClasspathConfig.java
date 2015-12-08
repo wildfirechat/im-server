@@ -39,7 +39,7 @@ public class ClasspathConfig implements IConfig {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream is = classLoader.getResourceAsStream("config/moquette.conf");
         if (is == null) {
-            throw new RuntimeException("Can't locate the resourse \"config/moquette.conf\"");
+            throw new RuntimeException("Can't locate the resource \"config/moquette.conf\"");
         }
         Reader configReader = new InputStreamReader(is);
         ConfigurationParser confParser = new ConfigurationParser();
