@@ -17,6 +17,7 @@ package io.moquette.server;
 
 import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
+import io.moquette.proto.messages.PublishMessage;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;
@@ -26,6 +27,7 @@ import io.moquette.spi.impl.ProtocolProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -41,6 +43,10 @@ public class Server {
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     
     private ServerAcceptor m_acceptor;
+
+    private volatile boolean m_initialized;
+
+    private ProtocolProcessor m_processor;
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -111,12 +117,29 @@ public class Server {
 
         m_acceptor = new NettyAcceptor();
         m_acceptor.initialize(processor, config);
+        m_processor = processor;
+        m_initialized = true;
+    }
+
+    /**
+     * Use the broker to publish a message. It's intended for embedding applications.
+     * It can be used only after the server is correctly started with startServer.
+     *
+     * @param msg the message to forward.
+     * @throws IllegalStateException if the server is not yet started
+     * */
+    public void internalPublish(PublishMessage msg) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Can't publish on a server is not yet started");
+        }
+        m_processor.internalPublish(msg);
     }
     
     public void stopServer() {
     	LOG.info("Server stopping...");
         m_acceptor.close();
         SimpleMessaging.getInstance().shutdown();
+        m_initialized = false;
         LOG.info("Server stopped");
     }
 }

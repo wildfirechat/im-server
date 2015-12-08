@@ -15,6 +15,7 @@ Version 0.8:
     Refactored the storage part to be more rational and use ClientSession concept
     Added config property 'autosave_interval' (issue #97)
     Removed leaking ref to parent's node (issue #119 and #126)
+    Added internal publish once the broker is embedded (issue #113)
 
 Version 0.7:
     Fix issue #38, added aligned to MQTT 3.1.1

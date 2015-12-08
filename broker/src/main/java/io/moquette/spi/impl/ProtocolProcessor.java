@@ -303,7 +303,7 @@ public class ProtocolProcessor {
             route2Subscribers(toStoreMsg);
             sendPubAck(clientID, messageID);
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
-        }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
+        } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
             sendPubRec(clientID, messageID);
             //Next the client will send us a pub rel
@@ -327,6 +327,87 @@ public class ProtocolProcessor {
             }
         }
         m_interceptor.notifyTopicPublished(msg, clientID);
+    }
+
+    /**
+     * Intended usage is only for embedded versions of the broker, where the hosting application want to use the
+     * broker to send a publish message.
+     * Inspired by {@link #processPublish} but with some changes to avoid security check, and the handshake phases
+     * for Qos1 and Qos2.
+     * It also doesn't notifyTopicPublished because using internally the owner should already know where
+     * it's publishing.
+     * */
+//    public void internalPublish(PublishMessage msg) {
+//        final AbstractMessage.QOSType qos = msg.getQos();
+//        final String topic = msg.getTopicName();
+//        LOG.info("embedded PUBLISH on topic <{}> with QoS {}", topic, qos);
+//
+//        String guid = null;
+//        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+//        toStoreMsg.setClientID("BROKER_SELF");
+//        toStoreMsg.setMessageID(1);
+//        if (qos == AbstractMessage.QOSType.MOST_ONE || qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS0, QoS1
+//            route2Subscribers(toStoreMsg);
+//        } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
+//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+//
+//            route2Subscribers(toStoreMsg);
+//
+//            if (toStoreMsg.isRetained()) {
+//                if (!toStoreMsg.getMessage().hasRemaining()) {
+//                    m_messagesStore.cleanRetained(topic);
+//                } else {
+//                    m_messagesStore.storeRetained(topic, guid);
+//                }
+//            }
+//            return;
+//        }
+//
+//        if (msg.isRetainFlag()) {
+//            if (qos == AbstractMessage.QOSType.MOST_ONE) {
+//                //QoS == 0 && retain => clean old retained
+//                m_messagesStore.cleanRetained(topic);
+//            } else {
+//                if (!msg.getPayload().hasRemaining()) {
+//                    m_messagesStore.cleanRetained(topic);
+//                } else {
+//                    if (guid == null) {
+//                        //before wasn't stored
+//                        guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+//                    }
+//                    m_messagesStore.storeRetained(topic, guid);
+//                }
+//            }
+//        }
+//    }
+
+    public void internalPublish(PublishMessage msg) {
+        final AbstractMessage.QOSType qos = msg.getQos();
+        final String topic = msg.getTopicName();
+        LOG.info("embedded PUBLISH on topic <{}> with QoS {}", topic, qos);
+
+        String guid = null;
+        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        toStoreMsg.setClientID("BROKER_SELF");
+        toStoreMsg.setMessageID(1);
+        if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
+            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+        }
+        route2Subscribers(toStoreMsg);
+
+        if (!msg.isRetainFlag()) {
+            return;
+        }
+        if (qos == AbstractMessage.QOSType.MOST_ONE || !msg.getPayload().hasRemaining()) {
+            //QoS == 0 && retain => clean old retained
+            m_messagesStore.cleanRetained(topic);
+            return;
+        }
+        if (guid == null) {
+            //before wasn't stored
+            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+        }
+        m_messagesStore.storeRetained(topic, guid);
     }
         
     /**
