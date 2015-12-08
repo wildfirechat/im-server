@@ -291,7 +291,6 @@ public class ProtocolProcessor {
             return;
         }
         final AbstractMessage.QOSType qos = msg.getQos();
-        boolean retain = msg.isRetainFlag();
         final Integer messageID = msg.getMessageID();
         LOG.info("PUBLISH from clientID <{}> on topic <{}> with QoS {}", clientID, topic, qos);
 
@@ -299,9 +298,9 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         toStoreMsg.setClientID(clientID);
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
-            forward2Subscribers(toStoreMsg);
+            route2Subscribers(toStoreMsg);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            forward2Subscribers(toStoreMsg);
+            route2Subscribers(toStoreMsg);
             sendPubAck(clientID, messageID);
             LOG.debug("replying with PubAck to MSG ID {}", messageID);
         }  else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
@@ -311,7 +310,7 @@ public class ProtocolProcessor {
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
         }
 
-        if (retain) {
+        if (msg.isRetainFlag()) {
             if (qos == AbstractMessage.QOSType.MOST_ONE) {
                 //QoS == 0 && retain => clean old retained
                 m_messagesStore.cleanRetained(topic);
@@ -344,19 +343,18 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
         tobeStored.setClientID(clientID);
         tobeStored.setMessageID(messageId);
-        forward2Subscribers(tobeStored);
+        route2Subscribers(tobeStored);
     }
 
 
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    //TODO rename to route2Subscribers
-    void forward2Subscribers(IMessagesStore.StoredMessage pubEvt) {
-        final String topic = pubEvt.getTopic();
-        final AbstractMessage.QOSType publishingQos = pubEvt.getQos();
-        final ByteBuffer origMessage = pubEvt.getMessage();
-        LOG.debug("forward2Subscribers republishing to existing subscribers that matches the topic {}", topic);
+    void route2Subscribers(IMessagesStore.StoredMessage pubMsg) {
+        final String topic = pubMsg.getTopic();
+        final AbstractMessage.QOSType publishingQos = pubMsg.getQos();
+        final ByteBuffer origMessage = pubMsg.getMessage();
+        LOG.debug("route2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isTraceEnabled()) {
             LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
@@ -364,7 +362,7 @@ public class ProtocolProcessor {
         //if QoS 1 or 2 store the message
         String guid = null;
         if (publishingQos == QOSType.EXACTLY_ONCE || publishingQos == QOSType.LEAST_ONE) {
-            guid = m_messagesStore.storePublishForFuture(pubEvt);
+            guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
 
         for (final Subscription sub : subscriptions.matches(topic)) {
@@ -476,7 +474,7 @@ public class ProtocolProcessor {
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
-        forward2Subscribers(evt);
+        route2Subscribers(evt);
 
         if (evt.isRetained()) {
             final String topic = evt.getTopic();

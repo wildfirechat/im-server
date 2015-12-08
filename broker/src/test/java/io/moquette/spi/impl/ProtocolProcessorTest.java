@@ -24,7 +24,6 @@ import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -507,7 +506,7 @@ public class ProtocolProcessorTest {
         processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
-        processor.forward2Subscribers(forwardPublish);
+        processor.route2Subscribers(forwardPublish);
 
         //Verify
         assertEquals(2, publishedForwarded.size());
