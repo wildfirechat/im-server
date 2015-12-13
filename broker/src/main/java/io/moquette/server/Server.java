@@ -100,9 +100,14 @@ public class Server {
     }
 
     /**
-     * Starts Moquette with config provided by an implementation of IConfig class and with the set of InterceptHandler
+     * Starts Moquette with config provided by an implementation of IConfig class and with the
+     * set of InterceptHandler.
      * */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
+        startServer(config, handlers, null);
+    }
+
+    public void startServer(IConfig config, List<? extends InterceptHandler> handlers, ISslContextCreator sslCtxCreator) throws IOException {
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
@@ -114,8 +119,12 @@ public class Server {
         LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
         final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers);
 
+        if (sslCtxCreator == null) {
+            sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
+        }
+
         m_acceptor = new NettyAcceptor();
-        m_acceptor.initialize(processor, config);
+        m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
         m_initialized = true;
     }

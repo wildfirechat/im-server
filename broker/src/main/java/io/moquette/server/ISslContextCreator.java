@@ -15,18 +15,14 @@
  */
 package io.moquette.server;
 
-import java.io.IOException;
-
-import io.moquette.server.config.IConfig;
-import io.moquette.spi.impl.ProtocolProcessor;
+import javax.net.ssl.SSLContext;
 
 /**
+ * SSL certificate loader used to open SSL connections (websocket and MQTT-S).
  *
- * @author andrea
+ * Created by andrea on 13/12/15.
  */
-public interface ServerAcceptor {
-    
-    void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException;
-    
-    void close();
+public interface ISslContextCreator {
+
+    SSLContext initSSLContext();
 }

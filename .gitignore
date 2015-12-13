@@ -36,3 +36,5 @@ broker/runner
 hs_err_pid*
 broker/moquette_store.*
 embedding_moquette/target/
+broker/nb-configuration.xml
+broker/nbactions-Server.xml
