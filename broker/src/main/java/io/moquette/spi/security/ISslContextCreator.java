@@ -13,23 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.spi.impl.security;
+package io.moquette.spi.security;
+
+import javax.net.ssl.SSLContext;
 
 /**
- * ACL checker.
+ * SSL certificate loader used to open SSL connections (websocket and MQTT-S).
  *
- * Create an authorizator that matches topic names with same grammar of subscriptions.
- * The # is always a terminator and its the multilevel matcher.
- * The + sign is the single level matcher.
- *
- * @author andrea
+ * Created by andrea on 13/12/15.
  */
-public interface IAuthorizator {
+public interface ISslContextCreator {
 
-    /**
-     * Ask the implementation of the authorizator if the topic can be used in a publish.
-     * */
-    boolean canWrite(String topic, String user, String client);
-
-    boolean canRead(String topic, String user, String client);
+    SSLContext initSSLContext();
 }

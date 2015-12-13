@@ -17,7 +17,7 @@ package io.moquette.spi.impl;
 
 import java.util.Map;
 
-import io.moquette.spi.impl.security.IAuthenticator;
+import io.moquette.spi.security.IAuthenticator;
 
 /**
  * Test utility to implements authenticator instance.

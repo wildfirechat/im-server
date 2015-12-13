@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.spi.impl.security;
+package io.moquette.spi.security;
 
 /**
  * username and password checker

@@ -24,6 +24,7 @@ import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.security.ISslContextCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

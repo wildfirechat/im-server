@@ -1,5 +1,7 @@
 package io.moquette.spi.impl.security;
 
+import io.moquette.spi.security.IAuthenticator;
+
 /**
  * Created by andrea on 8/23/14.
  */

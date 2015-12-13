@@ -17,6 +17,7 @@ package io.moquette.server;
 
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
+import io.moquette.spi.security.ISslContextCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -26,8 +26,8 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.security.IAuthenticator;
-import io.moquette.spi.impl.security.IAuthorizator;
+import io.moquette.spi.security.IAuthenticator;
+import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
 

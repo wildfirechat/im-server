@@ -16,6 +16,7 @@
 package io.moquette.spi.impl.security;
 
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

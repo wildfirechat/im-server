@@ -18,8 +18,8 @@ package io.moquette.server;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.impl.security.IAuthenticator;
-import io.moquette.spi.impl.security.IAuthorizator;
+import io.moquette.spi.security.IAuthenticator;
+import io.moquette.spi.security.IAuthorizator;
 import org.junit.After;
 import org.junit.Test;
 

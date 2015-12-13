@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.impl.security;
 
+import io.moquette.spi.security.IAuthorizator;
+
 /**
  * @author andrea
  */
