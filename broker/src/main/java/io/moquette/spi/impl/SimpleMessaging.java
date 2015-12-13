@@ -67,7 +67,19 @@ public class SimpleMessaging {
         return INSTANCE;
     }
 
-    public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers) {
+    /**
+     * Initialize the processing part of the broker.
+     * @param props the properties carrier where some props like port end host could be loaded.
+     *              For the full list check of configurable properties check moquette.conf file.
+     * @param embeddedObservers a list of callbacks to be notified of certain events inside the broker.
+     *                          Could be empty list of null.
+     * @param authenticator an implementation of the authenticator to be used, if null load that specified in config
+     *                      and fallback on the default one (permit all).
+     * @param authorizator an implementation of the authorizator to be used, if null load that specified in config
+     *                      and fallback on the default one (permit all).
+     * */
+    public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
+                                  IAuthenticator authenticator, IAuthorizator authorizator) {
         subscriptions = new SubscriptionsStore();
 
         m_mapStorage = new MapDBPersistentStore(props);
@@ -92,7 +104,6 @@ public class SimpleMessaging {
         String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
 
-        IAuthenticator authenticator = null;
         if (!authenticatorClassName.isEmpty()) {
             authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
             LOG.info("Loaded custom authenticator {}", authenticatorClassName);
@@ -107,7 +118,6 @@ public class SimpleMessaging {
             }
         }
 
-        IAuthorizator authorizator = null;
         String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
         if (!authorizatorClassName.isEmpty()) {
             authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
