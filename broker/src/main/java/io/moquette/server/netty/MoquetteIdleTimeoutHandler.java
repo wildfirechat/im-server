@@ -22,7 +22,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
 @Sharable
-class MoquetteIdleTimoutHandler extends ChannelDuplexHandler {
+class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {

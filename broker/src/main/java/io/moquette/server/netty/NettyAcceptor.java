@@ -145,7 +145,7 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
-        final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
+        final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         int port = Integer.parseInt(props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         initFactory(host, port, new PipelineInitializer() {
@@ -172,7 +172,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
         int port = Integer.parseInt(webSocketPortProp);
         
-        final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
+        final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
 
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, port, new PipelineInitializer() {
@@ -206,7 +206,7 @@ public class NettyAcceptor implements ServerAcceptor {
         int sslPort = Integer.parseInt(sslPortProp);
         LOG.info("Starting SSL on port {}", sslPort);
 
-        final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
+        final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
@@ -232,7 +232,7 @@ public class NettyAcceptor implements ServerAcceptor {
             return;
         }
         int sslPort = Integer.parseInt(sslPortProp);
-        final MoquetteIdleTimoutHandler timeoutHandler = new MoquetteIdleTimoutHandler();
+        final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
