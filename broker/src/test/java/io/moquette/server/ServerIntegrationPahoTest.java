@@ -401,4 +401,46 @@ public class ServerIntegrationPahoTest {
         subscriberB.disconnect();
     }
 
+    @Test
+    public void testSubcriptionDoesntStayActiveAfterARestart() throws Exception {
+        LOG.info("*** testSubcriptionDoesntStayActiveAfterARestart ***");
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        //clientForSubscribe1 connect and subscribe to /topic QoS2
+        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe1");
+
+        MqttClient clientForSubscribe1 = new MqttClient("tcp://localhost:1883", "clientForSubscribe1", dsSubscriberA);
+        TestCallback cbSubscriber1 = new TestCallback();
+        clientForSubscribe1.setCallback(cbSubscriber1);
+        clientForSubscribe1.connect();
+        clientForSubscribe1.subscribe("topic", 0);
+
+        //server stop
+        m_server.stopServer();
+        System.out.println("\n\n SEVER REBOOTING \n\n");
+        //server start
+        startServer();
+
+        //clientForSubscribe2 connect and subscribe to /topic QoS2
+        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe2");
+        MqttClient clientForSubscribe2 = new MqttClient("tcp://localhost:1883", "clientForSubscribe2", dsSubscriberB);
+        TestCallback cbSubscriber2 = new TestCallback();
+        clientForSubscribe2.setCallback(cbSubscriber2);
+        clientForSubscribe2.connect();
+        clientForSubscribe2.subscribe("topic", 0);
+
+        //clientForPublish publish on /topic with QoS2 a message
+        MqttClientPersistence dsSubscriberPUB = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForPublish");
+        MqttClient clientForPublish = new MqttClient("tcp://localhost:1883", "clientForPublish", dsSubscriberPUB);
+        clientForPublish.connect();
+        clientForPublish.publish("topic", "Hello".getBytes(), 2, true);
+
+        //verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
+        System.out.println("Before waiting to receive 1 sec from " + clientForSubscribe1.getClientId());
+        assertFalse(clientForSubscribe1.isConnected());
+        assertTrue(clientForSubscribe2.isConnected());
+        System.out.println("Waiting to receive 1 sec from " + clientForSubscribe2.getClientId());
+        MqttMessage messageOnB = cbSubscriber2.getMessage(true);
+        assertEquals("Hello", new String(messageOnB.getPayload()));
+    }
+
 }

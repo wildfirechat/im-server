@@ -110,7 +110,7 @@ public class MemorySessionStore implements ISessionsStore {
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
-        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession, false));
+        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
@@ -121,11 +121,7 @@ public class MemorySessionStore implements ISessionsStore {
         }
 
         MapDBPersistentStore.PersistentSession storedSession = m_persistentSessions.get(clientID);
-        ClientSession clientSession = new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
-        if (storedSession.active) {
-            clientSession.activate();
-        }
-        return clientSession;
+        return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
 
     @Override
@@ -151,25 +147,6 @@ public class MemorySessionStore implements ISessionsStore {
             }
         }
         return null;
-    }
-
-    @Override
-    public void activate(String clientID) {
-        activationHelper(clientID, true);
-    }
-
-    @Override
-    public void deactivate(String clientID) {
-        activationHelper(clientID, false);
-    }
-
-    private void activationHelper(String clientID, boolean activation) {
-        MapDBPersistentStore.PersistentSession storedSession = m_persistentSessions.get(clientID);
-        if (storedSession == null) {
-            throw new IllegalStateException((activation ? "activating" : "deactivating") + " a session never stored/created, clientID <"+ clientID + ">", null);
-        }
-        MapDBPersistentStore.PersistentSession newStoredSession = new MapDBPersistentStore.PersistentSession(storedSession.cleanSession, activation);
-        m_persistentSessions.put(clientID, newStoredSession);
     }
 
     @Override

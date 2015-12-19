@@ -18,6 +18,7 @@ package io.moquette.spi.impl;
 import io.moquette.proto.messages.*;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.proto.messages.AbstractMessage.QOSType;
+import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.NettyChannel;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
@@ -504,6 +505,9 @@ public class ProtocolProcessorTest {
             }
         };
         processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
+        //just to activate the two sessions
+        processor.m_clientIDs.put("Sub A", new ConnectionDescriptor("Sub A", null, true));
+        processor.m_clientIDs.put("Sub B", new ConnectionDescriptor("Sub B", null, true));
 
         //Exercise
         processor.route2Subscribers(forwardPublish);

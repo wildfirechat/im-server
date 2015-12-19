@@ -148,12 +148,10 @@ public class ClientSession {
 
     public void activate() {
         this.active = true;
-        this.m_sessionsStore.activate(this.clientID);
     }
 
     public void deactivate() {
         this.active = false;
-        this.m_sessionsStore.deactivate(this.clientID);
     }
 
     public boolean isActive() {

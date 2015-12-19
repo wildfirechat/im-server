@@ -46,11 +46,9 @@ public class MapDBPersistentStore {
      * */
     public static class PersistentSession implements Serializable {
         public final boolean cleanSession;
-        public final boolean active;
 
-        public PersistentSession(boolean cleanSession, boolean active) {
+        public PersistentSession(boolean cleanSession) {
             this.cleanSession = cleanSession;
-            this.active = active;
         }
     }
 

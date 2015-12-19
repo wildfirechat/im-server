@@ -92,7 +92,7 @@ public class ProtocolProcessor {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    private Map<String, ConnectionDescriptor> m_clientIDs;
+    protected Map<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private IAuthorizator m_authorizator;
@@ -264,7 +264,14 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        verifyToActivate(clientID, targetSession);
         targetSession.inFlightAcknowledged(messageID);
+    }
+
+    private void verifyToActivate(String clientID, ClientSession targetSession) {
+        if (m_clientIDs.containsKey(clientID)) {
+            targetSession.activate();
+        }
     }
 
     private static IMessagesStore.StoredMessage asStoredMessage(PublishMessage msg) {
@@ -452,6 +459,7 @@ public class ProtocolProcessor {
                 qos = sub.getRequestedQos();
             }
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
+            verifyToActivate(sub.getClientId(), targetSession);
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
@@ -554,6 +562,7 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        verifyToActivate(clientID, targetSession);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         route2Subscribers(evt);
 
@@ -581,6 +590,7 @@ public class ProtocolProcessor {
         String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
         int messageID = msg.getMessageID();
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        verifyToActivate(clientID, targetSession);
         //remove from the inflight and move to the QoS2 second phase queue
         targetSession.inFlightAcknowledged(messageID);
         targetSession.secondPhaseAckWaiting(messageID);
@@ -599,6 +609,7 @@ public class ProtocolProcessor {
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        verifyToActivate(clientID, targetSession);
         targetSession.secondPhaseAcknowledged(messageID);
     }
     
@@ -646,7 +657,7 @@ public class ProtocolProcessor {
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-
+        verifyToActivate(clientID, clientSession);
         for (String topic : topics) {
             boolean validTopic = SubscriptionsStore.validate(topic);
             if (!validTopic) {
@@ -674,6 +685,7 @@ public class ProtocolProcessor {
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        verifyToActivate(clientID, clientSession);
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
@@ -715,7 +727,7 @@ public class ProtocolProcessor {
         });
 
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
-
+        verifyToActivate(newSubscription.getClientId(), targetSession);
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire the as retained the message
             LOG.debug("send publish message for topic {}", newSubscription.getTopicFilter());

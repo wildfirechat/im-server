@@ -129,7 +129,7 @@ class MapDBSessionsStore implements ISessionsStore {
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
-        m_persistentSessions.putIfAbsent(clientID, new PersistentSession(cleanSession, false));
+        m_persistentSessions.putIfAbsent(clientID, new PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
@@ -140,30 +140,7 @@ class MapDBSessionsStore implements ISessionsStore {
         }
 
         PersistentSession storedSession = m_persistentSessions.get(clientID);
-        ClientSession clientSession = new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
-        if (storedSession.active) {
-            clientSession.activate();
-        }
-        return clientSession;
-    }
-
-    @Override
-    public void activate(String clientID) {
-        activationHelper(clientID, true);
-    }
-
-    @Override
-    public void deactivate(String clientID) {
-        activationHelper(clientID, false);
-    }
-
-    private void activationHelper(String clientID, boolean activation) {
-        PersistentSession storedSession = m_persistentSessions.get(clientID);
-        if (storedSession == null) {
-            throw new IllegalStateException((activation ? "activating" : "deactivating") + " a session never stored/created, clientID <"+ clientID + ">", null);
-        }
-        PersistentSession newStoredSession = new PersistentSession(storedSession.cleanSession, activation);
-        m_persistentSessions.put(clientID, newStoredSession);
+        return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
 
     @Override

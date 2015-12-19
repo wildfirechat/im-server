@@ -103,10 +103,6 @@ public interface ISessionsStore {
      * */
     ClientSession sessionForClient(String clientID);
 
-    void activate(String clientID);
-
-    void deactivate(String clientID);
-
     void inFlightAck(String clientID, int messageID);
 
     /**
