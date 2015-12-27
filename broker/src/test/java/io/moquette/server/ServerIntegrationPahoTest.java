@@ -443,4 +443,43 @@ public class ServerIntegrationPahoTest {
         assertEquals("Hello", new String(messageOnB.getPayload()));
     }
 
+    @Test
+    public void testForceClientDisconnection_issue116() throws Exception {
+        LOG.info("*** testForceClientDisconnection_issue118 ***");
+        TestCallback cbSubscriber1 = new TestCallback();
+        MqttClient clientXA = createClient("subscriber", "X", cbSubscriber1);
+        clientXA.subscribe("topic", 0);
+
+        MqttClient clientXB = createClient("publisher", "X");
+        clientXB.publish("topic", "Hello".getBytes(), 2, true);
+
+        TestCallback cbSubscriber2 = new TestCallback();
+        MqttClient clientYA = createClient("subscriber", "Y", cbSubscriber2);
+        clientYA.subscribe("topic", 0);
+
+        MqttClient clientYB = createClient("publisher", "Y");
+        clientYB.publish("topic", "Hello 2".getBytes(), 2, true);
+
+        //Verify that the second subscriber client get notified and not the first.
+        assertTrue(cbSubscriber1.connectionLost());
+        assertEquals("Hello 2", new String(cbSubscriber2.getMessage(true).getPayload()));
+    }
+
+
+    protected MqttClient createClient(String clientName, String storeSuffix) throws MqttException {
+        return createClient(clientName, storeSuffix, null);
+    }
+
+    protected MqttClient createClient(String clientName, String storeSuffix, TestCallback cb) throws MqttException {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        //clientX connect and subscribe to /topic QoS2
+        MqttClientPersistence dsClient = new MqttDefaultFilePersistence(tmpDir + File.separator + storeSuffix + clientName);
+        MqttClient client = new MqttClient("tcp://localhost:1883", clientName, dsClient);
+        if (cb != null) {
+            client.setCallback(cb);
+        }
+        client.connect();
+        return client;
+    }
+
 }

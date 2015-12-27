@@ -18,6 +18,7 @@ package io.moquette.spi.impl;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ServerChannel;
@@ -92,7 +93,7 @@ public class ProtocolProcessor {
     
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
     
-    protected Map<String, ConnectionDescriptor> m_clientIDs;
+    protected ConcurrentMap<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private IAuthorizator m_authorizator;
@@ -102,7 +103,7 @@ public class ProtocolProcessor {
     private BrokerInterceptor m_interceptor;
 
     //maps clientID to Will testament, if specified on CONNECT
-    private Map<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
     
     ProtocolProcessor() {}
 
@@ -230,6 +231,7 @@ public class ProtocolProcessor {
             republishStoredInSession(clientSession);
         }
         LOG.info("CONNECT processed");
+//        LOG.info("CONNECT clients descriptors {}", m_clientIDs);
     }
 
     private void failedCredentials(ServerChannel session) {
@@ -630,9 +632,11 @@ public class ProtocolProcessor {
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
-    public void processConnectionLost(String clientID, boolean sessionStolen) {
+    public void processConnectionLost(String clientID, boolean sessionStolen, NettyChannel channel) {
+        ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
+        m_clientIDs.remove(clientID, oldConnDescr);
         //If already removed a disconnect message was already processed for this clientID
-        if (sessionStolen && m_clientIDs.remove(clientID) != null) {
+        if (sessionStolen) {
             //de-activate the subscriptions for this ClientID
             ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
             clientSession.deactivate();

@@ -38,4 +38,23 @@ public class ConnectionDescriptor {
     public String toString() {
         return "ConnectionDescriptor{" + "clientID=" + clientID + ", cleanSession=" + cleanSession + '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ConnectionDescriptor that = (ConnectionDescriptor) o;
+
+        if (clientID != null ? !clientID.equals(that.clientID) : that.clientID != null) return false;
+        return !(session != null ? !session.equals(that.session) : that.session != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clientID != null ? clientID.hashCode() : 0;
+        result = 31 * result + (session != null ? session.hashCode() : 0);
+        return result;
+    }
 }

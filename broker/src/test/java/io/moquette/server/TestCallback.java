@@ -30,6 +30,7 @@ class TestCallback implements MqttCallback {
         private MqttMessage m_message;
         private String m_topic;
         private CountDownLatch m_latch = new CountDownLatch(1);
+        private boolean m_connectionLost = false;
 
         public MqttMessage getMessage(boolean checkElapsed) {
             try {
@@ -56,17 +57,26 @@ class TestCallback implements MqttCallback {
             m_latch = new CountDownLatch(1);
             m_message = null;
             m_topic = null;
+            m_connectionLost = false;
         }
 
+        public boolean connectionLost() {
+            return m_connectionLost;
+        }
+
+        @Override
         public void connectionLost(Throwable cause) {
+            m_connectionLost = true;
         }
 
+        @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             m_message = message;
             m_topic = topic;
             m_latch.countDown();
         }
 
+        @Override
         public void deliveryComplete(IMqttDeliveryToken token) {
         }
     }

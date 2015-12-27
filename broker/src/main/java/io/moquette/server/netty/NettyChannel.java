@@ -73,4 +73,20 @@ public class NettyChannel implements ServerChannel {
         String clientID = (String) getAttribute(ATTR_KEY_CLIENTID);
         return "session [clientID: "+ clientID +"]";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NettyChannel that = (NettyChannel) o;
+
+        return !(m_channel != null ? !m_channel.channel().equals(that.m_channel.channel()) : that.m_channel != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return m_channel != null ? m_channel.channel().hashCode() : 0;
+    }
 }

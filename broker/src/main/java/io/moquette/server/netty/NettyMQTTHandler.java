@@ -96,7 +96,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             if (stolenAttr != null && stolenAttr == Boolean.TRUE) {
                 stolen = stolenAttr;
             }
-            m_processor.processConnectionLost(clientID, stolen);
+            m_processor.processConnectionLost(clientID, stolen, new NettyChannel(ctx));
         }
         ctx.close();
     }
