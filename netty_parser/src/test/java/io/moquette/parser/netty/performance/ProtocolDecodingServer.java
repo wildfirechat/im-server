@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProtocolDecodingServer {
 
-    class MoquetteIdleTimoutHandler extends ChannelDuplexHandler {
+    class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
@@ -85,7 +85,7 @@ public class ProtocolDecodingServer {
                         ChannelPipeline pipeline = ch.pipeline();
                         try {
                             pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
-                            pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimoutHandler());
+                            pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimeoutHandler());
                             pipeline.addLast("decoder", new MQTTDecoder());
                             pipeline.addLast("encoder", new MQTTEncoder());
                             pipeline.addLast("handler", new LoopMQTTHandler(state));
