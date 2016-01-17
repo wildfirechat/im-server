@@ -5,7 +5,7 @@
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>io.moquette</groupId>
-        <version>0.8-SNAPSHOT</version>
+        <version>0.8</version>
     </parent>
 
     <artifactId>moquette-embedded-test</artifactId>

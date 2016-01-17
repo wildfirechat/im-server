@@ -54,7 +54,7 @@ Include dependency in your project:
 <dependency>
       <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
-      <version>0.8-SNAPSHOT</version>
+      <version>0.8</version>
 </dependency>
 ```
 
