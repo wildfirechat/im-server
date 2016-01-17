@@ -28,6 +28,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -163,8 +164,8 @@ public class ProtocolProcessorTest {
         storageService.initStore();
         subs.init(storageService.sessionsStore());
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
-        
-        MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
+
+        EmbeddedChannel firstReceiverSession = new EmbeddedChannel();
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
@@ -172,7 +173,7 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(firstReceiverSession, connectMessage);
         
         //connect the second fake subscriber
-        MockReceiverChannel secondReceiverSession = new MockReceiverChannel();
+        EmbeddedChannel secondReceiverSession = new EmbeddedChannel();
         ConnectMessage connectMessage2 = new ConnectMessage();
         connectMessage2.setProtocolVersion((byte) 3);
         connectMessage2.setClientID(FAKE_CLIENT_ID2);

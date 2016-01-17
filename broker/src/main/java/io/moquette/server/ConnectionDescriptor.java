@@ -15,6 +15,8 @@
  */
 package io.moquette.server;
 
+import io.netty.channel.Channel;
+
 /**
  * Value object to maintain the information of single connection, like ClientID, IoSession,
  * and other clean session fla.
@@ -25,10 +27,10 @@ package io.moquette.server;
 public class ConnectionDescriptor {
     
     public final String clientID;
-    public final ServerChannel session;
+    public final Channel session;
     public final boolean cleanSession;
     
-    public ConnectionDescriptor(String clientID, ServerChannel session, boolean cleanSession) {
+    public ConnectionDescriptor(String clientID, Channel session, boolean cleanSession) {
         this.clientID = clientID;
         this.session = session;
         this.cleanSession = cleanSession;

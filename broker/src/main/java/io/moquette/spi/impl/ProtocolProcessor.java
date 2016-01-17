@@ -47,6 +47,9 @@ import io.moquette.proto.messages.SubAckMessage;
 import io.moquette.proto.messages.SubscribeMessage;
 import io.moquette.proto.messages.UnsubAckMessage;
 import io.moquette.proto.messages.UnsubscribeMessage;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,14 +136,14 @@ public class ProtocolProcessor {
         m_sessionsStore = sessionsStore;
     }
 
-    public void processConnect(ServerChannel session, ConnectMessage msg) {
+    public void processConnect(Channel session, ConnectMessage msg) {
         LOG.debug("CONNECT for client <{}>", msg.getClientID());
         if (msg.getProtocolVersion() != VERSION_3_1 && msg.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
             LOG.warn("processConnect sent bad proto ConnAck");
             session.write(badProto);
-            session.close(false);
+            session.close();
             return;
         }
 
@@ -165,7 +168,7 @@ public class ProtocolProcessor {
                 failedCredentials(session);
                 return;
             }
-            session.setAttribute(NettyChannel.ATTR_KEY_USERNAME, msg.getUsername());
+            session.attr(NettyChannel.ATTR_KEY_USERNAME).set(msg.getUsername());
         } else if (!this.allowAnonymous) {
             failedCredentials(session);
             return;
@@ -175,11 +178,11 @@ public class ProtocolProcessor {
         if (m_clientIDs.containsKey(msg.getClientID())) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
-            ServerChannel oldSession = m_clientIDs.get(msg.getClientID()).session;
+            Channel oldSession = m_clientIDs.get(msg.getClientID()).session;
             ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
             oldClientSession.disconnect();
-            oldSession.setAttribute(NettyChannel.ATTR_KEY_SESSION_STOLEN, true);
-            oldSession.close(false);
+            oldSession.attr(NettyChannel.ATTR_KEY_SESSION_STOLEN).set(true);
+            oldSession.close();
             LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
         }
 
@@ -188,13 +191,13 @@ public class ProtocolProcessor {
 
         int keepAlive = msg.getKeepAlive();
         LOG.debug("Connect with keepAlive {} s",  keepAlive);
-        session.setAttribute(NettyChannel.ATTR_KEY_KEEPALIVE, keepAlive);
-        session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, msg.isCleanSession());
+        session.attr(NettyChannel.ATTR_KEY_KEEPALIVE).set(keepAlive);
+        session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
-        session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, msg.getClientID());
+        session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(msg.getClientID());
         LOG.debug("Connect create session <{}>", session);
 
-        session.setIdleTime(Math.round(keepAlive * 1.5f));
+        setIdleTime(session.pipeline(), Math.round(keepAlive * 1.5f));
 
         //Handle will flag
         if (msg.isWillFlag()) {
@@ -234,11 +237,17 @@ public class ProtocolProcessor {
 //        LOG.info("CONNECT clients descriptors {}", m_clientIDs);
     }
 
-    private void failedCredentials(ServerChannel session) {
+    private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
+        if (pipeline.names().contains("idleStateHandler")) {
+            pipeline.remove("idleStateHandler");
+        }
+        pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, idleTime));
+    }
+
+    private void failedCredentials(Channel session) {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.write(okResp);
-        session.close(false);
     }
 
     /**
@@ -289,12 +298,12 @@ public class ProtocolProcessor {
         return pub;
     }
     
-    public void processPublish(ServerChannel session, PublishMessage msg) {
+    public void processPublish(Channel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
-        String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
+        String user = (String) session.attr(NettyChannel.ATTR_KEY_USERNAME).get();
         if (!m_authorizator.canWrite(topic, user, clientID)) {
             LOG.debug("topic {} doesn't have write credentials", topic);
             return;
@@ -518,10 +527,10 @@ public class ProtocolProcessor {
             // could happen is not an error HANDLE IT
             throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
         }
-        ServerChannel session = m_clientIDs.get(clientId).session;
+        Channel session = m_clientIDs.get(clientId).session;
         LOG.debug("Session for clientId {} is {}", clientId, session);
 
-        String user = (String) session.getAttribute(NettyChannel.ATTR_KEY_USERNAME);
+        String user = (String) session.attr(NettyChannel.ATTR_KEY_USERNAME).get();
         if (!m_authorizator.canRead(topic, user, clientId)) {
             LOG.debug("topic {} doesn't have read credentials", topic);
             return;
@@ -632,7 +641,7 @@ public class ProtocolProcessor {
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
-    public void processConnectionLost(String clientID, boolean sessionStolen, NettyChannel channel) {
+    public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
         m_clientIDs.remove(clientID, oldConnDescr);
         //If already removed a disconnect message was already processed for this clientID
@@ -654,10 +663,11 @@ public class ProtocolProcessor {
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
      */
-    public void processUnsubscribe(ServerChannel session, UnsubscribeMessage msg) {
+    public void processUnsubscribe(Channel session, UnsubscribeMessage msg) {
         List<String> topics = msg.topicFilters();
         int messageID = msg.getMessageID();
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
+
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
@@ -666,7 +676,7 @@ public class ProtocolProcessor {
             boolean validTopic = SubscriptionsStore.validate(topic);
             if (!validTopic) {
                 //close the connection, not valid topicFilter is a protocol violation
-                session.close(true);
+                session.close();
                 LOG.warn("UNSUBSCRIBE found an invalid topic filter <{}> for clientID <{}>", topic, clientID);
                 return;
             }
@@ -684,8 +694,8 @@ public class ProtocolProcessor {
         session.write(ackMessage);
     }
 
-    public void processSubscribe(ServerChannel session, SubscribeMessage msg) {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+    public void processSubscribe(Channel session, SubscribeMessage msg) {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);

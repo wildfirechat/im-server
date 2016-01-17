@@ -49,7 +49,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
-                    m_processor.processConnect(new NettyChannel(ctx), (ConnectMessage) msg);
+                    m_processor.processConnect(ctx.channel(), (ConnectMessage) msg);
                     break;
                 case SUBSCRIBE:
                     m_processor.processSubscribe(new NettyChannel(ctx), (SubscribeMessage) msg);
@@ -96,7 +96,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             if (stolenAttr != null && stolenAttr == Boolean.TRUE) {
                 stolen = stolenAttr;
             }
-            m_processor.processConnectionLost(clientID, stolen, new NettyChannel(ctx));
+            m_processor.processConnectionLost(clientID, stolen, ctx.channel());
         }
         ctx.close();
     }

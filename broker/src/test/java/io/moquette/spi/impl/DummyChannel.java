@@ -15,7 +15,7 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.server.ServerChannel;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.AttributeKey;
 import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.proto.messages.ConnAckMessage;
@@ -27,7 +27,7 @@ import java.util.Map;
  *
  * @author andrea
  */
-public class DummyChannel implements ServerChannel {
+public class DummyChannel extends EmbeddedChannel {
 
     AbstractMessage m_receivedMessage;
 
@@ -56,17 +56,17 @@ public class DummyChannel implements ServerChannel {
         return this.m_channelClosed;
     }
 
-    public void write(Object value) {
-        try {
-            m_receivedMessage = (AbstractMessage) value;
-            if (m_receivedMessage instanceof ConnAckMessage) {
-                ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
-                m_returnCode = buf.getReturnCode();
-            }
-        } catch (Exception ex) {
-            throw new AssertionError("Wrong return code");
-        }
-    }
+//    public void write(Object value) {
+//        try {
+//            m_receivedMessage = (AbstractMessage) value;
+//            if (m_receivedMessage instanceof ConnAckMessage) {
+//                ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
+//                m_returnCode = buf.getReturnCode();
+//            }
+//        } catch (Exception ex) {
+//            throw new AssertionError("Wrong return code");
+//        }
+//    }
 
     public byte getReturnCode() {
         return m_returnCode;
