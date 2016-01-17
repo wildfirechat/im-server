@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * IMessagesStore implementation backed by MapDB.
@@ -37,7 +36,7 @@ class MapDBMessagesStore implements IMessagesStore {
     private DB m_db;
 
     //map clientID <-> set of currently in flight packet identifiers
-    private Map<String, AtomicLong> m_inFlightIds;
+    private Map<String, Set<Integer>> m_inFlightIds;
     //maps clientID -> guid
     private ConcurrentMap<String, String> m_retainedStore;
     //maps guid to message, it's message store
@@ -116,19 +115,20 @@ class MapDBMessagesStore implements IMessagesStore {
      * */
     @Override
     public int nextPacketID(String clientID) {
-        AtomicLong atomicLong = this.m_inFlightIds.get(clientID);
-        if (atomicLong == null) {
-            AtomicLong messageId = new AtomicLong(1);
-            this.m_inFlightIds.put(clientID, messageId);
-            return 1;
-        }
-        int incrementAndGet = (int) atomicLong.incrementAndGet();
-        if (incrementAndGet == 0XFFFF) {
-            atomicLong.set(1);
-            return 1;
+        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
+        if (inFlightForClient == null) {
+            int nextPacketId = 1;
+            inFlightForClient = new HashSet<>();
+            inFlightForClient.add(nextPacketId);
+            this.m_inFlightIds.put(clientID, inFlightForClient);
+            return nextPacketId;
+
         }
 
-        return incrementAndGet;
+        int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
+        int nextPacketId = (maxId + 1) % 0xFFFF;
+        inFlightForClient.add(nextPacketId);
+        return nextPacketId;
     }
 
     @Override
