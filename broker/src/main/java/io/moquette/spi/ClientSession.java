@@ -159,7 +159,7 @@ public class ClientSession {
     }
 
     public int nextPacketId() {
-        return this.messagesStore.nextPacketID(this.clientID);
+        return this.m_sessionsStore.nextPacketID(this.clientID);
     }
 
     public void inFlightAcknowledged(int messageID) {

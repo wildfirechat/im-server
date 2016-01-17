@@ -39,6 +39,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     //maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, String>> m_inflightStore = new HashMap<>();
+//    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     //maps clientID->[guid*]
     private Map<String, Set<String>> m_enqueuedStore = new HashMap<>();
     //maps clientID->[messageID*]
@@ -167,6 +168,24 @@ public class MemorySessionStore implements ISessionsStore {
         }
         m.put(messageID, guid);
         this.m_inflightStore.put(clientID, m);
+    }
+
+    /**
+     * Return the next valid packetIdentifier for the given client session.
+     * */
+    @Override
+    public int nextPacketID(String clientID) {
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            m = new HashMap<>();
+            int nextPacketId = 1;
+            m.put(nextPacketId, null);
+            return nextPacketId;
+        }
+        int maxId = Collections.max(m.keySet());
+        int nextPacketId = (maxId + 1) % 0xFFFF;
+        m.put(nextPacketId, null);
+        return nextPacketId;
     }
 
     @Override

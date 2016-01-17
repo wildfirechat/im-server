@@ -34,7 +34,6 @@ public class MemoryMessagesStore implements IMessagesStore {
     private Map<String, String> m_retainedStore = new HashMap<>();
     private Map<String, StoredMessage> m_persistentMessageStore = new HashMap<>();
     private Map<String, Map<Integer, String>> m_messageToGuids;
-    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
 
     MemoryMessagesStore(Map<String, Map<Integer, String>> messageToGuids) {
         m_messageToGuids = messageToGuids;
@@ -95,25 +94,6 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public StoredMessage getMessageByGuid(String guid) {
         return m_persistentMessageStore.get(guid);
-    }
-
-    /**
-     * Return the next valid packetIdentifier for the given client session.
-     * */
-    @Override
-    public int nextPacketID(String clientID) {
-        Set<Integer> inFlightForClient = m_inflightIDs.get(clientID);
-        if (inFlightForClient == null) {
-            int nextPacketId = 1;
-            inFlightForClient = new HashSet<>();
-            inFlightForClient.add(nextPacketId);
-            m_inflightIDs.put(clientID, inFlightForClient);
-            return nextPacketId;
-        }
-        int maxId = Collections.max(inFlightForClient);
-        int nextPacketId = (maxId + 1) % 0xFFFF;
-        inFlightForClient.add(nextPacketId);
-        return nextPacketId;
     }
 
     @Override

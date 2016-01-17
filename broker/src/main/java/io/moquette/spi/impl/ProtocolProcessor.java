@@ -427,7 +427,7 @@ public class ProtocolProcessor {
         //NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
         Integer messageId = null;
         if (will.getQos() != AbstractMessage.QOSType.MOST_ONE) {
-            messageId = m_messagesStore.nextPacketID(clientID);
+            messageId = m_sessionsStore.nextPacketID(clientID);
         }
 
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
@@ -737,7 +737,7 @@ public class ProtocolProcessor {
             LOG.debug("send publish message for topic {}", newSubscription.getTopicFilter());
             //forwardPublishQoS0(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
             Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null :
-                    m_messagesStore.nextPacketID(newSubscription.getClientId());
+                    targetSession.nextPacketId();
             directSend(targetSession, storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
 

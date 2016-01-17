@@ -136,10 +136,5 @@ public interface IMessagesStore {
 
     StoredMessage getMessageByGuid(String guid);
 
-    /**
-     * Return the next valid packetIdentifier for the given client session.
-     * */
-    int nextPacketID(String clientID);
-
     void cleanRetained(String topic);
 }

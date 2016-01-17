@@ -110,26 +110,26 @@ class MapDBMessagesStore implements IMessagesStore {
         return m_persistentMessageStore.get(guid);
     }
 
-    /**
-     * Return the next valid packetIdentifier for the given client session.
-     * */
-    @Override
-    public int nextPacketID(String clientID) {
-        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
-        if (inFlightForClient == null) {
-            int nextPacketId = 1;
-            inFlightForClient = new HashSet<>();
-            inFlightForClient.add(nextPacketId);
-            this.m_inFlightIds.put(clientID, inFlightForClient);
-            return nextPacketId;
-
-        }
-
-        int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
-        int nextPacketId = (maxId + 1) % 0xFFFF;
-        inFlightForClient.add(nextPacketId);
-        return nextPacketId;
-    }
+//    /**
+//     * Return the next valid packetIdentifier for the given client session.
+//     * */
+//    @Override
+//    public int nextPacketID(String clientID) {
+//        Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
+//        if (inFlightForClient == null) {
+//            int nextPacketId = 1;
+//            inFlightForClient = new HashSet<>();
+//            inFlightForClient.add(nextPacketId);
+//            this.m_inFlightIds.put(clientID, inFlightForClient);
+//            return nextPacketId;
+//
+//        }
+//
+//        int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
+//        int nextPacketId = (maxId + 1) % 0xFFFF;
+//        inFlightForClient.add(nextPacketId);
+//        return nextPacketId;
+//    }
 
     @Override
     public void cleanRetained(String topic) {

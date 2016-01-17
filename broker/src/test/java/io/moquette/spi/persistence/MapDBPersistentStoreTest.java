@@ -83,18 +83,18 @@ public class MapDBPersistentStoreTest {
 
     @Test
     public void testNextPacketID_notExistingClientSession() {
-        int packetId = m_messagesStore.nextPacketID("NOT_EXISTING_CLI");
+        int packetId = m_sessionsStore.nextPacketID("NOT_EXISTING_CLI");
         assertEquals(1, packetId);
     }
 
     @Test
     public void testNextPacketID_existingClientSession() {
         //Force creation of inflight map for the CLIENT session
-        int packetId = m_messagesStore.nextPacketID("CLIENT");
+        int packetId = m_sessionsStore.nextPacketID("CLIENT");
         assertEquals(1, packetId);
 
         //request a second packetID
-        packetId = m_messagesStore.nextPacketID("CLIENT");
+        packetId = m_sessionsStore.nextPacketID("CLIENT");
         assertEquals(2, packetId);
     }
 
@@ -102,7 +102,7 @@ public class MapDBPersistentStoreTest {
     public void testNextPacketID() {
         //request a first ID
 
-        int packetId = m_messagesStore.nextPacketID("CLIENT");
+        int packetId = m_sessionsStore.nextPacketID("CLIENT");
         m_sessionsStore.inFlight("CLIENT", packetId, "ABCDE"); //simulate an inflight
         assertEquals(1, packetId);
 
@@ -110,7 +110,7 @@ public class MapDBPersistentStoreTest {
         m_sessionsStore.inFlightAck("CLIENT", packetId);
 
         //request a second packetID, counter restarts from 0
-        packetId = m_messagesStore.nextPacketID("CLIENT");
+        packetId = m_sessionsStore.nextPacketID("CLIENT");
         assertEquals(1, packetId);
     }
 

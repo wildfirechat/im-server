@@ -111,6 +111,11 @@ public interface ISessionsStore {
     void inFlight(String clientID, int messageID, String guid);
 
     /**
+     * Return the next valid packetIdentifier for the given client session.
+     * */
+    int nextPacketID(String clientID);
+
+    /**
      * Store the guid to be later published.
      * */
     void bindToDeliver(String guid, String clientID);
