@@ -15,7 +15,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <bintray.package>org.dna.mqtt.moquette-netty-parser</bintray.package>
+        <bintray.package>io.moquette.moquette-netty-parser</bintray.package>
     </properties>
 
     <dependencies>

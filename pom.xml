@@ -7,7 +7,7 @@
         <source.version>1.7</source.version>
         <target.version>1.7</target.version>
         <bintray.repo>andsel/maven</bintray.repo>
-        <bintray.parent.package>org.dna.mqtt.moquette-parent</bintray.parent.package>
+        <bintray.parent.package>io.moquette.moquette-parent</bintray.parent.package>
     </properties>
 
     <groupId>io.moquette</groupId>
