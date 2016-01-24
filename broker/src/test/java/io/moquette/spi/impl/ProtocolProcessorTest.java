@@ -19,7 +19,7 @@ import io.moquette.proto.messages.*;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.proto.messages.AbstractMessage.QOSType;
 import io.moquette.server.ConnectionDescriptor;
-import io.moquette.server.netty.NettyChannel;
+import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
@@ -130,7 +130,7 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        m_session.attr(NettyChannel.ATTR_KEY_USERNAME).set("FakeCLI");
+        m_session.attr(NettyUtils.ATTR_KEY_USERNAME).set("FakeCLI");
         m_processor.processPublish(m_session, msg);
 
         //Verify
@@ -189,7 +189,7 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        m_session.attr(NettyChannel.ATTR_KEY_USERNAME).set("FakeCLI");
+        m_session.attr(NettyUtils.ATTR_KEY_USERNAME).set("FakeCLI");
         m_processor.processPublish(m_session, msg);
 
 
@@ -210,8 +210,8 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_session, msg);
 
@@ -225,8 +225,8 @@ public class ProtocolProcessorTest {
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
         
@@ -246,8 +246,8 @@ public class ProtocolProcessorTest {
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
 
@@ -271,8 +271,8 @@ public class ProtocolProcessorTest {
         UnsubscribeMessage msg = new UnsubscribeMessage();
         msg.setMessageID(1);
         msg.addTopicFilter(BAD_FORMATTED_TOPIC);
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
 
         //Exercise
         m_processor.processUnsubscribe(m_session, msg);
@@ -317,9 +317,9 @@ public class ProtocolProcessorTest {
         pubmsg.setQos(QOSType.MOST_ONE);
         pubmsg.setPayload(buffer);
         pubmsg.setRetainFlag(true);
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_PUBLISHER_ID);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(FAKE_PUBLISHER_ID);
         m_processor.processPublish(m_session, pubmsg);
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
 
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
@@ -377,7 +377,7 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("Publisher");
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
@@ -404,7 +404,7 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("Publisher");
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
@@ -422,7 +422,7 @@ public class ProtocolProcessorTest {
         connMsg.setClientID("Publisher");
         m_processor.processConnect(m_session, connMsg);
         //prepare and existing retained store
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("Publisher");
         ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage msg = new PublishMessage();
         msg.setTopicName(FAKE_TOPIC);

@@ -18,10 +18,10 @@ package io.moquette.spi.impl;
 import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.proto.messages.SubscribeMessage;
+import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
-import io.moquette.server.netty.NettyChannel;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -169,7 +169,8 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void prohibitAnonymousClient() {
         connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
+                new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -183,7 +184,8 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setClientID("123");
         connMsg.setUserFlag(true);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER + "_fake");
-        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false, new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
+                new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -195,7 +197,8 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void acceptAnonymousClient() {
         connMsg.setClientID("123");
-        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
+                new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
         //Exercise
         m_processor.processConnect(m_session, connMsg);
@@ -243,8 +246,8 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setProtocolVersion(VERSION_3_1_1);
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("CliID");
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(false);
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("CliID");
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(false);
 
         //Connect a first time
         m_processor.processConnect(m_session, connMsg);
@@ -272,9 +275,10 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //subscribe
         SubscribeMessage subscribeMsg = new SubscribeMessage();
-        subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), ProtocolProcessorTest.FAKE_TOPIC));
-        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("CliID");
-        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+        subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(),
+                ProtocolProcessorTest.FAKE_TOPIC));
+        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("CliID");
+        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
         m_processor.processSubscribe(m_session, subscribeMsg);
         Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC,
                 AbstractMessage.QOSType.MOST_ONE);

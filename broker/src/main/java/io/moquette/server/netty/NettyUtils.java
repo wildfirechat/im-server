@@ -15,6 +15,7 @@
  */
 package io.moquette.server.netty;
 
+import io.moquette.server.Constants;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.Attribute;
@@ -27,24 +28,19 @@ import io.netty.util.AttributeKey;
  */
 public class NettyUtils {
 
+    public static final String ATTR_USERNAME = "username";
+    public static final String ATTR_SESSION_STOLEN = "sessionStolen";
+
+    public static final AttributeKey<Object> ATTR_KEY_KEEPALIVE = AttributeKey.valueOf(Constants.KEEP_ALIVE);
+    public static final AttributeKey<Object> ATTR_KEY_CLEANSESSION = AttributeKey.valueOf(Constants.CLEAN_SESSION);
+    public static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf(Constants.ATTR_CLIENTID);
+    public static final AttributeKey<Object> ATTR_KEY_USERNAME = AttributeKey.valueOf(ATTR_USERNAME);
+    public static final AttributeKey<Object> ATTR_KEY_SESSION_STOLEN = AttributeKey.valueOf(ATTR_SESSION_STOLEN);
+
     public static Object getAttribute(ChannelHandlerContext ctx, AttributeKey<Object> key) {
         Attribute<Object> attr = ctx.channel().attr(key);
         return attr.get();
     }
 
-    public static void setAttribute(ChannelHandlerContext ctx, AttributeKey<Object> key, Object value) {
-        Attribute<Object> attr = ctx.channel().attr(key);
-        attr.set(value);
-    }
 
-    public static void setIdleTime(ChannelHandlerContext channel, int idleTime) {
-        if (channel.pipeline().names().contains("idleStateHandler")) {
-            channel.pipeline().remove("idleStateHandler");
-        }
-        if (channel.pipeline().names().contains("idleEventHandler")) {
-            channel.pipeline().remove("idleEventHandler");
-        }
-        channel.pipeline().addFirst("idleStateHandler", new IdleStateHandler(0, 0, idleTime));
-        channel.pipeline().addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimeoutHandler());
-    }
 }
