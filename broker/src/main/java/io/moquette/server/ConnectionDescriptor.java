@@ -27,12 +27,12 @@ import io.netty.channel.Channel;
 public class ConnectionDescriptor {
     
     public final String clientID;
-    public final Channel session;
+    public final Channel channel;
     public final boolean cleanSession;
     
     public ConnectionDescriptor(String clientID, Channel session, boolean cleanSession) {
         this.clientID = clientID;
-        this.session = session;
+        this.channel = session;
         this.cleanSession = cleanSession;
     }
 
@@ -49,14 +49,14 @@ public class ConnectionDescriptor {
         ConnectionDescriptor that = (ConnectionDescriptor) o;
 
         if (clientID != null ? !clientID.equals(that.clientID) : that.clientID != null) return false;
-        return !(session != null ? !session.equals(that.session) : that.session != null);
+        return !(channel != null ? !channel.equals(that.channel) : that.channel != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = clientID != null ? clientID.hashCode() : 0;
-        result = 31 * result + (session != null ? session.hashCode() : 0);
+        result = 31 * result + (channel != null ? channel.hashCode() : 0);
         return result;
     }
 }

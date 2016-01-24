@@ -57,7 +57,7 @@ public class ProtocolProcessorTest {
     final static List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     final static BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
     
-    EmbeddedChannel m_session;
+    EmbeddedChannel m_channel;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
     
@@ -71,7 +71,7 @@ public class ProtocolProcessorTest {
         connMsg = new ConnectMessage();
         connMsg.setProtocolVersion((byte) 0x03);
 
-        m_session = new EmbeddedChannel();
+        m_channel = new EmbeddedChannel();
 
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
@@ -103,7 +103,7 @@ public class ProtocolProcessorTest {
             @Override
             public List<Subscription> matches(String topic) {
                 if (topic.equals(FAKE_TOPIC)) {
-                    return Arrays.asList(subscription);
+                    return Collections.singletonList(subscription);
                 } else {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
                 }
@@ -120,7 +120,7 @@ public class ProtocolProcessorTest {
         connectMessage.setClientID(FAKE_CLIENT_ID);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         connectMessage.setCleanSession(true);
-        m_processor.processConnect(m_session, connectMessage);
+        m_processor.processConnect(m_channel, connectMessage);
         
         
         //Exercise
@@ -130,11 +130,11 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        NettyUtils.userName(m_session, "FakeCLI");
-        m_processor.processPublish(m_session, msg);
+        NettyUtils.userName(m_channel, "FakeCLI");
+        m_processor.processPublish(m_channel, msg);
 
         //Verify
-        assertNotNull(m_session.readOutbound());
+        assertNotNull(m_channel.readOutbound());
         //TODO check received message attributes
     }
     
@@ -163,23 +163,23 @@ public class ProtocolProcessorTest {
         subs.init(storageService.sessionsStore());
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
 
-        EmbeddedChannel firstReceiverSession = new EmbeddedChannel();
+        EmbeddedChannel firstReceiverChannel = new EmbeddedChannel();
         ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(FAKE_CLIENT_ID);
         connectMessage.setCleanSession(true);
-        m_processor.processConnect(firstReceiverSession, connectMessage);
-        assertConnAckAccepted(firstReceiverSession);
+        m_processor.processConnect(firstReceiverChannel, connectMessage);
+        assertConnAckAccepted(firstReceiverChannel);
         
         //connect the second fake subscriber
-        EmbeddedChannel secondReceiverSession = new EmbeddedChannel();
+        EmbeddedChannel secondReceiverChannel = new EmbeddedChannel();
         ConnectMessage connectMessage2 = new ConnectMessage();
         connectMessage2.setProtocolVersion((byte) 3);
         connectMessage2.setClientID(FAKE_CLIENT_ID2);
         connectMessage2.setCleanSession(true);
         connectMessage2.setCleanSession(true);
-        m_processor.processConnect(secondReceiverSession, connectMessage2);
-        assertConnAckAccepted(secondReceiverSession);
+        m_processor.processConnect(secondReceiverChannel, connectMessage2);
+        assertConnAckAccepted(secondReceiverChannel);
 
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -189,17 +189,17 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        NettyUtils.userName(m_session, "FakeCLI");
-        m_processor.processPublish(m_session, msg);
+        NettyUtils.userName(m_channel, "FakeCLI");
+        m_processor.processPublish(m_channel, msg);
 
 
         //Verify
-        PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverSession.readOutbound();
+        PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverChannel.readOutbound();
         assertNotNull(pub2FirstSubscriber);
         String firstMessageContent = DebugUtils.payload2Str(pub2FirstSubscriber.getPayload());
         assertEquals("Hello", firstMessageContent);
 
-        PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverSession.readOutbound();
+        PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverChannel.readOutbound();
         assertNotNull(pub2SecondSubscriber);
         String secondMessageContent = DebugUtils.payload2Str(pub2SecondSubscriber.getPayload());
         assertEquals("Hello", secondMessageContent);
@@ -210,13 +210,13 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        NettyUtils.clientID(m_session, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_session, false);
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
-        m_processor.processSubscribe(m_session, msg);
+        m_processor.processSubscribe(m_channel, msg);
 
         //Verify
-        assertTrue(m_session.readOutbound() instanceof SubAckMessage);
+        assertTrue(m_channel.readOutbound() instanceof SubAckMessage);
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
@@ -225,15 +225,15 @@ public class ProtocolProcessorTest {
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        NettyUtils.clientID(m_session, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_session, false);
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
         
-        m_processor.processSubscribe(m_session, msg);
+        m_processor.processSubscribe(m_channel, msg);
                 
         //Exercise
-        m_processor.processSubscribe(m_session, msg);
+        m_processor.processSubscribe(m_channel, msg);
 
         //Verify
         assertEquals(1, subscriptions.size());
@@ -246,17 +246,17 @@ public class ProtocolProcessorTest {
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
-        NettyUtils.clientID(m_session, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_session, false);
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
 
         //Exercise
-        m_processor.processSubscribe(m_session, msg);
+        m_processor.processSubscribe(m_channel, msg);
 
         //Verify
         assertEquals(0, subscriptions.size());
-        Object recvSubAckMessage = m_session.readOutbound();
+        Object recvSubAckMessage = m_channel.readOutbound();
         assertTrue(recvSubAckMessage instanceof SubAckMessage);
         List<QOSType> qosSubAcked = ((SubAckMessage)recvSubAckMessage).types();
         assertEquals(1, qosSubAcked.size());
@@ -271,14 +271,14 @@ public class ProtocolProcessorTest {
         UnsubscribeMessage msg = new UnsubscribeMessage();
         msg.setMessageID(1);
         msg.addTopicFilter(BAD_FORMATTED_TOPIC);
-        NettyUtils.clientID(m_session, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_session, false);
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
 
         //Exercise
-        m_processor.processUnsubscribe(m_session, msg);
+        m_processor.processUnsubscribe(m_channel, msg);
 
         //Verify
-        assertFalse("If client unsubscribe with bad topic than channel must be closed", m_session.isOpen());
+        assertFalse("If client unsubscribe with bad topic than channel must be closed", m_channel.isOpen());
     }
 
     
@@ -293,7 +293,7 @@ public class ProtocolProcessorTest {
             @Override
             public List<Subscription> matches(String topic) {
                 if (topic.equals(FAKE_TOPIC)) {
-                    return Arrays.asList(subscription);
+                    return Collections.singletonList(subscription);
                 } else {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
                 }
@@ -309,26 +309,26 @@ public class ProtocolProcessorTest {
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setCleanSession(true);
-        m_processor.processConnect(m_session, connectMessage);
-        assertConnAckAccepted(m_session);
+        m_processor.processConnect(m_channel, connectMessage);
+        assertConnAckAccepted(m_channel);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage pubmsg = new PublishMessage();
         pubmsg.setTopicName(FAKE_TOPIC);
         pubmsg.setQos(QOSType.MOST_ONE);
         pubmsg.setPayload(buffer);
         pubmsg.setRetainFlag(true);
-        NettyUtils.clientID(m_session, FAKE_PUBLISHER_ID);
-        m_processor.processPublish(m_session, pubmsg);
-        NettyUtils.cleanSession(m_session, false);
+        NettyUtils.clientID(m_channel, FAKE_PUBLISHER_ID);
+        m_processor.processPublish(m_channel, pubmsg);
+        NettyUtils.cleanSession(m_channel, false);
 
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(QOSType.MOST_ONE.byteValue(), "#"));
-        m_processor.processSubscribe(m_session, msg);
+        m_processor.processSubscribe(m_channel, msg);
         
         //Verify
         //wait the latch
-        Object pubMessage = m_session.readOutbound();
+        Object pubMessage = m_channel.readOutbound();
         assertNotNull(pubMessage);
         assertTrue(pubMessage instanceof PublishMessage);
         assertEquals(FAKE_TOPIC, ((PublishMessage) pubMessage).getTopicName());
@@ -351,7 +351,7 @@ public class ProtocolProcessorTest {
         connectMessage.setClientID(FAKE_PUBLISHER_ID);
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setCleanSession(false);
-        m_processor.processConnect(m_session, connectMessage);
+        m_processor.processConnect(m_channel, connectMessage);
 
         //Verify no messages are still stored
         Collection<String> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
@@ -365,10 +365,11 @@ public class ProtocolProcessorTest {
 
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
         Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE);
-        List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
+        List<Subscription> inactiveSubscriptions = Collections.singletonList(inactiveSub);
         when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
+                NO_OBSERVERS_INTERCEPTOR);
         
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
@@ -377,40 +378,12 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
-        NettyUtils.clientID(m_session, "Publisher");
-        m_processor.processPublish(m_session, msg);
+        NettyUtils.clientID(m_channel, "Publisher");
+        m_processor.processPublish(m_channel, msg);
 
         //Verify no message is received
-        assertNull(m_session.readOutbound());
+        assertNull(m_channel.readOutbound());
     }
-    
-    
-    @Test
-    public void publishToAnInactiveSubscriptionsCleanSession() {
-        //create an inactive session for Subscriber
-        m_sessionStore.createNewSession("Subscriber", false).deactivate();
-        SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
-        Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE);
-        List<Subscription> inactiveSubscriptions = Arrays.asList(inactiveSub);
-        when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
-        m_processor = new ProtocolProcessor();
-        m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
-
-        //Exercise
-        ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
-        PublishMessage msg = new PublishMessage();
-        msg.setTopicName("/topic");
-        msg.setQos(QOSType.MOST_ONE);
-        msg.setPayload(buffer);
-        msg.setRetainFlag(true);
-        NettyUtils.clientID(m_session, "Publisher");
-        m_processor.processPublish(m_session, msg);
-
-        //Verify no message is received
-        assertNull(m_session.readOutbound());
-    }
-    
     
     /**
      * Verify that receiving a publish with retained message and with Q0S = 0 
@@ -420,9 +393,9 @@ public class ProtocolProcessorTest {
     public void testCleanRetainedStoreAfterAQoS0AndRetainedTrue() {
         //force a connect
         connMsg.setClientID("Publisher");
-        m_processor.processConnect(m_session, connMsg);
+        m_processor.processConnect(m_channel, connMsg);
         //prepare and existing retained store
-        NettyUtils.clientID(m_session, "Publisher");
+        NettyUtils.clientID(m_channel, "Publisher");
         ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage msg = new PublishMessage();
         msg.setTopicName(FAKE_TOPIC);
@@ -430,7 +403,7 @@ public class ProtocolProcessorTest {
         msg.setPayload(payload);
         msg.setRetainFlag(true);
         msg.setMessageID(100);
-        m_processor.processPublish(m_session, msg);
+        m_processor.processPublish(m_channel, msg);
         
         //Exercise
         PublishMessage cleanPubMsg = new PublishMessage();
@@ -438,7 +411,7 @@ public class ProtocolProcessorTest {
         cleanPubMsg.setPayload(payload);
         cleanPubMsg.setQos(QOSType.MOST_ONE);
         cleanPubMsg.setRetainFlag(true);
-        m_processor.processPublish(m_session, cleanPubMsg);
+        m_processor.processPublish(m_channel, cleanPubMsg);
         
         //Verify
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
