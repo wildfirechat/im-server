@@ -27,13 +27,13 @@ import io.netty.util.AttributeKey;
  */
 public class NettyUtils {
 
-    public static Object getAttribute(ChannelHandlerContext channel, AttributeKey<Object> key) {
-        Attribute<Object> attr = channel.attr(key);
+    public static Object getAttribute(ChannelHandlerContext ctx, AttributeKey<Object> key) {
+        Attribute<Object> attr = ctx.channel().attr(key);
         return attr.get();
     }
 
-    public static void setAttribute(ChannelHandlerContext channel, AttributeKey<Object> key, Object value) {
-        Attribute<Object> attr = channel.attr(key);
+    public static void setAttribute(ChannelHandlerContext ctx, AttributeKey<Object> key, Object value) {
+        Attribute<Object> attr = ctx.channel().attr(key);
         attr.set(value);
     }
 

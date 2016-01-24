@@ -16,7 +16,6 @@
 package io.moquette.spi.impl;
 
 import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.ConnAckMessage;
 import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.proto.messages.SubscribeMessage;
 import io.moquette.spi.IMessagesStore;
@@ -25,6 +24,7 @@ import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.server.netty.NettyChannel;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
-import static org.junit.Assert.assertEquals;
+import static io.moquette.proto.messages.ConnAckMessage.BAD_USERNAME_OR_PASSWORD;
+import static io.moquette.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
+import static io.moquette.proto.messages.ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION;
+import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsConnAck;
+import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsSubAck;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ProtocolProcessor_CONNECT_Test {
 
-    DummyChannel m_session;
+    EmbeddedChannel m_session;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
 
@@ -56,7 +60,7 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg = new ConnectMessage();
         connMsg.setProtocolVersion((byte) 0x03);
 
-        m_session = new DummyChannel();
+        m_session = new EmbeddedChannel();
 
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
@@ -85,7 +89,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION, m_session.getReturnCode());
+        assertEqualsConnAck(UNNACEPTABLE_PROTOCOL_VERSION, m_session.readOutbound());
     }
 
     @Test
@@ -96,7 +100,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
     }
 
     @Test
@@ -112,7 +116,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
         //TODO verify the call
         /*verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()),
                 any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));*/
@@ -130,7 +134,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
     }
 
     @Test
@@ -144,7 +148,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_session.getReturnCode());
+        assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
     }
 
     @Test
@@ -159,7 +163,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_session.getReturnCode());
+        assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
     }
 
     @Test
@@ -171,7 +175,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_session.getReturnCode());
+        assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
     }
 
     @Test
@@ -185,7 +189,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, m_session.getReturnCode());
+        assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
     }
 
     @Test
@@ -197,7 +201,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processConnect(m_session, connMsg);
 
         //Verify
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
     }
 
     @Test
@@ -209,7 +213,7 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER);
         connMsg.setPassword(ProtocolProcessorTest.TEST_PWD);
         m_processor.processConnect(m_session, connMsg);
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         //create another connect same clientID but with bad credentials
         ConnectMessage evilClientConnMsg = new ConnectMessage();
@@ -219,17 +223,17 @@ public class ProtocolProcessor_CONNECT_Test {
         evilClientConnMsg.setPasswordFlag(true);
         evilClientConnMsg.setUsername(ProtocolProcessorTest.EVIL_TEST_USER);
         evilClientConnMsg.setPassword(ProtocolProcessorTest.EVIL_TEST_PWD);
-        DummyChannel evilSession = new DummyChannel();
+        EmbeddedChannel evilSession = new EmbeddedChannel();
 
         //Exercise
         m_processor.processConnect(evilSession, evilClientConnMsg);
 
         //Verify
         //the evil client gets a not auth notification
-        assertEquals(ConnAckMessage.BAD_USERNAME_OR_PASSWORD, evilSession.getReturnCode());
+        assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, evilSession.readOutbound());
         //the good client remains connected
-        assertFalse(m_session.isClosed());
-        assertTrue(evilSession.isClosed());
+        assertTrue(m_session.isOpen());
+        assertFalse(evilSession.isOpen());
     }
 
 
@@ -239,8 +243,8 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setProtocolVersion(VERSION_3_1_1);
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("CliID");
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(false);
 
         //Connect a first time
         m_processor.processConnect(m_session, connMsg);
@@ -248,15 +252,11 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processDisconnect(m_session);
 
         //Exercise, reconnect
-        MockReceiverChannel firstReceiverSession = new MockReceiverChannel();
+        EmbeddedChannel firstReceiverSession = new EmbeddedChannel();
         m_processor.processConnect(firstReceiverSession, connMsg);
 
         //Verify
-        AbstractMessage recvMsg = firstReceiverSession.getMessage();
-        assertTrue(recvMsg instanceof ConnAckMessage);
-        ConnAckMessage connAckMsg = (ConnAckMessage) recvMsg;
-        assertTrue(connAckMsg.isSessionPresent());
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, connAckMsg.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, firstReceiverSession.readOutbound());
     }
 
 
@@ -268,24 +268,27 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
         m_processor.processConnect(m_session, connMsg);
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         //subscribe
         SubscribeMessage subscribeMsg = new SubscribeMessage();
         subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(), ProtocolProcessorTest.FAKE_TOPIC));
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "CliID");
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("CliID");
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
         m_processor.processSubscribe(m_session, subscribeMsg);
         Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC,
                 AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
+        assertEqualsSubAck(m_session.readOutbound());
 
         //disconnect
         m_processor.processDisconnect(m_session);
+        assertFalse(m_session.isOpen());
 
         //reconnect clean session a false
+        m_session = new EmbeddedChannel();
         m_processor.processConnect(m_session, connMsg);
-        assertEquals(ConnAckMessage.CONNECTION_ACCEPTED, m_session.getReturnCode());
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         //verify that the first subscription is still preserved
         assertTrue(subscriptions.contains(expectedSubscription));

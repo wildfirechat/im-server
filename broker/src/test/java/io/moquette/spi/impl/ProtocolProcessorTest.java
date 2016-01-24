@@ -34,9 +34,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
+import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -59,7 +57,7 @@ public class ProtocolProcessorTest {
     final static List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     final static BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
     
-    DummyChannel m_session;
+    EmbeddedChannel m_session;
     ConnectMessage connMsg;
     ProtocolProcessor m_processor;
     
@@ -73,7 +71,7 @@ public class ProtocolProcessorTest {
         connMsg = new ConnectMessage();
         connMsg.setProtocolVersion((byte) 0x03);
 
-        m_session = new DummyChannel();
+        m_session = new EmbeddedChannel();
 
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
@@ -96,7 +94,7 @@ public class ProtocolProcessorTest {
 
 
     @Test
-    public void testPublish() throws InterruptedException {
+    public void testPublishToItself() throws InterruptedException {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, 
                 FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
 
@@ -132,11 +130,11 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "FakeCLI");
+        m_session.attr(NettyChannel.ATTR_KEY_USERNAME).set("FakeCLI");
         m_processor.processPublish(m_session, msg);
 
         //Verify
-        assertNotNull(m_session.getReceivedMessage());
+        assertNotNull(m_session.readOutbound());
         //TODO check received message attributes
     }
     
@@ -171,6 +169,7 @@ public class ProtocolProcessorTest {
         connectMessage.setClientID(FAKE_CLIENT_ID);
         connectMessage.setCleanSession(true);
         m_processor.processConnect(firstReceiverSession, connectMessage);
+        assertConnAckAccepted(firstReceiverSession);
         
         //connect the second fake subscriber
         EmbeddedChannel secondReceiverSession = new EmbeddedChannel();
@@ -180,7 +179,8 @@ public class ProtocolProcessorTest {
         connectMessage2.setCleanSession(true);
         connectMessage2.setCleanSession(true);
         m_processor.processConnect(secondReceiverSession, connectMessage2);
-        
+        assertConnAckAccepted(secondReceiverSession);
+
         //Exercise
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         buffer.rewind();
@@ -189,34 +189,34 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(false);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "FakeCLI");
+        m_session.attr(NettyChannel.ATTR_KEY_USERNAME).set("FakeCLI");
         m_processor.processPublish(m_session, msg);
 
+
         //Verify
-        Thread.sleep(100); //ugly but we depend on the asynch that pull data from back disruptor
-        PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverSession.getMessage();
+        PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverSession.readOutbound();
         assertNotNull(pub2FirstSubscriber);
         String firstMessageContent = DebugUtils.payload2Str(pub2FirstSubscriber.getPayload());
         assertEquals("Hello", firstMessageContent);
-        
-        PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverSession.getMessage();
+
+        PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverSession.readOutbound();
         assertNotNull(pub2SecondSubscriber);
         String secondMessageContent = DebugUtils.payload2Str(pub2SecondSubscriber.getPayload());
         assertEquals("Hello", secondMessageContent);
     }
-    
+
     @Test
     public void testSubscribe() {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
-        m_processor.processSubscribe(m_session, msg/*, FAKE_CLIENT_ID, false*/);
+        m_processor.processSubscribe(m_session, msg);
 
         //Verify
-        assertTrue(m_session.getReceivedMessage() instanceof SubAckMessage);
+        assertTrue(m_session.readOutbound() instanceof SubAckMessage);
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
@@ -225,8 +225,8 @@ public class ProtocolProcessorTest {
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
         
@@ -246,8 +246,8 @@ public class ProtocolProcessorTest {
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
 
@@ -256,8 +256,9 @@ public class ProtocolProcessorTest {
 
         //Verify
         assertEquals(0, subscriptions.size());
-        assertTrue(m_session.getReceivedMessage() instanceof SubAckMessage);
-        List<QOSType> qosSubAcked = ((SubAckMessage) m_session.getReceivedMessage()).types();
+        Object recvSubAckMessage = m_session.readOutbound();
+        assertTrue(recvSubAckMessage instanceof SubAckMessage);
+        List<QOSType> qosSubAcked = ((SubAckMessage)recvSubAckMessage).types();
         assertEquals(1, qosSubAcked.size());
         assertEquals(QOSType.FAILURE, qosSubAcked.get(0));
     }
@@ -270,40 +271,19 @@ public class ProtocolProcessorTest {
         UnsubscribeMessage msg = new UnsubscribeMessage();
         msg.setMessageID(1);
         msg.addTopicFilter(BAD_FORMATTED_TOPIC);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_CLIENT_ID);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_CLIENT_ID);
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
 
         //Exercise
         m_processor.processUnsubscribe(m_session, msg);
 
         //Verify
-        assertTrue(m_session.isClosed());
+        assertFalse("If client unsubscribe with bad topic than channel must be closed", m_session.isOpen());
     }
 
     
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
-        final CountDownLatch publishRecvSignal = new CountDownLatch(1);
-        m_session = new DummyChannel() {
-            @Override
-            public void write(Object value) {
-                try {
-                    System.out.println("filterReceived class " + value.getClass().getName());
-                    if (value instanceof PublishMessage) {
-                        m_receivedMessage = (AbstractMessage) value;
-                        publishRecvSignal.countDown();
-                    }
-                    
-                    if (m_receivedMessage instanceof ConnAckMessage) {
-                        ConnAckMessage buf = (ConnAckMessage) m_receivedMessage;
-                        m_returnCode = buf.getReturnCode();
-                    }
-                } catch (Exception ex) {
-                    throw new AssertionError("Wrong return code");
-                }
-            }   
-        };
-        
         //simulate a connect that register a clientID to an IoSession
         final Subscription subscription = new Subscription(FAKE_PUBLISHER_ID, 
                 FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
@@ -330,16 +310,17 @@ public class ProtocolProcessorTest {
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setCleanSession(true);
         m_processor.processConnect(m_session, connectMessage);
+        assertConnAckAccepted(m_session);
         ByteBuffer buffer = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage pubmsg = new PublishMessage();
         pubmsg.setTopicName(FAKE_TOPIC);
         pubmsg.setQos(QOSType.MOST_ONE);
         pubmsg.setPayload(buffer);
         pubmsg.setRetainFlag(true);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, FAKE_PUBLISHER_ID);
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set(FAKE_PUBLISHER_ID);
         m_processor.processPublish(m_session, pubmsg);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLEANSESSION, false);
-        
+        m_session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).set(false);
+
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(QOSType.MOST_ONE.byteValue(), "#"));
@@ -347,11 +328,10 @@ public class ProtocolProcessorTest {
         
         //Verify
         //wait the latch
-        assertTrue(publishRecvSignal.await(1, TimeUnit.SECONDS)); //no timeout
-        assertNotNull(m_session.getReceivedMessage());
-        assertTrue(m_session.getReceivedMessage() instanceof PublishMessage);
-        PublishMessage pubMessage = (PublishMessage) m_session.getReceivedMessage();
-        assertEquals(FAKE_TOPIC, pubMessage.getTopicName());
+        Object pubMessage = m_session.readOutbound();
+        assertNotNull(pubMessage);
+        assertTrue(pubMessage instanceof PublishMessage);
+        assertEquals(FAKE_TOPIC, ((PublishMessage) pubMessage).getTopicName());
     }
 
     @Test
@@ -397,11 +377,11 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "Publisher");
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
-        assertNull(m_session.getReceivedMessage());
+        assertNull(m_session.readOutbound());
     }
     
     
@@ -424,11 +404,11 @@ public class ProtocolProcessorTest {
         msg.setQos(QOSType.MOST_ONE);
         msg.setPayload(buffer);
         msg.setRetainFlag(true);
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "Publisher");
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
         m_processor.processPublish(m_session, msg);
 
         //Verify no message is received
-        assertNull(m_session.getReceivedMessage());
+        assertNull(m_session.readOutbound());
     }
     
     
@@ -442,7 +422,7 @@ public class ProtocolProcessorTest {
         connMsg.setClientID("Publisher");
         m_processor.processConnect(m_session, connMsg);
         //prepare and existing retained store
-        m_session.setAttribute(NettyChannel.ATTR_KEY_CLIENTID, "Publisher");
+        m_session.attr(NettyChannel.ATTR_KEY_CLIENTID).set("Publisher");
         ByteBuffer payload = ByteBuffer.allocate(5).put("Hello".getBytes());
         PublishMessage msg = new PublishMessage();
         msg.setTopicName(FAKE_TOPIC);

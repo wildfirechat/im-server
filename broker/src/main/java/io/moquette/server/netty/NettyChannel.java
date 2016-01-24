@@ -20,13 +20,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import io.moquette.server.ServerChannel;
 
 /**
  *
  * @author andrea
  */
-public class NettyChannel implements ServerChannel {
+public class NettyChannel {
     
     private ChannelHandlerContext m_channel;
 

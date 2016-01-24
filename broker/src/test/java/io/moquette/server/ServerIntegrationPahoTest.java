@@ -451,7 +451,7 @@ public class ServerIntegrationPahoTest {
         clientXA.subscribe("topic", 0);
 
         MqttClient clientXB = createClient("publisher", "X");
-        clientXB.publish("topic", "Hello".getBytes(), 2, true);
+        clientXB.publish("topic", "Hello".getBytes(), 2, false);
 
         TestCallback cbSubscriber2 = new TestCallback();
         MqttClient clientYA = createClient("subscriber", "Y", cbSubscriber2);

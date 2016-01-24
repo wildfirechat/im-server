@@ -52,28 +52,28 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                     m_processor.processConnect(ctx.channel(), (ConnectMessage) msg);
                     break;
                 case SUBSCRIBE:
-                    m_processor.processSubscribe(new NettyChannel(ctx), (SubscribeMessage) msg);
+                    m_processor.processSubscribe(ctx.channel(), (SubscribeMessage) msg);
                     break;
                 case UNSUBSCRIBE:
-                    m_processor.processUnsubscribe(new NettyChannel(ctx), (UnsubscribeMessage) msg);
+                    m_processor.processUnsubscribe(ctx.channel(), (UnsubscribeMessage) msg);
                     break;
                 case PUBLISH:
-                    m_processor.processPublish(new NettyChannel(ctx), (PublishMessage) msg);
+                    m_processor.processPublish(ctx.channel(), (PublishMessage) msg);
                     break;
                 case PUBREC:
-                    m_processor.processPubRec(new NettyChannel(ctx), (PubRecMessage) msg);
+                    m_processor.processPubRec(ctx.channel(), (PubRecMessage) msg);
                     break;
                 case PUBCOMP:
-                    m_processor.processPubComp(new NettyChannel(ctx), (PubCompMessage) msg);
+                    m_processor.processPubComp(ctx.channel(), (PubCompMessage) msg);
                     break;
                 case PUBREL:
-                    m_processor.processPubRel(new NettyChannel(ctx), (PubRelMessage) msg);
+                    m_processor.processPubRel(ctx.channel(), (PubRelMessage) msg);
                     break;
                 case DISCONNECT:
-                    m_processor.processDisconnect(new NettyChannel(ctx));
+                    m_processor.processDisconnect(ctx.channel());
                     break;
                 case PUBACK:
-                    m_processor.processPubAck(new NettyChannel(ctx), (PubAckMessage) msg);
+                    m_processor.processPubAck(ctx.channel(), (PubAckMessage) msg);
                     break;
                 case PINGREQ:
                     PingRespMessage pingResp = new PingRespMessage();

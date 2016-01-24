@@ -33,9 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by andrea on 08/12/15.
- */
 public class ServerIntegrationEmbeddedPublishTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationEmbeddedPublishTest.class);

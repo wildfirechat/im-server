@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import io.moquette.server.ConnectionDescriptor;
-import io.moquette.server.ServerChannel;
 import io.moquette.server.netty.NettyChannel;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
@@ -142,7 +141,7 @@ public class ProtocolProcessor {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
             LOG.warn("processConnect sent bad proto ConnAck");
-            session.write(badProto);
+            session.writeAndFlush(badProto);
             session.close();
             return;
         }
@@ -150,7 +149,7 @@ public class ProtocolProcessor {
         if (msg.getClientID() == null || msg.getClientID().length() == 0) {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
-            session.write(okResp);
+            session.writeAndFlush(okResp);
             m_interceptor.notifyClientConnected(msg);
             return;
         }
@@ -166,6 +165,7 @@ public class ProtocolProcessor {
             }
             if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
                 failedCredentials(session);
+                session.close();
                 return;
             }
             session.attr(NettyChannel.ATTR_KEY_USERNAME).set(msg.getUsername());
@@ -217,7 +217,7 @@ public class ProtocolProcessor {
         if (!msg.isCleanSession() && isSessionAlreadyStored) {
             okResp.setSessionPresent(true);
         }
-        session.write(okResp);
+        session.writeAndFlush(okResp);
         m_interceptor.notifyClientConnected(msg);
 
         if (!isSessionAlreadyStored) {
@@ -247,7 +247,7 @@ public class ProtocolProcessor {
     private void failedCredentials(Channel session) {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
-        session.write(okResp);
+        session.writeAndFlush(okResp);
     }
 
     /**
@@ -270,8 +270,8 @@ public class ProtocolProcessor {
         }
     }
     
-    public void processPubAck(ServerChannel session, PubAckMessage msg) {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+    public void processPubAck(Channel session, PubAckMessage msg) {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         int messageID = msg.getMessageID();
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
@@ -535,14 +535,14 @@ public class ProtocolProcessor {
             LOG.debug("topic {} doesn't have read credentials", topic);
             return;
         }
-        session.write(pubMessage);
+        session.writeAndFlush(pubMessage); //Or writeAdnFlush but flush is costly!!
     }
     
     private void sendPubRec(String clientID, int messageID) {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-        m_clientIDs.get(clientID).session.write(pubRecMessage);
+        m_clientIDs.get(clientID).session.writeAndFlush(pubRecMessage);
     }
     
     private void sendPubAck(String clientId, int messageID) {
@@ -558,7 +558,7 @@ public class ProtocolProcessor {
             if (m_clientIDs.get(clientId) == null) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
             }
-            m_clientIDs.get(clientId).session.write(pubAckMessage);
+            m_clientIDs.get(clientId).session.writeAndFlush(pubAckMessage);
         } catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -568,8 +568,8 @@ public class ProtocolProcessor {
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
      * */
-    public void processPubRel(ServerChannel session, PubRelMessage msg) {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+    public void processPubRel(Channel session, PubRelMessage msg) {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
@@ -594,11 +594,11 @@ public class ProtocolProcessor {
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).session.write(pubCompMessage);
+        m_clientIDs.get(clientID).session.writeAndFlush(pubCompMessage);
     }
     
-    public void processPubRec(ServerChannel session, PubRecMessage msg) {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+    public void processPubRec(Channel session, PubRecMessage msg) {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         int messageID = msg.getMessageID();
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
@@ -611,11 +611,11 @@ public class ProtocolProcessor {
         pubRelMessage.setMessageID(messageID);
         pubRelMessage.setQos(AbstractMessage.QOSType.LEAST_ONE);
 
-        session.write(pubRelMessage);
+        session.writeAndFlush(pubRelMessage);
     }
 
-    public void processPubComp(ServerChannel session, PubCompMessage msg) {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
+    public void processPubComp(Channel session, PubCompMessage msg) {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
@@ -624,15 +624,15 @@ public class ProtocolProcessor {
         targetSession.secondPhaseAcknowledged(messageID);
     }
     
-    public void processDisconnect(ServerChannel session) throws InterruptedException {
-        String clientID = (String) session.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
-        boolean cleanSession = (Boolean) session.getAttribute(NettyChannel.ATTR_KEY_CLEANSESSION);
+    public void processDisconnect(Channel session) throws InterruptedException {
+        String clientID = (String) session.attr(NettyChannel.ATTR_KEY_CLIENTID).get();
+        boolean cleanSession = (Boolean) session.attr(NettyChannel.ATTR_KEY_CLEANSESSION).get();
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         clientSession.disconnect();
 
         m_clientIDs.remove(clientID);
-        session.close(true);
+        session.close();
 
         //cleanup the will store
         m_willStore.remove(clientID);
@@ -691,7 +691,7 @@ public class ProtocolProcessor {
         ackMessage.setMessageID(messageID);
 
         LOG.info("replying with UnsubAck to MSG ID {}", messageID);
-        session.write(ackMessage);
+        session.writeAndFlush(ackMessage);
     }
 
     public void processSubscribe(Channel session, SubscribeMessage msg) {
@@ -721,7 +721,7 @@ public class ProtocolProcessor {
         if (LOG.isTraceEnabled()) {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
-        session.write(ackMessage);
+        session.writeAndFlush(ackMessage);
 
         //fire the publish
         for(Subscription subscription : newSubscriptions) {
