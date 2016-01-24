@@ -355,50 +355,6 @@ public class ProtocolProcessor {
      * It also doesn't notifyTopicPublished because using internally the owner should already know where
      * it's publishing.
      * */
-//    public void internalPublish(PublishMessage msg) {
-//        final AbstractMessage.QOSType qos = msg.getQos();
-//        final String topic = msg.getTopicName();
-//        LOG.info("embedded PUBLISH on topic <{}> with QoS {}", topic, qos);
-//
-//        String guid = null;
-//        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-//        toStoreMsg.setClientID("BROKER_SELF");
-//        toStoreMsg.setMessageID(1);
-//        if (qos == AbstractMessage.QOSType.MOST_ONE || qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS0, QoS1
-//            route2Subscribers(toStoreMsg);
-//        } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
-//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-//
-//            route2Subscribers(toStoreMsg);
-//
-//            if (toStoreMsg.isRetained()) {
-//                if (!toStoreMsg.getMessage().hasRemaining()) {
-//                    m_messagesStore.cleanRetained(topic);
-//                } else {
-//                    m_messagesStore.storeRetained(topic, guid);
-//                }
-//            }
-//            return;
-//        }
-//
-//        if (msg.isRetainFlag()) {
-//            if (qos == AbstractMessage.QOSType.MOST_ONE) {
-//                //QoS == 0 && retain => clean old retained
-//                m_messagesStore.cleanRetained(topic);
-//            } else {
-//                if (!msg.getPayload().hasRemaining()) {
-//                    m_messagesStore.cleanRetained(topic);
-//                } else {
-//                    if (guid == null) {
-//                        //before wasn't stored
-//                        guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-//                    }
-//                    m_messagesStore.storeRetained(topic, guid);
-//                }
-//            }
-//        }
-//    }
-
     public void internalPublish(PublishMessage msg) {
         final AbstractMessage.QOSType qos = msg.getQos();
         final String topic = msg.getTopicName();
