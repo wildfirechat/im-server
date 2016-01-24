@@ -87,14 +87,14 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        String clientID = (String) NettyUtils.getAttribute(ctx, NettyUtils.ATTR_KEY_CLIENTID);
+        String clientID = NettyUtils.clientID(ctx.channel());
         if (clientID != null && !clientID.isEmpty()) {
             //if the channel was of a correctly connected client, inform messaging
             //else it was of a not completed CONNECT message or sessionStolen
             boolean stolen = false;
-            Boolean stolenAttr = (Boolean) NettyUtils.getAttribute(ctx, NettyUtils.ATTR_KEY_SESSION_STOLEN);
+            Boolean stolenAttr = NettyUtils.sessionStolen(ctx.channel());
             if (stolenAttr != null && stolenAttr == Boolean.TRUE) {
-                stolen = stolenAttr;
+                stolen = true;
             }
             m_processor.processConnectionLost(clientID, stolen, ctx.channel());
         }

@@ -168,7 +168,7 @@ public class ProtocolProcessor {
                 session.close();
                 return;
             }
-            session.attr(NettyUtils.ATTR_KEY_USERNAME).set(msg.getUsername());
+            NettyUtils.userName(session, msg.getUsername());
         } else if (!this.allowAnonymous) {
             failedCredentials(session);
             return;
@@ -181,7 +181,7 @@ public class ProtocolProcessor {
             Channel oldSession = m_clientIDs.get(msg.getClientID()).session;
             ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
             oldClientSession.disconnect();
-            oldSession.attr(NettyUtils.ATTR_KEY_SESSION_STOLEN).set(true);
+            NettyUtils.sessionStolen(oldSession, true);
             oldSession.close();
             LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
         }
@@ -191,10 +191,12 @@ public class ProtocolProcessor {
 
         int keepAlive = msg.getKeepAlive();
         LOG.debug("Connect with keepAlive {} s",  keepAlive);
-        session.attr(NettyUtils.ATTR_KEY_KEEPALIVE).set(keepAlive);
-        session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
+        NettyUtils.keepAlive(session, keepAlive);
+        //session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
+        NettyUtils.cleanSession(session, msg.isCleanSession());
         //used to track the client in the subscription and publishing phases.
-        session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(msg.getClientID());
+        //session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(msg.getClientID());
+        NettyUtils.clientID(session, msg.getClientID());
         LOG.debug("Connect create session <{}>", session);
 
         setIdleTime(session.pipeline(), Math.round(keepAlive * 1.5f));
@@ -271,7 +273,7 @@ public class ProtocolProcessor {
     }
     
     public void processPubAck(Channel session, PubAckMessage msg) {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         int messageID = msg.getMessageID();
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
@@ -300,10 +302,10 @@ public class ProtocolProcessor {
     
     public void processPublish(Channel session, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
-        String user = (String) session.attr(NettyUtils.ATTR_KEY_USERNAME).get();
+        String user = NettyUtils.userName(session);
         if (!m_authorizator.canWrite(topic, user, clientID)) {
             LOG.debug("topic {} doesn't have write credentials", topic);
             return;
@@ -486,7 +488,7 @@ public class ProtocolProcessor {
         Channel session = m_clientIDs.get(clientId).session;
         LOG.debug("Session for clientId {} is {}", clientId, session);
 
-        String user = (String) session.attr(NettyUtils.ATTR_KEY_USERNAME).get();
+        String user = NettyUtils.userName(session);
         if (!m_authorizator.canRead(topic, user, clientId)) {
             LOG.debug("topic {} doesn't have read credentials", topic);
             return;
@@ -525,7 +527,7 @@ public class ProtocolProcessor {
      * to all interested subscribers.
      * */
     public void processPubRel(Channel session, PubRelMessage msg) {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
@@ -554,7 +556,7 @@ public class ProtocolProcessor {
     }
     
     public void processPubRec(Channel session, PubRecMessage msg) {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         int messageID = msg.getMessageID();
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
@@ -571,7 +573,7 @@ public class ProtocolProcessor {
     }
 
     public void processPubComp(Channel session, PubCompMessage msg) {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         int messageID = msg.getMessageID();
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
@@ -581,8 +583,8 @@ public class ProtocolProcessor {
     }
     
     public void processDisconnect(Channel session) throws InterruptedException {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
-        boolean cleanSession = (Boolean) session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).get();
+        String clientID = NettyUtils.clientID(session);
+        boolean cleanSession = NettyUtils.cleanSession(session);
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         clientSession.disconnect();
@@ -622,7 +624,7 @@ public class ProtocolProcessor {
     public void processUnsubscribe(Channel session, UnsubscribeMessage msg) {
         List<String> topics = msg.topicFilters();
         int messageID = msg.getMessageID();
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
 
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
@@ -651,7 +653,7 @@ public class ProtocolProcessor {
     }
 
     public void processSubscribe(Channel session, SubscribeMessage msg) {
-        String clientID = (String) session.attr(NettyUtils.ATTR_KEY_CLIENTID).get();
+        String clientID = NettyUtils.clientID(session);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);

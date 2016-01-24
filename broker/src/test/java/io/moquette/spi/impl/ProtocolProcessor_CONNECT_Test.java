@@ -246,8 +246,8 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setProtocolVersion(VERSION_3_1_1);
         connMsg.setClientID("CliID");
         connMsg.setCleanSession(false);
-        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("CliID");
-        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(false);
+        NettyUtils.clientID(m_session, "CliID");
+        NettyUtils.cleanSession(m_session, false);
 
         //Connect a first time
         m_processor.processConnect(m_session, connMsg);
@@ -277,8 +277,8 @@ public class ProtocolProcessor_CONNECT_Test {
         SubscribeMessage subscribeMsg = new SubscribeMessage();
         subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(),
                 ProtocolProcessorTest.FAKE_TOPIC));
-        m_session.attr(NettyUtils.ATTR_KEY_CLIENTID).set("CliID");
-        m_session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(false);
+        NettyUtils.clientID(m_session, "CliID");
+        NettyUtils.cleanSession(m_session, false);
         m_processor.processSubscribe(m_session, subscribeMsg);
         Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC,
                 AbstractMessage.QOSType.MOST_ONE);
