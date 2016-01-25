@@ -214,6 +214,10 @@ public class SubscriptionsStore {
         for (ClientTopicCouple matchingCouple : matchingSubs) {
             Subscription existingSub = subsForClient.get(matchingCouple.clientID);
             Subscription sub = m_sessionsStore.getSubscription(matchingCouple);
+            if (sub == null) {
+                //if the m_sessionStore hasn't the sub because the client disconnected
+                continue;
+            }
             //update the selected subscriptions if not present or if has a greater qos
             if (existingSub == null || existingSub.getRequestedQos().byteValue() < sub.getRequestedQos().byteValue()) {
                 subsForClient.put(matchingCouple.clientID, sub);

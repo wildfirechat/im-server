@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Properties;
@@ -254,5 +255,18 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
+    }
+
+    @Test(expected = EOFException.class)
+    public void testClientSubscribeAfterDisconnected() throws Exception {
+        LOG.info("*** testClientSubscribeAfterDisconnected ***");
+
+        subscribeToWithQos("foo", QoS.AT_MOST_ONCE);
+        m_subscriber.disconnect();
+
+        internalPublishToWithQosAndRetained("foo", QOSType.MOST_ONE, false);
+
+        //verifyMessageIsReceivedSuccessfully();
+        m_subscriber.receive(2, TimeUnit.MILLISECONDS);
     }
 }
