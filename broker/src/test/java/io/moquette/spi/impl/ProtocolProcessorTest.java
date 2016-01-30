@@ -73,6 +73,8 @@ public class ProtocolProcessorTest {
         connMsg.setProtocolVersion((byte) 0x03);
 
         m_channel = new EmbeddedChannel();
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
 
         //sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
@@ -211,8 +213,6 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_channel, msg);
 
@@ -235,8 +235,6 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_channel, msg);
 
@@ -252,8 +250,6 @@ public class ProtocolProcessorTest {
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
         
@@ -273,8 +269,6 @@ public class ProtocolProcessorTest {
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
 
@@ -298,8 +292,6 @@ public class ProtocolProcessorTest {
         UnsubscribeMessage msg = new UnsubscribeMessage();
         msg.setMessageID(1);
         msg.addTopicFilter(BAD_FORMATTED_TOPIC);
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
 
         //Exercise
         m_processor.processUnsubscribe(m_channel, msg);

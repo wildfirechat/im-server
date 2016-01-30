@@ -119,8 +119,8 @@ public class SubscribeDecoderTest {
         ByteBuf topicBuffer = Unpooled.buffer(4);
         topicBuffer.writeShort(messageID);
         for (SubscribeMessage.Couple couple : topics) {
-            topicBuffer.writeBytes(Utils.encodeString(couple.getTopicFilter()));
-            topicBuffer.writeByte(couple.getQos());
+            topicBuffer.writeBytes(Utils.encodeString(couple.topicFilter));
+            topicBuffer.writeByte(couple.qos);
         }
         
         buff.clear().writeByte(AbstractMessage.SUBSCRIBE << 4 | (byte)0x02)
@@ -131,8 +131,8 @@ public class SubscribeDecoderTest {
     private void initPollutedTopic(ByteBuf buff, int messageID, SubscribeMessage.Couple topic) throws IllegalAccessException {
         ByteBuf topicBuffer = Unpooled.buffer(4);
         topicBuffer.writeShort(messageID);
-        topicBuffer.writeBytes(Utils.encodeString(topic.getTopicFilter()));
-        topicBuffer.writeByte(0xF0 | topic.getQos());
+        topicBuffer.writeBytes(Utils.encodeString(topic.topicFilter));
+        topicBuffer.writeByte(0xF0 | topic.qos);
         
         buff.clear().writeByte(AbstractMessage.SUBSCRIBE << 4 | (byte)0x02)
                 .writeBytes(Utils.encodeRemainingLength(topicBuffer.readableBytes()));

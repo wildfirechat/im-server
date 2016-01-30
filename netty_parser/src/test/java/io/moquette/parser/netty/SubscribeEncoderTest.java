@@ -64,10 +64,10 @@ public class SubscribeEncoderTest {
         assertEquals((byte)0xBB, m_out.readByte());
         
         //Variable part
-        TestUtils.verifyString(c1.getTopicFilter(), m_out);
-        assertEquals(c1.getQos(), m_out.readByte());
-        TestUtils.verifyString(c2.getTopicFilter(), m_out);
-        assertEquals(c2.getQos(), m_out.readByte());
+        TestUtils.verifyString(c1.topicFilter, m_out);
+        assertEquals(c1.qos, m_out.readByte());
+        TestUtils.verifyString(c2.topicFilter, m_out);
+        assertEquals(c2.qos, m_out.readByte());
     }
     
     @Test(expected = IllegalArgumentException.class)

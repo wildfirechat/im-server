@@ -659,16 +659,16 @@ public class ProtocolProcessor {
         String user = NettyUtils.userName(channel);
         List<Subscription> newSubscriptions = new ArrayList<>();
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            if (!m_authorizator.canRead(req.getTopicFilter(), user, clientSession.clientID)) {
+            if (!m_authorizator.canRead(req.topicFilter, user, clientSession.clientID)) {
                 //send SUBACK with 0x80, the user hasn't credentials to read the topic
-                LOG.debug("topic {} doesn't have read credentials", req.getTopicFilter());
+                LOG.debug("topic {} doesn't have read credentials", req.topicFilter);
                 ackMessage.addType( AbstractMessage.QOSType.FAILURE);
                 continue;
             }
 
-            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.getQos());
-            Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos);
-            boolean valid = clientSession.subscribe(req.getTopicFilter(), newSubscription);
+            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.qos);
+            Subscription newSubscription = new Subscription(clientID, req.topicFilter, qos);
+            boolean valid = clientSession.subscribe(req.topicFilter, newSubscription);
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
             if (valid) {
                 newSubscriptions.add(newSubscription);
