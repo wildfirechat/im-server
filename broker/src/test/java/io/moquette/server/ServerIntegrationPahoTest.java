@@ -465,6 +465,25 @@ public class ServerIntegrationPahoTest {
         assertEquals("Hello 2", new String(cbSubscriber2.getMessage(true).getPayload()));
     }
 
+    @Test
+    public void testConnectSubPub_cycle_getTimeout_on_second_disconnect_issue142() throws Exception {
+        LOG.info("*** testConnectSubPub_cycle_getTimeout_on_second_disconnect_issue142 ***");
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 0);
+        m_client.publish("/topic", "Hello".getBytes(), 0, true);
+        m_client.disconnect();
+
+        //second loop
+        m_client.connect(options);
+        m_client.subscribe("/topic", 0);
+        m_client.publish("/topic", "Hello".getBytes(), 0, true);
+        m_client.disconnect(); //this should give timeout
+
+        assertFalse("after a disconnect the client should be disconnected", m_client.isConnected());
+    }
+
 
     protected MqttClient createClient(String clientName, String storeSuffix) throws MqttException {
         return createClient(clientName, storeSuffix, null);
