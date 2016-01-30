@@ -487,13 +487,7 @@ public class ProtocolProcessor {
         }
         Channel channel = m_clientIDs.get(clientId).channel;
         LOG.debug("Session for clientId {} is {}", clientId, channel);
-
-        String user = NettyUtils.userName(channel);
-        if (!m_authorizator.canRead(topic, user, clientId)) {
-            LOG.debug("topic {} doesn't have read credentials", topic);
-            return;
-        }
-        channel.writeAndFlush(pubMessage); //Or writeAdnFlush but flush is costly!!
+        channel.writeAndFlush(pubMessage);
     }
     
     private void sendPubRec(String clientID, int messageID) {
@@ -662,11 +656,18 @@ public class ProtocolProcessor {
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
 
+        String user = NettyUtils.userName(channel);
         List<Subscription> newSubscriptions = new ArrayList<>();
         for (SubscribeMessage.Couple req : msg.subscriptions()) {
+            if (!m_authorizator.canRead(req.getTopicFilter(), user, clientSession.clientID)) {
+                //send SUBACK with 0x80, the user hasn't credentials to read the topic
+                LOG.debug("topic {} doesn't have read credentials", req.getTopicFilter());
+                ackMessage.addType( AbstractMessage.QOSType.FAILURE);
+                continue;
+            }
+
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.getQos());
             Subscription newSubscription = new Subscription(clientID, req.getTopicFilter(), qos);
-            //boolean valid = subscribeSingleTopic(newSubscription, req.getTopicFilter());
             boolean valid = clientSession.subscribe(req.getTopicFilter(), newSubscription);
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
             if (valid) {

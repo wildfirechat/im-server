@@ -42,7 +42,7 @@ public class SubscribeMessage extends MessageIDMessage {
             return m_topicFilter;
         }
     }
-    private List<Couple> m_subscriptions = new ArrayList<Couple>();
+    private List<Couple> m_subscriptions = new ArrayList<>();
 
     public SubscribeMessage() {
         //Subscribe has always QoS 1

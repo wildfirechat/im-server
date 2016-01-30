@@ -28,6 +28,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
@@ -219,6 +220,32 @@ public class ProtocolProcessorTest {
         assertTrue(m_channel.readOutbound() instanceof SubAckMessage);
         Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
+    }
+
+    @Test
+    public void testSubscribedToNotAuthorizedTopic() {
+        final String fakeUserName = "UnAuthUser";
+        NettyUtils.userName(m_channel, fakeUserName);
+
+        IAuthorizator mockAuthorizator = mock(IAuthorizator.class);
+        when(mockAuthorizator.canRead(eq(FAKE_TOPIC), eq(fakeUserName), eq(FAKE_CLIENT_ID))).thenReturn(false);
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
+                mockAuthorizator, NO_OBSERVERS_INTERCEPTOR);
+
+        //Exercise
+        SubscribeMessage msg = new SubscribeMessage();
+        msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
+        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
+        NettyUtils.cleanSession(m_channel, false);
+        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
+        m_processor.processSubscribe(m_channel, msg);
+
+        //Verify
+        Object ackMsg = m_channel.readOutbound();
+        assertTrue(ackMsg instanceof SubAckMessage);
+        SubAckMessage subAckMsg = (SubAckMessage) ackMsg;
+        assertEquals(1, subAckMsg.types().size());
+        assertTrue(subAckMsg.types().contains(AbstractMessage.QOSType.FAILURE));
     }
     
     @Test

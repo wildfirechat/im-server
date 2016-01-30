@@ -2,9 +2,7 @@
 
 import org.fusesource.mqtt.client.BlockingConnection
 import org.fusesource.mqtt.client.MQTT
-import org.fusesource.mqtt.client.Message
 import org.fusesource.mqtt.client.QoS
-import org.fusesource.mqtt.client.Topic
 
 
 String host = args[0]
@@ -12,6 +10,7 @@ String topic = "/topic"
 if (args.length > 1) {
     topic = args[1]
 }
+println "publish script to topic ${topic} on host ${host}"
 //start a publisher
 MQTT mqtt2 = new MQTT()
 mqtt2.setHost(host, 1883)
