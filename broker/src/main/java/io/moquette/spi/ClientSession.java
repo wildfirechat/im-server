@@ -55,7 +55,7 @@ public class ClientSession {
 
     private Set<Subscription> subscriptions = new HashSet<>();
 
-    public final boolean cleanSession;
+    private volatile boolean cleanSession;
 
     private boolean active = false;
 
@@ -144,6 +144,11 @@ public class ClientSession {
 
     public boolean isCleanSession() {
         return this.cleanSession;
+    }
+
+    public void cleanSession(boolean cleanSession) {
+        this.cleanSession = cleanSession;
+        this.m_sessionsStore.updateCleanStatus(this.clientID, cleanSession);
     }
 
     public void activate() {

@@ -143,6 +143,11 @@ class MapDBSessionsStore implements ISessionsStore {
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
 
+    @Override
+    public void updateCleanStatus(String clientID, boolean cleanSession) {
+        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
+    }
+
     /**
      * Return the next valid packetIdentifier for the given client session.
      * */

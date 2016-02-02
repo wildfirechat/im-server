@@ -27,6 +27,8 @@ import io.moquette.spi.impl.subscriptions.Subscription;
  */
 public interface ISessionsStore {
 
+    void updateCleanStatus(String clientID, boolean cleanSession);
+
     class ClientTopicCouple {
         public final String topicFilter;
         public final String clientID;
@@ -99,6 +101,7 @@ public interface ISessionsStore {
     ClientSession createNewSession(String clientID, boolean cleanSession);
 
     /**
+     * @param clientID the client owning the session.
      * @return the session for the given clientID, null if not found.
      * */
     ClientSession sessionForClient(String clientID);

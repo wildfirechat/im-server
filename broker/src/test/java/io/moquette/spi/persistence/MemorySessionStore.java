@@ -126,6 +126,11 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public void updateCleanStatus(String clientID, boolean cleanSession) {
+        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
+    }
+
+    @Override
     public List<ClientTopicCouple> listAllSubscriptions() {
         List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
         for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {

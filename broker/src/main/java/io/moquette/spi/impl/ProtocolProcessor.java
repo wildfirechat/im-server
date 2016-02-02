@@ -219,6 +219,9 @@ public class ProtocolProcessor {
         if (!msg.isCleanSession() && isSessionAlreadyStored) {
             okResp.setSessionPresent(true);
         }
+        if (isSessionAlreadyStored) {
+            clientSession.cleanSession(msg.isCleanSession());
+        }
         channel.writeAndFlush(okResp);
         m_interceptor.notifyClientConnected(msg);
 

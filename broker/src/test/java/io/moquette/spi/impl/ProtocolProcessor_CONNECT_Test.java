@@ -19,6 +19,7 @@ import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.proto.messages.SubscribeMessage;
 import io.moquette.server.netty.NettyUtils;
+import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -205,6 +206,35 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+    }
+
+    @Test
+    public void connectWithCleanSessionUpdateClientSession() throws InterruptedException {
+        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
+                new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
+
+        //first connect with clean session true
+        connMsg.setClientID("123");
+        connMsg.setCleanSession(true);
+        m_processor.processConnect(m_session, connMsg);
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        m_processor.processDisconnect(m_session);
+        assertFalse(m_session.isOpen());
+
+        //second connect with clean session false
+        m_session = new EmbeddedChannel();
+        ConnectMessage secondConnMsg = new ConnectMessage();
+        secondConnMsg.setProtocolVersion((byte) 0x03);
+        secondConnMsg.setClientID("123");
+        m_processor.processConnect(m_session, secondConnMsg);
+        assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+
+        //Verify client session is clean false
+        ClientSession session = m_sessionStore.sessionForClient("123");
+        assertFalse(session.isCleanSession());
+
+        //Verify
+        //assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
     }
 
     @Test
