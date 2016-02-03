@@ -15,10 +15,10 @@
  */
 package io.moquette.server.netty;
 
-import io.moquette.proto.Utils;
-import io.moquette.proto.messages.*;
+import io.moquette.parser.proto.Utils;
+import io.moquette.parser.proto.messages.*;
 import io.moquette.spi.impl.ProtocolProcessor;
-import static io.moquette.proto.messages.AbstractMessage.*;
+import static io.moquette.parser.proto.messages.AbstractMessage.*;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

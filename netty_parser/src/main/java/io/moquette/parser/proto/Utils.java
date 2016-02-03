@@ -13,9 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto;
+package io.moquette.parser.proto;
 
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 /**
  * Common utils methodd used in codecs.

@@ -23,7 +23,7 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import org.junit.After;
 import org.junit.Before;

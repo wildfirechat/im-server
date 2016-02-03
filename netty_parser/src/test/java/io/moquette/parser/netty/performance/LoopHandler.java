@@ -1,11 +1,11 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.proto.messages.*;
-import static io.moquette.proto.messages.AbstractMessage.*;
+import io.moquette.parser.proto.messages.*;
+import static io.moquette.parser.proto.messages.AbstractMessage.*;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.moquette.proto.Utils;
+import io.moquette.parser.proto.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

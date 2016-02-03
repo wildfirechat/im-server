@@ -15,9 +15,9 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.ConnectMessage;
-import io.moquette.proto.messages.SubscribeMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.SubscribeMessage;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
@@ -33,9 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
-import static io.moquette.proto.messages.ConnAckMessage.BAD_USERNAME_OR_PASSWORD;
-import static io.moquette.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
-import static io.moquette.proto.messages.ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION;
+import static io.moquette.parser.proto.messages.ConnAckMessage.BAD_USERNAME_OR_PASSWORD;
+import static io.moquette.parser.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
+import static io.moquette.parser.proto.messages.ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION;
 import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsConnAck;
 import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsSubAck;
 import static org.junit.Assert.assertFalse;

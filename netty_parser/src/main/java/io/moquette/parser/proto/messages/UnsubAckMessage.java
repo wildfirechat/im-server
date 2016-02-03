@@ -13,12 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
 
 /**
  *
  * @author andrea
  */
-public abstract class ZeroLengthMessage extends AbstractMessage {
+public class UnsubAckMessage extends MessageIDMessage {
     
+    public UnsubAckMessage() {
+        m_messageType = UNSUBACK;
+    }
 }
+

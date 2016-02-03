@@ -20,8 +20,8 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import io.moquette.proto.messages.AbstractMessage.QOSType;
-import io.moquette.proto.messages.SubscribeMessage;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.SubscribeMessage;
 
 /**
  *

@@ -13,28 +13,15 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
-
-import java.util.ArrayList;
-import java.util.List;
+package io.moquette.parser.proto.messages;
 
 /**
- *
+ * Doesn't care DUP, QOS and RETAIN flags.
  * @author andrea
  */
-public class SubAckMessage extends MessageIDMessage {
-
-    List<QOSType> m_types = new ArrayList<QOSType>();
+public class PingRespMessage extends ZeroLengthMessage {
     
-    public SubAckMessage() {
-        m_messageType = SUBACK;
-    }
-
-    public List<QOSType> types() {
-        return m_types;
-    }
-
-    public void addType(QOSType type) {
-        m_types.add(type);
+    public PingRespMessage() {
+        m_messageType = PINGRESP;
     }
 }

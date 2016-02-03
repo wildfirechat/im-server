@@ -15,7 +15,7 @@
  */
 package io.moquette.parser.netty;
 
-import io.moquette.proto.messages.PubAckMessage;
+import io.moquette.parser.proto.messages.PubAckMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;

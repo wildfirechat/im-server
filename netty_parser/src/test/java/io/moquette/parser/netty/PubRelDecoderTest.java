@@ -22,7 +22,7 @@ import io.netty.util.AttributeMap;
 import io.netty.util.DefaultAttributeMap;
 import java.util.ArrayList;
 import java.util.List;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;

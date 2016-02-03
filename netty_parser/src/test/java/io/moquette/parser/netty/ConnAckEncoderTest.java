@@ -20,7 +20,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
-import io.moquette.proto.messages.ConnAckMessage;
+import io.moquette.parser.proto.messages.ConnAckMessage;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;

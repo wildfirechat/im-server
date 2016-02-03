@@ -18,9 +18,9 @@ package io.moquette.spi.impl;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.Interceptor;
 import io.moquette.interception.messages.*;
-import io.moquette.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

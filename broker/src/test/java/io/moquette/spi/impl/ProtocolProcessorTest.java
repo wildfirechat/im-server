@@ -15,9 +15,9 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.proto.messages.*;
+import io.moquette.parser.proto.messages.*;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;

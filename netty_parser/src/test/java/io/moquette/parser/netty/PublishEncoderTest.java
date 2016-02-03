@@ -23,8 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import io.moquette.proto.messages.AbstractMessage.QOSType;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.PublishMessage;
 
 /**
  *

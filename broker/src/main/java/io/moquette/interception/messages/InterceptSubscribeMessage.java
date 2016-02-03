@@ -1,6 +1,6 @@
 package io.moquette.interception.messages;
 
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
 /**

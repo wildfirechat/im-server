@@ -15,7 +15,7 @@
  */
 package io.moquette.spi;
 
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;

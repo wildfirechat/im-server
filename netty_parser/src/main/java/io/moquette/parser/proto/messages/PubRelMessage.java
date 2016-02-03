@@ -13,15 +13,15 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
 
 /**
- * Doesn't care DUP, QOS and RETAIN flags.
+ *
  * @author andrea
  */
-public class PingRespMessage extends ZeroLengthMessage {
+public class PubRelMessage extends MessageIDMessage {
     
-    public PingRespMessage() {
-        m_messageType = PINGRESP;
+    public PubRelMessage() {
+        m_messageType = PUBREL;
     }
 }

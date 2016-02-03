@@ -16,7 +16,7 @@
 package io.moquette.server.netty;
 
 import io.moquette.BrokerConstants;
-import io.moquette.commons.Constants;
+import io.moquette.parser.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
 import io.moquette.spi.security.ISslContextCreator;

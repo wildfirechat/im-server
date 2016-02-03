@@ -18,7 +18,7 @@ package io.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
 import java.util.List;
-import io.moquette.proto.messages.PingRespMessage;
+import io.moquette.parser.proto.messages.PingRespMessage;
 
 /**
  *

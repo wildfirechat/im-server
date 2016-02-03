@@ -15,12 +15,11 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.proto.messages.ConnAckMessage;
-import io.moquette.proto.messages.SubAckMessage;
-import io.netty.channel.Channel;
+import io.moquette.parser.proto.messages.ConnAckMessage;
+import io.moquette.parser.proto.messages.SubAckMessage;
 import io.netty.channel.embedded.EmbeddedChannel;
 
-import static io.moquette.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
+import static io.moquette.parser.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

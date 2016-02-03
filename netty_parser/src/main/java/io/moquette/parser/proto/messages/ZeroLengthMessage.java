@@ -13,27 +13,12 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto;
+package io.moquette.parser.proto.messages;
 
 /**
  *
  * @author andrea
  */
-public class MQTTException extends RuntimeException {
-
-    public MQTTException() {
-        super();
-    }
+public abstract class ZeroLengthMessage extends AbstractMessage {
     
-    public MQTTException(String msg) {
-        super(msg);
-    }
-    
-    public MQTTException(Throwable cause) {
-        super(cause);
-    }
-
-    public MQTTException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
 }

@@ -15,8 +15,8 @@
  */
 package io.moquette.parser.netty;
 
-import io.moquette.proto.messages.MessageIDMessage;
-import io.moquette.proto.messages.UnsubAckMessage;
+import io.moquette.parser.proto.messages.MessageIDMessage;
+import io.moquette.parser.proto.messages.UnsubAckMessage;
 
 /**
  *

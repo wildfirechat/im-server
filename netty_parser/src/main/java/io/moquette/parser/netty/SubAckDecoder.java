@@ -18,8 +18,8 @@ package io.moquette.parser.netty;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
 import java.util.List;
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.SubAckMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.SubAckMessage;
 
 /**
  *

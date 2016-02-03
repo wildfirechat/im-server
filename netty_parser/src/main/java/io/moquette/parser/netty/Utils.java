@@ -21,7 +21,7 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeMap;
 import java.io.UnsupportedEncodingException;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import org.slf4j.LoggerFactory;
 
 /**

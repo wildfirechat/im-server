@@ -15,8 +15,8 @@
  */
 package io.moquette.interception;
 
-import io.moquette.proto.messages.ConnectMessage;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
 /**

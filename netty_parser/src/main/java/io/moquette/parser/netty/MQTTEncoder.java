@@ -21,7 +21,7 @@ import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.MessageToByteEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 /**
  *

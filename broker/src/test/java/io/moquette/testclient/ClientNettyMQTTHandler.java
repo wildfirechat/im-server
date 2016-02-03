@@ -15,11 +15,11 @@
  */
 package io.moquette.testclient;
 
-import io.moquette.proto.Utils;
+import io.moquette.parser.proto.Utils;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.server.netty.NettyMQTTHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

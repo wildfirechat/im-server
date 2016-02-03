@@ -15,8 +15,8 @@
  */
 package io.moquette.parser.netty;
 
-import io.moquette.proto.messages.MessageIDMessage;
-import io.moquette.proto.messages.PubCompMessage;
+import io.moquette.parser.proto.messages.MessageIDMessage;
+import io.moquette.parser.proto.messages.PubCompMessage;
 
 
 /**

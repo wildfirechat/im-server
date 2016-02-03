@@ -17,7 +17,7 @@ package io.moquette.server;
 
 import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;

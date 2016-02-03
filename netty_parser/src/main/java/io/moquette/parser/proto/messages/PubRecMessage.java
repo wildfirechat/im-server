@@ -13,14 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.commons;
-
-import java.io.File;
+package io.moquette.parser.proto.messages;
 
 /**
- * Contains some useful constants.
+ * Placeholder for PUBREC message.
+ * 
+ * @author andrea
  */
-public class Constants {
-    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
-
+public class PubRecMessage extends MessageIDMessage {
+    
+    public PubRecMessage() {
+        m_messageType = PUBREC;
+    }
 }

@@ -1,6 +1,6 @@
 package io.moquette.interception.messages;
 
-import io.moquette.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
 
 /**
  * @author Wagner Macedo

@@ -15,7 +15,7 @@
  */package io.moquette.spi.impl;
 
 import io.netty.util.AttributeKey;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 import java.util.HashMap;
 import java.util.Map;

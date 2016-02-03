@@ -19,7 +19,7 @@ package io.moquette.spi.persistence;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.proto.MQTTException;
+import io.moquette.parser.proto.MQTTException;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;

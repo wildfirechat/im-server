@@ -13,16 +13,28 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Placeholder for PUBREC message.
- * 
+ *
  * @author andrea
  */
-public class PubRecMessage extends MessageIDMessage {
+public class SubAckMessage extends MessageIDMessage {
+
+    List<QOSType> m_types = new ArrayList<QOSType>();
     
-    public PubRecMessage() {
-        m_messageType = PUBREC;
+    public SubAckMessage() {
+        m_messageType = SUBACK;
+    }
+
+    public List<QOSType> types() {
+        return m_types;
+    }
+
+    public void addType(QOSType type) {
+        m_types.add(type);
     }
 }

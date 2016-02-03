@@ -1,6 +1,6 @@
 package io.moquette.interception.messages;
 
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 
 import java.nio.ByteBuffer;
 

@@ -13,25 +13,37 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
+
+import java.nio.ByteBuffer;
 
 /**
- * Base class for alla the messages that carries only MessageID. (PUBACK, PUBREC,
- * PUBREL, PUBCOMP, UNSUBACK)
- * 
- * The flags dup, QOS and Retained doesn't take care.
- * 
+ *
  * @author andrea
  */
-public abstract class MessageIDMessage extends AbstractMessage {
-    protected Integer m_messageID; //could be null if Qos is == 0
+public class PublishMessage extends MessageIDMessage {
 
-    public Integer getMessageID() {
-        return m_messageID;
+    protected String m_topicName;
+    protected ByteBuffer m_payload;
+
+    public PublishMessage() {
+        m_messageType = AbstractMessage.PUBLISH;
     }
 
-    public void setMessageID(Integer messageID) {
-        this.m_messageID = messageID;
+    public String getTopicName() {
+        return m_topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.m_topicName = topicName;
+    }
+
+    public ByteBuffer getPayload() {
+        return m_payload;
+    }
+
+    public void setPayload(ByteBuffer payload) {
+        this.m_payload = payload;
     }
 
 }

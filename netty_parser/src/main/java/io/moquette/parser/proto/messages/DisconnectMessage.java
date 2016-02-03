@@ -13,16 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
 
 /**
- * Placeholder for PUBACK message.
+ * Doesn't care DUP, QOS and RETAIN flags.
  * 
  * @author andrea
  */
-public class PubAckMessage extends MessageIDMessage {
+public class DisconnectMessage extends ZeroLengthMessage {
     
-    public PubAckMessage() {
-        m_messageType = PUBACK;
+    public DisconnectMessage() {
+        m_messageType = DISCONNECT;
     }
 }

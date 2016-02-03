@@ -13,37 +13,27 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
-
-import java.nio.ByteBuffer;
+package io.moquette.parser.proto;
 
 /**
  *
  * @author andrea
  */
-public class PublishMessage extends MessageIDMessage {
+public class MQTTException extends RuntimeException {
 
-    protected String m_topicName;
-    protected ByteBuffer m_payload;
-
-    public PublishMessage() {
-        m_messageType = AbstractMessage.PUBLISH;
+    public MQTTException() {
+        super();
+    }
+    
+    public MQTTException(String msg) {
+        super(msg);
+    }
+    
+    public MQTTException(Throwable cause) {
+        super(cause);
     }
 
-    public String getTopicName() {
-        return m_topicName;
+    public MQTTException(String msg, Throwable cause) {
+        super(msg, cause);
     }
-
-    public void setTopicName(String topicName) {
-        this.m_topicName = topicName;
-    }
-
-    public ByteBuffer getPayload() {
-        return m_payload;
-    }
-
-    public void setPayload(ByteBuffer payload) {
-        this.m_payload = payload;
-    }
-
 }

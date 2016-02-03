@@ -23,7 +23,7 @@ import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 /**
  *

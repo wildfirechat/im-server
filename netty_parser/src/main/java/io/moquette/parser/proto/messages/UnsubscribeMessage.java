@@ -13,16 +13,27 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Doesn't care DUP, QOS and RETAIN flags.
- * 
+ *
  * @author andrea
  */
-public class DisconnectMessage extends ZeroLengthMessage {
+public class UnsubscribeMessage extends MessageIDMessage {
+    List<String> m_types = new ArrayList<String>();
     
-    public DisconnectMessage() {
-        m_messageType = DISCONNECT;
+    public UnsubscribeMessage() {
+        m_messageType = UNSUBSCRIBE;
+    }
+
+    public List<String> topicFilters() {
+        return m_types;
+    }
+
+    public void addTopicFilter(String type) {
+        m_types.add(type);
     }
 }

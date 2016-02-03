@@ -17,9 +17,9 @@ package io.moquette.parser.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.AbstractMessage.QOSType;
-import io.moquette.proto.messages.SubAckMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.SubAckMessage;
 
 /**
  *

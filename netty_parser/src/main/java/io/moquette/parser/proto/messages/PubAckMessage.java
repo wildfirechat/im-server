@@ -13,15 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.proto.messages;
 
 /**
- *
+ * Placeholder for PUBACK message.
+ * 
  * @author andrea
  */
-public class PubRelMessage extends MessageIDMessage {
+public class PubAckMessage extends MessageIDMessage {
     
-    public PubRelMessage() {
-        m_messageType = PUBREL;
+    public PubAckMessage() {
+        m_messageType = PUBACK;
     }
 }

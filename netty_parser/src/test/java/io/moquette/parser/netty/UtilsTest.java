@@ -24,8 +24,8 @@ import org.junit.Test;
 import static io.moquette.parser.netty.TestUtils.verifyBuff;
 import static org.junit.Assert.*;
 
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.UnsubscribeMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.UnsubscribeMessage;
 
 /**
  *

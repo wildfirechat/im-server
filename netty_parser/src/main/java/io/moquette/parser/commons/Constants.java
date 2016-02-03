@@ -13,27 +13,14 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.proto.messages;
+package io.moquette.parser.commons;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 
 /**
- *
- * @author andrea
+ * Contains some useful constants.
  */
-public class UnsubscribeMessage extends MessageIDMessage {
-    List<String> m_types = new ArrayList<String>();
-    
-    public UnsubscribeMessage() {
-        m_messageType = UNSUBSCRIBE;
-    }
+public class Constants {
+    public static final int DEFAULT_CONNECT_TIMEOUT = 10;
 
-    public List<String> topicFilters() {
-        return m_types;
-    }
-
-    public void addTopicFilter(String type) {
-        m_types.add(type);
-    }
 }

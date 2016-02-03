@@ -16,7 +16,7 @@
 package io.moquette.spi.impl.subscriptions;
 
 import java.io.Serializable;
-import io.moquette.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 
 /**

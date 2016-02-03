@@ -15,10 +15,10 @@
  */
 package io.moquette.parser.netty;
 
-import io.moquette.proto.messages.PubRecMessage;
+import io.moquette.parser.proto.messages.PubRecMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 /**
  *

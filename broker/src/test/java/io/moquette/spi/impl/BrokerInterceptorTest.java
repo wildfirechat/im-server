@@ -16,10 +16,10 @@
 package io.moquette.spi.impl;
 
 import io.moquette.interception.messages.*;
-import io.moquette.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

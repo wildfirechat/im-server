@@ -17,7 +17,7 @@ package io.moquette.spi;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 import java.util.Collection;
 import java.util.List;

@@ -15,8 +15,8 @@
  */
 package io.moquette.server;
 
-import io.moquette.proto.messages.AbstractMessage.QOSType;
-import io.moquette.proto.messages.PublishMessage;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import org.fusesource.mqtt.client.*;

@@ -15,10 +15,10 @@
  */
 package io.moquette.server;
 
-import io.moquette.proto.messages.ConnectMessage;
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.proto.messages.AbstractMessage.QOSType;
-import io.moquette.proto.messages.ConnAckMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
+import io.moquette.parser.proto.messages.ConnAckMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.testclient.Client;

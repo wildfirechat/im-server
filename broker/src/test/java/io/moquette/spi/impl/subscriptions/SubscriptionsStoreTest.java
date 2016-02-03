@@ -24,7 +24,7 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.MemoryStorageService;
-import io.moquette.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.AbstractMessage;
 
 import static org.junit.Assert.*;
 import org.junit.Before;

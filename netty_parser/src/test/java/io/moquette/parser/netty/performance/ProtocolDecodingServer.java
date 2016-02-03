@@ -1,6 +1,6 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.commons.Constants;
+import io.moquette.parser.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
 import io.netty.bootstrap.ServerBootstrap;

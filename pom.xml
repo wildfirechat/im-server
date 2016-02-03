@@ -51,7 +51,6 @@
     </contributors>
 
     <modules>
-        <module>parser_commons</module>
         <module>netty_parser</module>
         <module>broker</module>
         <module>distribution</module>
