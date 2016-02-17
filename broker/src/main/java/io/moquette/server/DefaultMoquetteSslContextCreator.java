@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.*;
 import java.net.URL;
 import java.security.*;
@@ -69,6 +72,11 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
             return null;
         }
 
+		// if client authentification is enabled a trustmanager needs to be
+		// added to the ServerContext
+		String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
+		boolean needsClientAuth = Boolean.valueOf(sNeedsClientAuth);
+
         try {
             InputStream jksInputStream = jksDatastore(jksPath);
             SSLContext serverContext = SSLContext.getInstance("TLS");
@@ -76,7 +84,16 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
             ks.load(jksInputStream, keyStorePassword.toCharArray());
             final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, keyManagerPassword.toCharArray());
-            serverContext.init(kmf.getKeyManagers(), null, null);
+			TrustManager[] trustManagers = null;
+			if (needsClientAuth) {
+				// use keystore as truststore, as server needs to trust certificates signed by the server certificates
+				TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+				tmf.init(ks);
+				trustManagers = tmf.getTrustManagers();
+			}
+			// init sslContext
+			serverContext.init(kmf.getKeyManagers(), trustManagers, null);
+
             return serverContext;
         } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
                 | KeyManagementException | IOException ex) {
