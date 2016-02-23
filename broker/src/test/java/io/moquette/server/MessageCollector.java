@@ -81,18 +81,15 @@ public class MessageCollector implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable cause) {
-        System.out.println("connectionLost");
         m_connectionLost = true;
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        System.out.println("Message received");
         m_messages.offer(new ReceivedMessage(message, topic));
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-            System.out.println("deliveryComplete");
-        }
+    }
 }

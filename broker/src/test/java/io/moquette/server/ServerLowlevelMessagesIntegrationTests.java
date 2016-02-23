@@ -22,7 +22,10 @@ import io.moquette.parser.proto.messages.ConnAckMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.testclient.Client;
-import org.fusesource.mqtt.client.*;
+import org.eclipse.paho.client.mqttv3.IMqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,10 +45,11 @@ import static org.junit.Assert.*;
  */
 public class ServerLowlevelMessagesIntegrationTests {
     private static final Logger LOG = LoggerFactory.getLogger(ServerLowlevelMessagesIntegrationTests.class);
-    
+    static MqttClientPersistence s_dataStore;
     Server m_server;
     Client m_client;
-    MQTT m_subscriberDef;
+    IMqttClient m_willSubscriber;
+    MessageCollector m_messageCollector;
     IConfig m_config;
 
     protected void startServer() throws IOException {
@@ -59,9 +63,9 @@ public class ServerLowlevelMessagesIntegrationTests {
     public void setUp() throws Exception {
         startServer();
         m_client = new Client("localhost");
-        m_subscriberDef = new MQTT();
-        m_subscriberDef.setHost("localhost", 1883);
-        m_subscriberDef.setClientId("Subscriber");
+        m_willSubscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_dataStore);
+        m_messageCollector = new MessageCollector();
+        m_willSubscriber.setCallback(m_messageCollector);
     }
 
     @After
@@ -95,10 +99,8 @@ public class ServerLowlevelMessagesIntegrationTests {
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";
         
-        BlockingConnection willSubscriber = m_subscriberDef.blockingConnection();
-        willSubscriber.connect();
-        Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_MOST_ONCE)};
-        willSubscriber.subscribe(topics);
+        m_willSubscriber.connect();
+        m_willSubscriber.subscribe(willTestamentTopic, 0);
         
         int keepAlive = 2; //secs
         ConnectMessage connectMessage = new ConnectMessage();
@@ -116,18 +118,17 @@ public class ServerLowlevelMessagesIntegrationTests {
 
         //but after the 2 KEEP ALIVE timeout expires it gets fired,
         //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
-        Message msg = willSubscriber.receive(3300, TimeUnit.MILLISECONDS);
+        MqttMessage msg = m_messageCollector.getMessage(3300);
         long willMessageReceiveTime = System.currentTimeMillis();
         if (msg == null) {
             LOG.warn("testament message is null");
         }
         assertNotNull("the will message should be fired after keep alive!", msg);
-        msg.ack();
         //the will message hasn't to be received before the elapsing of Keep Alive timeout
         assertTrue(willMessageReceiveTime - connectTime  > 3000);
         
         assertEquals(willTestamentMsg, new String(msg.getPayload()));
-        willSubscriber.disconnect();
+        m_willSubscriber.disconnect();
     }
     
     AbstractMessage receivedMsg;
