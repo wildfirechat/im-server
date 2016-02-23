@@ -41,6 +41,7 @@ public class ServerIntegrationPahoTest {
     
     Server m_server;
     IMqttClient m_client;
+    IMqttClient m_publisher;
     TestCallback m_callback;
     IConfig m_config;
 
@@ -68,12 +69,18 @@ public class ServerIntegrationPahoTest {
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
         m_callback = new TestCallback();
         m_client.setCallback(m_callback);
+
+        m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
     }
 
     @After
     public void tearDown() throws Exception {
-        if (m_client.isConnected()) {
+        if (m_client != null && m_client.isConnected()) {
             m_client.disconnect();
+        }
+
+        if (m_publisher != null && m_publisher.isConnected()) {
+            m_publisher.disconnect();
         }
 
         stopServer();
@@ -82,6 +89,18 @@ public class ServerIntegrationPahoTest {
     private void stopServer() {
         m_server.stopServer();
         IntegrationUtils.cleanPersistenceFile(m_config);
+    }
+
+    @Test
+    public void connectWithCredentials() throws Exception {
+        LOG.info("*** connectWithCredentials ***");
+        m_client = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setUserName("testuser");
+        options.setPassword("passwd".toCharArray());
+        m_client.connect(options);
+
+        assertTrue(true);
     }
 
     @Test
@@ -482,6 +501,126 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect(); //this should give timeout
 
         assertFalse("after a disconnect the client should be disconnected", m_client.isConnected());
+    }
+
+    @Test
+    public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws Exception {
+        LOG.info("*** checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1 ***");
+        MessageCollector messagesCollector = new MessageCollector();
+        m_client.setCallback(messagesCollector);
+        m_publisher.connect();
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+
+        //force the publisher to send
+        m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
+
+        //read the first message and drop the connection
+        MqttMessage msg = messagesCollector.getMessage(true);
+        assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
+        m_client.disconnect();
+
+        m_publisher.publish("/topic", "Hello world MQTT!!-2".getBytes(), 1, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!-3".getBytes(), 1, false);
+
+        //reconnect and expect to receive the hello 2 message
+        m_client.connect(options);
+        msg = messagesCollector.getMessage(true);
+        assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
+
+        msg = messagesCollector.getMessage(true);
+        assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
+        m_client.disconnect();
+    }
+
+    @Test
+    public void checkReplayStoredPublish_forNoCleanSession_qos1() throws Exception {
+        LOG.info("*** checkReplayStoredPublish_forNoCleanSession_qos1 ***");
+        MessageCollector messagesCollector = new MessageCollector();
+        m_client.setCallback(messagesCollector);
+        m_publisher.connect();
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+        m_client.disconnect();
+
+        //force the publisher to send
+        m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
+
+        //reconnect and expect to receive the hello 2 message
+        m_client.connect(options);
+        m_client.subscribe("/topic", 1);
+        MqttMessage msg = messagesCollector.getMessage(true);
+        assertNotNull(msg);
+        assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
+    }
+
+    /**
+     * subscriber connect and subscribe on "topic"
+     * subscriber disconnects
+     * publisher connects and send two message "hello1" "hello2" to "topic"
+     * subscriber connects again and receive "hello1" "hello2"
+     */
+    @Test
+    public void checkQoS2SubscriberDisconnectReceivePersistedPublishes() throws Exception {
+        LOG.info("*** checkQoS2SubscriberDisconnectReceivePersistedPublishes ***");
+        MessageCollector messagesCollector = new MessageCollector();
+        m_client.setCallback(messagesCollector);
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("topic", 2);
+        m_client.disconnect();
+
+        m_publisher.connect();
+        m_publisher.publish("topic", "Hello1".getBytes(), 2, true);
+        m_publisher.publish("topic", "Hello2".getBytes(), 2, true);
+        m_publisher.disconnect();
+
+        //subscriber reconnects
+        m_client.connect(options);
+        //subscriber should receive the 2 messages missed
+        MqttMessage msg = messagesCollector.getMessage(1);
+        assertNotNull(msg);
+        assertEquals("Hello1", new String(msg.getPayload()));
+        msg = messagesCollector.getMessage(1);
+        assertNotNull(msg);
+        assertEquals("Hello2", new String(msg.getPayload()));
+    }
+
+    /**
+     * subscriber connect and subscribe on "a/b" QoS 1 and "a/+" QoS 2
+     * publisher connects and send a message "hello" on "a/b"
+     * subscriber must receive only a single message not twice
+     */
+    @Test
+    public void checkSinglePublishOnOverlappingSubscriptions() throws Exception {
+        LOG.info("*** checkSinglePublishOnOverlappingSubscriptions ***");
+        MessageCollector messagesCollector = new MessageCollector();
+        m_client.setCallback(messagesCollector);
+        m_publisher.connect();
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(false);
+        m_client.connect(options);
+        m_client.subscribe("a/+", 2);
+        m_client.subscribe("a/b", 1);
+
+        //force the publisher to send
+        m_publisher.publish("a/b", "Hello world MQTT!!".getBytes(), 1, false);
+
+        //reconnect and expect to receive the hello 2 message
+        MqttMessage msg = messagesCollector.getMessage(1);
+        assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
+
+        //try to listen a second publish
+        msg = messagesCollector.getMessage(1);
+        assertNull(msg);
     }
 
 

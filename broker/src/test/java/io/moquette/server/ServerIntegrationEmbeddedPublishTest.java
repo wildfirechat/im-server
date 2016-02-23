@@ -19,18 +19,19 @@ import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
-import org.fusesource.mqtt.client.*;
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -38,9 +39,12 @@ public class ServerIntegrationEmbeddedPublishTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationEmbeddedPublishTest.class);
 
+    static MqttClientPersistence s_dataStore;
+    static MqttClientPersistence s_pubDataStore;
+
     Server m_server;
-    MQTT m_mqtt;
-    BlockingConnection m_subscriber;
+    IMqttClient m_subscriber;
+    TestCallback m_callback;
     IConfig m_config;
 
     protected void startServer() throws IOException {
@@ -50,18 +54,28 @@ public class ServerIntegrationEmbeddedPublishTest {
         m_server.startServer(m_config);
     }
 
+    @BeforeClass
+    public static void beforeTests() {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        s_dataStore = new MqttDefaultFilePersistence(tmpDir);
+        s_pubDataStore = new MqttDefaultFilePersistence(tmpDir + File.separator + "publisher");
+    }
+
     @Before
     public void setUp() throws Exception {
+        String dbPath = IntegrationUtils.localMapDBPath();
+        IntegrationUtils.cleanPersistenceFile(dbPath);
+
         startServer();
 
-        m_mqtt = new MQTT();
-        m_mqtt.setHost("localhost", 1883);
-        m_mqtt.setClientId("Subscriber");
+        m_subscriber = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
+        m_callback = new TestCallback();
+        m_subscriber.setCallback(m_callback);
     }
 
     @After
     public void tearDown() throws Exception {
-        if (m_subscriber != null) {
+        if (m_subscriber != null && m_subscriber.isConnected()) {
             m_subscriber.disconnect();
         }
 
@@ -69,11 +83,9 @@ public class ServerIntegrationEmbeddedPublishTest {
         IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
-    private void subscribeToWithQos(String topic, QoS qos) throws Exception {
-        m_subscriber = m_mqtt.blockingConnection();
+    private void subscribeToWithQos(String topic, int qos) throws Exception {
         m_subscriber.connect();
-        Topic[] topics = new Topic[]{new Topic(topic, qos)};
-        m_subscriber.subscribe(topics);
+        m_subscriber.subscribe(topic, qos);
     }
 
     private void internalPublishToWithQosAndRetained(String topic, QOSType qos, boolean retained) {
@@ -86,13 +98,13 @@ public class ServerIntegrationEmbeddedPublishTest {
     }
 
     private void verifyNoMessageIsReceived() throws Exception {
-        Message msg = m_subscriber.receive(1, TimeUnit.SECONDS);
+        MqttMessage msg = m_callback.getMessage(false);
         assertNull(msg);
     }
 
     private void verifyMessageIsReceivedSuccessfully() throws Exception {
-        Message msg = m_subscriber.receive(2, TimeUnit.SECONDS);
-        msg.ack();
+        //check in 2 seconds
+        MqttMessage msg = m_callback.getMessage(2);
         assertNotNull(msg);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
     }
@@ -103,7 +115,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, false);
-        subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
+        subscribeToWithQos("/topic", 0);
 
         //Verify
         verifyNoMessageIsReceived();
@@ -113,7 +125,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeNotRetainedQoS0IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS0 ***");
 
-        subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
+        subscribeToWithQos("/topic", 0);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, false);
@@ -126,7 +138,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeRetainedQoS0IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS0IsSent ***");
 
-        subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
+        subscribeToWithQos("/topic", 0);
         //super ugly but we need the MQTT client lib finish it's job before us
         Thread.sleep(1000);
 
@@ -143,7 +155,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
-        subscribeToWithQos("/topic", QoS.AT_MOST_ONCE);
+        subscribeToWithQos("/topic", 0);
 
         //Verify
         verifyNoMessageIsReceived();
@@ -153,7 +165,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeNotRetainedQoS1IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS1IsSent ***");
 
-        subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        subscribeToWithQos("/topic", 1);
         //super ugly but we need the MQTT client lib finish it's job before us
         Thread.sleep(1000);
 
@@ -170,7 +182,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, false);
-        subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        subscribeToWithQos("/topic", 1);
 
         //Verify
         verifyNoMessageIsReceived();
@@ -180,7 +192,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeRetainedQoS1IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS1IsSent ***");
 
-        subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        subscribeToWithQos("/topic", 1);
         //super ugly but we need the MQTT client lib finish it's job before us
         Thread.sleep(1000);
 
@@ -197,7 +209,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
-        subscribeToWithQos("/topic", QoS.AT_LEAST_ONCE);
+        subscribeToWithQos("/topic", 1);
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
@@ -207,7 +219,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeNotRetainedQoS2IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS2IsSent ***");
 
-        subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        subscribeToWithQos("/topic", 2);
         //super ugly but we need the MQTT client lib finish it's job before us
         Thread.sleep(1000);
 
@@ -224,7 +236,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, false);
-        subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        subscribeToWithQos("/topic", 2);
 
         //Verify
         verifyNoMessageIsReceived();
@@ -234,7 +246,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeBeforeRetainedQoS2IsSent() throws Exception {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS2IsSent ***");
 
-        subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        subscribeToWithQos("/topic", 2);
         //super ugly but we need the MQTT client lib finish it's job before us
         Thread.sleep(1000);
 
@@ -251,22 +263,23 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, true);
-        subscribeToWithQos("/topic", QoS.EXACTLY_ONCE);
+        subscribeToWithQos("/topic", 2);
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
-    @Test(expected = EOFException.class)
+    @Test(expected = IllegalStateException.class)
     public void testClientSubscribeAfterDisconnected() throws Exception {
         LOG.info("*** testClientSubscribeAfterDisconnected ***");
 
-        subscribeToWithQos("foo", QoS.AT_MOST_ONCE);
+        subscribeToWithQos("foo", 0);
         m_subscriber.disconnect();
 
         internalPublishToWithQosAndRetained("foo", QOSType.MOST_ONE, false);
 
         //verifyMessageIsReceivedSuccessfully();
-        m_subscriber.receive(2, TimeUnit.MILLISECONDS);
+        //m_subscriber.receive(2, TimeUnit.MILLISECONDS);
+        m_callback.getMessage(true);
     }
 }
