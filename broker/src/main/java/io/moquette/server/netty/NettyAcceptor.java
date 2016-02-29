@@ -205,10 +205,12 @@ public class NettyAcceptor implements ServerAcceptor {
 
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
+        String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
+        final boolean needsClientAuth =  Boolean.valueOf(sNeedsClientAuth);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                pipeline.addLast("ssl", createSslHandler(sslContext));
+                pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
@@ -231,10 +233,12 @@ public class NettyAcceptor implements ServerAcceptor {
         int sslPort = Integer.parseInt(sslPortProp);
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
+        String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
+        final boolean needsClientAuth =  Boolean.valueOf(sNeedsClientAuth);
         initFactory(host, sslPort, new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
-                pipeline.addLast("ssl", createSslHandler(sslContext));
+                pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
                 pipeline.addLast("httpEncoder", new HttpResponseEncoder());
                 pipeline.addLast("httpDecoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
@@ -281,9 +285,12 @@ public class NettyAcceptor implements ServerAcceptor {
         LOG.info(String.format("Bytes read: %d, bytes wrote: %d", bytesMetrics.readBytes(), bytesMetrics.wroteBytes()));
     }
 
-    private ChannelHandler createSslHandler(SSLContext sslContext) {
+    private ChannelHandler createSslHandler(SSLContext sslContext, boolean needsClientAuth) {
         SSLEngine sslEngine = sslContext.createSSLEngine();
         sslEngine.setUseClientMode(false);
+        if(needsClientAuth) {
+        	sslEngine.setNeedClientAuth(true);
+        }
         return new SslHandler(sslEngine);
     }
 }

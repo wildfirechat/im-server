@@ -41,4 +41,5 @@ public class BrokerConstants {
     public static final int PORT = 1883;
     public static final int WEBSOCKET_PORT = 8080;
     public static final String HOST = "0.0.0.0";
+    public static final String NEED_CLIENT_AUTH = "need_client_auth";
 }
