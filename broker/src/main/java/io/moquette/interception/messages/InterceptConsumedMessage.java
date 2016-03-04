@@ -4,11 +4,13 @@ import static io.moquette.spi.IMessagesStore.StoredMessage;
 
 public class InterceptConsumedMessage {
 	final private StoredMessage msg;
-	 private final String username;
+	private final String username;
+	private final String topic;
 	
-	public InterceptConsumedMessage( final StoredMessage msg, String username) {
+	public InterceptConsumedMessage( final StoredMessage msg, final String topic, final String username) {
 		this.msg = msg;
 		this.username = username;
+		this.topic = topic;
 	}
 	
 	public StoredMessage getMsg() {
@@ -17,5 +19,9 @@ public class InterceptConsumedMessage {
 
 	public String getUsername() {
 		return username;
+	}
+
+	public String getTopic() {
+		return topic;
 	}
 }

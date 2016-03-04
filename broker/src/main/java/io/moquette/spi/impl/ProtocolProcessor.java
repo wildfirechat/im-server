@@ -287,8 +287,10 @@ public class ProtocolProcessor {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
         targetSession.inFlightAcknowledged(messageID);
+        
+        String topic = inflightMsg.getTopic();
 
-        m_interceptor.notifyMessageConsumed(new InterceptConsumedMessage(inflightMsg, username));
+        m_interceptor.notifyMessageConsumed(new InterceptConsumedMessage(inflightMsg, topic, username));
     }
 
     private void verifyToActivate(String clientID, ClientSession targetSession) {
@@ -587,7 +589,8 @@ public class ProtocolProcessor {
         verifyToActivate(clientID, targetSession);
         targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
-        m_interceptor.notifyMessageConsumed( new InterceptConsumedMessage(inflightMsg, username) );
+        String topic = inflightMsg.getTopic();
+        m_interceptor.notifyMessageConsumed( new InterceptConsumedMessage(inflightMsg, topic, username) );
     }
     
     public void processDisconnect(Channel channel) {
