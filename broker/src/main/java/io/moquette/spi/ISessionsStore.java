@@ -18,6 +18,7 @@ package io.moquette.spi;
 import java.util.Collection;
 import java.util.List;
 
+import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
 /**
@@ -138,4 +139,6 @@ public interface ISessionsStore {
     void secondPhaseAckWaiting(String clientID, int messageID);
 
     String mapToGuid(String clientID, int messageID);
+    
+    public StoredMessage getInflightMessage(String clientID, int messageID);
 }

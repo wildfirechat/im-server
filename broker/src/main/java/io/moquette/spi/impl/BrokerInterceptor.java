@@ -106,4 +106,16 @@ final class BrokerInterceptor implements Interceptor {
             });
         }
     }
+
+	@Override
+	public void notifyMessageConsumed( final InterceptConsumedMessage msg ) {
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onMessageConsumed(msg);
+                }
+            });
+        }
+    }
 }

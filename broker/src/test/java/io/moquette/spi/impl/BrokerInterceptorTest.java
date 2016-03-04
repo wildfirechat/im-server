@@ -63,6 +63,11 @@ public class BrokerInterceptorTest {
         public void onUnsubscribe(InterceptUnsubscribeMessage msg) {
             n.set(80);
         }
+
+		@Override
+		public void onMessageConsumed( InterceptConsumedMessage msg ) {
+			n.set(90);
+		}
     }
 
     private static final BrokerInterceptor interceptor = new BrokerInterceptor(Arrays.<InterceptHandler>asList(new MockObserver()));

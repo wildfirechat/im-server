@@ -15,6 +15,7 @@
  */
 package io.moquette.interception;
 
+import io.moquette.interception.messages.InterceptConsumedMessage;
 import io.moquette.parser.proto.messages.ConnectMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -44,4 +45,5 @@ public interface Interceptor {
 
     void notifyTopicUnsubscribed(String topic, String clientID);
 
+    void notifyMessageConsumed(InterceptConsumedMessage msg);
 }

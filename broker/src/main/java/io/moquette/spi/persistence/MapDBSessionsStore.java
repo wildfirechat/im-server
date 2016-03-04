@@ -17,6 +17,7 @@ package io.moquette.spi.persistence;
 
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -237,4 +238,15 @@ class MapDBSessionsStore implements ISessionsStore {
     static String messageId2GuidsMapName(String clientID) {
         return "guidsMapping_" + clientID;
     }
+
+	@Override
+	public StoredMessage getInflightMessage( String clientID, int messageID ) {
+		Map<Integer, String> clientEntries = m_inflightStore.get( clientID );
+		if( clientEntries == null )
+			return null;
+		String guid = clientEntries.get( messageID );
+		if( guid == null )
+			return null;
+		return m_messagesStore.getMessageByGuid( guid );
+	}
 }
