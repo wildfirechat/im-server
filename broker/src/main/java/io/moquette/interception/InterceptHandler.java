@@ -18,7 +18,7 @@ package io.moquette.interception;
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.interception.messages.InterceptConnectMessage;
-import io.moquette.interception.messages.InterceptConsumedMessage;
+import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.interception.messages.InterceptDisconnectMessage;
 import io.moquette.interception.messages.InterceptPublishMessage;
 import io.moquette.interception.messages.InterceptSubscribeMessage;
@@ -48,5 +48,5 @@ public interface InterceptHandler {
 
     void onUnsubscribe(InterceptUnsubscribeMessage msg);
     
-    void onMessageConsumed(InterceptConsumedMessage msg);
+    void onMessageAcknowledged(InterceptAcknowledgedMessage msg);
 }

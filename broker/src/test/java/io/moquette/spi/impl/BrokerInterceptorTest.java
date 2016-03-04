@@ -65,7 +65,7 @@ public class BrokerInterceptorTest {
         }
 
 		@Override
-		public void onMessageConsumed( InterceptConsumedMessage msg ) {
+		public void onMessageAcknowledged( InterceptAcknowledgedMessage msg ) {
 			n.set(90);
 		}
     }

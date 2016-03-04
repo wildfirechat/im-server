@@ -34,7 +34,7 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 
 import static io.moquette.parser.netty.Utils.VERSION_3_1;
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
-import io.moquette.interception.messages.InterceptConsumedMessage;
+import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.parser.proto.messages.ConnAckMessage;
@@ -290,7 +290,7 @@ public class ProtocolProcessor {
         
         String topic = inflightMsg.getTopic();
 
-        m_interceptor.notifyMessageConsumed(new InterceptConsumedMessage(inflightMsg, topic, username));
+        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
     private void verifyToActivate(String clientID, ClientSession targetSession) {
@@ -590,7 +590,7 @@ public class ProtocolProcessor {
         targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageConsumed( new InterceptConsumedMessage(inflightMsg, topic, username) );
+        m_interceptor.notifyMessageAcknowledged( new InterceptAcknowledgedMessage(inflightMsg, topic, username) );
     }
     
     public void processDisconnect(Channel channel) {
