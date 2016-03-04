@@ -10,11 +10,13 @@ import java.nio.ByteBuffer;
 public class InterceptPublishMessage extends InterceptAbstractMessage {
     private final PublishMessage msg;
     private final String clientID;
-
-    public InterceptPublishMessage(PublishMessage msg, String clientID) {
+    private final String username;
+    
+    public InterceptPublishMessage(PublishMessage msg, String clientID, String username) {
         super(msg);
         this.msg = msg;
         this.clientID = clientID;
+        this.username = username;
     }
 
     public String getTopicName() {
@@ -28,4 +30,8 @@ public class InterceptPublishMessage extends InterceptAbstractMessage {
     public String getClientID() {
         return clientID;
     }
+
+	public String getUsername() {
+		return username;
+	}
 }

@@ -60,48 +60,48 @@ final class BrokerInterceptor implements Interceptor {
     }
 
     @Override
-    public void notifyClientDisconnected(final String clientID) {
+    public void notifyClientDisconnected(final String clientID, final String username ) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onDisconnect(new InterceptDisconnectMessage(clientID));
+                    handler.onDisconnect(new InterceptDisconnectMessage(clientID, username));
                 }
             });
         }
     }
 
     @Override
-    public void notifyTopicPublished(final PublishMessage msg, final String clientID) {
+    public void notifyTopicPublished(final PublishMessage msg, final String clientID, final String username) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onPublish(new InterceptPublishMessage(msg, clientID));
+                    handler.onPublish(new InterceptPublishMessage(msg, clientID, username));
                 }
             });
         }
     }
 
     @Override
-    public void notifyTopicSubscribed(final Subscription sub) {
+    public void notifyTopicSubscribed(final Subscription sub, final String username) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onSubscribe(new InterceptSubscribeMessage(sub));
+                    handler.onSubscribe(new InterceptSubscribeMessage(sub, username));
                 }
             });
         }
     }
 
     @Override
-    public void notifyTopicUnsubscribed(final String topic, final String clientID) {
+    public void notifyTopicUnsubscribed(final String topic, final String clientID, final String username) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onUnsubscribe(new InterceptUnsubscribeMessage(topic, clientID));
+                    handler.onUnsubscribe(new InterceptUnsubscribeMessage(topic, clientID, username));
                 }
             });
         }

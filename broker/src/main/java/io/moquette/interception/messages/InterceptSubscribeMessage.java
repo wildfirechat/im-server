@@ -8,9 +8,11 @@ import io.moquette.spi.impl.subscriptions.Subscription;
  */
 public class InterceptSubscribeMessage {
     private final Subscription subscription;
+    private final String username;
 
-    public InterceptSubscribeMessage(Subscription subscription) {
+    public InterceptSubscribeMessage(Subscription subscription, String username) {
         this.subscription = subscription;
+        this.username = username;
     }
 
     public String getClientID() {
@@ -24,4 +26,8 @@ public class InterceptSubscribeMessage {
     public String getTopicFilter() {
         return subscription.getTopicFilter();
     }
+
+	public String getUsername() {
+		return username;
+	}
 }

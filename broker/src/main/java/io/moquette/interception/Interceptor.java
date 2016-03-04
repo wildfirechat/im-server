@@ -37,13 +37,13 @@ public interface Interceptor {
 
     void notifyClientConnected(ConnectMessage msg);
 
-    void notifyClientDisconnected(String clientID);
+    void notifyClientDisconnected(String clientID, String username);
 
-    void notifyTopicPublished(PublishMessage msg, String clientID);
+    void notifyTopicPublished(PublishMessage msg, String clientID, final String username);
 
-    void notifyTopicSubscribed(Subscription sub);
+    void notifyTopicSubscribed(Subscription sub, final String username);
 
-    void notifyTopicUnsubscribed(String topic, String clientID);
+    void notifyTopicUnsubscribed(String topic, String clientID, final String username);
 
     void notifyMessageConsumed(InterceptConsumedMessage msg);
 }
