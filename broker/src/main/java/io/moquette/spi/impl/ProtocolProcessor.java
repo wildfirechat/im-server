@@ -19,8 +19,10 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMatchingCondition;
@@ -207,8 +209,9 @@ public class ProtocolProcessor {
             byte[] willPayload = msg.getWillMessage();
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
             //save the will testament in the clientID store
-            WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos );
+            WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos);
             m_willStore.put(msg.getClientID(), will);
+            LOG.info("Session for clientID <{}> with will to topic {}", msg.getClientID(), msg.getWillTopic());
         }
 
         ConnAckMessage okResp = new ConnAckMessage();
@@ -238,8 +241,19 @@ public class ProtocolProcessor {
             //force the republish of stored QoS1 and QoS2
             republishStoredInSession(clientSession);
         }
+        int flushIntervalMs = 500/*(keepAlive * 1000) / 2*/;
+        setupAutoFlusher(channel.pipeline(), flushIntervalMs);
         LOG.info("CONNECT processed");
-//        LOG.info("CONNECT clients descriptors {}", m_clientIDs);
+    }
+
+    private void setupAutoFlusher(ChannelPipeline pipeline, int flushIntervalMs) {
+        AutoFlushHandler autoFlushHandler = new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS);
+        try {
+            pipeline.addAfter("idleEventHandler", "autoFlusher", autoFlushHandler);
+        } catch (NoSuchElementException nseex) {
+            //the idleEventHandler is not present on the pipeline
+            pipeline.addFirst("autoFlusher", autoFlushHandler);
+        }
     }
 
     private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
@@ -275,8 +289,8 @@ public class ProtocolProcessor {
         }
     }
     
-    public void processPubAck(Channel session, PubAckMessage msg) {
-        String clientID = NettyUtils.clientID(session);
+    public void processPubAck(Channel channel, PubAckMessage msg) {
+        String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
@@ -303,12 +317,12 @@ public class ProtocolProcessor {
         return pub;
     }
     
-    public void processPublish(Channel session, PublishMessage msg) {
+    public void processPublish(Channel channel, PublishMessage msg) {
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
-        String clientID = NettyUtils.clientID(session);
+        String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
-        String user = NettyUtils.userName(session);
+        String user = NettyUtils.userName(channel);
         if (!m_authorizator.canWrite(topic, user, clientID)) {
             LOG.debug("topic {} doesn't have write credentials", topic);
             return;
@@ -457,9 +471,11 @@ public class ProtocolProcessor {
         }
     }
 
-    protected void directSend(ClientSession clientsession, String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained, Integer messageID) {
+    protected void directSend(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
+                              ByteBuffer message, boolean retained, Integer messageID) {
         String clientId = clientsession.clientID;
-        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}", clientId, topic, qos, retained, messageID);
+        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
+                clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
@@ -475,22 +491,32 @@ public class ProtocolProcessor {
             pubMessage.setMessageID(messageID);
         } else {
             if (messageID != null) {
-                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message with PacketIdentifier: " + messageID);
+                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message " +
+                        "with PacketIdentifier: " + messageID);
             }
         }
 
         if (m_clientIDs == null) {
-            throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be " +
+                    "initialized, somewhere it's overwritten!!");
         }
-        LOG.debug("clientIDs are {}", m_clientIDs);
+        //LOG.trace("clientIDs are {}", m_clientIDs);
         if (m_clientIDs.get(clientId) == null) {
             //TODO while we were publishing to the target client, that client disconnected,
             // could happen is not an error HANDLE IT
-            throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>", clientId, m_clientIDs));
+            throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>",
+                    clientId, m_clientIDs));
         }
         Channel channel = m_clientIDs.get(clientId).channel;
-        LOG.debug("Session for clientId {} is {}", clientId, channel);
-        channel.writeAndFlush(pubMessage);
+        LOG.trace("Session for clientId {}", clientId);
+//        channel.writeAndFlush(pubMessage);
+        if (channel.isWritable()) {
+            //if channel is writable don't enqueue
+            channel.write(pubMessage);
+        } else {
+            //enqueue to the client session
+            clientsession.enqueue(pubMessage);
+        }
     }
     
     private void sendPubRec(String clientID, int messageID) {
@@ -580,6 +606,7 @@ public class ProtocolProcessor {
     }
     
     public void processDisconnect(Channel channel) throws InterruptedException {
+        channel.flush();
         String clientID = NettyUtils.clientID(channel);
         boolean cleanSession = NettyUtils.cleanSession(channel);
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
@@ -716,5 +743,20 @@ public class ProtocolProcessor {
         //notify the Observables
         m_interceptor.notifyTopicSubscribed(newSubscription);
         return true;
+    }
+
+    public void notifyChannelWritable(Channel channel) {
+        String clientID = NettyUtils.clientID(channel);
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        boolean emptyQueue = false;
+        while (channel.isWritable()  && !emptyQueue) {
+            AbstractMessage msg = clientSession.dequeue();
+            if (msg == null) {
+                emptyQueue = true;
+            } else {
+                channel.write(msg);
+            }
+        }
+        channel.flush();
     }
 }

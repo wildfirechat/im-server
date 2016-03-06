@@ -16,6 +16,8 @@
 package io.moquette.spi;
 
 import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
+import io.moquette.server.Constants;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
@@ -26,6 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Model a Session like describe on page 25 of MQTT 3.1.1 specification:
@@ -58,6 +62,8 @@ public class ClientSession {
     private volatile boolean cleanSession;
 
     private boolean active = false;
+
+    private BlockingQueue<AbstractMessage> m_queueToPublish = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
 
     public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore,
                          boolean cleanSession) {
@@ -190,5 +196,17 @@ public class ClientSession {
     public IMessagesStore.StoredMessage storedMessage(int messageID) {
         final String guid = m_sessionsStore.mapToGuid(clientID, messageID);
         return messagesStore.getMessageByGuid(guid);
+    }
+
+    /**
+     * Enqueue a message to be sent to the client.
+     * @return false if the queue is full.
+     * */
+    public boolean enqueue(PublishMessage pubMessage) {
+        return m_queueToPublish.offer(pubMessage);
+    }
+
+    public AbstractMessage dequeue() {
+        return m_queueToPublish.poll();
     }
 }

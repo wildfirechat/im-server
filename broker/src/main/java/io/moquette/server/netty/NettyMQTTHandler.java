@@ -111,4 +111,12 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         }
         ctx.close();
     }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        if (ctx.channel().isWritable()) {
+            m_processor.notifyChannelWritable(ctx.channel());
+        }
+        ctx.fireChannelWritabilityChanged();
+    }
 }
