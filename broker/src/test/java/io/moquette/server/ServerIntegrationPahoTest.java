@@ -42,7 +42,7 @@ public class ServerIntegrationPahoTest {
     Server m_server;
     IMqttClient m_client;
     IMqttClient m_publisher;
-    TestCallback m_callback;
+    MessageCollector m_messagesCollector;
     IConfig m_config;
 
     @BeforeClass
@@ -67,8 +67,8 @@ public class ServerIntegrationPahoTest {
         startServer();
 
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
-        m_callback = new TestCallback();
-        m_client.setCallback(m_callback);
+        m_messagesCollector = new MessageCollector();
+        m_client.setCallback(m_messagesCollector);
 
         m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
     }
@@ -114,7 +114,7 @@ public class ServerIntegrationPahoTest {
         message.setRetained(false);
         m_client.publish("/topic", message);
 
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
     }
     
 
@@ -129,12 +129,12 @@ public class ServerIntegrationPahoTest {
 
         //reconnect and publish
         MqttClient anotherClient = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
-        m_callback = new TestCallback();
-        anotherClient.setCallback(m_callback);
+        m_messagesCollector = new MessageCollector();
+        anotherClient.setCallback(m_messagesCollector);
         anotherClient.connect(options);
         anotherClient.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
     }
 
 
@@ -151,7 +151,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
     }
 
     /**
@@ -169,10 +169,17 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         //reconnect and publish
+        //options.setCleanSession(false);
+        m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
+        MessageCollector subListener = new MessageCollector();
+        m_client.setCallback(subListener);
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
+        //Ugly, we need to get self notified after the publish
+        assertEquals("Test my payload", new String(subListener.getMessage(1).getPayload()));
 
-        assertEquals("Test my payload", new String(m_callback.getMessage(false).getPayload()));
+        //close
+        m_client.disconnect();
     }
 
     @Test
@@ -192,7 +199,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
     }
 
     @Test
@@ -206,7 +213,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect();
         m_client.subscribe("/topic", 0);
 
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
     }
 
     @Test
@@ -218,13 +225,13 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 0);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
         //m_client.disconnect();
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
 
         m_client.unsubscribe("/topic");
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_callback.getMessage(false));
+        assertNull(m_messagesCollector.getMessage(false));
     }
 
     @Test
@@ -236,16 +243,16 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 0);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
         //m_client.disconnect();
-        assertEquals("/topic", m_callback.getTopic());
+        assertEquals("/topic", m_messagesCollector.getTopic());
 
         m_client.unsubscribe("/topic");
         m_client.disconnect();
 
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_callback.getMessage(false));
+        assertNull(m_messagesCollector.getMessage(false));
     }
 
     @Test
@@ -257,7 +264,7 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         //reconnect and publish
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_messagesCollector.getMessage(true);
         assertEquals("Hello MQTT", message.toString());
         assertEquals(1, message.getQos());
     }
@@ -276,7 +283,7 @@ public class ServerIntegrationPahoTest {
 
         m_client.connect(options);
 
-        assertEquals("Hello MQTT", m_callback.getMessage(true).toString());
+        assertEquals("Hello MQTT", m_messagesCollector.getMessage(true).toString());
     }
 
     @Test
@@ -295,7 +302,7 @@ public class ServerIntegrationPahoTest {
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1);
 
         //Verify that after a reconnection the client receive the message
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_messagesCollector.getMessage(true);
         assertNotNull(message);
         assertEquals("Hello MQTT", message.toString());
     }
@@ -318,10 +325,10 @@ public class ServerIntegrationPahoTest {
 
         //publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.connect(options);
 
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_messagesCollector.getMessage(true);
         assertEquals("Hello MQTT", message.toString());
         assertEquals(2, message.getQos());
     }
@@ -337,11 +344,11 @@ public class ServerIntegrationPahoTest {
 
         //publish a QoS 2 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.connect(options);
 
-        assertNotNull(m_callback);
-        MqttMessage message = m_callback.getMessage(true);
+        assertNotNull(m_messagesCollector);
+        MqttMessage message = m_messagesCollector.getMessage(true);
         assertNotNull(message);
         assertEquals("Hello MQTT", message.toString());
     }
@@ -356,11 +363,11 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         publishFromAnotherClient("/topic", "Hello MQTT 1".getBytes(), 1);
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.connect(options);
 
-        assertNotNull(m_callback);
-        MqttMessage message = m_callback.getMessage(true);
+        assertNotNull(m_messagesCollector);
+        MqttMessage message = m_messagesCollector.getMessage(true);
         assertNotNull(message);
         assertEquals("Hello MQTT 1", message.toString());
         m_client.disconnect();
@@ -369,10 +376,10 @@ public class ServerIntegrationPahoTest {
         publishFromAnotherClient("/topic", "Hello MQTT 2".getBytes(), 1);
 
         //reconnect the second time
-        m_callback.reinit();
+        m_messagesCollector.reinit();
         m_client.connect(options);
-        assertNotNull(m_callback);
-        message = m_callback.getMessage(true);
+        assertNotNull(m_messagesCollector);
+        message = m_messagesCollector.getMessage(true);
         assertNotNull(message);
         assertEquals("Hello MQTT 2", message.toString());
     }
@@ -392,7 +399,7 @@ public class ServerIntegrationPahoTest {
         MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberA");
 
         MqttClient subscriberA = new MqttClient("tcp://localhost:1883", "SubscriberA", dsSubscriberA);
-        TestCallback cbSubscriberA = new TestCallback();
+        MessageCollector cbSubscriberA = new MessageCollector();
         subscriberA.setCallback(cbSubscriberA);
         subscriberA.connect();
         subscriberA.subscribe("a/b", 1);
@@ -400,7 +407,7 @@ public class ServerIntegrationPahoTest {
         MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberB");
 
         MqttClient subscriberB = new MqttClient("tcp://localhost:1883", "SubscriberB", dsSubscriberB);
-        TestCallback cbSubscriberB = new TestCallback();
+        MessageCollector cbSubscriberB = new MessageCollector();
         subscriberB.setCallback(cbSubscriberB);
         subscriberB.connect();
         subscriberB.subscribe("a/+", 2);
@@ -428,7 +435,7 @@ public class ServerIntegrationPahoTest {
         MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe1");
 
         MqttClient clientForSubscribe1 = new MqttClient("tcp://localhost:1883", "clientForSubscribe1", dsSubscriberA);
-        TestCallback cbSubscriber1 = new TestCallback();
+        MessageCollector cbSubscriber1 = new MessageCollector();
         clientForSubscribe1.setCallback(cbSubscriber1);
         clientForSubscribe1.connect();
         clientForSubscribe1.subscribe("topic", 0);
@@ -442,7 +449,7 @@ public class ServerIntegrationPahoTest {
         //clientForSubscribe2 connect and subscribe to /topic QoS2
         MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe2");
         MqttClient clientForSubscribe2 = new MqttClient("tcp://localhost:1883", "clientForSubscribe2", dsSubscriberB);
-        TestCallback cbSubscriber2 = new TestCallback();
+        MessageCollector cbSubscriber2 = new MessageCollector();
         clientForSubscribe2.setCallback(cbSubscriber2);
         clientForSubscribe2.connect();
         clientForSubscribe2.subscribe("topic", 0);
@@ -465,14 +472,14 @@ public class ServerIntegrationPahoTest {
     @Test
     public void testForceClientDisconnection_issue116() throws Exception {
         LOG.info("*** testForceClientDisconnection_issue118 ***");
-        TestCallback cbSubscriber1 = new TestCallback();
+        MessageCollector cbSubscriber1 = new MessageCollector();
         MqttClient clientXA = createClient("subscriber", "X", cbSubscriber1);
         clientXA.subscribe("topic", 0);
 
         MqttClient clientXB = createClient("publisher", "X");
         clientXB.publish("topic", "Hello".getBytes(), 2, false);
 
-        TestCallback cbSubscriber2 = new TestCallback();
+        MessageCollector cbSubscriber2 = new MessageCollector();
         MqttClient clientYA = createClient("subscriber", "Y", cbSubscriber2);
         clientYA.subscribe("topic", 0);
 
@@ -506,8 +513,8 @@ public class ServerIntegrationPahoTest {
     @Test
     public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws Exception {
         LOG.info("*** checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1 ***");
-        MessageCollector messagesCollector = new MessageCollector();
-        m_client.setCallback(messagesCollector);
+//        MessageCollector m_messagesCollector = new MessageCollector();
+//        m_client.setCallback(m_messagesCollector);
         m_publisher.connect();
 
         MqttConnectOptions options = new MqttConnectOptions();
@@ -519,7 +526,7 @@ public class ServerIntegrationPahoTest {
         m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
 
         //read the first message and drop the connection
-        MqttMessage msg = messagesCollector.getMessage(true);
+        MqttMessage msg = m_messagesCollector.getMessage(true);
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
         m_client.disconnect();
 
@@ -528,10 +535,10 @@ public class ServerIntegrationPahoTest {
 
         //reconnect and expect to receive the hello 2 message
         m_client.connect(options);
-        msg = messagesCollector.getMessage(true);
+        msg = m_messagesCollector.getMessage(true);
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
 
-        msg = messagesCollector.getMessage(true);
+        msg = m_messagesCollector.getMessage(true);
         assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
         m_client.disconnect();
     }
@@ -628,7 +635,7 @@ public class ServerIntegrationPahoTest {
         return createClient(clientName, storeSuffix, null);
     }
 
-    protected MqttClient createClient(String clientName, String storeSuffix, TestCallback cb) throws MqttException {
+    protected MqttClient createClient(String clientName, String storeSuffix, MessageCollector cb) throws MqttException {
         String tmpDir = System.getProperty("java.io.tmpdir");
         //clientX connect and subscribe to /topic QoS2
         MqttClientPersistence dsClient = new MqttDefaultFilePersistence(tmpDir + File.separator + storeSuffix + clientName);

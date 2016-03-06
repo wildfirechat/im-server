@@ -43,11 +43,7 @@ public class MessageCollector implements MqttCallback {
         if (!checkElapsed && m_messages.isEmpty()) {
             return null;
         }
-        try {
-            return m_messages.poll(1, TimeUnit.SECONDS).message;
-        } catch (InterruptedException e) {
-            return null;
-        }
+        return getMessage(1);
     }
 
     public MqttMessage getMessage(int delay) {
@@ -89,7 +85,15 @@ public class MessageCollector implements MqttCallback {
         m_messages.offer(new ReceivedMessage(message, topic));
     }
 
+    /**
+     * Invoked when the message sent to a server is ACKED (PUBACK or PUBCOMP by the server)
+     * */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
+//        try {
+//            m_messages.offer(new ReceivedMessage(token.getMessage(), token.getTopics()[0]));
+//        } catch (MqttException e) {
+//            e.printStackTrace();
+//        }
     }
 }

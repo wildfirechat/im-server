@@ -44,7 +44,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
     Server m_server;
     IMqttClient m_subscriber;
-    TestCallback m_callback;
+    MessageCollector m_callback;
     IConfig m_config;
 
     protected void startServer() throws IOException {
@@ -69,7 +69,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         startServer();
 
         m_subscriber = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
-        m_callback = new TestCallback();
+        m_callback = new MessageCollector();
         m_subscriber.setCallback(m_callback);
     }
 
@@ -269,7 +269,7 @@ public class ServerIntegrationEmbeddedPublishTest {
         verifyMessageIsReceivedSuccessfully();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testClientSubscribeAfterDisconnected() throws Exception {
         LOG.info("*** testClientSubscribeAfterDisconnected ***");
 
@@ -280,6 +280,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //verifyMessageIsReceivedSuccessfully();
         //m_subscriber.receive(2, TimeUnit.MILLISECONDS);
-        m_callback.getMessage(true);
+        MqttMessage message = m_callback.getMessage(true);
+        assertTrue(message == null);
     }
 }

@@ -197,11 +197,13 @@ public class ProtocolProcessorTest {
 
 
         //Verify
+        firstReceiverChannel.flush();
         PublishMessage pub2FirstSubscriber = (PublishMessage) firstReceiverChannel.readOutbound();
         assertNotNull(pub2FirstSubscriber);
         String firstMessageContent = DebugUtils.payload2Str(pub2FirstSubscriber.getPayload());
         assertEquals("Hello", firstMessageContent);
 
+        secondReceiverChannel.flush();
         PublishMessage pub2SecondSubscriber = (PublishMessage) secondReceiverChannel.readOutbound();
         assertNotNull(pub2SecondSubscriber);
         String secondMessageContent = DebugUtils.payload2Str(pub2SecondSubscriber.getPayload());

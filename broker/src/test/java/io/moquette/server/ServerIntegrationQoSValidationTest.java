@@ -50,7 +50,7 @@ public class ServerIntegrationQoSValidationTest {
     
     IMqttClient m_subscriber;
     IMqttClient m_publisher;
-    TestCallback m_callback;
+    MessageCollector m_callback;
     IConfig m_config;
 
     @BeforeClass
@@ -72,7 +72,7 @@ public class ServerIntegrationQoSValidationTest {
         startServer();
 
         m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_subDataStore);
-        m_callback = new TestCallback();
+        m_callback = new MessageCollector();
         m_subscriber.setCallback(m_callback);
         m_subscriber.connect();
         
