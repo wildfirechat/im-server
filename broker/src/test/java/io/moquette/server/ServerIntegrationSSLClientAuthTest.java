@@ -96,7 +96,7 @@ public class ServerIntegrationSSLClientAuthTest {
     static MqttClientPersistence s_dataStore;
 
     IMqttClient m_client;
-    TestCallback m_callback;
+    MessageCollector m_callback;
 
     @BeforeClass
     public static void beforeTests() {
@@ -130,7 +130,7 @@ public class ServerIntegrationSSLClientAuthTest {
         m_client = new MqttClient("ssl://localhost:8883", "TestClient", s_dataStore);
 //        m_client = new MqttClient("ssl://test.mosquitto.org:8883", "TestClient", s_dataStore);
         
-        m_callback = new TestCallback();
+        m_callback = new MessageCollector();
         m_client.setCallback(m_callback);
     }
 
