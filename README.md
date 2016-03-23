@@ -3,7 +3,8 @@
 
 [![Build Status](https://api.travis-ci.org/andsel/moquette.svg?branch=master)](https://travis-ci.org/andsel/moquette)
 
-[Documentation site] (http://andsel.github.io/moquette/)
+[Documentation reference guide] (http://andsel.github.io/moquette/)
+[Google Group] https://groups.google.com/forum/#!forum/moquette-mqtt
 Moquette aims to be a MQTT compliant broker. The broker supports QoS 0, QoS 1 and QoS 2.
 
 Its designed to be evented, uses Netty for the protocol encoding and decoding part.
@@ -62,13 +63,4 @@ Include dependency in your project:
 
 After a git clone of the repository, cd into the cloned sources and: `mvn clean package`. 
 In distribution/target directory will be produced the selfcontained tar for the broker with all dependencies and a running script. 
-
-
-## Guide
-
- **Documentation reference guide**
-   Web site http://andsel.github.io/moquette/
-
- **Developers resources**
-   Google Group https://groups.google.com/forum/#!forum/moquette-mqtt
   
