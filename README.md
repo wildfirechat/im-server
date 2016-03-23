@@ -3,8 +3,8 @@
 
 [![Build Status](https://api.travis-ci.org/andsel/moquette.svg?branch=master)](https://travis-ci.org/andsel/moquette)
 
-* [Documentation reference guide] (http://andsel.github.io/moquette/)
-* [Google Group] https://groups.google.com/forum/#!forum/moquette-mqtt
+* [Documentation reference guide] (http://andsel.github.io/moquette/) Guide on how to use and configure Moquette
+* [Google Group] (https://groups.google.com/forum/#!forum/moquette-mqtt) Google Group to participate in development discussions.
 Moquette aims to be a MQTT compliant broker. The broker supports QoS 0, QoS 1 and QoS 2.
 
 Its designed to be evented, uses Netty for the protocol encoding and decoding part.
