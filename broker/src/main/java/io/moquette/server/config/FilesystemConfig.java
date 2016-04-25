@@ -27,13 +27,14 @@ import java.util.Properties;
  *
  * @author andrea
  */
-public class FilesystemConfig implements IConfig {
+public class FilesystemConfig extends IConfig {
     private static final Logger LOG = LoggerFactory.getLogger(FilesystemConfig.class);
 
-    private final Properties m_properties;
+    private Properties m_properties = new Properties();
 
     public FilesystemConfig(File file) {
         ConfigurationParser confParser = new ConfigurationParser();
+        assignDefaults();
         try {
             confParser.parse(file);
         } catch (ParseException pex) {

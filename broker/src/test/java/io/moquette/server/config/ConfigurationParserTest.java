@@ -16,7 +16,6 @@
 package io.moquette.server.config;
 
 import io.moquette.BrokerConstants;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +25,8 @@ import java.text.ParseException;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -44,7 +45,8 @@ public class ConfigurationParserTest {
     public void checkDefaultOptions() {
         Properties props = m_parser.getProperties();
         
-        verifyDefaults(props);
+        //verifyDefaults(props);
+        assertTrue(props.isEmpty());
     }
     
     @Test
@@ -53,7 +55,8 @@ public class ConfigurationParserTest {
         m_parser.parse(conf);
         
         //Verify
-        verifyDefaults(m_parser.getProperties());
+//        verifyDefaults(m_parser.getProperties());
+        assertTrue(m_parser.getProperties().isEmpty());
     }
     
     @Test
@@ -62,7 +65,8 @@ public class ConfigurationParserTest {
         m_parser.parse(conf);
         
         //Verify
-        verifyDefaults(m_parser.getProperties());
+//        verifyDefaults(m_parser.getProperties());
+        assertTrue(m_parser.getProperties().isEmpty());
     }
     
     @Test(expected = ParseException.class)
@@ -101,7 +105,8 @@ public class ConfigurationParserTest {
      * Helper method to verify default options.
      */
     private void verifyDefaults(Properties props) {
-        Assert.assertEquals(BrokerConstants.PORT, Integer.parseInt(props.getProperty("port")));
-        Assert.assertEquals(BrokerConstants.HOST, props.getProperty("host"));
+        assertEquals(BrokerConstants.PORT, Integer.parseInt(props.getProperty(BrokerConstants.PORT_PROPERTY_NAME)));
+        assertEquals(BrokerConstants.HOST, props.getProperty(BrokerConstants.HOST_PROPERTY_NAME));
+        assertNull(props.getProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME));
     }
 }

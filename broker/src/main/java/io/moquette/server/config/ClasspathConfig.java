@@ -29,7 +29,7 @@ import java.util.Properties;
  *
  * @author andrea
  */
-public class ClasspathConfig implements IConfig {
+public class ClasspathConfig extends IConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClasspathConfig.class);
 
@@ -43,6 +43,7 @@ public class ClasspathConfig implements IConfig {
         }
         Reader configReader = new InputStreamReader(is);
         ConfigurationParser confParser = new ConfigurationParser();
+        assignDefaults();
         try {
             confParser.parse(configReader);
         } catch (ParseException pex) {
