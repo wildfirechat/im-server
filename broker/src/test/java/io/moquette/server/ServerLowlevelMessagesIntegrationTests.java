@@ -22,10 +22,7 @@ import io.moquette.parser.proto.messages.ConnAckMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.testclient.Client;
-import org.eclipse.paho.client.mqttv3.IMqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +48,7 @@ public class ServerLowlevelMessagesIntegrationTests {
     IMqttClient m_willSubscriber;
     MessageCollector m_messageCollector;
     IConfig m_config;
+    AbstractMessage receivedMsg;
 
     protected void startServer() throws IOException {
         m_server = new Server();
@@ -102,27 +100,13 @@ public class ServerLowlevelMessagesIntegrationTests {
         m_willSubscriber.connect();
         m_willSubscriber.subscribe(willTestamentTopic, 0);
         
-        int keepAlive = 2; //secs
-        ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 3);
-        connectMessage.setClientID("FAKECLNT");
-        connectMessage.setKeepAlive(keepAlive);
-        connectMessage.setWillFlag(true);
-        connectMessage.setWillMessage(willTestamentMsg.getBytes());
-        connectMessage.setWillTopic(willTestamentTopic);
-        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
-        
-        //Execute
-        m_client.sendMessage(connectMessage);
+        connect(willTestamentTopic, willTestamentMsg);
         long connectTime = System.currentTimeMillis();
 
         //but after the 2 KEEP ALIVE timeout expires it gets fired,
         //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
         MqttMessage msg = m_messageCollector.getMessage(3300);
         long willMessageReceiveTime = System.currentTimeMillis();
-        if (msg == null) {
-            LOG.warn("testament message is null");
-        }
         assertNotNull("the will message should be fired after keep alive!", msg);
         //the will message hasn't to be received before the elapsing of Keep Alive timeout
         assertTrue(willMessageReceiveTime - connectTime  > 3000);
@@ -130,8 +114,6 @@ public class ServerLowlevelMessagesIntegrationTests {
         assertEquals(willTestamentMsg, new String(msg.getPayload()));
         m_willSubscriber.disconnect();
     }
-    
-    AbstractMessage receivedMsg;
     
     @Test
     public void checkRejectConnectWithEmptyClientID() throws InterruptedException {
@@ -162,5 +144,50 @@ public class ServerLowlevelMessagesIntegrationTests {
         ConnAckMessage connAck = (ConnAckMessage) receivedMsg;
         assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, connAck.getReturnCode());
     }
-    
+
+    @Test
+    public void testWillMessageIsPublishedOnClientBadDisconnection() throws InterruptedException, MqttException {
+        LOG.info("*** testWillMessageIsPublishedOnClientBadDisconnection ***");
+        String willTestamentTopic = "/will/test";
+        String willTestamentMsg = "Bye bye";
+        m_willSubscriber.connect();
+        m_willSubscriber.subscribe(willTestamentTopic, 0);
+        connect(willTestamentTopic, willTestamentMsg);
+
+        //kill will publisher
+        m_client.close();
+
+        //Verify will testament is published
+        MqttMessage receivedTestament = m_messageCollector.getMessage(1000);
+        assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
+        m_willSubscriber.disconnect();
+    }
+
+    private void connect(String willTestamentTopic, String willTestamentMsg) throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        m_client.setCallback(new Client.ICallback() {
+
+            public void call(AbstractMessage msg) {
+                receivedMsg = msg;
+                latch.countDown();
+            }
+        });
+
+        int keepAlive = 2; //secs
+        ConnectMessage connectMessage = new ConnectMessage();
+        connectMessage.setProtocolVersion((byte) 3);
+        connectMessage.setClientID("FAKECLNT");
+        connectMessage.setKeepAlive(keepAlive);
+        connectMessage.setWillFlag(true);
+        connectMessage.setWillMessage(willTestamentMsg.getBytes());
+        connectMessage.setWillTopic(willTestamentTopic);
+        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
+
+        m_client.sendMessage(connectMessage);
+
+        latch.await(200, TimeUnit.MILLISECONDS);
+
+        assertTrue("conn-ack message is received", this.receivedMsg instanceof ConnAckMessage);
+    }
+
 }
