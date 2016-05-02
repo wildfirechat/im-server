@@ -37,9 +37,6 @@ class ConfigurationParser {
     
     private Properties m_properties = new Properties();
     
-//    ConfigurationParser() {
-//    }
-
     /**
      * Parse the configuration from file.
      */

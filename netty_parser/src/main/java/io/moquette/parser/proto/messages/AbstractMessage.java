@@ -37,7 +37,7 @@ public abstract class AbstractMessage {
     public static final byte PINGRESP = 13; //PING Response
     public static final byte DISCONNECT = 14; //Client is Disconnecting
 
-    public static enum QOSType {
+    public enum QOSType {
         MOST_ONE, LEAST_ONE, EXACTLY_ONCE, RESERVED, FAILURE;
 
         public static QOSType valueOf(byte qos){

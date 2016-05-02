@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -92,15 +90,15 @@ public class ServerLowlevelMessagesIntegrationTests {
     }
     
     @Test
-    public void checkWillMessageIsWiredOnClientKeepAliveExpiry() throws Exception {
-        LOG.info("*** checkWillMessageIsWiredOnClientKeepAliveExpiry ***");
+    public void testWillMessageIsWiredOnClientKeepAliveExpiry() throws Exception {
+        LOG.info("*** testWillMessageIsWiredOnClientKeepAliveExpiry ***");
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";
         
         m_willSubscriber.connect();
         m_willSubscriber.subscribe(willTestamentTopic, 0);
         
-        connect(willTestamentTopic, willTestamentMsg);
+        m_client.clientId("FAKECLNT").connect(willTestamentTopic, willTestamentMsg);
         long connectTime = System.currentTimeMillis();
 
         //but after the 2 KEEP ALIVE timeout expires it gets fired,
@@ -116,30 +114,12 @@ public class ServerLowlevelMessagesIntegrationTests {
     }
     
     @Test
-    public void checkRejectConnectWithEmptyClientID() throws InterruptedException {
-        LOG.info("*** checkRejectConnectWithEmptyClientID ***");
-        final CountDownLatch latch = new CountDownLatch(1);
-        m_client.setCallback(new Client.ICallback() {
+    public void testRejectConnectWithEmptyClientID() throws InterruptedException {
+        LOG.info("*** testRejectConnectWithEmptyClientID ***");
+        m_client.clientId("").connect();
 
-            public void call(AbstractMessage msg) {
-                receivedMsg = msg;
-                latch.countDown();
-            }
-        });
-        
-        int keepAlive = 2; //secs
-        ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 4);
-        connectMessage.setClientID("");
-        connectMessage.setKeepAlive(keepAlive);
-        connectMessage.setWillFlag(false);
-        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
-        
-        //Execute
-        m_client.sendMessage(connectMessage);
-        
-        latch.await(200, TimeUnit.MILLISECONDS);
-        
+        this.receivedMsg = this.m_client.lastReceivedMessage();
+
         assertTrue(receivedMsg instanceof ConnAckMessage);
         ConnAckMessage connAck = (ConnAckMessage) receivedMsg;
         assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, connAck.getReturnCode());
@@ -152,7 +132,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         String willTestamentMsg = "Bye bye";
         m_willSubscriber.connect();
         m_willSubscriber.subscribe(willTestamentTopic, 0);
-        connect(willTestamentTopic, willTestamentMsg);
+        m_client.clientId("FAKECLNT").connect(willTestamentTopic, willTestamentMsg);
 
         //kill will publisher
         m_client.close();
@@ -161,33 +141,6 @@ public class ServerLowlevelMessagesIntegrationTests {
         MqttMessage receivedTestament = m_messageCollector.getMessage(1000);
         assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
         m_willSubscriber.disconnect();
-    }
-
-    private void connect(String willTestamentTopic, String willTestamentMsg) throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-        m_client.setCallback(new Client.ICallback() {
-
-            public void call(AbstractMessage msg) {
-                receivedMsg = msg;
-                latch.countDown();
-            }
-        });
-
-        int keepAlive = 2; //secs
-        ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 3);
-        connectMessage.setClientID("FAKECLNT");
-        connectMessage.setKeepAlive(keepAlive);
-        connectMessage.setWillFlag(true);
-        connectMessage.setWillMessage(willTestamentMsg.getBytes());
-        connectMessage.setWillTopic(willTestamentTopic);
-        connectMessage.setWillQos(QOSType.MOST_ONE.byteValue());
-
-        m_client.sendMessage(connectMessage);
-
-        latch.await(200, TimeUnit.MILLISECONDS);
-
-        assertTrue("conn-ack message is received", this.receivedMsg instanceof ConnAckMessage);
     }
 
 }
