@@ -43,13 +43,13 @@ public class ClasspathConfig extends IConfig {
         }
         Reader configReader = new InputStreamReader(is);
         ConfigurationParser confParser = new ConfigurationParser();
+        m_properties = confParser.getProperties();
         assignDefaults();
         try {
             confParser.parse(configReader);
         } catch (ParseException pex) {
             LOG.warn("An error occurred in parsing configuration, fallback on default configuration", pex);
         }
-        m_properties = confParser.getProperties();
     }
 
     @Override
