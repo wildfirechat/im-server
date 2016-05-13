@@ -1,5 +1,7 @@
 package io.moquette.spi.impl.security;
 
+import io.moquette.BrokerConstants;
+import io.moquette.server.config.IConfig;
 import io.moquette.spi.security.IAuthenticator;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
@@ -24,6 +26,15 @@ public class DBAuthenticator implements IAuthenticator {
     private final MessageDigest messageDigest;
     private final PreparedStatement preparedStatement;
 
+
+
+
+    public DBAuthenticator(IConfig conf){
+         this(conf.getProperty(BrokerConstants.DB_AUTHENTICATOR_DRIVER, ""),
+                 conf.getProperty(BrokerConstants.DB_AUTHENTICATOR_URL,""),
+                 conf.getProperty(BrokerConstants.DB_AUTHENTICATOR_QUERY, ""),
+                 conf.getProperty(BrokerConstants.DB_AUTHENTICATOR_DIGEST,""));
+    }
 
     /** provide authenticator from SQL database
      * @param driver : jdbc driver class like : "org.postgresql.Driver"

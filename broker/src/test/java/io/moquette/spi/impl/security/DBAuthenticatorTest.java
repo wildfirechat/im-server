@@ -32,17 +32,17 @@ public class DBAuthenticatorTest {
         this.connection = DriverManager.getConnection(JDBC_H2_MEM_TEST);
         Statement statement = this.connection.createStatement();
         try {
-            statement.execute("DROP TABLE USER");
+            statement.execute("DROP TABLE ACCOUNT");
         } catch(SQLException sqle) {
             LOG.info("Table not found, not dropping",sqle);
         }
         MessageDigest digest = MessageDigest.getInstance(SHA_256);
         String hash = new String(Hex.encodeHex(digest.digest("password".getBytes(StandardCharsets.UTF_8))));
         try {
-            if (statement.execute("CREATE TABLE PUBLIC.USER ( LOGIN VARCHAR(64), PASSWORD VARCHAR(256))")){
+            if (statement.execute("CREATE TABLE ACCOUNT ( LOGIN VARCHAR(64), PASSWORD VARCHAR(256))")){
                 throw new SQLException("can't create USER table");
             }
-            if (statement.execute("INSERT INTO PUBLIC.USER ( LOGIN , PASSWORD ) VALUES ('testuser', '"+hash+"')")){
+            if (statement.execute("INSERT INTO ACCOUNT ( LOGIN , PASSWORD ) VALUES ('dbuser', '"+hash+"')")){
                 throw new SQLException("can't insert in USER table");
             }
         } catch(SQLException sqle) {
@@ -52,19 +52,24 @@ public class DBAuthenticatorTest {
         LOG.info("Table User created");
         statement.close();
 
-
     }
 
     @Test
     public void Db_verifyValid() {
-        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM USER WHERE LOGIN=?", SHA_256);
-        assertTrue(dbAuthenticator.checkValid("testuser","password".getBytes()));
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
+        assertTrue(dbAuthenticator.checkValid("dbuser","password".getBytes()));
     }
 
     @Test
-    public void Db_verifyInvalid(){
-        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM USER WHERE LOGIN=?", SHA_256);
-        assertFalse(dbAuthenticator.checkValid("testuser2","password".getBytes()));
+    public void Db_verifyInvalidLogin(){
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
+        assertFalse(dbAuthenticator.checkValid("dbuser2","password".getBytes()));
+    }
+
+    @Test
+    public void Db_verifyInvalidPassword(){
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
+        assertFalse(dbAuthenticator.checkValid("dbuser","wrongPassword".getBytes()));
     }
 
 

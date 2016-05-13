@@ -105,7 +105,7 @@ public class SimpleMessaging {
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
 
         if (!authenticatorClassName.isEmpty()) {
-            authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class);
+            authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class, props);
             LOG.info("Loaded custom authenticator {}", authenticatorClassName);
         }
 
@@ -120,7 +120,7 @@ public class SimpleMessaging {
 
         String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
         if (!authorizatorClassName.isEmpty()) {
-            authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class);
+            authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class, props);
             LOG.info("Loaded custom authorizator {}", authorizatorClassName);
         }
 
@@ -147,7 +147,7 @@ public class SimpleMessaging {
         return m_processor;
     }
     
-    private Object loadClass(String className, Class<?> cls) {
+    private Object loadClass(String className, Class<?> cls, IConfig props) {
         Object instance = null;
         try {
             Class<?> clazz = Class.forName(className);
@@ -163,13 +163,25 @@ public class SimpleMessaging {
         }
         catch (NoSuchMethodException nsmex) {
             try {
+                // check if constructor with IConfig parameter exists
                 instance = this.getClass().getClassLoader()
                         .loadClass(className)
                         .asSubclass(cls)
-                        .newInstance();
+                        .getConstructor(IConfig.class).newInstance(props);
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
                 LOG.error(null, ex);
                 throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
+            } catch (NoSuchMethodException | InvocationTargetException e) {
+                try {
+                    // fallback to default constructor
+                    instance = this.getClass().getClassLoader()
+                            .loadClass(className)
+                            .asSubclass(cls)
+                            .newInstance();
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                    LOG.error(null, ex);
+                    throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
+                }
             }
         } catch (ClassNotFoundException ex) {
             LOG.error(null, ex);
