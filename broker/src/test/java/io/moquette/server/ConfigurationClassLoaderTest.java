@@ -55,7 +55,7 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     
     @Test
     public void loadAuthenticator() throws Exception {
-        Properties props = new Properties(IntegrationUtils.prepareTestPropeties());
+        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
         props.setProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "io.moquette.server.ConfigurationClassLoaderTest");
         startServer(props);
         assertTrue(true);
@@ -64,7 +64,7 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     
     @Test
     public void loadAuthorizator() throws Exception {
-        Properties props = new Properties(IntegrationUtils.prepareTestPropeties());
+        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
         props.setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "io.moquette.server.ConfigurationClassLoaderTest");
         startServer(props);
         assertTrue(true);

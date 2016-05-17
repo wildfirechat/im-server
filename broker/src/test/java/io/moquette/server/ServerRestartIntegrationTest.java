@@ -48,7 +48,7 @@ public class ServerRestartIntegrationTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        final Properties configProps = IntegrationUtils.prepareTestProperties();
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);
     }
@@ -101,7 +101,7 @@ public class ServerRestartIntegrationTest {
         IntegrationUtils.cleanPersistenceFile(m_config);
 
         //restart the server
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        m_server.startServer(IntegrationUtils.prepareTestProperties());
         
         //reconnect the Subscriber subscribing to the same /topic but different QoS
         m_subscriber.connect(CLEAN_SESSION_OPT);
@@ -128,7 +128,7 @@ public class ServerRestartIntegrationTest {
         m_server.stopServer();
 
         //restart the server
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        m_server.startServer(IntegrationUtils.prepareTestProperties());
 
         m_publisher.connect();
         m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), 0, false);
@@ -148,7 +148,7 @@ public class ServerRestartIntegrationTest {
         m_server.stopServer();
 
         //restart the server
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        m_server.startServer(IntegrationUtils.prepareTestProperties());
         //subscriber reconnects
         m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_dataStore);
         m_subscriber.setCallback(m_messageCollector);

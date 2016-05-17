@@ -16,6 +16,7 @@
 package io.moquette.server.netty;
 
 import io.moquette.BrokerConstants;
+import static io.moquette.BrokerConstants.*;
 import io.moquette.parser.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
@@ -146,9 +147,9 @@ public class NettyAcceptor implements ServerAcceptor {
     private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
-        String tcpPortProp = props.getProperty(BrokerConstants.PORT_PROPERTY_NAME);
-        if (tcpPortProp == null || "".equals(tcpPortProp)) {
-            LOG.info("tcp MQTT is disabled because the value for the property with key BrokerConstants.PORT_PROPERTY_NAME is null");
+        String tcpPortProp = props.getProperty(PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+        if (DISABLED_PORT_BIND.equals(tcpPortProp)) {
+            LOG.info("tcp MQTT is disabled because the value for the property with key {}", BrokerConstants.PORT_PROPERTY_NAME);
             return;
         }
         int port = Integer.parseInt(tcpPortProp);
@@ -168,8 +169,8 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
-        String webSocketPortProp = props.getProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME);
-        if (webSocketPortProp == null || "".equals(webSocketPortProp)) {
+        String webSocketPortProp = props.getProperty(WEB_SOCKET_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+        if (DISABLED_PORT_BIND.equals(webSocketPortProp)) {
             //Do nothing no WebSocket configured
             LOG.info("WebSocket is disabled");
             return;
@@ -200,10 +201,10 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeSSLTCPTransport(final NettyMQTTHandler handler, IConfig props, final SSLContext sslContext) throws IOException {
-        String sslPortProp = props.getProperty(BrokerConstants.SSL_PORT_PROPERTY_NAME);
-        if (sslPortProp == null || "".equals(sslPortProp)) {
+        String sslPortProp = props.getProperty(SSL_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+        if (DISABLED_PORT_BIND.equals(sslPortProp)) {
             //Do nothing no SSL configured
-            LOG.info("SSL MQTT is disabled because there is no value in properties for key BrokerConstants.SSL_PORT_PROPERTY_NAME");
+            LOG.info("SSL MQTT is disabled because there is no value in properties for key {}", BrokerConstants.SSL_PORT_PROPERTY_NAME);
             return;
         }
 
@@ -231,10 +232,10 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
     private void initializeWSSTransport(final NettyMQTTHandler handler, IConfig props, final SSLContext sslContext) throws IOException {
-        String sslPortProp = props.getProperty(BrokerConstants.WSS_PORT_PROPERTY_NAME);
-        if (sslPortProp == null || "".equals(sslPortProp)) {
+        String sslPortProp = props.getProperty(WSS_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+        if (DISABLED_PORT_BIND.equals(sslPortProp)) {
             //Do nothing no SSL configured
-            LOG.info("SSL websocket is disabled because there is no value in properties for key BrokerConstants.WSS_PORT_PROPERTY_NAME");
+            LOG.info("SSL websocket is disabled because there is no value in properties for key {}", BrokerConstants.WSS_PORT_PROPERTY_NAME);
             return;
         }
         int sslPort = Integer.parseInt(sslPortProp);

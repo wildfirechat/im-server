@@ -48,7 +48,7 @@ public class ServerIntegrationWebSocketTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        final Properties configProps = IntegrationUtils.prepareTestProperties();
         configProps.put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);

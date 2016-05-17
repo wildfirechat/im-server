@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import static io.moquette.BrokerConstants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -35,9 +36,10 @@ public class IntegrationUtils {
         return currentDir + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     }
 
-    public static Properties prepareTestPropeties() {
+    public static Properties prepareTestProperties() {
         Properties testProperties = new Properties();
         testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
+        testProperties.put(PORT_PROPERTY_NAME, "1883");
         return testProperties;
     }
 

@@ -54,7 +54,7 @@ public class ServerIntegrationPahoTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        final Properties configProps = IntegrationUtils.prepareTestPropeties();
+        final Properties configProps = IntegrationUtils.prepareTestProperties();
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);
     }
@@ -193,7 +193,7 @@ public class ServerIntegrationPahoTest {
 
         m_server.stopServer();
 
-        m_server.startServer(IntegrationUtils.prepareTestPropeties());
+        m_server.startServer(IntegrationUtils.prepareTestProperties());
 
         //reconnect and publish
         m_client.connect(options);
