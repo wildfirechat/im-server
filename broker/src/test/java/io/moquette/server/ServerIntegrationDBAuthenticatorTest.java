@@ -48,7 +48,7 @@ public class ServerIntegrationDBAuthenticatorTest {
 
     protected void startServer() throws IOException {
         m_server = new Server();
-        final Properties configProps = addDBAuthenticatorConf(IntegrationUtils.prepareTestPropeties());
+        final Properties configProps = addDBAuthenticatorConf(IntegrationUtils.prepareTestProperties());
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);
     }

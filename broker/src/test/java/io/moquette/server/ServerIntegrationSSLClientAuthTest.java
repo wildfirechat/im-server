@@ -49,10 +49,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Check that Moquette could also handle SSL with client authentification.
+ * Check that Moquette could also handle SSL with client authentication.
  * 
  * <p>
- * Create certificates needed for client authentification
+ * Create certificates needed for client authentication
  * <pre>
  * # generate server certificate chain (valid for 10000 days)
  * keytool -genkeypair -alias signedtestserver -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv -validity 10000 
@@ -152,8 +152,8 @@ public class ServerIntegrationSSLClientAuthTest {
     }
     
     @Test
-    public void checkClientAuthentification() throws Exception {
-        LOG.info("*** checkClientAuthentification ***");
+    public void checkClientAuthentication() throws Exception {
+        LOG.info("*** checkClientAuthentication ***");
         SSLSocketFactory ssf = configureSSLSocketFactory("signedclientkeystore.jks");
         
         MqttConnectOptions options = new MqttConnectOptions();
@@ -164,8 +164,8 @@ public class ServerIntegrationSSLClientAuthTest {
     }
 
     @Test (expected = MqttException.class)
-    public void checkClientAuthentificationFail() throws Exception {
-        LOG.info("*** checkClientAuthentificationFail ***");
+    public void checkClientAuthenticationFail() throws Exception {
+        LOG.info("*** checkClientAuthenticationFail ***");
         SSLSocketFactory ssf = configureSSLSocketFactory("unsignedclientkeystore.jks");
         
         MqttConnectOptions options = new MqttConnectOptions();
