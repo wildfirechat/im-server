@@ -28,8 +28,6 @@ import io.moquette.spi.impl.subscriptions.Subscription;
  */
 public interface ISessionsStore {
 
-    void updateCleanStatus(String clientID, boolean cleanSession);
-
     class ClientTopicCouple {
         public final String topicFilter;
         public final String clientID;
@@ -68,6 +66,8 @@ public interface ISessionsStore {
     }
 
     void initStore();
+
+    void updateCleanStatus(String clientID, boolean cleanSession);
 
     /**
      * Add a new subscription to the session
@@ -134,11 +134,14 @@ public interface ISessionsStore {
      * */
     void removeEnqueued(String clientID, String guid);
 
-    void secondPhaseAcknowledged(String clientID, int messageID);
+    void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID);
 
-    void secondPhaseAckWaiting(String clientID, int messageID);
+    /**
+     * @return the guid of message just acked.
+     * */
+    String secondPhaseAcknowledged(String clientID, int messageID);
 
     String mapToGuid(String clientID, int messageID);
     
-    public StoredMessage getInflightMessage(String clientID, int messageID);
+    StoredMessage getInflightMessage(String clientID, int messageID);
 }

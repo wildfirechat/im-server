@@ -139,8 +139,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS0IsSent ***");
 
         subscribeToWithQos("/topic", 0);
-        //super ugly but we need the MQTT client lib finish it's job before us
-        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
@@ -155,6 +153,7 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.MOST_ONE, true);
+        //LOG.info("** post internalPublish **");
         subscribeToWithQos("/topic", 0);
 
         //Verify
@@ -166,8 +165,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS1IsSent ***");
 
         subscribeToWithQos("/topic", 1);
-        //super ugly but we need the MQTT client lib finish it's job before us
-        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, false);
@@ -193,8 +190,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS1IsSent ***");
 
         subscribeToWithQos("/topic", 1);
-        //super ugly but we need the MQTT client lib finish it's job before us
-        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
@@ -210,9 +205,11 @@ public class ServerIntegrationEmbeddedPublishTest {
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.LEAST_ONE, true);
         subscribeToWithQos("/topic", 1);
+        LOG.info("** After subscribe **");
 
         //Verify
         verifyMessageIsReceivedSuccessfully();
+        LOG.info("** Post verify **");
     }
 
     @Test
@@ -220,8 +217,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeNotRetainedQoS2IsSent ***");
 
         subscribeToWithQos("/topic", 2);
-        //super ugly but we need the MQTT client lib finish it's job before us
-        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, false);
@@ -247,8 +242,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         LOG.info("*** testClientSubscribeBeforeRetainedQoS2IsSent ***");
 
         subscribeToWithQos("/topic", 2);
-        //super ugly but we need the MQTT client lib finish it's job before us
-        Thread.sleep(1000);
 
         //Exercise
         internalPublishToWithQosAndRetained("/topic", QOSType.EXACTLY_ONCE, true);

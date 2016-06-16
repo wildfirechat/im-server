@@ -81,6 +81,7 @@ class MapDBMessagesStore implements IMessagesStore {
         }
         String guid = UUID.randomUUID().toString();
         evt.setGuid(guid);
+        LOG.debug("storePublishForFuture guid <{}>", guid);
         m_persistentMessageStore.put(guid, evt);
         ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(evt.getClientID()));
         messageIdToGuid.put(evt.getMessageID(), guid);

@@ -72,9 +72,6 @@ public class ClientSession {
         this.m_sessionsStore = sessionsStore;
         this.cleanSession = cleanSession;
     }
-    //List of client's subscriptions
-    //list of messages not acknowledged by client
-    //list of in-flight messages
 
     /**
      * @return the list of messages to be delivered for client related to the session.
@@ -174,19 +171,18 @@ public class ClientSession {
     }
 
     public void inFlightAcknowledged(int messageID) {
+        LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", this.clientID, messageID);
         m_sessionsStore.inFlightAck(this.clientID, messageID);
     }
 
     public void inFlightAckWaiting(String guid, int messageID) {
+        LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
         m_sessionsStore.inFlight(this.clientID, messageID, guid);
     }
 
-    public void secondPhaseAcknowledged(int messageID) {
-        m_sessionsStore.secondPhaseAcknowledged(clientID, messageID);
-    }
-
-    public void secondPhaseAckWaiting(int messageID) {
-        m_sessionsStore.secondPhaseAckWaiting(clientID, messageID);
+    public IMessagesStore.StoredMessage secondPhaseAcknowledged(int messageID) {
+        String guid = m_sessionsStore.secondPhaseAcknowledged(clientID, messageID);
+        return messagesStore.getMessageByGuid(guid);
     }
 
     public void enqueueToDeliver(String guid) {
@@ -208,5 +204,13 @@ public class ClientSession {
 
     public AbstractMessage dequeue() {
         return m_queueToPublish.poll();
+    }
+
+    public void moveInFlightToSecondPhaseAckWaiting(int messageID) {
+        m_sessionsStore.moveInFlightToSecondPhaseAckWaiting(this.clientID, messageID);
+    }
+
+    public IMessagesStore.StoredMessage getInflightMessage(int messageID) {
+        return m_sessionsStore.getInflightMessage(clientID, messageID);
     }
 }

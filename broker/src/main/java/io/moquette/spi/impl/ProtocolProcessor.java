@@ -295,11 +295,12 @@ public class ProtocolProcessor {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
         String username = NettyUtils.userName(channel);
-        StoredMessage inflightMsg = m_sessionsStore.getInflightMessage(clientID, messageID);
+        LOG.trace("retrieving inflight for messageID <{}>", messageID);
 
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
+        StoredMessage inflightMsg = targetSession.getInflightMessage(messageID);
         targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
@@ -448,7 +449,9 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
 
-        for (final Subscription sub : subscriptions.matches(topic)) {
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
+        for (final Subscription sub : topicMatchingSubscriptions) {
             AbstractMessage.QOSType qos = publishingQos;
             if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
                 qos = sub.getRequestedQos();
@@ -509,7 +512,6 @@ public class ProtocolProcessor {
             throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be " +
                     "initialized, somewhere it's overwritten!!");
         }
-        //LOG.trace("clientIDs are {}", m_clientIDs);
         if (m_clientIDs.get(clientId) == null) {
             //TODO while we were publishing to the target client, that client disconnected,
             // could happen is not an error HANDLE IT
@@ -588,12 +590,11 @@ public class ProtocolProcessor {
 
     public void processPubRec(Channel channel, PubRecMessage msg) {
         String clientID = NettyUtils.clientID(channel);
-        int messageID = msg.getMessageID();
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
         //remove from the inflight and move to the QoS2 second phase queue
-        targetSession.inFlightAcknowledged(messageID);
-        targetSession.secondPhaseAckWaiting(messageID);
+        int messageID = msg.getMessageID();
+        targetSession.moveInFlightToSecondPhaseAckWaiting(messageID);
         //once received a PUBREC reply with a PUBREL(messageID)
         LOG.debug("\t\tSRV <--PUBREC-- SUB processPubRec invoked for clientID {} ad messageID {}", clientID, messageID);
         PubRelMessage pubRelMessage = new PubRelMessage();
@@ -606,16 +607,14 @@ public class ProtocolProcessor {
     public void processPubComp(Channel channel, PubCompMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
-        StoredMessage inflightMsg = m_sessionsStore.getInflightMessage( clientID, messageID );
-
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
-        targetSession.secondPhaseAcknowledged(messageID);
+        StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageAcknowledged( new InterceptAcknowledgedMessage(inflightMsg, topic, username) );
+        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
     public void processDisconnect(Channel channel) throws InterruptedException {
@@ -725,16 +724,25 @@ public class ProtocolProcessor {
         if (LOG.isTraceEnabled()) {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
+
+        for (Subscription subscription : newSubscriptions) {
+            subscribeSingleTopic(subscription);
+        }
         channel.writeAndFlush(ackMessage);
 
-        //fire the publish
-        for(Subscription subscription : newSubscriptions) {
-            subscribeSingleTopic(subscription, username);
+        //fire the persisted messages in session
+        for (Subscription subscription : newSubscriptions) {
+            publishStoredMessagesInSession(subscription, username);
         }
     }
 
-    private boolean subscribeSingleTopic(final Subscription newSubscription, String username) {
+    private void subscribeSingleTopic(final Subscription newSubscription) {
+        LOG.debug("Subscribing {}", newSubscription);
         subscriptions.add(newSubscription.asClientTopicCouple());
+    }
+
+    private void publishStoredMessagesInSession(final Subscription newSubscription, String username) {
+        LOG.debug("Publish persisted messages in session {}", newSubscription);
 
         //scans retained messages to be published to the new subscription
         //TODO this is ugly, it does a linear scan on potential big dataset
@@ -748,17 +756,18 @@ public class ProtocolProcessor {
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
         verifyToActivate(newSubscription.getClientId(), targetSession);
         for (IMessagesStore.StoredMessage storedMsg : messages) {
-            //fire the as retained the message
-            LOG.debug("send publish message for topic {}", newSubscription.getTopicFilter());
-            //forwardPublishQoS0(newSubscription.getClientId(), storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
-            Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null :
-                    targetSession.nextPacketId();
+            //fire as retained the message
+            LOG.trace("send publish message for topic {}", newSubscription.getTopicFilter());
+            Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null : targetSession.nextPacketId();
+            if (packetID != null) {
+                LOG.trace("Adding to inflight <{}>", packetID);
+                targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
+            }
             directSend(targetSession, storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
         }
 
         //notify the Observables
         m_interceptor.notifyTopicSubscribed(newSubscription, username);
-        return true;
     }
 
     public void notifyChannelWritable(Channel channel) {

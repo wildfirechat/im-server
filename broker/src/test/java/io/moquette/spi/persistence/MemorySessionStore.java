@@ -43,8 +43,8 @@ public class MemorySessionStore implements ISessionsStore {
 //    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     //maps clientID->[guid*]
     private Map<String, Set<String>> m_enqueuedStore = new HashMap<>();
-    //maps clientID->[messageID*]
-    private Map<String, Set<Integer>> m_secondPhaseStore = new HashMap<>();
+    //maps clientID->[MessageId -> guid]
+    private Map<String, Map<Integer, String>> m_secondPhaseStore = new HashMap<>();
 
     private Map<String, Map<Integer, String>> m_messageToGuids;
     private final IMessagesStore m_messagesStore;
@@ -214,17 +214,27 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void secondPhaseAcknowledged(String clientID, int messageID) {
-        Set<Integer> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
-        messageIDs.remove(messageID);
+    public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID) {
+        LOG.info("acknowledging inflight clientID <{}> messageID {}", clientID, messageID);
+        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        if (m == null) {
+            LOG.error("Can't find the inFlight record for client <{}>", clientID);
+            return;
+        }
+        String guid = m.remove(messageID);
+
+        LOG.info("Moving to second phase store");
+        Map<Integer, String> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, String>());
+        messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
 
     @Override
-    public void secondPhaseAckWaiting(String clientID, int messageID) {
-        Set<Integer> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashSet<Integer>());
-        messageIDs.add(messageID);
+    public String secondPhaseAcknowledged(String clientID, int messageID) {
+        Map<Integer, String> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, String>());
+        String guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
+        return guid;
     }
 
     @Override

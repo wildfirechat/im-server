@@ -82,6 +82,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
+            ctx.fireExceptionCaught(ex);
         }
     }
     
