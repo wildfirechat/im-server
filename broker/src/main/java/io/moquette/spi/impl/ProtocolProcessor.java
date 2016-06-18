@@ -284,7 +284,9 @@ public class ProtocolProcessor {
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         for (IMessagesStore.StoredMessage pubEvt : publishedEvents) {
-            //TODO put in flight zone
+            //put in flight zone
+            LOG.trace("Adding to inflight <{}>", pubEvt.getMessageID());
+            clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
             directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID());
             clientSession.removeEnqueued(pubEvt.getGuid());
