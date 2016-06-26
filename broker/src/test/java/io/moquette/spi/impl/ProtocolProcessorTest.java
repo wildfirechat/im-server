@@ -83,10 +83,13 @@ public class ProtocolProcessorTest {
         m_messagesStore = memStorage.messagesStore();
         m_sessionStore = memStorage.sessionsStore();
         //m_messagesStore.initStore();
-        
+
+        Set<String> clientIds = new HashSet<>();
+        clientIds.add(FAKE_CLIENT_ID);
+        clientIds.add(FAKE_CLIENT_ID2);
         Map<String, byte[]> users = new HashMap<>();
         users.put(TEST_USER, TEST_PWD);
-        m_mockAuthenticator = new MockAuthenticator(users);
+        m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
         subscriptions = new SubscriptionsStore();
         subscriptions.init(memStorage.sessionsStore());

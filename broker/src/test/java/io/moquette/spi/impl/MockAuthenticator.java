@@ -16,6 +16,7 @@
 package io.moquette.spi.impl;
 
 import java.util.Map;
+import java.util.Set;
 
 import io.moquette.spi.security.IAuthenticator;
 
@@ -25,14 +26,19 @@ import io.moquette.spi.security.IAuthenticator;
  * @author andrea
  */
 class MockAuthenticator implements IAuthenticator {
-    
+
+    private Set<String> m_clientIds;
     private Map<String, byte[]> m_userPwds;
     
-    MockAuthenticator(Map<String, byte[]> userPwds) {
+    MockAuthenticator(Set<String> clientIds, Map<String, byte[]> userPwds) {
+        m_clientIds = clientIds;
         m_userPwds = userPwds;
     }
 
-    public boolean checkValid(String username, byte[] password) {
+    public boolean checkValid(String clientId, String username, byte[] password) {
+        if (!m_clientIds.contains(clientId)) {
+            return false;
+        }
         if (!m_userPwds.containsKey(username)) {
             return false;
         }

@@ -57,19 +57,19 @@ public class DBAuthenticatorTest {
     @Test
     public void Db_verifyValid() {
         final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertTrue(dbAuthenticator.checkValid("dbuser","password".getBytes()));
+        assertTrue(dbAuthenticator.checkValid(null, "dbuser","password".getBytes()));
     }
 
     @Test
     public void Db_verifyInvalidLogin(){
         final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertFalse(dbAuthenticator.checkValid("dbuser2","password".getBytes()));
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser2","password".getBytes()));
     }
 
     @Test
     public void Db_verifyInvalidPassword(){
         final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertFalse(dbAuthenticator.checkValid("dbuser","wrongPassword".getBytes()));
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser","wrongPassword".getBytes()));
     }
 
 

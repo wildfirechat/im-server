@@ -30,7 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
 import static io.moquette.parser.proto.messages.ConnAckMessage.BAD_USERNAME_OR_PASSWORD;
@@ -71,9 +73,11 @@ public class ProtocolProcessor_CONNECT_Test {
         m_sessionStore = memStorage.sessionsStore();
         //m_messagesStore.initStore();
 
+        Set<String> clientIds = new HashSet<>();
+        clientIds.add(ProtocolProcessorTest.FAKE_CLIENT_ID);
         Map<String, byte[]> users = new HashMap<>();
         users.put(ProtocolProcessorTest.TEST_USER, ProtocolProcessorTest.TEST_PWD);
-        m_mockAuthenticator = new MockAuthenticator(users);
+        m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
         subscriptions = new SubscriptionsStore();
         subscriptions.init(m_sessionStore);
@@ -106,7 +110,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void testWill() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setWillFlag(true);
         connMsg.setWillTopic("topic");
         connMsg.setWillMessage("Topic message".getBytes());
@@ -125,7 +129,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void validAuthentication() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setUserFlag(true);
         connMsg.setPasswordFlag(true);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER);
@@ -140,7 +144,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void noPasswdAuthentication() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setUserFlag(true);
         connMsg.setPasswordFlag(false);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER);
@@ -154,7 +158,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void invalidAuthentication() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setUserFlag(true);
         connMsg.setPasswordFlag(true);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER + "_fake");
@@ -169,7 +173,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void prohibitAnonymousClient() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
                 new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
@@ -182,7 +186,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void prohibitAnonymousClient_providingUsername() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setUserFlag(true);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER + "_fake");
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
@@ -197,7 +201,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void acceptAnonymousClient() {
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
                 new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
@@ -214,7 +218,7 @@ public class ProtocolProcessor_CONNECT_Test {
                 new PermitAllAuthorizator(), ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
         //first connect with clean session true
-        connMsg.setClientID("123");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setCleanSession(true);
         m_processor.processConnect(m_session, connMsg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
@@ -225,12 +229,12 @@ public class ProtocolProcessor_CONNECT_Test {
         m_session = new EmbeddedChannel();
         ConnectMessage secondConnMsg = new ConnectMessage();
         secondConnMsg.setProtocolVersion((byte) 0x03);
-        secondConnMsg.setClientID("123");
+        secondConnMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         m_processor.processConnect(m_session, secondConnMsg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         //Verify client session is clean false
-        ClientSession session = m_sessionStore.sessionForClient("123");
+        ClientSession session = m_sessionStore.sessionForClient(ProtocolProcessorTest.FAKE_CLIENT_ID);
         assertFalse(session.isCleanSession());
 
         //Verify
@@ -240,7 +244,7 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void connectWithSameClientIDBadCredentialsDoesntDropExistingClient() {
         //Connect a client1
-        connMsg.setClientID("Client1");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setUserFlag(true);
         connMsg.setPasswordFlag(true);
         connMsg.setUsername(ProtocolProcessorTest.TEST_USER);
@@ -251,7 +255,7 @@ public class ProtocolProcessor_CONNECT_Test {
         //create another connect same clientID but with bad credentials
         ConnectMessage evilClientConnMsg = new ConnectMessage();
         evilClientConnMsg.setProtocolVersion((byte) 0x03);
-        evilClientConnMsg.setClientID("Client1");
+        evilClientConnMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         evilClientConnMsg.setUserFlag(true);
         evilClientConnMsg.setPasswordFlag(true);
         evilClientConnMsg.setUsername(ProtocolProcessorTest.EVIL_TEST_USER);
@@ -274,9 +278,9 @@ public class ProtocolProcessor_CONNECT_Test {
     public void testConnAckContainsSessionPresentFlag() throws InterruptedException {
         connMsg = new ConnectMessage();
         connMsg.setProtocolVersion(VERSION_3_1_1);
-        connMsg.setClientID("CliID");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setCleanSession(false);
-        NettyUtils.clientID(m_session, "CliID");
+        NettyUtils.clientID(m_session, ProtocolProcessorTest.FAKE_CLIENT_ID);
         NettyUtils.cleanSession(m_session, false);
 
         //Connect a first time
@@ -298,7 +302,7 @@ public class ProtocolProcessor_CONNECT_Test {
         //connect with clean a false and subscribe to a topic
         connMsg = new ConnectMessage();
         connMsg.setProtocolVersion(VERSION_3_1_1);
-        connMsg.setClientID("CliID");
+        connMsg.setClientID(ProtocolProcessorTest.FAKE_CLIENT_ID);
         connMsg.setCleanSession(false);
         m_processor.processConnect(m_session, connMsg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
@@ -307,10 +311,10 @@ public class ProtocolProcessor_CONNECT_Test {
         SubscribeMessage subscribeMsg = new SubscribeMessage();
         subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(),
                 ProtocolProcessorTest.FAKE_TOPIC));
-        NettyUtils.clientID(m_session, "CliID");
+        NettyUtils.clientID(m_session, ProtocolProcessorTest.FAKE_CLIENT_ID);
         NettyUtils.cleanSession(m_session, false);
         m_processor.processSubscribe(m_session, subscribeMsg);
-        Subscription expectedSubscription = new Subscription("CliID", ProtocolProcessorTest.FAKE_TOPIC,
+        Subscription expectedSubscription = new Subscription(ProtocolProcessorTest.FAKE_CLIENT_ID, ProtocolProcessorTest.FAKE_TOPIC,
                 AbstractMessage.QOSType.MOST_ONE);
         assertTrue(subscriptions.contains(expectedSubscription));
         assertEqualsSubAck(m_session.readOutbound());
