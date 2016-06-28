@@ -23,6 +23,9 @@ import java.nio.ByteBuffer;
  */
 public class PublishMessage extends MessageIDMessage {
 
+    private boolean local = true;
+    private String clientId;
+
     protected String m_topicName;
     protected ByteBuffer m_payload;
 
@@ -46,4 +49,19 @@ public class PublishMessage extends MessageIDMessage {
         this.m_payload = payload;
     }
 
+    public boolean isLocal() {
+        return local;
+    }
+
+    public void setLocal(boolean local) {
+        this.local = local;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 }

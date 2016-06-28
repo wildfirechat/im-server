@@ -107,12 +107,20 @@ public class ProtocolProcessor {
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
+    private String m_server_port;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
 
     ProtocolProcessor() {}
 
+
+    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+                     ISessionsStore sessionsStore,
+                     IAuthenticator authenticator,
+                     boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+        init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous,authorizator,interceptor,null);
+    }
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -123,11 +131,12 @@ public class ProtocolProcessor {
      * @param allowAnonymous true connection to clients without credentials.
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
      * @param interceptor to notify events to an intercept handler
+     * @param serverPort
      */
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
@@ -137,6 +146,7 @@ public class ProtocolProcessor {
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
+        m_server_port = serverPort;
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -341,7 +351,7 @@ public class ProtocolProcessor {
         }
         final AbstractMessage.QOSType qos = msg.getQos();
         final Integer messageID = msg.getMessageID();
-        LOG.info("PUBLISH from clientID <{}> on topic <{}> with QoS {}", clientID, topic, qos);
+        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
 
         String guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
@@ -350,11 +360,16 @@ public class ProtocolProcessor {
             route2Subscribers(toStoreMsg);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
             route2Subscribers(toStoreMsg);
-            sendPubAck(clientID, messageID);
-            LOG.debug("replying with PubAck to MSG ID {}", messageID);
+            LOG.info("##### server {} trying to reply with PubAck to MSG ID {}", m_server_port, messageID);
+            if (msg.isLocal()) {
+                sendPubAck(clientID, messageID);
+            }
+            LOG.info("### server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
         } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-            sendPubRec(clientID, messageID);
+            if(msg.isLocal()) {
+                sendPubRec(clientID, messageID);
+            }
             //Next the client will send us a pub rel
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
         }
@@ -393,7 +408,11 @@ public class ProtocolProcessor {
 
         String guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        toStoreMsg.setClientID("BROKER_SELF");
+        if (msg.getClientId() == null || msg.getClientId().isEmpty()) {
+            toStoreMsg.setClientID("BROKER_SELF");
+        } else {
+            toStoreMsg.setClientID(msg.getClientId());
+        }
         toStoreMsg.setMessageID(1);
         if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);

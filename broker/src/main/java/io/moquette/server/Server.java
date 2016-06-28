@@ -15,15 +15,26 @@
  */
 package io.moquette.server;
 
+import com.hazelcast.config.ClasspathXmlConfig;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.FileSystemXmlConfig;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.core.ITopic;
 import io.moquette.BrokerConstants;
+import io.moquette.interception.HazelcastInterceptHandler;
+import io.moquette.interception.HazelcastMsg;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
+import io.moquette.server.config.MemoryConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
@@ -49,6 +60,9 @@ public class Server {
     private volatile boolean m_initialized;
 
     private ProtocolProcessor m_processor;
+
+    private HazelcastInstance hazelcastInstance;
+
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -122,7 +136,23 @@ public class Server {
             config.setProperty("intercept.handler", handlerProp);
         }
         LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
-        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers, authenticator, authorizator);
+        if (config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME) !=null && config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME).equals(HazelcastInterceptHandler.class.getCanonicalName())) {
+            if (config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION) !=null){
+                Config hzconfig = null;
+                if (this.getClass().getClassLoader().getResource(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION)) != null) {
+                    hzconfig = new ClasspathXmlConfig(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION));
+                } else {
+                    hzconfig = new FileSystemXmlConfig(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION));
+                }
+                LOG.info(String.format("starting server with hazelcast configuration file : %s",hzconfig));
+                hazelcastInstance = Hazelcast.newHazelcastInstance(hzconfig);
+            } else {
+                LOG.info("starting server with hazelcast default file");
+                hazelcastInstance = Hazelcast.newHazelcastInstance();
+            }
+            listenOnHazelCastMsg();
+        }
+        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers, authenticator, authorizator, this);
 
         if (sslCtxCreator == null) {
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
@@ -132,6 +162,18 @@ public class Server {
         m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
         m_initialized = true;
+
+
+    }
+
+    private void listenOnHazelCastMsg() {
+        HazelcastInstance hz = getHazelcastInstance();
+        ITopic<HazelcastMsg> topic = hz.getTopic("moquette");
+        topic.addMessageListener(new HazelcastListener(this));
+    }
+
+    public HazelcastInstance getHazelcastInstance(){
+        return hazelcastInstance;
     }
 
     /**
@@ -153,6 +195,14 @@ public class Server {
         m_acceptor.close();
         SimpleMessaging.getInstance().shutdown();
         m_initialized = false;
+        if (hazelcastInstance != null ){
+            try {
+                hazelcastInstance.shutdown();
+            } catch (HazelcastInstanceNotActiveException e){
+                LOG.info("hazelcast allready shutdown");
+            }
+
+        }
         LOG.info("Server stopped");
     }
 }
