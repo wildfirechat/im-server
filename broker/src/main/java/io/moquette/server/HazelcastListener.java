@@ -32,7 +32,7 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
                 PublishMessage publishMessage = new PublishMessage();
                 publishMessage.setTopicName(msg.getMessageObject().getTopic());
                 publishMessage.setQos(AbstractMessage.QOSType.valueOf(msg.getMessageObject().getQos()));
-                publishMessage.setPayload(ByteBuffer.wrap(msg.getMessageObject().getPayload().getBytes("UTF-8")));
+                publishMessage.setPayload(ByteBuffer.wrap(msg.getMessageObject().getPayload()));
                 publishMessage.setLocal(false);
                 publishMessage.setClientId(msg.getMessageObject().getClientId());
                 server.internalPublish(publishMessage);
