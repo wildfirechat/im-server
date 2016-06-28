@@ -106,8 +106,9 @@ public class FileAuthenticator implements IAuthenticator {
             throw new ParseException("Failed to read", 1);
         }
     }
-    
-    public boolean checkValid(String username, byte[] password) {
+
+    @Override
+    public boolean checkValid(String clientId, String username, byte[] password) {
         if (username == null || password == null) {
             LOG.info("username or password was null");
             return false;

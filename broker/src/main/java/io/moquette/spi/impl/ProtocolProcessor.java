@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class responsible to handle the logic of MQTT protocol it's the director of
- * the protocol execution. 
+ * the protocol execution.
  *
  * Used by the front facing class SimpleMessaging.
  *
@@ -167,7 +167,7 @@ public class ProtocolProcessor {
                 failedCredentials(channel);
                 return;
             }
-            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
+            if (!m_authenticator.checkValid(msg.getClientID(), msg.getUsername(), pwd)) {
                 failedCredentials(channel);
                 channel.close();
                 return;
