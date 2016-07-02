@@ -301,7 +301,7 @@ public class ProtocolProcessor {
 
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         StoredMessage inflightMsg = targetSession.getInflightMessage(messageID);
         targetSession.inFlightAcknowledged(messageID);
 
@@ -310,7 +310,11 @@ public class ProtocolProcessor {
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
-    private void verifyToActivate(String clientID, ClientSession targetSession) {
+    private void verifyToActivate(ClientSession targetSession) {
+        if (targetSession == null) {
+            return;
+        }
+        String clientID = targetSession.clientID;
         if (m_clientIDs.containsKey(clientID)) {
             targetSession.activate();
         }
@@ -459,7 +463,7 @@ public class ProtocolProcessor {
                 qos = sub.getRequestedQos();
             }
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
-            verifyToActivate(sub.getClientId(), targetSession);
+            verifyToActivate(targetSession);
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
@@ -566,7 +570,7 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         route2Subscribers(evt);
 
@@ -593,7 +597,7 @@ public class ProtocolProcessor {
     public void processPubRec(Channel channel, PubRecMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         //remove from the inflight and move to the QoS2 second phase queue
         int messageID = msg.getMessageID();
         targetSession.moveInFlightToSecondPhaseAckWaiting(messageID);
@@ -612,7 +616,7 @@ public class ProtocolProcessor {
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
@@ -668,7 +672,7 @@ public class ProtocolProcessor {
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, clientSession);
+        verifyToActivate(clientSession);
         for (String topic : topics) {
             boolean validTopic = SubscriptionsStore.validate(topic);
             if (!validTopic) {
@@ -697,7 +701,7 @@ public class ProtocolProcessor {
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, clientSession);
+        verifyToActivate(clientSession);
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
@@ -756,7 +760,7 @@ public class ProtocolProcessor {
         });
 
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
-        verifyToActivate(newSubscription.getClientId(), targetSession);
+        verifyToActivate(targetSession);
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire as retained the message
             LOG.trace("send publish message for topic {}", newSubscription.getTopicFilter());
