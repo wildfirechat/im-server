@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Wagner Macedo
@@ -121,5 +123,30 @@ public class BrokerInterceptorTest {
         interceptor.notifyTopicUnsubscribed("o2", "cli1234", "cli1234");
         interval();
         assertEquals(80, n.get());
+    }
+
+    @Test
+    public void testAddAndRemoveInterceptHandler() throws Exception {
+        InterceptHandler interceptHandlerMock1 = mock(InterceptHandler.class);
+        InterceptHandler interceptHandlerMock2 = mock(InterceptHandler.class);
+        // add
+        interceptor.addInterceptHandler(interceptHandlerMock1);
+        interceptor.addInterceptHandler(interceptHandlerMock2);
+
+        Subscription subscription = new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE);
+        interceptor.notifyTopicSubscribed(subscription, "cli1234");
+        interval();
+
+        verify(interceptHandlerMock1).onSubscribe(refEq(new InterceptSubscribeMessage(subscription, "cli1234")));
+        verify(interceptHandlerMock2).onSubscribe(refEq(new InterceptSubscribeMessage(subscription, "cli1234")));
+
+        // remove
+        interceptor.removeInterceptHandler(interceptHandlerMock1);
+
+        interceptor.notifyTopicSubscribed(subscription, "cli1235");
+        interval();
+
+        verifyNoMoreInteractions(interceptHandlerMock1);
+        verify(interceptHandlerMock2).onSubscribe(refEq(new InterceptSubscribeMessage(subscription, "cli1235")));
     }
 }

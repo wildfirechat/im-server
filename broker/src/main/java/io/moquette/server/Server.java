@@ -155,4 +155,19 @@ public class Server {
         m_initialized = false;
         LOG.info("Server stopped");
     }
+
+    public boolean addInterceptHandler(InterceptHandler interceptHandler) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Can't register interceptors on a server that is not yet started");
+        }
+        return m_processor.addInterceptHandler(interceptHandler);
+    }
+
+    public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Can't deregister interceptors from a server that is not yet started");
+        }
+        return m_processor.removeInterceptHandler(interceptHandler);
+    }
+
 }
