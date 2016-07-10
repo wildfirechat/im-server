@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import io.moquette.interception.InterceptHandler;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
@@ -785,5 +786,13 @@ public class ProtocolProcessor {
             }
         }
         channel.flush();
+    }
+
+    public boolean addInterceptHandler(InterceptHandler interceptHandler) {
+        return this.m_interceptor.addInterceptHandler(interceptHandler);
+    }
+
+    public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
+        return this.m_interceptor.removeInterceptHandler(interceptHandler);
     }
 }
