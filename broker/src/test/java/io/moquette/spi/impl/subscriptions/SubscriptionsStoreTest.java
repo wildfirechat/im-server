@@ -397,24 +397,6 @@ public class SubscriptionsStoreTest {
         assertEquals(slashSub.getClientId(), remainedSubscription.getClientId());
     }
 
-    //TODO this test has to be moved on ClientSession, it's not part of subscription logic
-    @Test
-    public void overridingSubscriptions() {
-        ClientSession session = sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
-        Subscription oldSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE);
-        session.subscribe("/topic", oldSubscription);
-        store.add(oldSubscription.asClientTopicCouple());
-        Subscription overrindingSubscription = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.EXACTLY_ONCE);
-        session.subscribe("/topic", overrindingSubscription);
-        store.add(overrindingSubscription.asClientTopicCouple());
-        
-        //Verify
-        List<Subscription> subscriptions = store.matches("/topic");
-        assertEquals(1, subscriptions.size());
-        Subscription sub = subscriptions.get(0);
-        assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
-    }
-
     /*
     Test for Issue #49
     * */
@@ -422,15 +404,15 @@ public class SubscriptionsStoreTest {
     public void duplicatedSubscriptionsWithDifferentQos() {
         ClientSession session2 = sessionsStore.createNewSession("client2", true);
         Subscription client2Sub = new Subscription("client2", "client/test/b", AbstractMessage.QOSType.MOST_ONE);
-        session2.subscribe("client/test/b", client2Sub);
+        session2.subscribe(client2Sub);
         store.add(client2Sub.asClientTopicCouple());
         ClientSession session1 = sessionsStore.createNewSession("client1", true);
         Subscription client1SubQoS0 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.MOST_ONE);
-        session1.subscribe("client/test/b", client1SubQoS0);
+        session1.subscribe(client1SubQoS0);
         store.add(client1SubQoS0.asClientTopicCouple());
 
         Subscription client1SubQoS2 = new Subscription("client1", "client/test/b", AbstractMessage.QOSType.EXACTLY_ONCE);
-        session1.subscribe("client/test/b", client1SubQoS2);
+        session1.subscribe(client1SubQoS2);
         store.add(client1SubQoS2.asClientTopicCouple());
 
         System.out.println(store.dumpTree());

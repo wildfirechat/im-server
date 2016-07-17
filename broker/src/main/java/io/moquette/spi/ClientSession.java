@@ -94,9 +94,9 @@ public class ClientSession {
         return "ClientSession{clientID='" + clientID + '\'' +"}";
     }
 
-    public boolean subscribe(String topicFilter, Subscription newSubscription) {
-        LOG.info("<{}> subscribed to topicFilter <{}> with QoS {}",
-                newSubscription.getClientId(), topicFilter,
+    public boolean subscribe(Subscription newSubscription) {
+        LOG.info("<{}> subscribed to the topic filter <{}> with QoS {}",
+                newSubscription.getClientId(), newSubscription.getTopicFilter(),
                 AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
         boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {

@@ -715,7 +715,7 @@ public class ProtocolProcessor {
 
             AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.qos);
             Subscription newSubscription = new Subscription(clientID, req.topicFilter, qos);
-            boolean valid = clientSession.subscribe(req.topicFilter, newSubscription);
+            boolean valid = clientSession.subscribe(newSubscription);
             ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
             if (valid) {
                 newSubscriptions.add(newSubscription);
