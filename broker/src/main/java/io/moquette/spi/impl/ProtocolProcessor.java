@@ -108,12 +108,20 @@ public class ProtocolProcessor {
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
+    private String m_server_port;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
 
     ProtocolProcessor() {}
 
+
+    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+                     ISessionsStore sessionsStore,
+                     IAuthenticator authenticator,
+                     boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+        init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous,authorizator,interceptor,null);
+    }
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -124,11 +132,12 @@ public class ProtocolProcessor {
      * @param allowAnonymous true connection to clients without credentials.
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
      * @param interceptor to notify events to an intercept handler
+     * @param serverPort
      */
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
@@ -138,6 +147,7 @@ public class ProtocolProcessor {
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
+        m_server_port = serverPort;
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -302,7 +312,7 @@ public class ProtocolProcessor {
 
         //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         StoredMessage inflightMsg = targetSession.getInflightMessage(messageID);
         targetSession.inFlightAcknowledged(messageID);
 
@@ -311,7 +321,11 @@ public class ProtocolProcessor {
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
-    private void verifyToActivate(String clientID, ClientSession targetSession) {
+    private void verifyToActivate(ClientSession targetSession) {
+        if (targetSession == null) {
+            return;
+        }
+        String clientID = targetSession.clientID;
         if (m_clientIDs.containsKey(clientID)) {
             targetSession.activate();
         }
@@ -342,7 +356,7 @@ public class ProtocolProcessor {
         }
         final AbstractMessage.QOSType qos = msg.getQos();
         final Integer messageID = msg.getMessageID();
-        LOG.info("PUBLISH from clientID <{}> on topic <{}> with QoS {}", clientID, topic, qos);
+        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
 
         String guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
@@ -351,11 +365,15 @@ public class ProtocolProcessor {
             route2Subscribers(toStoreMsg);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
             route2Subscribers(toStoreMsg);
-            sendPubAck(clientID, messageID);
-            LOG.debug("replying with PubAck to MSG ID {}", messageID);
+            if (msg.isLocal()) {
+                sendPubAck(clientID, messageID);
+            }
+            LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
         } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-            sendPubRec(clientID, messageID);
+            if(msg.isLocal()) {
+                sendPubRec(clientID, messageID);
+            }
             //Next the client will send us a pub rel
             //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
         }
@@ -394,7 +412,11 @@ public class ProtocolProcessor {
 
         String guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        toStoreMsg.setClientID("BROKER_SELF");
+        if (msg.getClientId() == null || msg.getClientId().isEmpty()) {
+            toStoreMsg.setClientID("BROKER_SELF");
+        } else {
+            toStoreMsg.setClientID(msg.getClientId());
+        }
         toStoreMsg.setMessageID(1);
         if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
@@ -460,7 +482,7 @@ public class ProtocolProcessor {
                 qos = sub.getRequestedQos();
             }
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
-            verifyToActivate(sub.getClientId(), targetSession);
+            verifyToActivate(targetSession);
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
@@ -567,7 +589,7 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         route2Subscribers(evt);
 
@@ -594,7 +616,7 @@ public class ProtocolProcessor {
     public void processPubRec(Channel channel, PubRecMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         //remove from the inflight and move to the QoS2 second phase queue
         int messageID = msg.getMessageID();
         targetSession.moveInFlightToSecondPhaseAckWaiting(messageID);
@@ -613,7 +635,7 @@ public class ProtocolProcessor {
         LOG.debug("\t\tSRV <--PUBCOMP-- SUB processPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, targetSession);
+        verifyToActivate(targetSession);
         StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
@@ -669,7 +691,7 @@ public class ProtocolProcessor {
         LOG.debug("UNSUBSCRIBE subscription on topics {} for clientID <{}>", topics, clientID);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, clientSession);
+        verifyToActivate(clientSession);
         for (String topic : topics) {
             boolean validTopic = SubscriptionsStore.validate(topic);
             if (!validTopic) {
@@ -695,10 +717,10 @@ public class ProtocolProcessor {
 
     public void processSubscribe(Channel channel, SubscribeMessage msg) {
         String clientID = NettyUtils.clientID(channel);
-        LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
+        LOG.debug("SUBSCRIBE client <{}> on server {} packetID {}", clientID, m_server_port, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, clientSession);
+        verifyToActivate(clientSession);
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
@@ -756,8 +778,9 @@ public class ProtocolProcessor {
             }
         });
 
+        LOG.debug("Found {} messages to republish", messages.size());
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
-        verifyToActivate(newSubscription.getClientId(), targetSession);
+        verifyToActivate(targetSession);
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             //fire as retained the message
             LOG.trace("send publish message for topic {}", newSubscription.getTopicFilter());
