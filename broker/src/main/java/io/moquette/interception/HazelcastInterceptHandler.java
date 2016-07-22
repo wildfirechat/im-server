@@ -23,8 +23,7 @@ public class HazelcastInterceptHandler extends AbstractInterceptHandler {
     public void onPublish(InterceptPublishMessage msg) {
         LOG.info("{} publish on {} message: {}", msg.getClientID(), msg.getTopicName(), new String(msg.getPayload().array()));
         ITopic<HazelcastMsg> topic = hz.getTopic("moquette");
-        HazelcastMsg hazelcastMsg = new HazelcastMsg(msg.getClientID(), msg.getTopicName(), msg.getQos().byteValue(),
-                msg.getPayload().array(), msg.getUsername());
+        HazelcastMsg hazelcastMsg = new HazelcastMsg(msg);
         topic.publish(hazelcastMsg);
     }
 

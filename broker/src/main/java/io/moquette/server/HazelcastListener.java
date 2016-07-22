@@ -26,14 +26,15 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
     public void onMessage(Message<HazelcastMsg> msg) {
         try {
             if (!msg.getPublishingMember().equals(server.getHazelcastInstance().getCluster().getLocalMember())) {
-                LOG.info("{} received from hazelcast for topic {} message: {}", msg.getMessageObject().getClientId(),
-                        msg.getMessageObject().getTopic(), msg.getMessageObject().getPayload());
+                HazelcastMsg hzMsg = msg.getMessageObject();
+                LOG.info("{} received from hazelcast for topic {} message: {}", hzMsg.getClientId(),
+                        hzMsg.getTopic(), hzMsg.getPayload());
                 PublishMessage publishMessage = new PublishMessage();
-                publishMessage.setTopicName(msg.getMessageObject().getTopic());
-                publishMessage.setQos(AbstractMessage.QOSType.valueOf(msg.getMessageObject().getQos()));
-                publishMessage.setPayload(ByteBuffer.wrap(msg.getMessageObject().getPayload()));
+                publishMessage.setTopicName(hzMsg.getTopic());
+                publishMessage.setQos(AbstractMessage.QOSType.valueOf(hzMsg.getQos()));
+                publishMessage.setPayload(ByteBuffer.wrap(hzMsg.getPayload()));
                 publishMessage.setLocal(false);
-                publishMessage.setClientId(msg.getMessageObject().getClientId());
+                publishMessage.setClientId(hzMsg.getClientId());
                 server.internalPublish(publishMessage);
             }
         } catch (Exception ex) {
