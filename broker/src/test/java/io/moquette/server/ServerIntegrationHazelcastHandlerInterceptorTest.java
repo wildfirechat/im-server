@@ -38,32 +38,25 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
     IConfig m_config_1883;
     IConfig m_config_1884;
 
-
-
     @BeforeClass
     public static void beforeTests() throws NoSuchAlgorithmException, SQLException, ClassNotFoundException {
         String tmpDir = System.getProperty("java.io.tmpdir");
         s_dataStore = new MqttDefaultFilePersistence(tmpDir);
         s_pubDataStore = new MqttDefaultFilePersistence(tmpDir + File.separator + "publisher");
-
     }
 
-    protected Server startServer(int port, String hazelcastConfigurationFile, IConfig m_config) throws IOException {
+    protected Server startServer(int port, IConfig m_config) throws IOException {
         Server m_server = new Server();
-        final Properties configProps = addHazelCastConf(IntegrationUtils.prepareTestProperties(),port ,hazelcastConfigurationFile);
-        m_config = new MemoryConfig(configProps);
-        m_config.setProperty(BrokerConstants.PORT_PROPERTY_NAME,""+port);
+        m_config.setProperty(BrokerConstants.PORT_PROPERTY_NAME, Integer.toString(port));
         m_server.startServer(m_config);
         return m_server;
-
     }
 
-
-    private void stopServer(Server m_server, IConfig m_config) {
+    private void stopServer(Server m_server) {
         m_server.stopServer();
     }
 
-    private Properties addHazelCastConf(Properties properties,int port, String hazelcastConfigurationFile) {
+    private Properties addHazelCastConf(Properties properties, int port, String hazelcastConfigurationFile) {
         properties.put(BrokerConstants.PORT_PROPERTY_NAME, port);
         properties.put(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, HazelcastInterceptHandler.class.getCanonicalName());
         properties.put(BrokerConstants.HAZELCAST_CONFIGURATION, hazelcastConfigurationFile);
@@ -75,8 +68,16 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
         String dbPath = IntegrationUtils.localMapDBPath();
         IntegrationUtils.cleanPersistenceFile(dbPath);
 
-        server1883 = startServer(1883,"config/hazelcast.xml", m_config_1883);
-        server1884 = startServer(1884,"config/hazelcast.xml", m_config_1884);
+        final Properties configProps = addHazelCastConf(IntegrationUtils.prepareTestClusterProperties(1883),
+                1883, "config/hazelcast.xml");
+        m_config_1883 = new MemoryConfig(configProps);
+
+        server1883 = startServer(1883, m_config_1883);
+
+        final Properties configProps1884 = addHazelCastConf(IntegrationUtils.prepareTestClusterProperties(1884),
+                1883, "config/hazelcast.xml");
+        m_config_1884 = new MemoryConfig(configProps1884);
+        server1884 = startServer(1884, m_config_1884);
 
         m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
         m_publisher.connect();
@@ -85,11 +86,7 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
         m_listener.setCallback(m_messagesCollector);
 
         m_listener.connect();
-
-
     }
-
-
 
     @After
     public void tearDown() throws Exception {
@@ -101,23 +98,16 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
             m_publisher.disconnect();
         }
 
-        stopServer(server1883, m_config_1883);
-        stopServer(server1884, m_config_1884);
-    }
-
-    @AfterClass
-    public static void shutdown(){
-
+        stopServer(server1883);
+        stopServer(server1884);
     }
 
     @Test
-    public void checkPublishOnHazelCastQueue() throws Exception {
-
-        LOG.info("*** checkPublishOnHazelCastQueue ***");
-        m_listener.subscribe("/topic", 0);
+    public void checkPublishPassThroughCluster_Qos0() throws Exception {
+        LOG.info("*** checkPublishPassThroughCluster_Qos0 ***");
+        m_listener.subscribe("/topic", 1);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(), 0, false);
-        Thread.sleep(1000);
         MqttMessage messageQos0 = m_messagesCollector.getMessage(true);
         assertEquals("Hello world MQTT QoS0", messageQos0.toString());
         assertEquals(0, messageQos0.getQos());
@@ -135,12 +125,5 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
         MqttMessage messageQos2 = m_messagesCollector.getMessage(true);
         assertEquals("Hello world MQTT QoS2", messageQos2.toString());
         assertEquals(2, messageQos2.getQos());
-
-        Thread.sleep(5000);
-
-
     }
-
-
-
 }

@@ -31,10 +31,8 @@ import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
-import io.moquette.server.config.MemoryConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
-import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
@@ -62,6 +60,8 @@ public class Server {
     private ProtocolProcessor m_processor;
 
     private HazelcastInstance hazelcastInstance;
+
+    private SimpleMessaging m_messaging;
 
 
     public static void main(String[] args) throws IOException {
@@ -131,9 +131,9 @@ public class Server {
             handlers = Collections.emptyList();
         }
 
-        final String handlerProp = System.getProperty("intercept.handler");
+        final String handlerProp = System.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (handlerProp != null) {
-            config.setProperty("intercept.handler", handlerProp);
+            config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp);
         }
         LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
         if (config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME) !=null && config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME).equals(HazelcastInterceptHandler.class.getCanonicalName())) {
@@ -152,7 +152,8 @@ public class Server {
             }
             listenOnHazelCastMsg();
         }
-        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers, authenticator, authorizator, this);
+        m_messaging = SimpleMessaging.getInstance();
+        final ProtocolProcessor processor = m_messaging.init(config, handlers, authenticator, authorizator, this);
 
         if (sslCtxCreator == null) {
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
@@ -162,8 +163,6 @@ public class Server {
         m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
         m_initialized = true;
-
-
     }
 
     private void listenOnHazelCastMsg() {
@@ -193,15 +192,14 @@ public class Server {
     public void stopServer() {
     	LOG.info("Server stopping...");
         m_acceptor.close();
-        SimpleMessaging.getInstance().shutdown();
+        m_messaging.shutdown();
         m_initialized = false;
-        if (hazelcastInstance != null ){
+        if (hazelcastInstance != null) {
             try {
                 hazelcastInstance.shutdown();
-            } catch (HazelcastInstanceNotActiveException e){
-                LOG.info("hazelcast allready shutdown");
+            } catch (HazelcastInstanceNotActiveException e) {
+                LOG.info("hazelcast already shutdown");
             }
-
         }
         LOG.info("Server stopped");
     }

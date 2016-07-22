@@ -36,10 +36,22 @@ public class IntegrationUtils {
         return currentDir + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     }
 
+    static String localClusterMapDBPath(int port) {
+        String currentDir = System.getProperty("user.dir");
+        return currentDir + File.separator + port + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+    }
+
     public static Properties prepareTestProperties() {
         Properties testProperties = new Properties();
         testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
         testProperties.put(PORT_PROPERTY_NAME, "1883");
+        return testProperties;
+    }
+
+    public static Properties prepareTestClusterProperties(int port) {
+        Properties testProperties = new Properties();
+        testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localClusterMapDBPath(port));
+        testProperties.put(PORT_PROPERTY_NAME, Integer.toString(port));
         return testProperties;
     }
 

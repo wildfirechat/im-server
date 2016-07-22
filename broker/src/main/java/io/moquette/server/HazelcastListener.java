@@ -22,13 +22,12 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
         this.server = server;
     }
 
-
-
     @Override
     public void onMessage(Message<HazelcastMsg> msg) {
         try {
             if (!msg.getPublishingMember().equals(server.getHazelcastInstance().getCluster().getLocalMember())) {
-                LOG.info(String.format("%s received from hazelcast for topic %s message : %s\n", msg.getMessageObject().getClientId(), msg.getMessageObject().getTopic(), msg.getMessageObject().getPayload()));
+                LOG.info("{} received from hazelcast for topic {} message: {}", msg.getMessageObject().getClientId(),
+                        msg.getMessageObject().getTopic(), msg.getMessageObject().getPayload());
                 PublishMessage publishMessage = new PublishMessage();
                 publishMessage.setTopicName(msg.getMessageObject().getTopic());
                 publishMessage.setQos(AbstractMessage.QOSType.valueOf(msg.getMessageObject().getQos()));
@@ -36,10 +35,9 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
                 publishMessage.setLocal(false);
                 publishMessage.setClientId(msg.getMessageObject().getClientId());
                 server.internalPublish(publishMessage);
-
             }
-        } catch (Exception e) {
-            LOG.error("error while wait for polling hazelcast msg queue",e);
+        } catch (Exception ex) {
+            LOG.error("error polling hazelcast msg queue", ex);
         }
     }
 }

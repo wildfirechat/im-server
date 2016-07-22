@@ -364,11 +364,10 @@ public class ProtocolProcessor {
             route2Subscribers(toStoreMsg);
         } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
             route2Subscribers(toStoreMsg);
-            LOG.info("##### server {} trying to reply with PubAck to MSG ID {}", m_server_port, messageID);
             if (msg.isLocal()) {
                 sendPubAck(clientID, messageID);
             }
-            LOG.info("### server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
+            LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
         } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
             if(msg.isLocal()) {
@@ -717,7 +716,7 @@ public class ProtocolProcessor {
 
     public void processSubscribe(Channel channel, SubscribeMessage msg) {
         String clientID = NettyUtils.clientID(channel);
-        LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
+        LOG.debug("SUBSCRIBE client <{}> on server {} packetID {}", clientID, m_server_port, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientSession);
@@ -778,6 +777,7 @@ public class ProtocolProcessor {
             }
         });
 
+        LOG.debug("Found {} messages to republish", messages.size());
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
         verifyToActivate(targetSession);
         for (IMessagesStore.StoredMessage storedMsg : messages) {

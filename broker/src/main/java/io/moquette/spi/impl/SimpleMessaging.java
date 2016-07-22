@@ -55,7 +55,7 @@ public class SimpleMessaging {
 
     private BrokerInterceptor m_interceptor;
 
-    private static SimpleMessaging INSTANCE;
+//    private static SimpleMessaging INSTANCE;
     
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
 
@@ -63,10 +63,11 @@ public class SimpleMessaging {
     }
 
     public static SimpleMessaging getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new SimpleMessaging();
-        }
-        return INSTANCE;
+//        if (INSTANCE == null) {
+//            INSTANCE = new SimpleMessaging();
+//        }
+//        return INSTANCE;
+        return new SimpleMessaging();
     }
 
     /**
@@ -97,7 +98,7 @@ public class SimpleMessaging {
                 try {
                     final Constructor<? extends InterceptHandler> constructor = Class.forName(interceptorClassName).asSubclass(InterceptHandler.class).getConstructor(Server.class);
                     handler = constructor.newInstance(server);
-                }catch (NoSuchMethodException nsme){
+                } catch (NoSuchMethodException nsme){
                     handler = Class.forName(interceptorClassName).asSubclass(InterceptHandler.class).newInstance();
                 }
                 observers.add(handler);
