@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,8 @@ import java.util.Properties;
 public class Server {
     
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
+
+    private static final String HZ_INTERCEPT_HANDLER = HazelcastInterceptHandler.class.getCanonicalName();
     
     private ServerAcceptor m_acceptor;
 
@@ -62,7 +65,6 @@ public class Server {
     private HazelcastInstance hazelcastInstance;
 
     private SimpleMessaging m_messaging;
-
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -135,23 +137,8 @@ public class Server {
         if (handlerProp != null) {
             config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp);
         }
-        LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
-        if (config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME) !=null && config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME).equals(HazelcastInterceptHandler.class.getCanonicalName())) {
-            if (config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION) !=null){
-                Config hzconfig = null;
-                if (this.getClass().getClassLoader().getResource(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION)) != null) {
-                    hzconfig = new ClasspathXmlConfig(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION));
-                } else {
-                    hzconfig = new FileSystemXmlConfig(config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION));
-                }
-                LOG.info(String.format("starting server with hazelcast configuration file : %s",hzconfig));
-                hazelcastInstance = Hazelcast.newHazelcastInstance(hzconfig);
-            } else {
-                LOG.info("starting server with hazelcast default file");
-                hazelcastInstance = Hazelcast.newHazelcastInstance();
-            }
-            listenOnHazelCastMsg();
-        }
+        configureCluster(config);
+        LOG.info("Persistent store file: {}", config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
         m_messaging = SimpleMessaging.getInstance();
         final ProtocolProcessor processor = m_messaging.init(config, handlers, authenticator, authorizator, this);
 
@@ -163,6 +150,26 @@ public class Server {
         m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
         m_initialized = true;
+    }
+
+    private void configureCluster(IConfig config) throws FileNotFoundException {
+        String interceptHandlerClassname = config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
+        if (interceptHandlerClassname == null || !HZ_INTERCEPT_HANDLER.equals(interceptHandlerClassname)) {
+            return;
+        }
+        String hzConfigPath = config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION);
+        if (hzConfigPath != null) {
+            boolean isHzConfigOnClasspath = this.getClass().getClassLoader().getResource(hzConfigPath) != null;
+            Config hzconfig = isHzConfigOnClasspath ?
+                    new ClasspathXmlConfig(hzConfigPath) :
+                    new FileSystemXmlConfig(hzConfigPath);
+            LOG.info(String.format("starting server with hazelcast configuration file : %s",hzconfig));
+            hazelcastInstance = Hazelcast.newHazelcastInstance(hzconfig);
+        } else {
+            LOG.info("starting server with hazelcast default file");
+            hazelcastInstance = Hazelcast.newHazelcastInstance();
+        }
+        listenOnHazelCastMsg();
     }
 
     private void listenOnHazelCastMsg() {
@@ -204,6 +211,9 @@ public class Server {
         LOG.info("Server stopped");
     }
 
+    /**
+     * SPI method used by Broker embedded applications to add intercept handlers.
+     * */
     public boolean addInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
             throw new IllegalStateException("Can't register interceptors on a server that is not yet started");
@@ -211,6 +221,9 @@ public class Server {
         return m_processor.addInterceptHandler(interceptHandler);
     }
 
+    /**
+     * SPI method used by Broker embedded applications to remove intercept handlers.
+     * */
     public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
             throw new IllegalStateException("Can't deregister interceptors from a server that is not yet started");
