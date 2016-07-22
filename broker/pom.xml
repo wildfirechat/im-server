@@ -104,7 +104,7 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.5</version>
+            <version>3.5.4</version>
         </dependency>
 
         <!-- Test dependencies -->

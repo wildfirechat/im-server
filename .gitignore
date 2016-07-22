@@ -34,7 +34,7 @@ broker/runner
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-broker/moquette_store.*
+broker/*moquette_store.*
 embedding_moquette/target/
 broker/nb-configuration.xml
 broker/nbactions-Server.xml
