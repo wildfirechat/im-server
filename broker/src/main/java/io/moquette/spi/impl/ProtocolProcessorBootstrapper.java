@@ -38,16 +38,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * Singleton class that orchestrate the execution of the protocol.
- *
- * It's main responsibility is instantiate the ProtocolProcessor.
+ * It's main responsibility is bootstrap the ProtocolProcessor.
  *
  * @author andrea
  */
-public class SimpleMessaging {
+public class ProtocolProcessorBootstrapper {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleMessaging.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessorBootstrapper.class);
 
     private SubscriptionsStore subscriptions;
 
@@ -55,19 +52,9 @@ public class SimpleMessaging {
 
     private BrokerInterceptor m_interceptor;
 
-//    private static SimpleMessaging INSTANCE;
-    
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
 
-    private SimpleMessaging() {
-    }
-
-    public static SimpleMessaging getInstance() {
-//        if (INSTANCE == null) {
-//            INSTANCE = new SimpleMessaging();
-//        }
-//        return INSTANCE;
-        return new SimpleMessaging();
+    public ProtocolProcessorBootstrapper() {
     }
 
     /**

@@ -28,7 +28,7 @@ import io.moquette.interception.HazelcastMsg;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.impl.SimpleMessaging;
+import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.NettyAcceptor;
@@ -64,7 +64,7 @@ public class Server {
 
     private HazelcastInstance hazelcastInstance;
 
-    private SimpleMessaging m_messaging;
+    private ProtocolProcessorBootstrapper m_processorBootstrapper;
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -139,8 +139,8 @@ public class Server {
         }
         configureCluster(config);
         LOG.info("Persistent store file: {}", config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
-        m_messaging = SimpleMessaging.getInstance();
-        final ProtocolProcessor processor = m_messaging.init(config, handlers, authenticator, authorizator, this);
+        m_processorBootstrapper = new ProtocolProcessorBootstrapper();
+        final ProtocolProcessor processor = m_processorBootstrapper.init(config, handlers, authenticator, authorizator, this);
 
         if (sslCtxCreator == null) {
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
@@ -199,7 +199,7 @@ public class Server {
     public void stopServer() {
     	LOG.info("Server stopping...");
         m_acceptor.close();
-        m_messaging.shutdown();
+        m_processorBootstrapper.shutdown();
         m_initialized = false;
         if (hazelcastInstance != null) {
             try {

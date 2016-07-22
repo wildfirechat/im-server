@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * Class responsible to handle the logic of MQTT protocol it's the director of
  * the protocol execution.
  *
- * Used by the front facing class SimpleMessaging.
+ * Used by the front facing class ProtocolProcessorBootstrapper.
  *
  * @author andrea
  */
