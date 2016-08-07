@@ -30,9 +30,17 @@ import static org.junit.Assert.assertTrue;
 class NettyChannelAssertions {
 
     static void assertEqualsConnAck(byte expectedCode, Object connAck) {
-        assertTrue(connAck instanceof ConnAckMessage);
+        assertEqualsConnAck(null, expectedCode, connAck);
+    }
+
+    static void assertEqualsConnAck(String msg, byte expectedCode, Object connAck) {
+        assertTrue("connAck is not an instance of ConnAckMessage", connAck instanceof ConnAckMessage);
         ConnAckMessage connAckMsg = (ConnAckMessage) connAck;
-        assertEquals(expectedCode, connAckMsg.getReturnCode());
+
+        if(msg == null)
+            assertEquals(expectedCode, connAckMsg.getReturnCode());
+        else
+            assertEquals(msg, expectedCode, connAckMsg.getReturnCode());
     }
 
     static void assertConnAckAccepted(EmbeddedChannel channel) {
