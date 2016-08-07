@@ -280,6 +280,8 @@ public class ProtocolProcessor {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.writeAndFlush(okResp);
+        session.close();
+        LOG.info("Client {} failed to connect with bad username or password.", session);
     }
 
     /**
