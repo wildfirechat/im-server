@@ -95,6 +95,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(UNNACEPTABLE_PROTOCOL_VERSION, m_session.readOutbound());
+        assertFalse("Connection should be closed by the broker.", m_session.isOpen());
     }
 
     @Test
@@ -122,6 +123,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
         //TODO verify the call
         /*verify(mockedMessaging).publish(eq("topic"), eq("Topic message".getBytes()),
                 any(AbstractMessage.QOSType.class), anyBoolean(), eq("123"), any(IoSession.class));*/
@@ -140,6 +142,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
     }
 
     @Test
@@ -154,6 +157,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
+        assertFalse("Connection should be closed by the broker.", m_session.isOpen());
     }
 
     @Test
@@ -169,6 +173,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
+        assertFalse("Connection should be closed by the broker.", m_session.isOpen());
     }
 
     @Test
@@ -182,6 +187,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
+        assertFalse("Connection should be closed by the broker.", m_session.isOpen());
     }
 
     @Test
@@ -197,6 +203,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(BAD_USERNAME_OR_PASSWORD, m_session.readOutbound());
+        assertFalse("Connection should be closed by the broker.", m_session.isOpen());
     }
 
     @Test
@@ -210,6 +217,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
     }
 
     @Test
@@ -294,6 +302,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //Verify
         assertEqualsConnAck(CONNECTION_ACCEPTED, firstReceiverSession.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", firstReceiverSession.isOpen());
     }
 
 
@@ -306,6 +315,7 @@ public class ProtocolProcessor_CONNECT_Test {
         connMsg.setCleanSession(false);
         m_processor.processConnect(m_session, connMsg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
 
         //subscribe
         SubscribeMessage subscribeMsg = new SubscribeMessage();
@@ -327,6 +337,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_session = new EmbeddedChannel();
         m_processor.processConnect(m_session, connMsg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
+        assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
 
         //verify that the first subscription is still preserved
         assertTrue(subscriptions.contains(expectedSubscription));
