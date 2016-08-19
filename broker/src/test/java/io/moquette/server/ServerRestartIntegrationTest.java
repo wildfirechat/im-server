@@ -63,9 +63,9 @@ public class ServerRestartIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        startServer();
         String dbPath = IntegrationUtils.localMapDBPath();
         IntegrationUtils.cleanPersistenceFile(dbPath);
+        startServer();
 
         m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_dataStore);
         m_messageCollector = new MessageCollector();
