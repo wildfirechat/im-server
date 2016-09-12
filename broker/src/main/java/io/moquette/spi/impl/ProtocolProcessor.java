@@ -103,6 +103,7 @@ public class ProtocolProcessor {
     protected ConcurrentMap<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
+    private boolean allowZeroByteClientId;
     private IAuthorizator m_authorizator;
     private IMessagesStore m_messagesStore;
     private ISessionsStore m_sessionsStore;
@@ -120,8 +121,24 @@ public class ProtocolProcessor {
                      ISessionsStore sessionsStore,
                      IAuthenticator authenticator,
                      boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
-        init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous,authorizator,interceptor,null);
+        init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous, false, authorizator,interceptor,null);
     }
+
+    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+                     ISessionsStore sessionsStore,
+                     IAuthenticator authenticator,
+                     boolean allowAnonymous,
+                     boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+        init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous, allowZeroByteClientId, authorizator,interceptor,null);
+    }
+
+    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+              ISessionsStore sessionsStore,
+              IAuthenticator authenticator,
+              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
+        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator, interceptor, serverPort);
+    }
+
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -130,6 +147,7 @@ public class ProtocolProcessor {
      * @param sessionsStore the clients sessions store, used to persist subscriptions.
      * @param authenticator the authenticator used in connect messages.
      * @param allowAnonymous true connection to clients without credentials.
+     * @param allowZeroByteClientId true to allow clients connect without a clientid
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
      * @param interceptor to notify events to an intercept handler
      * @param serverPort
@@ -137,11 +155,13 @@ public class ProtocolProcessor {
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
+              boolean allowAnonymous,
+              boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
+        this.allowZeroByteClientId = allowZeroByteClientId;
         m_authorizator = authorizator;
         LOG.trace("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
@@ -162,11 +182,18 @@ public class ProtocolProcessor {
         }
 
         if (msg.getClientID() == null || msg.getClientID().length() == 0) {
-            ConnAckMessage okResp = new ConnAckMessage();
-            okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
-            channel.writeAndFlush(okResp);
-            m_interceptor.notifyClientConnected(msg);
-            return;
+            if(!msg.isCleanSession() || !this.allowZeroByteClientId) {
+                ConnAckMessage okResp = new ConnAckMessage();
+                okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
+                channel.writeAndFlush(okResp);
+                channel.close();
+                return;
+            }
+
+            // Generating client id.
+            String randomIdentifier = UUID.randomUUID().toString().replace("-", "");
+            msg.setClientID(randomIdentifier);
+            LOG.info("Client connected with server generated identifier: {}", randomIdentifier);
         }
 
         //handle user authentication
@@ -280,6 +307,8 @@ public class ProtocolProcessor {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.writeAndFlush(okResp);
+        session.close();
+        LOG.info("Client {} failed to connect with bad username or password.", session);
     }
 
     /**
