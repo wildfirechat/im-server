@@ -15,7 +15,7 @@ public class HazelcastInterceptHandler extends AbstractInterceptHandler {
     private static final Logger LOG = LoggerFactory.getLogger(HazelcastInterceptHandler.class);
     private final HazelcastInstance hz;
 
-    public HazelcastInterceptHandler (Server server){
+    public HazelcastInterceptHandler(Server server){
         this.hz = server.getHazelcastInstance();
     }
 

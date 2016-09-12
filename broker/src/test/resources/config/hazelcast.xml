@@ -3,8 +3,23 @@
   http://www.hazelcast.com/schema/config/hazelcast-config-3.5.xsd"
         xmlns="http://www.hazelcast.com/schema/config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <properties>
+        <property name="hazelcast.logging.type">log4j</property>
+    </properties>
+
     <network>
-        <join><multicast enabled="true"/></join>
+        <port auto-increment="true">5701</port>
+        <join>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <interface>127.0.0.1</interface>
+            </tcp-ip>
+        </join>
+        <interfaces enabled="true">
+            <interface>127.0.0.*</interface>
+        </interfaces>
+        <ssl enabled="false"/>
+        <socket-interceptor enabled="false"/>
     </network>
 
 </hazelcast>

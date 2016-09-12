@@ -21,9 +21,6 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by mackristof on 13/05/2016.
- */
 public class ServerIntegrationHazelcastHandlerInterceptorTest{
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationHazelcastHandlerInterceptorTest.class);
 
