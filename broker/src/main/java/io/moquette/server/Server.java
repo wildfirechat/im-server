@@ -33,6 +33,7 @@ import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
@@ -209,6 +210,17 @@ public class Server {
             }
         }
         LOG.info("Server stopped");
+    }
+
+    /**
+     * SPI method used by Broker embedded applications to get list of subscribers.
+     * Returns null if the broker is not started.
+     */
+    public List<Subscription> getSubscriptions() {
+        if (m_processorBootstrapper == null) {
+            return null;
+        }
+        return m_processorBootstrapper.getSubscriptions();
     }
 
     /**

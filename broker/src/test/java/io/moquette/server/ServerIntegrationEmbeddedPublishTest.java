@@ -97,6 +97,17 @@ public class ServerIntegrationEmbeddedPublishTest {
         m_server.internalPublish(message);
     }
 
+    private void connectNoCleanSession() throws Exception {
+        MqttConnectOptions opts = new MqttConnectOptions();
+        opts.setCleanSession(false);
+        m_subscriber.connect(opts);
+    }
+
+    private void subscribeToWithQosAndNoCleanSession(String topic, int qos) throws Exception {
+        connectNoCleanSession();
+        m_subscriber.subscribe(topic, qos);
+    }
+
     private void verifyNoMessageIsReceived() throws Exception {
         MqttMessage msg = m_callback.getMessage(false);
         assertNull(msg);
@@ -275,5 +286,17 @@ public class ServerIntegrationEmbeddedPublishTest {
         //m_subscriber.receive(2, TimeUnit.MILLISECONDS);
         MqttMessage message = m_callback.getMessage(true);
         assertTrue(message == null);
+    }
+
+    @Test
+    public void testClientSubscribeWithoutCleanSession() throws Exception {
+        LOG.info("*** testClientSubscribeWithoutCleanSession ***");
+        subscribeToWithQosAndNoCleanSession("foo", 1);
+        m_subscriber.disconnect();
+        assertTrue(m_server.getSubscriptions().size() == 1);
+        connectNoCleanSession();
+        assertTrue(m_server.getSubscriptions().size() == 1);
+        internalPublishToWithQosAndRetained("foo", QOSType.MOST_ONE, false);
+        verifyMessageIsReceivedSuccessfully();
     }
 }

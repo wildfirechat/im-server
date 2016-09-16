@@ -158,6 +158,15 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public List<Subscription> getSubscriptions() {
+        List<Subscription> subscriptions = new ArrayList<>();
+        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+            subscriptions.addAll(entry.getValue());
+        }
+        return subscriptions;
+    }
+
+    @Override
     public void inFlightAck(String clientID, int messageID) {
         Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
