@@ -22,6 +22,7 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.*;
+import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.persistence.MapDBPersistentStore;
 import io.moquette.spi.security.IAuthenticator;
@@ -49,6 +50,8 @@ public class ProtocolProcessorBootstrapper {
     private SubscriptionsStore subscriptions;
 
     private MapDBPersistentStore m_mapStorage;
+    
+    private ISessionsStore m_sessionsStore;
 
     private BrokerInterceptor m_interceptor;
 
@@ -75,7 +78,7 @@ public class ProtocolProcessorBootstrapper {
         m_mapStorage = new MapDBPersistentStore(props);
         m_mapStorage.initStore();
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
-        ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);
+        m_sessionsStore = m_mapStorage.sessionsStore(messagesStore);
 
         List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
@@ -95,7 +98,7 @@ public class ProtocolProcessorBootstrapper {
         }
         m_interceptor = new BrokerInterceptor(observers);
 
-        subscriptions.init(sessionsStore);
+        subscriptions.init(m_sessionsStore);
 
         String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
@@ -140,7 +143,7 @@ public class ProtocolProcessorBootstrapper {
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         boolean allowZeroByteClientId = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
-        m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
+        m_processor.init(subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
     
@@ -189,6 +192,10 @@ public class ProtocolProcessorBootstrapper {
         }
 
         return instance;
+    }
+
+    public List<Subscription> getSubscriptions() {
+        return m_sessionsStore.getSubscriptions();
     }
 
     public void shutdown() {
