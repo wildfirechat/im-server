@@ -36,6 +36,7 @@ public interface IMessagesStore {
         //Optional attribute, available only fo QoS 1 and 2
         private Integer m_msgID;
         private String m_guid;
+        private int referenceCounter = 0;
 
         public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
             m_qos = qos;
@@ -91,6 +92,18 @@ public interface IMessagesStore {
             return m_retained;
         }
 
+        public void incReferenceCounter() {
+            this.referenceCounter++;
+        }
+
+        public void decReferenceCounter() {
+            this.referenceCounter--;
+        }
+
+        public int getReferenceCounter() {
+            return this.referenceCounter;
+        }
+
         @Override
         public String toString() {
             return "PublishEvent{" +
@@ -137,4 +150,8 @@ public interface IMessagesStore {
     StoredMessage getMessageByGuid(String guid);
 
     void cleanRetained(String topic);
+
+    void incUsageCounter(String guid);
+
+    void decUsageCounter(String guid);
 }

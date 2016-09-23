@@ -203,6 +203,7 @@ class MapDBSessionsStore implements ISessionsStore {
         List<String> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.add(guid);
         m_enqueuedStore.put(clientID, guids);
+        m_messagesStore.incUsageCounter(guid);
     }
 
     @Override
@@ -215,6 +216,8 @@ class MapDBSessionsStore implements ISessionsStore {
         List<String> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
+        m_messagesStore.decUsageCounter(guid);
+        //TODO if counter gets to 0 then remove from storage
     }
 
     @Override

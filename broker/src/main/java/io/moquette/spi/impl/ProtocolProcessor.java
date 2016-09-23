@@ -400,7 +400,7 @@ public class ProtocolProcessor {
             LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
         } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-            if(msg.isLocal()) {
+            if (msg.isLocal()) {
                 sendPubRec(clientID, messageID);
             }
             //Next the client will send us a pub rel

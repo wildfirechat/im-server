@@ -99,8 +99,16 @@ class MapDBMessagesStore implements IMessagesStore {
 
     @Override
     public void dropMessagesInSession(String clientID) {
-        m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID)).clear();
-        m_persistentMessageStore.remove(clientID);
+        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+        for (String guid : messageIdToGuid.values()) {
+            //remove only the not retained and no more referenced
+            IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+            if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() == 0) {
+                LOG.debug("Cleaning not retained message guid {}", guid);
+                m_persistentMessageStore.remove(guid);
+            }
+        }
+        messageIdToGuid.clear();
     }
 
     @Override
@@ -111,5 +119,19 @@ class MapDBMessagesStore implements IMessagesStore {
     @Override
     public void cleanRetained(String topic) {
         m_retainedStore.remove(topic);
+    }
+
+    @Override
+    public void incUsageCounter(String guid) {
+        IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+        storedMessage.incReferenceCounter();
+        m_persistentMessageStore.replace(guid, storedMessage);
+    }
+
+    @Override
+    public void decUsageCounter(String guid) {
+        IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+        storedMessage.decReferenceCounter();
+        m_persistentMessageStore.replace(guid, storedMessage);
     }
 }

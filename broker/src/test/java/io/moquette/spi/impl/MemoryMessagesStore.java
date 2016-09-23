@@ -100,4 +100,18 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void cleanRetained(String topic) {
         m_retainedStore.remove(topic);
     }
+
+    @Override
+    public void incUsageCounter(String guid) {
+        IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+        storedMessage.incReferenceCounter();
+        m_persistentMessageStore.replace(guid, storedMessage);
+    }
+
+    @Override
+    public void decUsageCounter(String guid) {
+        IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+        storedMessage.decReferenceCounter();
+        m_persistentMessageStore.replace(guid, storedMessage);
+    }
 }
