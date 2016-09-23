@@ -18,6 +18,7 @@ package io.moquette.spi.persistence;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
@@ -38,14 +39,14 @@ class MapDBSessionsStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MapDBSessionsStore.class);
 
     //maps clientID->[MessageId -> guid]
-    private ConcurrentMap<String, Map<Integer, String>> m_inflightStore;
+    private ConcurrentMap<String, Map<Integer, MessageGUID>> m_inflightStore;
     //map clientID <-> set of currently in flight packet identifiers
     private Map<String, Set<Integer>> m_inFlightIds;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
     //maps clientID->[guid*], insertion order cares, it's queue
-    private ConcurrentMap<String, List<String>> m_enqueuedStore;
+    private ConcurrentMap<String, List<MessageGUID>> m_enqueuedStore;
     //maps clientID->[MessageId -> guid]
-    private ConcurrentMap<String, Map<Integer, String>> m_secondPhaseStore;
+    private ConcurrentMap<String, Map<Integer, MessageGUID>> m_secondPhaseStore;
 
     private final DB m_db;
     private final MapDBMessagesStore m_messagesStore;
@@ -172,7 +173,7 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public void inFlightAck(String clientID, int messageID) {
         LOG.info("acknowledging inflight clientID <{}> messageID {}", clientID, messageID);
-        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             LOG.error("Can't find the inFlight record for client <{}>", clientID);
             return;
@@ -187,8 +188,8 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
-    public void inFlight(String clientID, int messageID, String guid) {
-        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+    public void inFlight(String clientID, int messageID, MessageGUID guid) {
+        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             m = new HashMap<>();
         }
@@ -198,21 +199,21 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
-    public void bindToDeliver(String guid, String clientID) {
-        List<String> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
+    public void bindToDeliver(MessageGUID guid, String clientID) {
+        List<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
         guids.add(guid);
         m_enqueuedStore.put(clientID, guids);
         m_messagesStore.incUsageCounter(guid);
     }
 
     @Override
-    public Collection<String> enqueued(String clientID) {
-        return Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
+    public Collection<MessageGUID> enqueued(String clientID) {
+        return Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
     }
 
     @Override
-    public void removeEnqueued(String clientID, String guid) {
-        List<String> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<String>());
+    public void removeEnqueued(String clientID, MessageGUID guid) {
+        List<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
         m_messagesStore.decUsageCounter(guid);
@@ -223,12 +224,12 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID) {
         LOG.info("acknowledging inflight clientID <{}> messageID {}", clientID, messageID);
-        Map<Integer, String> m = this.m_inflightStore.get(clientID);
+        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             LOG.error("Can't find the inFlight record for client <{}>", clientID);
             return;
         }
-        String guid = m.remove(messageID);
+        MessageGUID guid = m.remove(messageID);
 
         //remove from the ids store
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
@@ -237,22 +238,22 @@ class MapDBSessionsStore implements ISessionsStore {
         }
 
         LOG.info("Moving to second phase store");
-        Map<Integer, String> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, String>());
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
         messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
 
     @Override
-    public String secondPhaseAcknowledged(String clientID, int messageID) {
-        Map<Integer, String> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, String>());
-        String guid = messageIDs.remove(messageID);
+    public MessageGUID secondPhaseAcknowledged(String clientID, int messageID) {
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
     }
 
     @Override
-    public String mapToGuid(String clientID, int messageID) {
-        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
+    public MessageGUID mapToGuid(String clientID, int messageID) {
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
         return messageIdToGuid.get(messageID);
     }
 
@@ -262,10 +263,10 @@ class MapDBSessionsStore implements ISessionsStore {
 
 	@Override
 	public StoredMessage getInflightMessage(String clientID, int messageID) {
-		Map<Integer, String> clientEntries = m_inflightStore.get(clientID);
+		Map<Integer, MessageGUID> clientEntries = m_inflightStore.get(clientID);
 		if (clientEntries == null)
 			return null;
-		String guid = clientEntries.get(messageID);
+        MessageGUID guid = clientEntries.get(messageID);
         LOG.info("inflight messageID {} guid <{}>", messageID, guid);
 		if (guid == null)
 			return null;

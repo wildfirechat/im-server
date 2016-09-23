@@ -25,11 +25,8 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMatchingCondition;
-import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -150,7 +147,6 @@ public class ProtocolProcessor {
      * @param allowZeroByteClientId true to allow clients connect without a clientid
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
      * @param interceptor to notify events to an intercept handler
-     * @param serverPort
      */
     void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
@@ -387,7 +383,7 @@ public class ProtocolProcessor {
         final Integer messageID = msg.getMessageID();
         LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
 
-        String guid = null;
+        MessageGUID guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         toStoreMsg.setClientID(clientID);
         if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
@@ -439,7 +435,7 @@ public class ProtocolProcessor {
         final String topic = msg.getTopicName();
         LOG.info("embedded PUBLISH on topic <{}> with QoS {}", topic, qos);
 
-        String guid = null;
+        MessageGUID guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         if (msg.getClientId() == null || msg.getClientId().isEmpty()) {
             toStoreMsg.setClientID("BROKER_SELF");
@@ -498,7 +494,7 @@ public class ProtocolProcessor {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
         //if QoS 1 or 2 store the message
-        String guid = null;
+        MessageGUID guid = null;
         if (publishingQos == QOSType.EXACTLY_ONCE || publishingQos == QOSType.LEAST_ONE) {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }

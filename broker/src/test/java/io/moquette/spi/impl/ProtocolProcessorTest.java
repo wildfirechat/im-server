@@ -20,11 +20,8 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMatchingCondition;
-import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -378,7 +375,7 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_channel, connectMessage);
 
         //Verify no messages are still stored
-        Collection<String> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
+        Collection<MessageGUID> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
         assertTrue(m_messagesStore.listMessagesInSession(guids).isEmpty());
     }
     

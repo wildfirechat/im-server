@@ -17,6 +17,7 @@ package io.moquette.spi.persistence;
 
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.MessageGUID;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +37,9 @@ class MapDBMessagesStore implements IMessagesStore {
     private DB m_db;
 
     //maps clientID -> guid
-    private ConcurrentMap<String, String> m_retainedStore;
+    private ConcurrentMap<String, MessageGUID> m_retainedStore;
     //maps guid to message, it's message store
-    private ConcurrentMap<String, IMessagesStore.StoredMessage> m_persistentMessageStore;
+    private ConcurrentMap<MessageGUID, IMessagesStore.StoredMessage> m_persistentMessageStore;
 
 
     MapDBMessagesStore(DB db) {
@@ -52,7 +53,7 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void storeRetained(String topic, String guid) {
+    public void storeRetained(String topic, MessageGUID guid) {
         m_retainedStore.put(topic, guid);
     }
 
@@ -61,8 +62,8 @@ class MapDBMessagesStore implements IMessagesStore {
         LOG.debug("searchMatching scanning all retained messages, presents are {}", m_retainedStore.size());
 
         List<StoredMessage> results = new ArrayList<>();
-        for (Map.Entry<String, String> entry : m_retainedStore.entrySet()) {
-            final String guid = entry.getValue();
+        for (Map.Entry<String, MessageGUID> entry : m_retainedStore.entrySet()) {
+            final MessageGUID guid = entry.getValue();
             StoredMessage storedMsg = m_persistentMessageStore.get(guid);
             if (condition.match(entry.getKey())) {
                 results.add(storedMsg);
@@ -73,25 +74,25 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public String storePublishForFuture(StoredMessage evt) {
+    public MessageGUID storePublishForFuture(StoredMessage evt) {
         LOG.debug("storePublishForFuture store evt {}", evt);
         if (evt.getClientID() == null) {
             LOG.error("persisting a message without a clientID, bad programming error msg: {}", evt);
             throw new IllegalArgumentException("\"persisting a message without a clientID, bad programming error");
         }
-        String guid = UUID.randomUUID().toString();
+        MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         evt.setGuid(guid);
         LOG.debug("storePublishForFuture guid <{}>", guid);
         m_persistentMessageStore.put(guid, evt);
-        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(evt.getClientID()));
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(evt.getClientID()));
         messageIdToGuid.put(evt.getMessageID(), guid);
         return guid;
     }
 
     @Override
-    public List<StoredMessage> listMessagesInSession(Collection<String> guids) {
+    public List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids) {
         List<StoredMessage> ret = new ArrayList<>();
-        for (String guid : guids) {
+        for (MessageGUID guid : guids) {
             ret.add(m_persistentMessageStore.get(guid));
         }
         return ret;
@@ -99,14 +100,14 @@ class MapDBMessagesStore implements IMessagesStore {
 
     @Override
     public void dropMessagesInSession(String clientID) {
-        ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
-        for (String guid : messageIdToGuid.values()) {
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+        for (MessageGUID guid : messageIdToGuid.values()) {
             removeStoredMessage(guid);
         }
         messageIdToGuid.clear();
     }
 
-    void removeStoredMessage(String guid) {
+    void removeStoredMessage(MessageGUID guid) {
         //remove only the not retained and no more referenced
         StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() == 0) {
@@ -116,7 +117,7 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public StoredMessage getMessageByGuid(String guid) {
+    public StoredMessage getMessageByGuid(MessageGUID guid) {
         return m_persistentMessageStore.get(guid);
     }
 
@@ -126,14 +127,14 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void incUsageCounter(String guid) {
+    public void incUsageCounter(MessageGUID guid) {
         IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         storedMessage.incReferenceCounter();
         m_persistentMessageStore.replace(guid, storedMessage);
     }
 
     @Override
-    public void decUsageCounter(String guid) {
+    public void decUsageCounter(MessageGUID guid) {
         IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         storedMessage.decReferenceCounter();
         m_persistentMessageStore.replace(guid, storedMessage);

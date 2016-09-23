@@ -112,7 +112,7 @@ public interface ISessionsStore {
     /**
      * Save the binding messageID, clientID <-> guid
      * */
-    void inFlight(String clientID, int messageID, String guid);
+    void inFlight(String clientID, int messageID, MessageGUID guid);
 
     /**
      * Return the next valid packetIdentifier for the given client session.
@@ -122,26 +122,26 @@ public interface ISessionsStore {
     /**
      * Store the guid to be later published.
      * */
-    void bindToDeliver(String guid, String clientID);
+    void bindToDeliver(MessageGUID guid, String clientID);
 
     /**
      * List the guids for retained messages for the session
      * */
-    Collection<String> enqueued(String clientID);
+    Collection<MessageGUID> enqueued(String clientID);
 
     /**
      * Remove form the queue of stored messages for session.
      * */
-    void removeEnqueued(String clientID, String guid);
+    void removeEnqueued(String clientID, MessageGUID guid);
 
     void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID);
 
     /**
      * @return the guid of message just acked.
      * */
-    String secondPhaseAcknowledged(String clientID, int messageID);
+    MessageGUID secondPhaseAcknowledged(String clientID, int messageID);
 
-    String mapToGuid(String clientID, int messageID);
+    MessageGUID mapToGuid(String clientID, int messageID);
     
     StoredMessage getInflightMessage(String clientID, int messageID);
 }

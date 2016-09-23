@@ -35,7 +35,7 @@ public interface IMessagesStore {
         private String m_clientID;
         //Optional attribute, available only fo QoS 1 and 2
         private Integer m_msgID;
-        private String m_guid;
+        private MessageGUID m_guid;
         private int referenceCounter = 0;
 
         public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
@@ -56,11 +56,11 @@ public interface IMessagesStore {
             return m_topic;
         }
 
-        public void setGuid(String guid) {
+        public void setGuid(MessageGUID guid) {
             this.m_guid = guid;
         }
 
-        public String getGuid() {
+        public MessageGUID getGuid() {
             return m_guid;
         }
 
@@ -125,7 +125,7 @@ public interface IMessagesStore {
      * Persist the message. 
      * If the message is empty then the topic is cleaned, else it's stored.
      */
-    void storeRetained(String topic, String guid);
+    void storeRetained(String topic, MessageGUID guid);
 
     /**
      * Return a list of retained messages that satisfy the condition.
@@ -136,22 +136,22 @@ public interface IMessagesStore {
      * Persist the message.
      * @return the unique id in the storage (guid).
      * */
-    String storePublishForFuture(StoredMessage evt);
+    MessageGUID storePublishForFuture(StoredMessage evt);
 
     /**
      * Return the list of persisted publishes for the given clientID.
      * For QoS1 and QoS2 with clean session flag, this method return the list of 
      * missed publish events while the client was disconnected.
      */
-    List<StoredMessage> listMessagesInSession(Collection<String> guids);
+    List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids);
     
     void dropMessagesInSession(String clientID);
 
-    StoredMessage getMessageByGuid(String guid);
+    StoredMessage getMessageByGuid(MessageGUID guid);
 
     void cleanRetained(String topic);
 
-    void incUsageCounter(String guid);
+    void incUsageCounter(MessageGUID guid);
 
-    void decUsageCounter(String guid);
+    void decUsageCounter(MessageGUID guid);
 }

@@ -78,14 +78,14 @@ public class ClientSession {
      * */
     public List<IMessagesStore.StoredMessage> storedMessages() {
         //read all messages from enqueued store
-        Collection<String> guids = this.m_sessionsStore.enqueued(clientID);
+        Collection<MessageGUID> guids = this.m_sessionsStore.enqueued(clientID);
         return messagesStore.listMessagesInSession(guids);
     }
 
     /**
      * Remove the messages stored in a cleanSession false.
      */
-    public void removeEnqueued(String guid) {
+    public void removeEnqueued(MessageGUID guid) {
         this.m_sessionsStore.removeEnqueued(this.clientID, guid);
     }
 
@@ -175,22 +175,22 @@ public class ClientSession {
         m_sessionsStore.inFlightAck(this.clientID, messageID);
     }
 
-    public void inFlightAckWaiting(String guid, int messageID) {
+    public void inFlightAckWaiting(MessageGUID guid, int messageID) {
         LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
         m_sessionsStore.inFlight(this.clientID, messageID, guid);
     }
 
     public IMessagesStore.StoredMessage secondPhaseAcknowledged(int messageID) {
-        String guid = m_sessionsStore.secondPhaseAcknowledged(clientID, messageID);
+        MessageGUID guid = m_sessionsStore.secondPhaseAcknowledged(clientID, messageID);
         return messagesStore.getMessageByGuid(guid);
     }
 
-    public void enqueueToDeliver(String guid) {
+    public void enqueueToDeliver(MessageGUID guid) {
         this.m_sessionsStore.bindToDeliver(guid, this.clientID);
     }
 
     public IMessagesStore.StoredMessage storedMessage(int messageID) {
-        final String guid = m_sessionsStore.mapToGuid(clientID, messageID);
+        final MessageGUID guid = m_sessionsStore.mapToGuid(clientID, messageID);
         return messagesStore.getMessageByGuid(guid);
     }
 
