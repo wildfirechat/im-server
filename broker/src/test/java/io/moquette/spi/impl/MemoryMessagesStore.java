@@ -112,13 +112,13 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void incUsageCounter(MessageGUID guid) {
         IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         storedMessage.incReferenceCounter();
-        m_persistentMessageStore.replace(guid, storedMessage);
+        m_persistentMessageStore.put(guid, storedMessage);
     }
 
     @Override
     public void decUsageCounter(MessageGUID guid) {
         IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         storedMessage.decReferenceCounter();
-        m_persistentMessageStore.replace(guid, storedMessage);
+        m_persistentMessageStore.put(guid, storedMessage);
     }
 }
