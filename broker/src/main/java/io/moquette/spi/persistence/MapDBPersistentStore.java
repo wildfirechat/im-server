@@ -59,6 +59,8 @@ public class MapDBPersistentStore {
     private final int m_autosaveInterval; // in seconds
 
     protected final ScheduledExecutorService m_scheduler = Executors.newScheduledThreadPool(1);
+    private MapDBMessagesStore m_messageStore;
+    private MapDBSessionsStore m_sessionsStore;
 
     public MapDBPersistentStore(IConfig props) {
         this.m_storePath = props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, "");
@@ -69,16 +71,11 @@ public class MapDBPersistentStore {
      * Factory method to create message store backed by MapDB
      * */
     public IMessagesStore messagesStore() {
-        //TODO check m_db is valid and
-        IMessagesStore msgStore = new MapDBMessagesStore(m_db);
-        msgStore.initStore();
-        return msgStore;
+        return m_messageStore;
     }
 
-    public ISessionsStore sessionsStore(IMessagesStore msgStore) {
-        ISessionsStore sessionsStore = new MapDBSessionsStore(m_db, msgStore);
-        sessionsStore.initStore();
-        return sessionsStore;
+    public ISessionsStore sessionsStore() {
+        return m_sessionsStore;
     }
     
     public void initStore() {
@@ -102,6 +99,13 @@ public class MapDBPersistentStore {
                 m_db.commit();
             }
         }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
+
+        //TODO check m_db is valid and
+        m_messageStore = new MapDBMessagesStore(m_db);
+        m_messageStore.initStore();
+
+        m_sessionsStore = new MapDBSessionsStore(m_db, m_messageStore);
+        m_sessionsStore.initStore();
     }
 
     public void close() {

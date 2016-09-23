@@ -55,7 +55,7 @@ public class MapDBPersistentStoreTest {
         m_storageService = new MapDBPersistentStore(conf);
         m_storageService.initStore();
         m_messagesStore = m_storageService.messagesStore();
-        m_sessionsStore = m_storageService.sessionsStore(m_messagesStore);
+        m_sessionsStore = m_storageService.sessionsStore();
     }
 
     @After

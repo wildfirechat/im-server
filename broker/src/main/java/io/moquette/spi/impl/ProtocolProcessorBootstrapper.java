@@ -75,7 +75,7 @@ public class ProtocolProcessorBootstrapper {
         m_mapStorage = new MapDBPersistentStore(props);
         m_mapStorage.initStore();
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
-        ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);
+        ISessionsStore sessionsStore = m_mapStorage.sessionsStore();
 
         List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);

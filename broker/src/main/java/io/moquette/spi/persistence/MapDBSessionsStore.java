@@ -49,9 +49,9 @@ class MapDBSessionsStore implements ISessionsStore {
     private ConcurrentMap<String, Map<Integer, String>> m_secondPhaseStore;
 
     private final DB m_db;
-    private final IMessagesStore m_messagesStore;
+    private final MapDBMessagesStore m_messagesStore;
 
-    MapDBSessionsStore(DB db, IMessagesStore messagesStore) {
+    MapDBSessionsStore(DB db, MapDBMessagesStore messagesStore) {
         m_db = db;
         m_messagesStore = messagesStore;
     }
