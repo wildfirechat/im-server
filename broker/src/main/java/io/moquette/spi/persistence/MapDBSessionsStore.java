@@ -16,7 +16,6 @@
 package io.moquette.spi.persistence;
 
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.Utils;
@@ -217,7 +216,8 @@ class MapDBSessionsStore implements ISessionsStore {
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
         m_messagesStore.decUsageCounter(guid);
-        //TODO if counter gets to 0 then remove from storage
+        //if counter gets to 0 then remove from storage
+        m_messagesStore.removeStoredMessage(guid);
     }
 
     @Override

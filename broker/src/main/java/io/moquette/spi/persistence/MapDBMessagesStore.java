@@ -101,14 +101,18 @@ class MapDBMessagesStore implements IMessagesStore {
     public void dropMessagesInSession(String clientID) {
         ConcurrentMap<Integer, String> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
         for (String guid : messageIdToGuid.values()) {
-            //remove only the not retained and no more referenced
-            IMessagesStore.StoredMessage storedMessage = m_persistentMessageStore.get(guid);
-            if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() == 0) {
-                LOG.debug("Cleaning not retained message guid {}", guid);
-                m_persistentMessageStore.remove(guid);
-            }
+            removeStoredMessage(guid);
         }
         messageIdToGuid.clear();
+    }
+
+    void removeStoredMessage(String guid) {
+        //remove only the not retained and no more referenced
+        StoredMessage storedMessage = m_persistentMessageStore.get(guid);
+        if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() == 0) {
+            LOG.debug("Cleaning not retained message guid {}", guid);
+            m_persistentMessageStore.remove(guid);
+        }
     }
 
     @Override
