@@ -571,10 +571,12 @@ public class ProtocolProcessor {
         Channel channel = m_clientIDs.get(clientId).channel;
         LOG.trace("Session for clientId {}", clientId);
         if (channel.isWritable()) {
+            LOG.debug("channel is writable");
             //if channel is writable don't enqueue
-            channel.write(pubMessage);
+            channel.writeAndFlush(pubMessage);
         } else {
             //enqueue to the client session
+            LOG.debug("enqueue to client session");
             clientsession.enqueue(pubMessage);
         }
     }
