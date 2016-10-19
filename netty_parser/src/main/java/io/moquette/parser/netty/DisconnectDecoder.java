@@ -19,12 +19,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.util.AttributeMap;
 import java.util.List;
 import io.moquette.parser.proto.messages.DisconnectMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author andrea
  */
 class DisconnectDecoder extends DemuxDecoder {
+
+    private static Logger LOG = LoggerFactory.getLogger(DisconnectDecoder.class);
 
     @Override
     void decode(AttributeMap ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -35,6 +39,7 @@ class DisconnectDecoder extends DemuxDecoder {
             in.resetReaderIndex();
             return;
         }
+        LOG.debug("Decoding disconnect");
         out.add(message);
     }
     
