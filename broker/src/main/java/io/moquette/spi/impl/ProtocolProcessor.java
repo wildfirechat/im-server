@@ -704,6 +704,9 @@ public class ProtocolProcessor {
             forwardPublishWill(will, clientID);
             m_willStore.remove(clientID);
         }
+
+        String username = NettyUtils.userName(channel);
+        m_interceptor.notifyClientConnectionLost(clientID, username);
     }
 
     /**
