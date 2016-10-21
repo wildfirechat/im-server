@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -39,7 +40,7 @@ class MapDBSessionsStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MapDBSessionsStore.class);
 
     //maps clientID->[MessageId -> guid]
-    private ConcurrentMap<String, Map<Integer, MessageGUID>> m_inflightStore;
+    private ConcurrentMap<String, ConcurrentMap<Integer, MessageGUID>> m_inflightStore;
     //map clientID <-> set of currently in flight packet identifiers
     private Map<String, Set<Integer>> m_inFlightIds;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
@@ -157,7 +158,7 @@ class MapDBSessionsStore implements ISessionsStore {
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
         if (inFlightForClient == null) {
             int nextPacketId = 1;
-            inFlightForClient = new HashSet<>();
+            inFlightForClient = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
             inFlightForClient.add(nextPacketId);
             this.m_inFlightIds.put(clientID, inFlightForClient);
             return nextPacketId;
@@ -189,9 +190,9 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void inFlight(String clientID, int messageID, MessageGUID guid) {
-        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
+        ConcurrentMap<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
-            m = new HashMap<>();
+            m = new ConcurrentHashMap<>();
         }
         m.put(messageID, guid);
         LOG.info("storing inflight clientID <{}> messageID {} guid <{}>", clientID, messageID, guid);
