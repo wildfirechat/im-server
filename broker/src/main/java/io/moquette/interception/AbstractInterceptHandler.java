@@ -31,6 +31,9 @@ public abstract class AbstractInterceptHandler implements InterceptHandler {
     public void onDisconnect(InterceptDisconnectMessage msg) {}
 
     @Override
+    public void onConnectionLost(InterceptConnectionLostMessage msg) {}
+
+    @Override
     public void onPublish(InterceptPublishMessage msg) {}
 
     @Override

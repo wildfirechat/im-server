@@ -52,6 +52,11 @@ public class BrokerInterceptorTest {
         }
 
         @Override
+        public void onConnectionLost(InterceptConnectionLostMessage msg) {
+            n.set(30);
+        }
+
+        @Override
         public void onPublish(InterceptPublishMessage msg) {
             n.set(60);
         }
