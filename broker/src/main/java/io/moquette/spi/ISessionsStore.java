@@ -93,6 +93,11 @@ public interface ISessionsStore {
      * @return the subscription stored by clientID and topicFilter, if any else null;
      * */
     Subscription getSubscription(ClientTopicCouple couple);
+    
+    /*
+     * @return all subscriptions stored.
+     */
+    List<Subscription> getSubscriptions();
 
     /**
      * @return true iff there are subscriptions persisted with clientID

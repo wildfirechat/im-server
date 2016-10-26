@@ -118,6 +118,16 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
+    public List<Subscription> getSubscriptions() {
+        List<Subscription> subscriptions = new ArrayList<>();
+        for (String clientID : m_persistentSessions.keySet()) {
+            ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
+            subscriptions.addAll(clientSubscriptions.values());
+        }
+        return subscriptions;
+    }
+
+    @Override
     public boolean contains(String clientID) {
         return m_db.exists("subscriptions_" + clientID);
     }

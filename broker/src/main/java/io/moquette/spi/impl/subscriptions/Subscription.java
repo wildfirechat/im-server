@@ -26,17 +26,18 @@ import io.moquette.spi.ISessionsStore.ClientTopicCouple;
  * 
  * @author andrea
  */
-public class Subscription implements Serializable {
+public final class Subscription implements Serializable {
     
-    QOSType requestedQos; //max QoS acceptable
-    String clientId;
-    String topicFilter;
-    boolean active = true;
+    final QOSType requestedQos; //max QoS acceptable
+    final String clientId;
+    final String topicFilter;
+    final boolean active;
     
     public Subscription(String clientId, String topicFilter, QOSType requestedQos) {
         this.requestedQos = requestedQos;
         this.clientId = clientId;
         this.topicFilter = topicFilter;
+        this.active = true;
     }
 
     public Subscription(Subscription orig) {
