@@ -43,13 +43,13 @@ MQTT sub = new MQTT()
 //mqtt.setHost("test.mosquitto.org", 1883);
 sub.setHost(host, 1883)
 sub.setCleanSession(true)
-sub.setHost(host, 1883)
 sub.setClientId("SubscriberClient${dialog_id}")
 
 BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(mqtt: sub, dialog_id: dialog_id)
 suscriberBench.connect()
 
-BenchmarkPublisher publisherBench = new BenchmarkPublisher(mqtt: pub, numToSend: numToSend, messagesPerSecond: messagesPerSecond, dialog_id: dialog_id)
+BenchmarkPublisher publisherBench = new BenchmarkPublisher(mqtt: pub, numToSend: numToSend,
+        messagesPerSecond: messagesPerSecond, dialog_id: dialog_id)
 publisherBench.connect()
 publisherBench.firePublishes()
 

@@ -18,8 +18,8 @@ package io.moquette.server;
 import io.netty.channel.Channel;
 
 /**
- * Value object to maintain the information of single connection, like ClientID, IoSession,
- * and other clean session fla.
+ * Value object to maintain the information of single connection, like ClientID, Channel,
+ * and clean session flag.
  * 
  * 
  * @author andrea
