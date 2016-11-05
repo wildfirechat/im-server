@@ -95,7 +95,29 @@ public class ProtocolProcessor {
 
     }
 
+    public class ForceDisconnectEvent {
+        public final Channel newChannel;
+        public final ConnectMessage msg;
+
+        public ForceDisconnectEvent(Channel newChannel, ConnectMessage msg) {
+            this.newChannel = newChannel;
+            this.msg = msg;
+        }
+    }
+
+    public class CompleteConnect {
+        public final ConnectMessage msg;
+
+        public CompleteConnect(ConnectMessage msg) {
+            this.msg = msg;
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
+
+    public enum ConnectState {
+        CONNECTED, DISCONNECTING, DISCONNECTED, DROP_BY_CONNECT
+    }
 
     protected ConcurrentMap<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
@@ -111,8 +133,9 @@ public class ProtocolProcessor {
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
 
-    ProtocolProcessor() {}
+    private final ConcurrentMap<String, ConnectState> connectionsStatus = new ConcurrentHashMap<>();
 
+    ProtocolProcessor() {}
 
     public void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
                      ISessionsStore sessionsStore,
@@ -213,17 +236,35 @@ public class ProtocolProcessor {
         }
 
         //if an old client with the same ID already exists close its session.
-        if (m_clientIDs.containsKey(msg.getClientID())) {
+        if (m_clientIDs.containsKey(msg.getClientID()) /*|| (!otherDisconnecting && existingClientSameId)*/) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             //clean the subscriptions if the old used a cleanSession = true
-            Channel oldChannel = m_clientIDs.get(msg.getClientID()).channel;
-            ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
-            oldClientSession.disconnect();
-            NettyUtils.sessionStolen(oldChannel, true);
-            oldChannel.close();
-            LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
+            try {
+                Channel oldChannel = m_clientIDs.get(msg.getClientID()).channel;
+                oldChannel.pipeline().fireUserEventTriggered(new ForceDisconnectEvent(channel, msg));
+                LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
+            } catch (NullPointerException npex) {
+                //OK this could happen with concurrent DISCONNECT and CONNECT on same clientID
+                channel.pipeline().fireUserEventTriggered(new CompleteConnect(msg));
+            }
+        } else {
+            completeConnect(channel, msg);
         }
 
+    }
+
+    public void forceCloseConnection(Channel oldChannel, Channel newChannel, ConnectMessage msg) {
+        String clientID = NettyUtils.clientID(oldChannel);
+        ClientSession oldClientSession = m_sessionsStore.sessionForClient(clientID);
+        oldClientSession.disconnect();
+        NettyUtils.sessionStolen(oldChannel, true);
+        NettyUtils.channelStatus(oldChannel, ConnectState.DROP_BY_CONNECT);
+        oldChannel.close();
+
+        newChannel.pipeline().fireUserEventTriggered(new CompleteConnect(msg));
+    }
+
+    public void completeConnect(Channel channel, ConnectMessage msg) {
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), channel, msg.isCleanSession());
         m_clientIDs.put(msg.getClientID(), connDescr);
 
@@ -268,7 +309,8 @@ public class ProtocolProcessor {
             LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
             clientSession = m_sessionsStore.createNewSession(msg.getClientID(), msg.isCleanSession());
         }
-        clientSession.activate();
+        this.connectionsStatus.put(msg.getClientID(), ConnectState.CONNECTED);
+        NettyUtils.channelStatus(channel, ConnectState.CONNECTED);
         if (msg.isCleanSession()) {
             clientSession.cleanSession();
         }
@@ -352,7 +394,7 @@ public class ProtocolProcessor {
         }
         String clientID = targetSession.clientID;
         if (m_clientIDs.containsKey(clientID)) {
-            targetSession.activate();
+            this.connectionsStatus.put(clientID, ConnectState.CONNECTED);
         }
     }
 
@@ -509,21 +551,23 @@ public class ProtocolProcessor {
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
             verifyToActivate(targetSession);
 
+            boolean targetIsActive = this.connectionsStatus.get(sub.getClientId()) == ConnectState.CONNECTED;
+
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), qos, targetSession.isActive());
+                    sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
-            if (qos == AbstractMessage.QOSType.MOST_ONE && targetSession.isActive()) {
+            if (qos == AbstractMessage.QOSType.MOST_ONE && targetIsActive) {
                 //QoS 0
                 directSend(targetSession, topic, qos, message, false, null);
             } else {
                 //QoS 1 or 2
                 //if the target subscription is not clean session and is not connected => store it
-                if (!targetSession.isCleanSession() && !targetSession.isActive()) {
+                if (!targetSession.isCleanSession() && !targetIsActive) {
                     //store the message in targetSession queue to deliver
                     targetSession.enqueueToDeliver(guid);
                 } else  {
                     //publish
-                    if (targetSession.isActive()) {
+                    if (targetIsActive) {
                         int messageId = targetSession.nextPacketId();
                         targetSession.inFlightAckWaiting(guid, messageId);
                         directSend(targetSession, topic, qos, message, false, messageId);
@@ -671,20 +715,38 @@ public class ProtocolProcessor {
 
     public void processDisconnect(Channel channel) throws InterruptedException {
         channel.flush();
+        ConnectState status = NettyUtils.channelStatus(channel);
+        if (status != null && status == ConnectState.DROP_BY_CONNECT) {
+            LOG.info("DISCONNECT drop by other connect");
+            return;
+        }
         String clientID = NettyUtils.clientID(channel);
         boolean cleanSession = NettyUtils.cleanSession(channel);
         LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
+        boolean notNewConnection = (status != null && status == ConnectState.CONNECTED);
+        if (!notNewConnection) {
+            //while disconnect someone else connected
+            return;
+        }
+        NettyUtils.channelStatus(channel, ConnectState.DISCONNECTING);
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         clientSession.disconnect();
-
-        m_clientIDs.remove(clientID);
         channel.close();
+        status = NettyUtils.channelStatus(channel);
+        boolean stillDisconnecting = (status != null && status == ConnectState.DISCONNECTING);
+        if (!stillDisconnecting) {
+            //someone else changed the state (another connect with same client ID)
+            return;
+        }
+        m_clientIDs.remove(clientID);
 
         //cleanup the will store
         m_willStore.remove(clientID);
 
         String username = NettyUtils.userName(channel);
         m_interceptor.notifyClientDisconnected(clientID, username);
+//        this.connectionsStatus.remove(clientID, ConnectState.DISCONNECTED);
+        this.connectionsStatus.remove(clientID);
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
@@ -695,7 +757,7 @@ public class ProtocolProcessor {
         if (sessionStolen) {
             //de-activate the subscriptions for this ClientID
             ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-            clientSession.deactivate();
+            //TODO it's needed? clientSession.deactivate();
             LOG.info("Lost connection with client <{}>", clientID);
         }
         //publish the Will message (if any) for the clientID

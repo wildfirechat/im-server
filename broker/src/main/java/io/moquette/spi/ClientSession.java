@@ -61,8 +61,6 @@ public class ClientSession {
 
     private volatile boolean cleanSession;
 
-    private boolean active = false;
-
     private BlockingQueue<AbstractMessage> m_queueToPublish = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
 
     public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore,
@@ -133,16 +131,16 @@ public class ClientSession {
             cleanSession();
         }
 
-        //deactivate the session
-        deactivate();
     }
 
     public void cleanSession() {
         LOG.info("cleaning old saved subscriptions for client <{}>", this.clientID);
         m_sessionsStore.wipeSubscriptions(this.clientID);
+        LOG.debug("Wiped subscriptions for client <{}>", this.clientID);
 
         //remove also the messages stored of type QoS1/2
         messagesStore.dropMessagesInSession(this.clientID);
+        LOG.debug("Removed messages in session for client <{}>", this.clientID);
     }
 
     public boolean isCleanSession() {
@@ -152,18 +150,6 @@ public class ClientSession {
     public void cleanSession(boolean cleanSession) {
         this.cleanSession = cleanSession;
         this.m_sessionsStore.updateCleanStatus(this.clientID, cleanSession);
-    }
-
-    public void activate() {
-        this.active = true;
-    }
-
-    public void deactivate() {
-        this.active = false;
-    }
-
-    public boolean isActive() {
-        return this.active;
     }
 
     public int nextPacketId() {

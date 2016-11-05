@@ -120,4 +120,15 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         }
         ctx.fireChannelWritabilityChanged();
     }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+        if (evt instanceof ProtocolProcessor.ForceDisconnectEvent) {
+            ProtocolProcessor.ForceDisconnectEvent disconnectEvent = (ProtocolProcessor.ForceDisconnectEvent) evt;
+            m_processor.forceCloseConnection(ctx.channel(), disconnectEvent.newChannel, disconnectEvent.msg);
+        } else if (evt instanceof ProtocolProcessor.CompleteConnect) {
+            ProtocolProcessor.CompleteConnect completeConnectEvent = (ProtocolProcessor.CompleteConnect) evt;
+            m_processor.completeConnect(ctx.channel(), completeConnectEvent.msg);
+        }
+    }
 }

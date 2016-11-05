@@ -379,7 +379,7 @@ public class SubscriptionsStoreTest {
         ISessionsStore sessionsStore = memStore.sessionsStore();
         aStore.init(sessionsStore);
         //subscribe a not active clientID1 to /topic
-        sessionsStore.createNewSession("FAKE_CLI_ID_1", true).deactivate();
+        sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", AbstractMessage.QOSType.MOST_ONE);
         sessionsStore.addNewSubscription(slashSub);
         aStore.add(slashSub.asClientTopicCouple());

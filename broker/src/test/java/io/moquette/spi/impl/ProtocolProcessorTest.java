@@ -382,7 +382,7 @@ public class ProtocolProcessorTest {
     @Test
     public void publishNoPublishToInactiveSession() {
         //create an inactive session for Subscriber
-        m_sessionStore.createNewSession("Subscriber", false).deactivate();
+        m_sessionStore.createNewSession("Subscriber", false);
 
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
         Subscription inactiveSub = new Subscription("Subscriber", "/topic", QOSType.LEAST_ONE);
@@ -455,8 +455,8 @@ public class ProtocolProcessorTest {
         memStore.initStore();
         IMessagesStore memoryMessageStore = memStore.messagesStore();
         ISessionsStore sessionsStore = memStore.sessionsStore();
-        sessionsStore.createNewSession("Sub A", false).activate();
-        sessionsStore.createNewSession("Sub B", false).activate();
+        sessionsStore.createNewSession("Sub A", false);
+        sessionsStore.createNewSession("Sub B", false);
 
         Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE);
