@@ -73,6 +73,18 @@ final class BrokerInterceptor implements Interceptor {
     }
 
     @Override
+    public void notifyClientConnectionLost(final String clientID, final String username) {
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onConnectionLost(new InterceptConnectionLostMessage(clientID, username));
+                }
+            });
+        }
+    }
+
+    @Override
     public void notifyTopicPublished(final PublishMessage msg, final String clientID, final String username) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
