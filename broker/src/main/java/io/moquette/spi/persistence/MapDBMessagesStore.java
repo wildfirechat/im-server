@@ -110,7 +110,10 @@ class MapDBMessagesStore implements IMessagesStore {
     void removeStoredMessage(MessageGUID guid) {
         //remove only the not retained and no more referenced
         StoredMessage storedMessage = m_persistentMessageStore.get(guid);
-        if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() == 0) {
+        if (!storedMessage.isRetained() && storedMessage.getReferenceCounter() <= 0) {
+            if(storedMessage.getReferenceCounter() < 0) {
+                LOG.error("we should never have gotten a reference count less than zero");
+            }
             LOG.debug("Cleaning not retained message guid {}", guid);
             m_persistentMessageStore.remove(guid);
         }
