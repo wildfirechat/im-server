@@ -21,6 +21,7 @@ import io.moquette.parser.proto.messages.AbstractMessage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Defines the SPI to be implemented by a StorageService that handle persistence of messages
@@ -36,7 +37,7 @@ public interface IMessagesStore {
         //Optional attribute, available only fo QoS 1 and 2
         private Integer m_msgID;
         private MessageGUID m_guid;
-        private int referenceCounter = 0;
+        private AtomicInteger referenceCounter = new AtomicInteger(0);
 
         public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
             m_qos = qos;
@@ -93,15 +94,15 @@ public interface IMessagesStore {
         }
 
         public void incReferenceCounter() {
-            this.referenceCounter++;
+            this.referenceCounter.incrementAndGet();
         }
 
         public void decReferenceCounter() {
-            this.referenceCounter--;
+            this.referenceCounter.decrementAndGet();
         }
 
         public int getReferenceCounter() {
-            return this.referenceCounter;
+            return this.referenceCounter.get();
         }
 
         @Override
