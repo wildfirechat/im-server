@@ -16,6 +16,10 @@
 package io.moquette.server;
 
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Value object to maintain the information of single connection, like ClientID, Channel,
@@ -25,10 +29,17 @@ import io.netty.channel.Channel;
  * @author andrea
  */
 public class ConnectionDescriptor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionDescriptor.class);
+
+    public enum ConnectionState {
+        DISCONNECTED, SENDACK, SESSION_CREATED, MESSAGES_REPUBLISHED, ESTABLISHED;
+    }
     
     public final String clientID;
     public final Channel channel;
     public final boolean cleanSession;
+    private final AtomicReference<ConnectionState> channelState = new AtomicReference<>(ConnectionState.DISCONNECTED);
     
     public ConnectionDescriptor(String clientID, Channel session, boolean cleanSession) {
         this.clientID = clientID;
@@ -36,9 +47,22 @@ public class ConnectionDescriptor {
         this.cleanSession = cleanSession;
     }
 
+    public void abort() {
+        //TODO fire and event to the channel or simply close it?
+        LOG.error("TODO send an abort event to the channel");
+        this.channel.close();
+    }
+
+    public boolean assignState(ConnectionState expected, ConnectionState newState) {
+        return channelState.compareAndSet(expected, newState);
+    }
+
     @Override
     public String toString() {
-        return "ConnectionDescriptor{" + "clientID=" + clientID + ", cleanSession=" + cleanSession + '}';
+        return "ConnectionDescriptor{" + "clientID=" + clientID +
+                ", cleanSession=" + cleanSession +
+                ", state=" + channelState.get() +
+                '}';
     }
 
     @Override

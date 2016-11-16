@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.moquette.interception.InterceptHandler;
 import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.ConnectionDescriptor.ConnectionState;
 import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
@@ -95,31 +96,13 @@ public class ProtocolProcessor {
 
     }
 
-    public class ForceDisconnectEvent {
-        public final Channel newChannel;
-        public final ConnectMessage msg;
-
-        public ForceDisconnectEvent(Channel newChannel, ConnectMessage msg) {
-            this.newChannel = newChannel;
-            this.msg = msg;
-        }
-    }
-
-    public class CompleteConnect {
-        public final ConnectMessage msg;
-
-        public CompleteConnect(ConnectMessage msg) {
-            this.msg = msg;
-        }
-    }
-
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
     public enum ConnectState {
         CONNECTED, DISCONNECTING, DISCONNECTED, DROP_BY_CONNECT
     }
 
-    protected ConcurrentMap<String, ConnectionDescriptor> m_clientIDs;
+    protected ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
@@ -133,6 +116,7 @@ public class ProtocolProcessor {
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
 
+    @Deprecated
     private final ConcurrentMap<String, ConnectState> connectionsStatus = new ConcurrentHashMap<>();
 
     ProtocolProcessor() {}
@@ -176,7 +160,7 @@ public class ProtocolProcessor {
               IAuthenticator authenticator,
               boolean allowAnonymous,
               boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
-        this.m_clientIDs = new ConcurrentHashMap<>();
+        this.connectionDescriptors = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
@@ -191,6 +175,7 @@ public class ProtocolProcessor {
 
     public void processConnect(Channel channel, ConnectMessage msg) {
         LOG.debug("CONNECT for client <{}>", msg.getClientID());
+
         if (msg.getProtocolVersion() != VERSION_3_1 && msg.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
@@ -215,6 +200,51 @@ public class ProtocolProcessor {
             LOG.info("Client connected with server generated identifier: {}", randomIdentifier);
         }
 
+        if (!login(channel, msg)) {
+            channel.close();
+            return;
+        }
+
+        final String clientID = msg.getClientID();
+        ConnectionDescriptor descriptor = new ConnectionDescriptor(clientID, channel, msg.isCleanSession());
+        ConnectionDescriptor existing = this.connectionDescriptors.putIfAbsent(clientID, descriptor);
+        if (existing != null) {
+            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
+            existing.abort();
+            return;
+        }
+
+        initializeKeepAliveTimeout(channel, msg);
+
+        storeWillMessage(msg);
+
+        if (!sendAck(descriptor, msg)) {
+            channel.close();
+            return;
+        }
+
+        m_interceptor.notifyClientConnected(msg);
+
+        final ClientSession clientSession = createOrLoadClientSession(descriptor, msg);
+        if (clientSession == null) {
+            channel.close();
+            return;
+        }
+
+        if (!republish(descriptor, msg, clientSession)) {
+            channel.close();
+            return;
+        }
+        final boolean success = descriptor.assignState(ConnectionState.MESSAGES_REPUBLISHED, ConnectionState.ESTABLISHED);
+        if (!success) {
+            channel.close();
+        } else {
+            LOG.info("Connection established");
+        }
+        LOG.info("CONNECT processed");
+    }
+
+    private boolean login(Channel channel, ConnectMessage msg) {
         //handle user authentication
         if (msg.isUserFlag()) {
             byte[] pwd = null;
@@ -222,75 +252,30 @@ public class ProtocolProcessor {
                 pwd = msg.getPassword();
             } else if (!this.allowAnonymous) {
                 failedCredentials(channel);
-                return;
+                return false;
             }
             if (!m_authenticator.checkValid(msg.getClientID(), msg.getUsername(), pwd)) {
                 failedCredentials(channel);
-                channel.close();
-                return;
+                return false;
             }
             NettyUtils.userName(channel, msg.getUsername());
         } else if (!this.allowAnonymous) {
             failedCredentials(channel);
-            return;
+            return false;
         }
-
-        //if an old client with the same ID already exists close its session.
-        if (m_clientIDs.containsKey(msg.getClientID()) /*|| (!otherDisconnecting && existingClientSameId)*/) {
-            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
-            //clean the subscriptions if the old used a cleanSession = true
-            try {
-                Channel oldChannel = m_clientIDs.get(msg.getClientID()).channel;
-                oldChannel.pipeline().fireUserEventTriggered(new ForceDisconnectEvent(channel, msg));
-                LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
-            } catch (NullPointerException npex) {
-                //OK this could happen with concurrent DISCONNECT and CONNECT on same clientID
-                channel.pipeline().fireUserEventTriggered(new CompleteConnect(msg));
-            }
-        } else {
-            completeConnect(channel, msg);
-        }
-
+        return true;
     }
 
-    public void forceCloseConnection(Channel oldChannel, Channel newChannel, ConnectMessage msg) {
-        String clientID = NettyUtils.clientID(oldChannel);
-        ClientSession oldClientSession = m_sessionsStore.sessionForClient(clientID);
-        oldClientSession.disconnect();
-        NettyUtils.sessionStolen(oldChannel, true);
-        NettyUtils.channelStatus(oldChannel, ConnectState.DROP_BY_CONNECT);
-        oldChannel.close();
-
-        newChannel.pipeline().fireUserEventTriggered(new CompleteConnect(msg));
+    private boolean sendAck(ConnectionDescriptor descriptor, ConnectMessage msg) {
+        final boolean success = descriptor.assignState(ConnectionState.DISCONNECTED, ConnectionState.SENDACK);
+        if (!success) {
+            return false;
+        }
+        doSendAck(descriptor.channel, msg);
+        return true;
     }
 
-    public void completeConnect(Channel channel, ConnectMessage msg) {
-        ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), channel, msg.isCleanSession());
-        m_clientIDs.put(msg.getClientID(), connDescr);
-
-        int keepAlive = msg.getKeepAlive();
-        LOG.debug("Connect with keepAlive {} s",  keepAlive);
-        NettyUtils.keepAlive(channel, keepAlive);
-        //session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
-        NettyUtils.cleanSession(channel, msg.isCleanSession());
-        //used to track the client in the subscription and publishing phases.
-        //session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(msg.getClientID());
-        NettyUtils.clientID(channel, msg.getClientID());
-        LOG.debug("Connect create session <{}>", channel);
-
-        setIdleTime(channel.pipeline(), Math.round(keepAlive * 1.5f));
-
-        //Handle will flag
-        if (msg.isWillFlag()) {
-            AbstractMessage.QOSType willQos = AbstractMessage.QOSType.valueOf(msg.getWillQos());
-            byte[] willPayload = msg.getWillMessage();
-            ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
-            //save the will testament in the clientID store
-            WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos);
-            m_willStore.put(msg.getClientID(), will);
-            LOG.info("Session for clientID <{}> with will to topic {}", msg.getClientID(), msg.getWillTopic());
-        }
-
+    private void doSendAck(Channel channel, ConnectMessage msg) {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
 
@@ -303,8 +288,46 @@ public class ProtocolProcessor {
             clientSession.cleanSession(msg.isCleanSession());
         }
         channel.writeAndFlush(okResp);
-        m_interceptor.notifyClientConnected(msg);
+    }
 
+    private void initializeKeepAliveTimeout(Channel channel, ConnectMessage msg) {
+        int keepAlive = msg.getKeepAlive();
+        LOG.debug("Connect with keepAlive {} s",  keepAlive);
+        NettyUtils.keepAlive(channel, keepAlive);
+        //session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(msg.isCleanSession());
+        NettyUtils.cleanSession(channel, msg.isCleanSession());
+        //used to track the client in the subscription and publishing phases.
+        //session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(msg.getClientID());
+        NettyUtils.clientID(channel, msg.getClientID());
+        LOG.debug("Connect create session <{}>", channel);
+
+        setIdleTime(channel.pipeline(), Math.round(keepAlive * 1.5f));
+    }
+
+    private void storeWillMessage(ConnectMessage msg) {
+        //Handle will flag
+        if (msg.isWillFlag()) {
+            AbstractMessage.QOSType willQos = AbstractMessage.QOSType.valueOf(msg.getWillQos());
+            byte[] willPayload = msg.getWillMessage();
+            ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
+            //save the will testament in the clientID store
+            WillMessage will = new WillMessage(msg.getWillTopic(), bb, msg.isWillRetain(),willQos);
+            m_willStore.put(msg.getClientID(), will);
+            LOG.info("Session for clientID <{}> with will to topic {}", msg.getClientID(), msg.getWillTopic());
+        }
+    }
+
+    private ClientSession createOrLoadClientSession(ConnectionDescriptor descriptor, ConnectMessage msg) {
+        final boolean success = descriptor.assignState(ConnectionState.SENDACK, ConnectionState.SESSION_CREATED);
+        if (!success) {
+            return null;
+        }
+        return doCreateSession(descriptor.channel, msg);
+    }
+
+    private ClientSession doCreateSession(Channel channel, ConnectMessage msg) {
+        ClientSession clientSession = m_sessionsStore.sessionForClient(msg.getClientID());
+        boolean isSessionAlreadyStored = clientSession != null;
         if (!isSessionAlreadyStored) {
             LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
             clientSession = m_sessionsStore.createNewSession(msg.getClientID(), msg.isCleanSession());
@@ -314,15 +337,42 @@ public class ProtocolProcessor {
         if (msg.isCleanSession()) {
             clientSession.cleanSession();
         }
-        LOG.info("Connected client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
+        LOG.info("Created session for client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
+        return clientSession;
+    }
+
+    private boolean republish(ConnectionDescriptor descriptor, ConnectMessage msg, ClientSession clientSession) {
+        final boolean success = descriptor.assignState(ConnectionState.SESSION_CREATED, ConnectionState.MESSAGES_REPUBLISHED);
+        if (!success) {
+            return false;
+        }
+
         if (!msg.isCleanSession()) {
             //force the republish of stored QoS1 and QoS2
             republishStoredInSession(clientSession);
         }
         int flushIntervalMs = 500/*(keepAlive * 1000) / 2*/;
-        setupAutoFlusher(channel.pipeline(), flushIntervalMs);
-        LOG.info("CONNECT processed");
+        setupAutoFlusher(descriptor.channel.pipeline(), flushIntervalMs);
+        return true;
     }
+
+    private void failedCredentials(Channel session) {
+        ConnAckMessage okResp = new ConnAckMessage();
+        okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
+        session.writeAndFlush(okResp);
+        LOG.info("Client {} failed to connect with bad username or password.", session);
+    }
+
+//    public void forceCloseConnection(Channel oldChannel, Channel newChannel, ConnectMessage msg) {
+//        String clientID = NettyUtils.clientID(oldChannel);
+//        ClientSession oldClientSession = m_sessionsStore.sessionForClient(clientID);
+//        oldClientSession.disconnect();
+//        NettyUtils.sessionStolen(oldChannel, true);
+//        NettyUtils.channelStatus(oldChannel, ConnectState.DROP_BY_CONNECT);
+//        oldChannel.close();
+//
+//        newChannel.pipeline().fireUserEventTriggered(new CompleteConnect(msg));
+//    }
 
     private void setupAutoFlusher(ChannelPipeline pipeline, int flushIntervalMs) {
         AutoFlushHandler autoFlushHandler = new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS);
@@ -339,14 +389,6 @@ public class ProtocolProcessor {
             pipeline.remove("idleStateHandler");
         }
         pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, idleTime));
-    }
-
-    private void failedCredentials(Channel session) {
-        ConnAckMessage okResp = new ConnAckMessage();
-        okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
-        session.writeAndFlush(okResp);
-        session.close();
-        LOG.info("Client {} failed to connect with bad username or password.", session);
     }
 
     /**
@@ -393,7 +435,7 @@ public class ProtocolProcessor {
             return;
         }
         String clientID = targetSession.clientID;
-        if (m_clientIDs.containsKey(clientID)) {
+        if (connectionDescriptors.containsKey(clientID)) {
             this.connectionsStatus.put(clientID, ConnectState.CONNECTED);
         }
     }
@@ -602,17 +644,17 @@ public class ProtocolProcessor {
             }
         }
 
-        if (m_clientIDs == null) {
-            throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be " +
+        if (connectionDescriptors == null) {
+            throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be " +
                     "initialized, somewhere it's overwritten!!");
         }
-        if (m_clientIDs.get(clientId) == null) {
+        if (connectionDescriptors.get(clientId) == null) {
             //TODO while we were publishing to the target client, that client disconnected,
             // could happen is not an error HANDLE IT
             throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>",
-                    clientId, m_clientIDs));
+                    clientId, connectionDescriptors));
         }
-        Channel channel = m_clientIDs.get(clientId).channel;
+        Channel channel = connectionDescriptors.get(clientId).channel;
         LOG.trace("Session for clientId {}", clientId);
         if (channel.isWritable()) {
             LOG.debug("channel is writable");
@@ -629,7 +671,7 @@ public class ProtocolProcessor {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-        m_clientIDs.get(clientID).channel.writeAndFlush(pubRecMessage);
+        connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
     }
 
     private void sendPubAck(String clientId, int messageID) {
@@ -638,14 +680,14 @@ public class ProtocolProcessor {
         pubAckMessage.setMessageID(messageID);
 
         try {
-            if (m_clientIDs == null) {
-                throw new RuntimeException("Internal bad error, found m_clientIDs to null while it should be initialized, somewhere it's overwritten!!");
+            if (connectionDescriptors == null) {
+                throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be initialized, somewhere it's overwritten!!");
             }
-            LOG.debug("clientIDs are {}", m_clientIDs);
-            if (m_clientIDs.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, m_clientIDs));
+            LOG.debug("clientIDs are {}", connectionDescriptors);
+            if (connectionDescriptors.get(clientId) == null) {
+                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, connectionDescriptors));
             }
-            m_clientIDs.get(clientId).channel.writeAndFlush(pubAckMessage);
+            connectionDescriptors.get(clientId).channel.writeAndFlush(pubAckMessage);
         } catch(Throwable t) {
             LOG.error(null, t);
         }
@@ -681,7 +723,7 @@ public class ProtocolProcessor {
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
 
-        m_clientIDs.get(clientID).channel.writeAndFlush(pubCompMessage);
+        connectionDescriptors.get(clientID).channel.writeAndFlush(pubCompMessage);
     }
 
     public void processPubRec(Channel channel, PubRecMessage msg) {
@@ -738,7 +780,7 @@ public class ProtocolProcessor {
             //someone else changed the state (another connect with same client ID)
             return;
         }
-        m_clientIDs.remove(clientID);
+        connectionDescriptors.remove(clientID);
 
         //cleanup the will store
         m_willStore.remove(clientID);
@@ -752,7 +794,7 @@ public class ProtocolProcessor {
 
     public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
-        m_clientIDs.remove(clientID, oldConnDescr);
+        connectionDescriptors.remove(clientID, oldConnDescr);
         //If already removed a disconnect message was already processed for this clientID
         if (sessionStolen) {
             //de-activate the subscriptions for this ClientID

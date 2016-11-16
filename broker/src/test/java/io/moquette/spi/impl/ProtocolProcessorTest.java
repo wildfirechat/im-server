@@ -481,8 +481,8 @@ public class ProtocolProcessorTest {
         };
         processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
         //just to activate the two sessions
-        processor.m_clientIDs.put("Sub A", new ConnectionDescriptor("Sub A", null, true));
-        processor.m_clientIDs.put("Sub B", new ConnectionDescriptor("Sub B", null, true));
+        processor.connectionDescriptors.put("Sub A", new ConnectionDescriptor("Sub A", null, true));
+        processor.connectionDescriptors.put("Sub B", new ConnectionDescriptor("Sub B", null, true));
 
         //Exercise
         processor.route2Subscribers(forwardPublish);
