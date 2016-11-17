@@ -73,18 +73,22 @@ public class NettyUtils {
         return (String) channel.attr(NettyUtils.ATTR_KEY_USERNAME).get();
     }
 
+    @Deprecated
     public static void sessionStolen(Channel channel, boolean value) {
         channel.attr(NettyUtils.ATTR_KEY_SESSION_STOLEN).set(value);
     }
 
+    @Deprecated
     public static Boolean sessionStolen(Channel channel) {
         return (Boolean) channel.attr(NettyUtils.ATTR_KEY_SESSION_STOLEN).get();
     }
 
+    @Deprecated
     public static void channelStatus(Channel channel, ProtocolProcessor.ConnectState newStatus) {
         channel.attr(NettyUtils.ATTR_KEY_CHANNEL_STATUS).set(newStatus);
     }
 
+    @Deprecated
     public static ProtocolProcessor.ConnectState channelStatus(Channel channel) {
         return (ProtocolProcessor.ConnectState) channel.attr(NettyUtils.ATTR_KEY_CHANNEL_STATUS).get();
     }

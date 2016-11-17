@@ -174,12 +174,12 @@ public class ProtocolProcessor {
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
-        LOG.debug("CONNECT for client <{}>", msg.getClientID());
+        LOG.info("CONNECT for client <{}>", msg.getClientID());
 
         if (msg.getProtocolVersion() != VERSION_3_1 && msg.getProtocolVersion() != VERSION_3_1_1) {
             ConnAckMessage badProto = new ConnAckMessage();
             badProto.setReturnCode(ConnAckMessage.UNNACEPTABLE_PROTOCOL_VERSION);
-            LOG.warn("processConnect sent bad proto ConnAck");
+            LOG.warn("CONNECT sent bad proto ConnAck");
             channel.writeAndFlush(badProto);
             channel.close();
             return;
@@ -191,6 +191,7 @@ public class ProtocolProcessor {
                 okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
                 channel.writeAndFlush(okResp);
                 channel.close();
+                LOG.warn("CONNECT sent rejected identifier ConnAck");
                 return;
             }
 
@@ -329,7 +330,7 @@ public class ProtocolProcessor {
         ClientSession clientSession = m_sessionsStore.sessionForClient(msg.getClientID());
         boolean isSessionAlreadyStored = clientSession != null;
         if (!isSessionAlreadyStored) {
-            LOG.info("Create persistent session for clientID <{}>", msg.getClientID());
+            LOG.debug("Create persistent session for clientID <{}>", msg.getClientID());
             clientSession = m_sessionsStore.createNewSession(msg.getClientID(), msg.isCleanSession());
         }
         this.connectionsStatus.put(msg.getClientID(), ConnectState.CONNECTED);
@@ -337,7 +338,7 @@ public class ProtocolProcessor {
         if (msg.isCleanSession()) {
             clientSession.cleanSession();
         }
-        LOG.info("Created session for client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
+        LOG.debug("Created session for client ID <{}> with clean session {}", msg.getClientID(), msg.isCleanSession());
         return clientSession;
     }
 
@@ -454,7 +455,7 @@ public class ProtocolProcessor {
     }
 
     public void processPublish(Channel channel, PublishMessage msg) {
-        LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
+        LOG.info("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
         String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
@@ -593,7 +594,8 @@ public class ProtocolProcessor {
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
             verifyToActivate(targetSession);
 
-            boolean targetIsActive = this.connectionsStatus.get(sub.getClientId()) == ConnectState.CONNECTED;
+//            boolean targetIsActive = this.connectionsStatus.get(sub.getClientId()) == ConnectState.CONNECTED;
+            boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
@@ -757,39 +759,126 @@ public class ProtocolProcessor {
 
     public void processDisconnect(Channel channel) throws InterruptedException {
         channel.flush();
-        ConnectState status = NettyUtils.channelStatus(channel);
-        if (status != null && status == ConnectState.DROP_BY_CONNECT) {
-            LOG.info("DISCONNECT drop by other connect");
+        final String clientID = NettyUtils.clientID(channel);
+        final ConnectionDescriptor existingDescriptor = this.connectionDescriptors.get(clientID);
+        if (existingDescriptor == null) {
+            //another client with same ID removed the descriptor, we must exit
+            channel.close();
             return;
         }
-        String clientID = NettyUtils.clientID(channel);
-        boolean cleanSession = NettyUtils.cleanSession(channel);
-        LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
-        boolean notNewConnection = (status != null && status == ConnectState.CONNECTED);
-        if (!notNewConnection) {
-            //while disconnect someone else connected
+
+        if (existingDescriptor.channel != channel) {
+            //another client saved it's descriptor, exit
+            channel.close();
             return;
         }
-        NettyUtils.channelStatus(channel, ConnectState.DISCONNECTING);
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        clientSession.disconnect();
-        channel.close();
-        status = NettyUtils.channelStatus(channel);
-        boolean stillDisconnecting = (status != null && status == ConnectState.DISCONNECTING);
-        if (!stillDisconnecting) {
-            //someone else changed the state (another connect with same client ID)
+
+        if (!removeSubscriptions(existingDescriptor, clientID)) {
+            channel.close();
             return;
         }
-        connectionDescriptors.remove(clientID);
+
+        if (!dropStoredMessages(existingDescriptor, clientID)) {
+            channel.close();
+            return;
+        }
+
+        if (!cleanWillMessageAndNotifyInterceptor(existingDescriptor, clientID)) {
+            channel.close();
+            return;
+        }
+
+        if (!closeChannel(existingDescriptor)) {
+            return;
+        }
+
+        boolean stillPresent = this.connectionDescriptors.remove(clientID, existingDescriptor);
+        if (!stillPresent) {
+            //another descriptor was inserted
+            return;
+        }
+
+//        ConnectState status = NettyUtils.channelStatus(channel);
+//        if (status != null && status == ConnectState.DROP_BY_CONNECT) {
+//            LOG.info("DISCONNECT drop by other connect");
+//            return;
+//        }
+//        boolean cleanSession = NettyUtils.cleanSession(channel);
+//        LOG.info("DISCONNECT client <{}> with clean session {}", clientID, cleanSession);
+//        boolean notNewConnection = (status != null && status == ConnectState.CONNECTED);
+//        if (!notNewConnection) {
+//            //while disconnect someone else connected
+//            return;
+//        }
+//        NettyUtils.channelStatus(channel, ConnectState.DISCONNECTING);
+//        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+//        clientSession.disconnect();
+//        channel.close();
+//        status = NettyUtils.channelStatus(channel);
+//        boolean stillDisconnecting = (status != null && status == ConnectState.DISCONNECTING);
+//        if (!stillDisconnecting) {
+//            //someone else changed the state (another connect with same client ID)
+//            return;
+//        }
+//        connectionDescriptors.remove(clientID);
+//
+//        //cleanup the will store
+//        m_willStore.remove(clientID);
+//
+//        String username = NettyUtils.userName(channel);
+//        m_interceptor.notifyClientDisconnected(clientID, username);
+//        this.connectionsStatus.remove(clientID);
+        LOG.info("DISCONNECT client <{}> finished", clientID);
+    }
+
+    private boolean removeSubscriptions(ConnectionDescriptor descriptor, String clientID) {
+        final boolean success = descriptor.assignState(ConnectionState.ESTABLISHED, ConnectionState.SUBSCRIPTIONS_REMOVED);
+        if (!success) {
+            return false;
+        }
+
+        if (descriptor.cleanSession) {
+            LOG.info("cleaning old saved subscriptions for client <{}>", clientID);
+            m_sessionsStore.wipeSubscriptions(clientID);
+            LOG.debug("Wiped subscriptions for client <{}>", clientID);
+        }
+        return true;
+    }
+
+    private boolean dropStoredMessages(ConnectionDescriptor descriptor, String clientID) {
+        final boolean success = descriptor.assignState(ConnectionState.SUBSCRIPTIONS_REMOVED, ConnectionState.MESSAGES_DROPPED);
+        if (!success) {
+            return false;
+        }
+
+        if (descriptor.cleanSession) {
+            LOG.debug("Removing messages in session for client <{}>", clientID);
+            this.m_messagesStore.dropMessagesInSession(clientID);
+            LOG.debug("Removed messages in session for client <{}>", clientID);
+        }
+        return true;
+    }
+
+    private boolean cleanWillMessageAndNotifyInterceptor(ConnectionDescriptor descriptor, String clientID) {
+        final boolean success = descriptor.assignState(ConnectionState.MESSAGES_DROPPED, ConnectionState.INTERCEPTORS_NOTIFIED);
+        if (!success) {
+            return false;
+        }
 
         //cleanup the will store
         m_willStore.remove(clientID);
-
-        String username = NettyUtils.userName(channel);
+        String username = NettyUtils.userName(descriptor.channel);
         m_interceptor.notifyClientDisconnected(clientID, username);
-//        this.connectionsStatus.remove(clientID, ConnectState.DISCONNECTED);
-        this.connectionsStatus.remove(clientID);
-        LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
+        return true;
+    }
+
+    private boolean closeChannel(ConnectionDescriptor descriptor) {
+        final boolean success = descriptor.assignState(ConnectionState.INTERCEPTORS_NOTIFIED, ConnectionState.DISCONNECTED);
+        if (!success) {
+            return false;
+        }
+        descriptor.channel.close();
+        return true;
     }
 
     public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
@@ -851,6 +940,7 @@ public class ProtocolProcessor {
 
     public void processSubscribe(Channel channel, SubscribeMessage msg) {
         String clientID = NettyUtils.clientID(channel);
+        LOG.info("SUBSCRIBE client <{}>", clientID);
         LOG.debug("SUBSCRIBE client <{}> on server {} packetID {}", clientID, m_server_port, msg.getMessageID());
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);

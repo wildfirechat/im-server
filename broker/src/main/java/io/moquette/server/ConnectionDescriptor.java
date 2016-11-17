@@ -33,7 +33,10 @@ public class ConnectionDescriptor {
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionDescriptor.class);
 
     public enum ConnectionState {
-        DISCONNECTED, SENDACK, SESSION_CREATED, MESSAGES_REPUBLISHED, ESTABLISHED;
+        //Connection states
+        DISCONNECTED, SENDACK, SESSION_CREATED, MESSAGES_REPUBLISHED, ESTABLISHED,
+        //Disconnection states
+        SUBSCRIPTIONS_REMOVED, MESSAGES_DROPPED, INTERCEPTORS_NOTIFIED;
     }
     
     public final String clientID;
