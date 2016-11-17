@@ -815,18 +815,11 @@ public class ProtocolProcessor {
         return true;
     }
 
-    public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
+    public void processConnectionLost(String clientID, Channel channel) {
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
         connectionDescriptors.remove(clientID, oldConnDescr);
-        //If already removed a disconnect message was already processed for this clientID
-        if (sessionStolen) {
-            //de-activate the subscriptions for this ClientID
-            ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-            //TODO it's needed? clientSession.deactivate();
-            LOG.info("Lost connection with client <{}>", clientID);
-        }
         //publish the Will message (if any) for the clientID
-        if (!sessionStolen && m_willStore.containsKey(clientID)) {
+        if (m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);
             forwardPublishWill(will, clientID);
             m_willStore.remove(clientID);

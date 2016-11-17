@@ -73,7 +73,7 @@ public class NettyUtils {
         return (String) channel.attr(NettyUtils.ATTR_KEY_USERNAME).get();
     }
 
-    @Deprecated
+    /*@Deprecated
     public static void sessionStolen(Channel channel, boolean value) {
         channel.attr(NettyUtils.ATTR_KEY_SESSION_STOLEN).set(value);
     }
@@ -81,5 +81,5 @@ public class NettyUtils {
     @Deprecated
     public static Boolean sessionStolen(Channel channel) {
         return (Boolean) channel.attr(NettyUtils.ATTR_KEY_SESSION_STOLEN).get();
-    }
+    }*/
 }
