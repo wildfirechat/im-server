@@ -98,10 +98,6 @@ public class ProtocolProcessor {
 
     private enum SubscriptionState {
         STORED, VERIFIED
-        //Connection states
-        //DISCONNECTED, SENDACK, SESSION_CREATED, MESSAGES_REPUBLISHED, ESTABLISHED,
-        //Disconnection states
-        //SUBSCRIPTIONS_REMOVED, MESSAGES_DROPPED, INTERCEPTORS_NOTIFIED;
     }
 
     private class RunningSubscription {
