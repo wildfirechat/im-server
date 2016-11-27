@@ -85,6 +85,7 @@ class TreeNode {
         m_subscriptions.remove(clientTopicCouple);
     }
 
+    //TODO smell a query method that return the result modifing the parameter (matchingSubs)
     void matches(Queue<Token> tokens, List<ClientTopicCouple> matchingSubs) {
         Token t = tokens.poll();
 

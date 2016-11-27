@@ -474,13 +474,19 @@ public class ServerIntegrationPahoTest {
         LOG.info("*** testForceClientDisconnection_issue118 ***");
         MessageCollector cbSubscriber1 = new MessageCollector();
         MqttClient clientXA = createClient("subscriber", "X", cbSubscriber1);
+        LOG.info("Connected 'subscriber' first time");
         clientXA.subscribe("topic", 0);
+        LOG.info("Subscribed 'topic' from 'subscriber' first time");
 
         MqttClient clientXB = createClient("publisher", "X");
+        LOG.info("Connected 'publisher' first time");
         clientXB.publish("topic", "Hello".getBytes(), 2, false);
+        LOG.info("Published on 'topic' from 'publisher' first time");
 
+        LOG.info("Creating second new 'subscriber'");
         MessageCollector cbSubscriber2 = new MessageCollector();
         MqttClient clientYA = createClient("subscriber", "Y", cbSubscriber2);
+        LOG.info("Connected 'subscriber' second time");
         clientYA.subscribe("topic", 0);
 
         MqttClient clientYB = createClient("publisher", "Y");

@@ -317,6 +317,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         //subscribe
         SubscribeMessage subscribeMsg = new SubscribeMessage();
+        subscribeMsg.setMessageID(10);
         subscribeMsg.addSubscription(new SubscribeMessage.Couple((byte) AbstractMessage.QOSType.MOST_ONE.ordinal(),
                 ProtocolProcessorTest.FAKE_TOPIC));
         NettyUtils.clientID(m_session, ProtocolProcessorTest.FAKE_CLIENT_ID);

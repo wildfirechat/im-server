@@ -96,9 +96,48 @@ public class ProtocolProcessor {
 
     }
 
+    private enum SubscriptionState {
+        STORED, VERIFIED
+        //Connection states
+        //DISCONNECTED, SENDACK, SESSION_CREATED, MESSAGES_REPUBLISHED, ESTABLISHED,
+        //Disconnection states
+        //SUBSCRIPTIONS_REMOVED, MESSAGES_DROPPED, INTERCEPTORS_NOTIFIED;
+    }
+
+    private class RunningSubscription {
+        final String clientID;
+        final long packeId;
+
+        RunningSubscription(String clientID, long packeId) {
+            this.clientID = clientID;
+            this.packeId = packeId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RunningSubscription that = (RunningSubscription) o;
+
+            if (packeId != that.packeId) return false;
+            return clientID != null ? clientID.equals(that.clientID) : that.clientID == null;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = clientID != null ? clientID.hashCode() : 0;
+            result = 31 * result + (int) (packeId ^ (packeId >>> 32));
+            return result;
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
     protected ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    protected ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
+
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
@@ -129,13 +168,6 @@ public class ProtocolProcessor {
         init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous, allowZeroByteClientId, authorizator,interceptor,null);
     }
 
-    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
-              ISessionsStore sessionsStore,
-              IAuthenticator authenticator,
-              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
-        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator, interceptor, serverPort);
-    }
-
     /**
      * @param subscriptions the subscription store where are stored all the existing
      *  clients subscriptions.
@@ -154,6 +186,7 @@ public class ProtocolProcessor {
               boolean allowAnonymous,
               boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         this.connectionDescriptors = new ConcurrentHashMap<>();
+        this.subscriptionInCourse = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
@@ -265,11 +298,6 @@ public class ProtocolProcessor {
         if (!success) {
             return false;
         }
-        doSendAck(descriptor.channel, msg);
-        return true;
-    }
-
-    private void doSendAck(Channel channel, ConnectMessage msg) {
         ConnAckMessage okResp = new ConnAckMessage();
         okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
 
@@ -281,7 +309,8 @@ public class ProtocolProcessor {
         if (isSessionAlreadyStored) {
             clientSession.cleanSession(msg.isCleanSession());
         }
-        channel.writeAndFlush(okResp);
+        descriptor.channel.writeAndFlush(okResp);
+        return true;
     }
 
     private void initializeKeepAliveTimeout(Channel channel, ConnectMessage msg) {
@@ -316,10 +345,7 @@ public class ProtocolProcessor {
         if (!success) {
             return null;
         }
-        return doCreateSession(descriptor.channel, msg);
-    }
 
-    private ClientSession doCreateSession(Channel channel, ConnectMessage msg) {
         ClientSession clientSession = m_sessionsStore.sessionForClient(msg.getClientID());
         boolean isSessionAlreadyStored = clientSession != null;
         if (!isSessionAlreadyStored) {
@@ -867,40 +893,35 @@ public class ProtocolProcessor {
     public void processSubscribe(Channel channel, SubscribeMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         LOG.info("SUBSCRIBE client <{}>", clientID);
-        LOG.debug("SUBSCRIBE client <{}> on server {} packetID {}", clientID, m_server_port, msg.getMessageID());
+        int messageID = msg.getMessageID();
+        LOG.debug("SUBSCRIBE client <{}> on server {} packetID {}", clientID, m_server_port, messageID);
 
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        //ack the client
-        SubAckMessage ackMessage = new SubAckMessage();
-        ackMessage.setMessageID(msg.getMessageID());
-
+        RunningSubscription executionKey = new RunningSubscription(clientID, messageID);
+        SubscriptionState currentStatus = this.subscriptionInCourse.putIfAbsent(executionKey, SubscriptionState.VERIFIED);
+        if (currentStatus != null) {
+            LOG.debug("The client <{}> sent another SUBSCRIBE while this one was processing", clientID);
+            return;
+        }
         String username = NettyUtils.userName(channel);
-        List<Subscription> newSubscriptions = new ArrayList<>();
-        for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            if (!m_authorizator.canRead(req.topicFilter, username, clientSession.clientID)) {
-                //send SUBACK with 0x80, the user hasn't credentials to read the topic
-                LOG.debug("topic {} doesn't have read credentials", req.topicFilter);
-                ackMessage.addType( AbstractMessage.QOSType.FAILURE);
-                continue;
-            }
-
-            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.qos);
-            Subscription newSubscription = new Subscription(clientID, req.topicFilter, qos);
-            boolean valid = clientSession.subscribe(newSubscription);
-            ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
-            if (valid) {
-                newSubscriptions.add(newSubscription);
-            }
+        List<SubscribeMessage.Couple> ackTopics = doVerify(clientID, username, msg);
+        SubAckMessage ackMessage = doAckMessageFromValidateFilters(ackTopics);
+        if (!this.subscriptionInCourse.replace(executionKey, SubscriptionState.VERIFIED, SubscriptionState.STORED)) {
+            LOG.debug("The client {} sent another SUBSCRIBE while this one was verifing topicFilters");
+            return;
         }
 
+        ackMessage.setMessageID(messageID);
+        List<Subscription> newSubscriptions = doStoreSubscription(ackTopics, clientID);
+
         //save session, persist subscriptions from session
-        LOG.debug("SUBACK for packetID {}", msg.getMessageID());
+        LOG.debug("SUBACK for packetID {}", messageID);
         if (LOG.isTraceEnabled()) {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
 
         for (Subscription subscription : newSubscriptions) {
-            subscribeSingleTopic(subscription);
+            LOG.debug("Persisting subscription {}", subscription);
+            subscriptions.add(subscription.asClientTopicCouple());
         }
         channel.writeAndFlush(ackMessage);
 
@@ -908,12 +929,68 @@ public class ProtocolProcessor {
         for (Subscription subscription : newSubscriptions) {
             publishStoredMessagesInSession(subscription, username);
         }
+
+        boolean success = this.subscriptionInCourse.remove(executionKey, SubscriptionState.STORED);
+        if (!success) {
+            LOG.warn("Failed to remove the descriptor, something bad happened");
+        }
     }
 
-    private void subscribeSingleTopic(final Subscription newSubscription) {
-        LOG.debug("Subscribing {}", newSubscription);
-        subscriptions.add(newSubscription.asClientTopicCouple());
+    private List<Subscription> doStoreSubscription(List<SubscribeMessage.Couple> ackTopics, String clientID) {
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+
+        List<Subscription> newSubscriptions = new ArrayList<>();
+        for (SubscribeMessage.Couple req : ackTopics) {
+            //TODO this is SUPER UGLY
+            if (req.qos == AbstractMessage.QOSType.FAILURE.byteValue()) {
+                continue;
+            }
+            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.qos);
+            Subscription newSubscription = new Subscription(clientID, req.topicFilter, qos);
+            clientSession.subscribe(newSubscription);
+            newSubscriptions.add(newSubscription);
+        }
+        return newSubscriptions;
     }
+
+    /**
+     * @return the list of verified topics
+     * @param clientID
+     * @param username
+     * */
+    private List<SubscribeMessage.Couple> doVerify(String clientID, String username, SubscribeMessage msg) {
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        List<SubscribeMessage.Couple> ackTopics = new ArrayList<>();
+
+        for (SubscribeMessage.Couple req : msg.subscriptions()) {
+            if (!m_authorizator.canRead(req.topicFilter, username, clientSession.clientID)) {
+                //send SUBACK with 0x80, the user hasn't credentials to read the topic
+                LOG.debug("topic {} doesn't have read credentials", req.topicFilter);
+                ackTopics.add(new SubscribeMessage.Couple(AbstractMessage.QOSType.FAILURE.byteValue(), req.topicFilter));
+            } else {
+                boolean validTopic = SubscriptionsStore.validate(req.topicFilter);
+                AbstractMessage.QOSType qos = validTopic ?
+                        AbstractMessage.QOSType.valueOf(req.qos)
+                        : AbstractMessage.QOSType.FAILURE;
+                ackTopics.add(new SubscribeMessage.Couple(qos.byteValue(), req.topicFilter));
+            }
+        }
+        return ackTopics;
+    }
+
+    /**
+     * Create the SUBACK response from a list of topicFilters
+     * */
+    private SubAckMessage doAckMessageFromValidateFilters(List<SubscribeMessage.Couple> topicFilters) {
+        //ack the client
+        SubAckMessage ackMessage = new SubAckMessage();
+        for (SubscribeMessage.Couple req : topicFilters) {
+            ackMessage.addType(AbstractMessage.QOSType.valueOf(req.qos));
+        }
+        return ackMessage;
+    }
+
+
 
     private void publishStoredMessagesInSession(final Subscription newSubscription, String username) {
         LOG.debug("Publish persisted messages in session {}", newSubscription);

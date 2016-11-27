@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Value object to maintain the information of single connection, like ClientID, Channel,
  * and clean session flag.
- * 
- * 
+ *
+ *
  * @author andrea
  */
 public class ConnectionDescriptor {
@@ -38,12 +38,12 @@ public class ConnectionDescriptor {
         //Disconnection states
         SUBSCRIPTIONS_REMOVED, MESSAGES_DROPPED, INTERCEPTORS_NOTIFIED;
     }
-    
+
     public final String clientID;
     public final Channel channel;
     public final boolean cleanSession;
     private final AtomicReference<ConnectionState> channelState = new AtomicReference<>(ConnectionState.DISCONNECTED);
-    
+
     public ConnectionDescriptor(String clientID, Channel session, boolean cleanSession) {
         this.clientID = clientID;
         this.channel = session;
@@ -51,9 +51,13 @@ public class ConnectionDescriptor {
     }
 
     public void abort() {
-        //TODO fire and event to the channel or simply close it?
-        LOG.error("TODO send an abort event to the channel");
-        this.channel.close();
+        LOG.info("closing the channel");
+//        try {
+            //this.channel.disconnect().sync();
+            this.channel.close();//.sync();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public boolean assignState(ConnectionState expected, ConnectionState newState) {

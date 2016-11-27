@@ -215,6 +215,7 @@ public class ProtocolProcessorTest {
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
+        msg.setMessageID(10);
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_channel, msg);
 
@@ -236,6 +237,7 @@ public class ProtocolProcessorTest {
 
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
+        msg.setMessageID(10);
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         m_processor.processSubscribe(m_channel, msg);
@@ -251,6 +253,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testDoubleSubscribe() {
         SubscribeMessage msg = new SubscribeMessage();
+        msg.setMessageID(10);
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), FAKE_TOPIC));
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
@@ -270,6 +273,7 @@ public class ProtocolProcessorTest {
     @Test
     public void testSubscribeWithBadFormattedTopic() {
         SubscribeMessage msg = new SubscribeMessage();
+        msg.setMessageID(10);
         msg.addSubscription(new SubscribeMessage.Couple(AbstractMessage.QOSType.MOST_ONE.byteValue(), BAD_FORMATTED_TOPIC));
         m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
         assertEquals(0, subscriptions.size());
@@ -344,6 +348,7 @@ public class ProtocolProcessorTest {
 
         //Exercise
         SubscribeMessage msg = new SubscribeMessage();
+        msg.setMessageID(10);
         msg.addSubscription(new SubscribeMessage.Couple(QOSType.MOST_ONE.byteValue(), "#"));
         m_processor.processSubscribe(m_channel, msg);
         
