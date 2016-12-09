@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import io.moquette.interception.InterceptHandler;
+import io.moquette.parser.proto.messages.*;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptor.ConnectionState;
 import io.moquette.server.netty.AutoFlushHandler;
@@ -36,19 +37,7 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 import static io.moquette.parser.netty.Utils.VERSION_3_1;
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
-import io.moquette.parser.proto.messages.ConnAckMessage;
-import io.moquette.parser.proto.messages.ConnectMessage;
-import io.moquette.parser.proto.messages.PubAckMessage;
-import io.moquette.parser.proto.messages.PubCompMessage;
-import io.moquette.parser.proto.messages.PubRecMessage;
-import io.moquette.parser.proto.messages.PubRelMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.parser.proto.messages.SubAckMessage;
-import io.moquette.parser.proto.messages.SubscribeMessage;
-import io.moquette.parser.proto.messages.UnsubAckMessage;
-import io.moquette.parser.proto.messages.UnsubscribeMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -447,6 +436,22 @@ public class ProtocolProcessor {
 
     public void processPublish(Channel channel, PublishMessage msg) {
         LOG.info("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
+        final AbstractMessage.QOSType qos = msg.getQos();
+        switch (qos) {
+            case MOST_ONE:
+                receivedPublishQos0(channel, msg);
+                break;
+            case LEAST_ONE:
+                receivedPublishQos1(channel, msg);
+                break;
+            case EXACTLY_ONCE:
+                receivedPublishQos2(channel, msg);
+                break;
+        }
+    }
+
+    private void receivedPublishQos0(Channel channel, PublishMessage msg) {
+        //verify if topic can be write
         String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
@@ -455,47 +460,88 @@ public class ProtocolProcessor {
             LOG.debug("topic {} doesn't have write credentials", topic);
             return;
         }
-        final AbstractMessage.QOSType qos = msg.getQos();
+
+        //route message to subscribers
+        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        toStoreMsg.setClientID(clientID);
+        route2Subscribers(toStoreMsg);
+
+        if (msg.isRetainFlag()) {
+            //QoS == 0 && retain => clean old retained
+            m_messagesStore.cleanRetained(topic);
+        }
+
+        m_interceptor.notifyTopicPublished(msg, clientID, username);
+    }
+
+    private void receivedPublishQos1(Channel channel, PublishMessage msg) {
+        //verify if topic can be write
+        String clientID = NettyUtils.clientID(channel);
+        final String topic = msg.getTopicName();
+        //check if the topic can be wrote
+        String username = NettyUtils.userName(channel);
+        if (!m_authorizator.canWrite(topic, username, clientID)) {
+            LOG.debug("topic {} doesn't have write credentials", topic);
+            return;
+        }
+
+        //route message to subscribers
+        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        toStoreMsg.setClientID(clientID);
+        route2Subscribers(toStoreMsg);
+
+        //send PUBACK
+        final Integer messageID = msg.getMessageID();
+        if (msg.isLocal()) {
+            sendPubAck(clientID, messageID);
+        }
+        LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
+
+        if (msg.isRetainFlag()) {
+            if (!msg.getPayload().hasRemaining()) {
+                m_messagesStore.cleanRetained(topic);
+            } else {
+                //before wasn't stored
+                MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+                m_messagesStore.storeRetained(topic, guid);
+            }
+        }
+
+        m_interceptor.notifyTopicPublished(msg, clientID, username);
+    }
+
+    private void receivedPublishQos2(Channel channel, PublishMessage msg) {
+        final AbstractMessage.QOSType qos = QOSType.EXACTLY_ONCE;
+        String clientID = NettyUtils.clientID(channel);
+        final String topic = msg.getTopicName();
+        //check if the topic can be wrote
+        String username = NettyUtils.userName(channel);
+        if (!m_authorizator.canWrite(topic, username, clientID)) {
+            LOG.debug("topic {} doesn't have write credentials", topic);
+            return;
+        }
         final Integer messageID = msg.getMessageID();
         LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
 
-        MessageGUID guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         toStoreMsg.setClientID(clientID);
-        if (qos == AbstractMessage.QOSType.MOST_ONE) { //QoS0
-            route2Subscribers(toStoreMsg);
-        } else if (qos == AbstractMessage.QOSType.LEAST_ONE) { //QoS1
-            route2Subscribers(toStoreMsg);
-            if (msg.isLocal()) {
-                sendPubAck(clientID, messageID);
-            }
-            LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
-        } else if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
-            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-            if (msg.isLocal()) {
-                sendPubRec(clientID, messageID);
-            }
-            //Next the client will send us a pub rel
-            //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
+        //QoS2
+        MessageGUID  guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+        if (msg.isLocal()) {
+            sendPubRec(clientID, messageID);
         }
+        //Next the client will send us a pub rel
+        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
 
         if (msg.isRetainFlag()) {
-            if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                //QoS == 0 && retain => clean old retained
+            if (!msg.getPayload().hasRemaining()) {
                 m_messagesStore.cleanRetained(topic);
             } else {
-                if (!msg.getPayload().hasRemaining()) {
-                    m_messagesStore.cleanRetained(topic);
-                } else {
-                    if (guid == null) {
-                        //before wasn't stored
-                        guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-                    }
-                    m_messagesStore.storeRetained(topic, guid);
-                }
+                m_messagesStore.storeRetained(topic, guid);
             }
         }
         m_interceptor.notifyTopicPublished(msg, clientID, username);
+
     }
 
     /**
