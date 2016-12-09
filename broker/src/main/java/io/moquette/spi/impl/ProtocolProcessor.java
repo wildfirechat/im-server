@@ -474,16 +474,6 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
-    private boolean checkWriteOnTopic(String topic, Channel channel) {
-        String clientID = NettyUtils.clientID(channel);
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
-            return true;
-        }
-        return false;
-    }
-
     private void receivedPublishQos1(Channel channel, PublishMessage msg) {
         //verify if topic can be write
         final String topic = msg.getTopicName();
@@ -550,6 +540,16 @@ public class ProtocolProcessor {
         }
         String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
+    }
+
+    private boolean checkWriteOnTopic(String topic, Channel channel) {
+        String clientID = NettyUtils.clientID(channel);
+        String username = NettyUtils.userName(channel);
+        if (!m_authorizator.canWrite(topic, username, clientID)) {
+            LOG.debug("topic {} doesn't have write credentials", topic);
+            return true;
+        }
+        return false;
     }
 
     /**
