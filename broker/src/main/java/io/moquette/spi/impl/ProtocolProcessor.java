@@ -133,6 +133,8 @@ public class ProtocolProcessor {
     private BrokerInterceptor m_interceptor;
     private String m_server_port;
 
+    private Qos0PublishHandler qos0PublishHandler;
+
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
 
@@ -182,6 +184,9 @@ public class ProtocolProcessor {
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
         m_server_port = serverPort;
+
+        this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, subscriptions, m_messagesStore,
+                m_interceptor, this.connectionDescriptors, m_sessionsStore);
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -421,7 +426,7 @@ public class ProtocolProcessor {
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
-    private static IMessagesStore.StoredMessage asStoredMessage(PublishMessage msg) {
+    static IMessagesStore.StoredMessage asStoredMessage(PublishMessage msg) {
         IMessagesStore.StoredMessage stored = new IMessagesStore.StoredMessage(msg.getPayload().array(), msg.getQos(), msg.getTopicName());
         stored.setRetained(msg.isRetainFlag());
         stored.setMessageID(msg.getMessageID());
@@ -439,7 +444,7 @@ public class ProtocolProcessor {
         final AbstractMessage.QOSType qos = msg.getQos();
         switch (qos) {
             case MOST_ONE:
-                receivedPublishQos0(channel, msg);
+                this.qos0PublishHandler.receivedPublishQos0(channel, msg);
                 break;
             case LEAST_ONE:
                 receivedPublishQos1(channel, msg);
@@ -450,34 +455,9 @@ public class ProtocolProcessor {
         }
     }
 
-    private void receivedPublishQos0(Channel channel, PublishMessage msg) {
-        //verify if topic can be write
-        final String topic = msg.getTopicName();
-        if (checkWriteOnTopic(topic, channel)) {
-            return;
-        }
-
-        //route message to subscribers
-        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        String clientID = NettyUtils.clientID(channel);
-        toStoreMsg.setClientID(clientID);
-
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
-
-        if (msg.isRetainFlag()) {
-            //QoS == 0 && retain => clean old retained
-            m_messagesStore.cleanRetained(topic);
-        }
-
-        String username = NettyUtils.userName(channel);
-        m_interceptor.notifyTopicPublished(msg, clientID, username);
-    }
-
     private void receivedPublishQos1(Channel channel, PublishMessage msg) {
         //verify if topic can be write
         final String topic = msg.getTopicName();
-        //check if the topic can be wrote
         if (checkWriteOnTopic(topic, channel)) {
             return;
         }
@@ -542,7 +522,7 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
-    private boolean checkWriteOnTopic(String topic, Channel channel) {
+    boolean checkWriteOnTopic(String topic, Channel channel) {
         String clientID = NettyUtils.clientID(channel);
         String username = NettyUtils.userName(channel);
         if (!m_authorizator.canWrite(topic, username, clientID)) {
@@ -634,10 +614,7 @@ public class ProtocolProcessor {
 
         LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
         for (final Subscription sub : topicMatchingSubscriptions) {
-            AbstractMessage.QOSType qos = publishingQos;
-            if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
-                qos = sub.getRequestedQos();
-            }
+            AbstractMessage.QOSType qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
 
             boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
@@ -645,25 +622,28 @@ public class ProtocolProcessor {
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
-            if (qos == AbstractMessage.QOSType.MOST_ONE && targetIsActive) {
-                //QoS 0
-                directSend(targetSession, topic, qos, message, false, null);
-            } else {
-                //QoS 1 or 2
-                //if the target subscription is not clean session and is not connected => store it
-                if (!targetSession.isCleanSession() && !targetIsActive) {
-                    //store the message in targetSession queue to deliver
-                    targetSession.enqueueToDeliver(guid);
-                } else  {
-                    //publish
-                    if (targetIsActive) {
-                        int messageId = targetSession.nextPacketId();
-                        targetSession.inFlightAckWaiting(guid, messageId);
-                        directSend(targetSession, topic, qos, message, false, messageId);
-                    }
+            //QoS 1 or 2
+            //if the target subscription is not clean session and is not connected => store it
+            if (!targetSession.isCleanSession() && !targetIsActive) {
+                //store the message in targetSession queue to deliver
+                targetSession.enqueueToDeliver(guid);
+            } else  {
+                //publish
+                if (targetIsActive) {
+                    int messageId = targetSession.nextPacketId();
+                    targetSession.inFlightAckWaiting(guid, messageId);
+                    directSend(targetSession, topic, qos, message, false, messageId);
                 }
             }
         }
+    }
+
+
+    static QOSType lowerQosToTheSubscriptionDesired(Subscription sub, QOSType qos) {
+        if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
+            qos = sub.getRequestedQos();
+        }
+        return qos;
     }
 
     protected void directSend(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
