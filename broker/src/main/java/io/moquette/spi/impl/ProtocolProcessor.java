@@ -461,7 +461,9 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
-        route2Subscribers(toStoreMsg);
+
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (msg.isRetainFlag()) {
             //QoS == 0 && retain => clean old retained
@@ -494,7 +496,8 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
-        route2Subscribers(toStoreMsg);
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         //send PUBACK
         final Integer messageID = msg.getMessageID();
@@ -573,7 +576,8 @@ public class ProtocolProcessor {
         if (qos == AbstractMessage.QOSType.EXACTLY_ONCE) { //QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
-        route2Subscribers(toStoreMsg);
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (!msg.isRetainFlag()) {
             return;
@@ -604,14 +608,16 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
         tobeStored.setClientID(clientID);
         tobeStored.setMessageID(messageId);
-        route2Subscribers(tobeStored);
+        String topic = tobeStored.getTopic();
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        route2Subscribers(tobeStored, topicMatchingSubscriptions);
     }
 
 
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    void route2Subscribers(IMessagesStore.StoredMessage pubMsg) {
+    void route2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
         final String topic = pubMsg.getTopic();
         final AbstractMessage.QOSType publishingQos = pubMsg.getQos();
         final ByteBuffer origMessage = pubMsg.getMessage();
@@ -626,7 +632,6 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
 
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
         for (final Subscription sub : topicMatchingSubscriptions) {
             AbstractMessage.QOSType qos = publishingQos;
@@ -745,10 +750,11 @@ public class ProtocolProcessor {
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
-        route2Subscribers(evt);
+        final String topic = evt.getTopic();
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        route2Subscribers(evt, topicMatchingSubscriptions);
 
         if (evt.isRetained()) {
-            final String topic = evt.getTopic();
             if (!evt.getMessage().hasRemaining()) {
                 m_messagesStore.cleanRetained(topic);
             } else {

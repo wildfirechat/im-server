@@ -452,7 +452,8 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testForwardPublishWithCorrectQos() {
-        StoredMessage forwardPublish = new StoredMessage("Hello world MQTT!!".getBytes(), QOSType.EXACTLY_ONCE, "a/b");
+        String topic = "a/b";
+        StoredMessage forwardPublish = new StoredMessage("Hello world MQTT!!".getBytes(), QOSType.EXACTLY_ONCE, topic);
         forwardPublish.setRetained(true);
         forwardPublish.setMessageID(1);
 
@@ -463,7 +464,7 @@ public class ProtocolProcessorTest {
         sessionsStore.createNewSession("Sub A", false);
         sessionsStore.createNewSession("Sub B", false);
 
-        Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE);
+        Subscription subQos1 = new Subscription("Sub A", topic, QOSType.LEAST_ONE);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE);
         sessionsStore.addNewSubscription(subQos1);
         sessionsStore.addNewSubscription(subQos2);
@@ -490,7 +491,8 @@ public class ProtocolProcessorTest {
         processor.connectionDescriptors.put("Sub B", new ConnectionDescriptor("Sub B", null, true));
 
         //Exercise
-        processor.route2Subscribers(forwardPublish);
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        processor.route2Subscribers(forwardPublish, topicMatchingSubscriptions);
 
         //Verify
         assertEquals(2, publishedForwarded.size());
