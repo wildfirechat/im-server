@@ -452,17 +452,14 @@ public class ProtocolProcessor {
 
     private void receivedPublishQos0(Channel channel, PublishMessage msg) {
         //verify if topic can be write
-        String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
-        //check if the topic can be wrote
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
+        if (checkWriteOnTopic(topic, channel)) {
             return;
         }
 
         //route message to subscribers
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
         route2Subscribers(toStoreMsg);
 
@@ -471,22 +468,31 @@ public class ProtocolProcessor {
             m_messagesStore.cleanRetained(topic);
         }
 
+        String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
+    }
+
+    private boolean checkWriteOnTopic(String topic, Channel channel) {
+        String clientID = NettyUtils.clientID(channel);
+        String username = NettyUtils.userName(channel);
+        if (!m_authorizator.canWrite(topic, username, clientID)) {
+            LOG.debug("topic {} doesn't have write credentials", topic);
+            return true;
+        }
+        return false;
     }
 
     private void receivedPublishQos1(Channel channel, PublishMessage msg) {
         //verify if topic can be write
-        String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
+        if (checkWriteOnTopic(topic, channel)) {
             return;
         }
 
         //route message to subscribers
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
         route2Subscribers(toStoreMsg);
 
@@ -507,24 +513,23 @@ public class ProtocolProcessor {
             }
         }
 
+        String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
     private void receivedPublishQos2(Channel channel, PublishMessage msg) {
         final AbstractMessage.QOSType qos = QOSType.EXACTLY_ONCE;
-        String clientID = NettyUtils.clientID(channel);
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
+        if (checkWriteOnTopic(topic, channel)) {
             return;
         }
         final Integer messageID = msg.getMessageID();
-        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
 
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+        String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
+        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
         //QoS2
         MessageGUID  guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         if (msg.isLocal()) {
@@ -540,8 +545,8 @@ public class ProtocolProcessor {
                 m_messagesStore.storeRetained(topic, guid);
             }
         }
+        String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
-
     }
 
     /**
