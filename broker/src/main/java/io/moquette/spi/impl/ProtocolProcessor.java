@@ -463,7 +463,7 @@ public class ProtocolProcessor {
         toStoreMsg.setClientID(clientID);
 
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (msg.isRetainFlag()) {
             //QoS == 0 && retain => clean old retained
@@ -497,7 +497,7 @@ public class ProtocolProcessor {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         //send PUBACK
         final Integer messageID = msg.getMessageID();
@@ -577,7 +577,7 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        route2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (!msg.isRetainFlag()) {
             return;
@@ -610,18 +610,18 @@ public class ProtocolProcessor {
         tobeStored.setMessageID(messageId);
         String topic = tobeStored.getTopic();
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        route2Subscribers(tobeStored, topicMatchingSubscriptions);
+        publish2Subscribers(tobeStored, topicMatchingSubscriptions);
     }
 
 
     /**
      * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
      * */
-    void route2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
+    void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
         final String topic = pubMsg.getTopic();
         final AbstractMessage.QOSType publishingQos = pubMsg.getQos();
         final ByteBuffer origMessage = pubMsg.getMessage();
-        LOG.debug("route2Subscribers republishing to existing subscribers that matches the topic {}", topic);
+        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
         if (LOG.isTraceEnabled()) {
             LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
@@ -752,7 +752,7 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         final String topic = evt.getTopic();
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        route2Subscribers(evt, topicMatchingSubscriptions);
+        publish2Subscribers(evt, topicMatchingSubscriptions);
 
         if (evt.isRetained()) {
             if (!evt.getMessage().hasRemaining()) {

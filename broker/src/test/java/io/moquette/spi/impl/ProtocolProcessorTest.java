@@ -492,7 +492,7 @@ public class ProtocolProcessorTest {
 
         //Exercise
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        processor.route2Subscribers(forwardPublish, topicMatchingSubscriptions);
+        processor.publish2Subscribers(forwardPublish, topicMatchingSubscriptions);
 
         //Verify
         assertEquals(2, publishedForwarded.size());
