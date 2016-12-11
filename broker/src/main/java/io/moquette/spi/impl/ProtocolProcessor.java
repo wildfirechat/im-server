@@ -136,6 +136,7 @@ public class ProtocolProcessor {
     private Qos0PublishHandler qos0PublishHandler;
     private Qos1PublishHandler qos1PublishHandler;
     private Qos2PublishHandler qos2PublishHandler;
+    private Qos2Publisher qos2Publisher;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -191,8 +192,10 @@ public class ProtocolProcessor {
                 m_interceptor, this.connectionDescriptors, m_sessionsStore);
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
+
+        this.qos2Publisher = new Qos2Publisher(connectionDescriptors, sessionsStore, m_messagesStore);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore,
-                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
+                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port, this.qos2Publisher);
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -486,7 +489,8 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+//        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        this.qos2Publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (!msg.isRetainFlag()) {
             return;
@@ -519,59 +523,9 @@ public class ProtocolProcessor {
         tobeStored.setMessageID(messageId);
         String topic = tobeStored.getTopic();
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        publish2Subscribers(tobeStored, topicMatchingSubscriptions);
+
+        this.qos2Publisher.publish2Subscribers(tobeStored, topicMatchingSubscriptions);
     }
-
-
-    /**
-     * Flood the subscribers with the message to notify. MessageID is optional and should only used for QoS 1 and 2
-     * */
-    void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
-        final String topic = pubMsg.getTopic();
-        final AbstractMessage.QOSType publishingQos = pubMsg.getQos();
-        final ByteBuffer origMessage = pubMsg.getMessage();
-        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
-            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-        }
-        //if QoS 1 or 2 store the message
-        MessageGUID guid = null;
-        if (publishingQos != AbstractMessage.QOSType.MOST_ONE) {
-            guid = m_messagesStore.storePublishForFuture(pubMsg);
-        }
-
-        LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
-        for (final Subscription sub : topicMatchingSubscriptions) {
-            AbstractMessage.QOSType qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
-            ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
-
-            boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
-
-            LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
-            ByteBuffer message = origMessage.duplicate();
-            if (qos == AbstractMessage.QOSType.MOST_ONE && targetIsActive) {
-                //QoS 0
-                directSend(targetSession, topic, qos, message, false, null);
-            } else {
-                //QoS 1 or 2
-                //if the target subscription is not clean session and is not connected => store it
-                if (!targetSession.isCleanSession() && !targetIsActive) {
-                    //store the message in targetSession queue to deliver
-                    targetSession.enqueueToDeliver(guid);
-                } else {
-                    //publish
-                    if (targetIsActive) {
-                        int messageId = targetSession.nextPacketId();
-                        targetSession.inFlightAckWaiting(guid, messageId);
-                        directSend(targetSession, topic, qos, message, false, messageId);
-                    }
-                }
-            }
-        }
-    }
-
 
     static QOSType lowerQosToTheSubscriptionDesired(Subscription sub, QOSType qos) {
         if (qos.byteValue() > sub.getRequestedQos().byteValue()) {
