@@ -33,7 +33,9 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 import java.util.*;
 import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
+import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
@@ -448,57 +450,12 @@ public class ProtocolProcessorTest {
         assertTrue(messages.isEmpty());
     }
 
-    List<StoredMessage> publishedForwarded = new ArrayList<>();
-
     @Test
-    public void testForwardPublishWithCorrectQos() {
-        String topic = "a/b";
-        StoredMessage forwardPublish = new StoredMessage("Hello world MQTT!!".getBytes(), QOSType.EXACTLY_ONCE, topic);
-        forwardPublish.setRetained(true);
-        forwardPublish.setMessageID(1);
+    public void testLowerTheQosToTheRequestedBySubscription() {
+        Subscription subQos1 = new Subscription("Sub A", "a/b", QOSType.LEAST_ONE);
+        assertEquals(QOSType.LEAST_ONE, lowerQosToTheSubscriptionDesired(subQos1, QOSType.EXACTLY_ONCE));
 
-        MemoryStorageService memStore = new MemoryStorageService();
-        memStore.initStore();
-        IMessagesStore memoryMessageStore = memStore.messagesStore();
-        ISessionsStore sessionsStore = memStore.sessionsStore();
-        sessionsStore.createNewSession("Sub A", false);
-        sessionsStore.createNewSession("Sub B", false);
-
-        Subscription subQos1 = new Subscription("Sub A", topic, QOSType.LEAST_ONE);
         Subscription subQos2 = new Subscription("Sub B", "a/+", QOSType.EXACTLY_ONCE);
-        sessionsStore.addNewSubscription(subQos1);
-        sessionsStore.addNewSubscription(subQos2);
-        SubscriptionsStore subscriptions = new SubscriptionsStore();
-        subscriptions.init(sessionsStore);
-        subscriptions.add(subQos1.asClientTopicCouple());
-        subscriptions.add(subQos2.asClientTopicCouple());
-
-
-        ProtocolProcessor processor = new ProtocolProcessor() {
-            @Override
-            protected void directSend(ClientSession session, String topic, AbstractMessage.QOSType qos, ByteBuffer message,
-                                      boolean retained, Integer messageID) {
-                StoredMessage msgToStore = new StoredMessage(message.array(), qos, topic);
-                msgToStore.setRetained(retained);
-                msgToStore.setMessageID(messageID);
-                msgToStore.setClientID(session.clientID);
-                publishedForwarded.add(msgToStore);
-            }
-        };
-        processor.init(subscriptions, memoryMessageStore, sessionsStore, null, true, null, NO_OBSERVERS_INTERCEPTOR);
-        //just to activate the two sessions
-        processor.connectionDescriptors.put("Sub A", new ConnectionDescriptor("Sub A", null, true));
-        processor.connectionDescriptors.put("Sub B", new ConnectionDescriptor("Sub B", null, true));
-
-        //Exercise
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        processor.publish2Subscribers(forwardPublish, topicMatchingSubscriptions);
-
-        //Verify
-        assertEquals(2, publishedForwarded.size());
-        assertEquals(subQos1.getClientId(), publishedForwarded.get(0).getClientID());
-        assertEquals(subQos1.getRequestedQos(), publishedForwarded.get(0).getQos());
-        assertEquals(subQos2.getClientId(), publishedForwarded.get(1).getClientID());
-        assertEquals(subQos2.getRequestedQos(), publishedForwarded.get(1).getQos());
+        assertEquals(QOSType.EXACTLY_ONCE, lowerQosToTheSubscriptionDesired(subQos2, QOSType.EXACTLY_ONCE));
     }
 }
