@@ -91,11 +91,11 @@ public class ProtocolProcessor {
 
     private class RunningSubscription {
         final String clientID;
-        final long packeId;
+        final long packetId;
 
         RunningSubscription(String clientID, long packeId) {
             this.clientID = clientID;
-            this.packeId = packeId;
+            this.packetId = packeId;
         }
 
         @Override
@@ -105,7 +105,7 @@ public class ProtocolProcessor {
 
             RunningSubscription that = (RunningSubscription) o;
 
-            if (packeId != that.packeId) return false;
+            if (packetId != that.packetId) return false;
             return clientID != null ? clientID.equals(that.clientID) : that.clientID == null;
 
         }
@@ -113,7 +113,7 @@ public class ProtocolProcessor {
         @Override
         public int hashCode() {
             int result = clientID != null ? clientID.hashCode() : 0;
-            result = 31 * result + (int) (packeId ^ (packeId >>> 32));
+            result = 31 * result + (int) (packetId ^ (packetId >>> 32));
             return result;
         }
     }
@@ -134,6 +134,7 @@ public class ProtocolProcessor {
     private String m_server_port;
 
     private Qos0PublishHandler qos0PublishHandler;
+    private Qos1PublishHandler qos1PublishHandler;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -187,6 +188,8 @@ public class ProtocolProcessor {
 
         this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore);
+        this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore,
+                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -447,47 +450,12 @@ public class ProtocolProcessor {
                 this.qos0PublishHandler.receivedPublishQos0(channel, msg);
                 break;
             case LEAST_ONE:
-                receivedPublishQos1(channel, msg);
+                this.qos1PublishHandler.receivedPublishQos1(channel, msg);
                 break;
             case EXACTLY_ONCE:
                 receivedPublishQos2(channel, msg);
                 break;
         }
-    }
-
-    private void receivedPublishQos1(Channel channel, PublishMessage msg) {
-        //verify if topic can be write
-        final String topic = msg.getTopicName();
-        if (checkWriteOnTopic(topic, channel)) {
-            return;
-        }
-
-        //route message to subscribers
-        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        String clientID = NettyUtils.clientID(channel);
-        toStoreMsg.setClientID(clientID);
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
-
-        //send PUBACK
-        final Integer messageID = msg.getMessageID();
-        if (msg.isLocal()) {
-            sendPubAck(clientID, messageID);
-        }
-        LOG.info("server {} replying with PubAck to MSG ID {}", m_server_port, messageID);
-
-        if (msg.isRetainFlag()) {
-            if (!msg.getPayload().hasRemaining()) {
-                m_messagesStore.cleanRetained(topic);
-            } else {
-                //before wasn't stored
-                MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-                m_messagesStore.storeRetained(topic, guid);
-            }
-        }
-
-        String username = NettyUtils.userName(channel);
-        m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
     private void receivedPublishQos2(Channel channel, PublishMessage msg) {
@@ -608,7 +576,7 @@ public class ProtocolProcessor {
         }
         //if QoS 1 or 2 store the message
         MessageGUID guid = null;
-        if (publishingQos == QOSType.EXACTLY_ONCE || publishingQos == QOSType.LEAST_ONE) {
+        if (publishingQos != AbstractMessage.QOSType.MOST_ONE) {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
 
@@ -706,24 +674,24 @@ public class ProtocolProcessor {
         connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
     }
 
-    private void sendPubAck(String clientId, int messageID) {
-        LOG.trace("sendPubAck invoked");
-        PubAckMessage pubAckMessage = new PubAckMessage();
-        pubAckMessage.setMessageID(messageID);
-
-        try {
-            if (connectionDescriptors == null) {
-                throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be initialized, somewhere it's overwritten!!");
-            }
-            LOG.debug("clientIDs are {}", connectionDescriptors);
-            if (connectionDescriptors.get(clientId) == null) {
-                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, connectionDescriptors));
-            }
-            connectionDescriptors.get(clientId).channel.writeAndFlush(pubAckMessage);
-        } catch(Throwable t) {
-            LOG.error(null, t);
-        }
-    }
+//    private static void sendPubAck(String clientId, int messageID) {
+//        LOG.trace("sendPubAck invoked");
+//        PubAckMessage pubAckMessage = new PubAckMessage();
+//        pubAckMessage.setMessageID(messageID);
+//
+//        try {
+//            if (connectionDescriptors == null) {
+//                throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be initialized, somewhere it's overwritten!!");
+//            }
+//            LOG.debug("clientIDs are {}", connectionDescriptors);
+//            if (connectionDescriptors.get(clientId) == null) {
+//                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, connectionDescriptors));
+//            }
+//            connectionDescriptors.get(clientId).channel.writeAndFlush(pubAckMessage);
+//        } catch(Throwable t) {
+//            LOG.error(null, t);
+//        }
+//    }
 
     /**
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
