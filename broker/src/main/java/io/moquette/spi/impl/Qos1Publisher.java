@@ -6,6 +6,7 @@ import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -15,49 +16,68 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-class Qos0Publisher {
+import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
-    private static final Logger LOG = LoggerFactory.getLogger(Qos0Publisher.class);
+class Qos1Publisher {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Qos1Publisher.class);
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
+    private final IMessagesStore m_messagesStore;
 
-    public Qos0Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore) {
+    public Qos1Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
+                         IMessagesStore messagesStore) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
+        m_messagesStore = messagesStore;
     }
 
-    void publish2Subscribers_qos0(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
+    void publish2Subscribers_qos1(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
         final String topic = pubMsg.getTopic();
+        final AbstractMessage.QOSType publishingQos = pubMsg.getQos();
         final ByteBuffer origMessage = pubMsg.getMessage();
-//        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-//        if (LOG.isTraceEnabled()) {
-//            LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
-//            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-//        }
+
+        //if QoS 1 or 2 store the message
+        MessageGUID guid = m_messagesStore.storePublishForFuture(pubMsg);
 
         LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
         for (final Subscription sub : topicMatchingSubscriptions) {
-            boolean targetIsActive = connectionDescriptors.containsKey(sub.getClientId());
+            AbstractMessage.QOSType qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
+            ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
+
+            boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
 
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), AbstractMessage.QOSType.MOST_ONE, targetIsActive);
-            if (targetIsActive) {
-                ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
-                ByteBuffer message = origMessage.duplicate();
-                publishQos0(targetSession, topic, message);
+                    sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
+            ByteBuffer message = origMessage.duplicate();
+            //QoS 1 or 2
+            //if the target subscription is not clean session and is not connected => store it
+            if (!targetSession.isCleanSession() && !targetIsActive) {
+                //store the message in targetSession queue to deliver
+                targetSession.enqueueToDeliver(guid);
+            } else  {
+                //publish
+                if (targetIsActive) {
+                    int messageId = targetSession.nextPacketId();
+                    targetSession.inFlightAckWaiting(guid, messageId);
+                    publishQos1(targetSession, topic, message, messageId, qos);
+                }
             }
         }
     }
 
-    private void publishQos0(ClientSession clientsession, String topic, ByteBuffer message) {
+    private void publishQos1(ClientSession clientsession, String topic,
+                               ByteBuffer message, int messageID, AbstractMessage.QOSType qos) {
         String clientId = clientsession.clientID;
-
-        LOG.debug("publishQos0 invoked clientId <{}> on topic <{}>", clientId, topic);
+        LOG.debug("publishQos1 invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
+                clientId, topic, qos, false, messageID);
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(false);
         pubMessage.setTopicName(topic);
-        pubMessage.setQos(AbstractMessage.QOSType.MOST_ONE);
+        pubMessage.setQos(qos);
         pubMessage.setPayload(message);
+        //QoS > 0 => set the PacketIdentifier
+        pubMessage.setMessageID(messageID);
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
@@ -75,13 +95,15 @@ class Qos0Publisher {
                     clientId, connectionDescriptors));
         }
         Channel channel = connectionDescriptors.get(clientId).channel;
-        //TODO attention channel could be null, because in the mean time it get closed
-
         LOG.trace("Session for clientId {}", clientId);
         if (channel.isWritable()) {
             LOG.debug("channel is writable");
             //if channel is writable don't enqueue
             channel.writeAndFlush(pubMessage);
+        } else {
+            //enqueue to the client session
+            LOG.debug("enqueue to client session");
+            clientsession.enqueue(pubMessage);
         }
     }
 }
