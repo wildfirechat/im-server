@@ -622,17 +622,22 @@ public class ProtocolProcessor {
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
-            //QoS 1 or 2
-            //if the target subscription is not clean session and is not connected => store it
-            if (!targetSession.isCleanSession() && !targetIsActive) {
-                //store the message in targetSession queue to deliver
-                targetSession.enqueueToDeliver(guid);
-            } else  {
-                //publish
-                if (targetIsActive) {
-                    int messageId = targetSession.nextPacketId();
-                    targetSession.inFlightAckWaiting(guid, messageId);
-                    directSend(targetSession, topic, qos, message, false, messageId);
+            if (qos == AbstractMessage.QOSType.MOST_ONE && targetIsActive) {
+                //QoS 0
+                directSend(targetSession, topic, qos, message, false, null);
+            } else {
+                //QoS 1 or 2
+                //if the target subscription is not clean session and is not connected => store it
+                if (!targetSession.isCleanSession() && !targetIsActive) {
+                    //store the message in targetSession queue to deliver
+                    targetSession.enqueueToDeliver(guid);
+                } else {
+                    //publish
+                    if (targetIsActive) {
+                        int messageId = targetSession.nextPacketId();
+                        targetSession.inFlightAckWaiting(guid, messageId);
+                        directSend(targetSession, topic, qos, message, false, messageId);
+                    }
                 }
             }
         }
