@@ -135,6 +135,7 @@ public class ProtocolProcessor {
 
     private Qos0PublishHandler qos0PublishHandler;
     private Qos1PublishHandler qos1PublishHandler;
+    private Qos2PublishHandler qos2PublishHandler;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -189,6 +190,8 @@ public class ProtocolProcessor {
         this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore);
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore,
+                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
+        this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
     }
 
@@ -453,52 +456,52 @@ public class ProtocolProcessor {
                 this.qos1PublishHandler.receivedPublishQos1(channel, msg);
                 break;
             case EXACTLY_ONCE:
-                receivedPublishQos2(channel, msg);
+                this.qos2PublishHandler.receivedPublishQos2(channel, msg);
                 break;
         }
     }
 
-    private void receivedPublishQos2(Channel channel, PublishMessage msg) {
-        final AbstractMessage.QOSType qos = QOSType.EXACTLY_ONCE;
-        final String topic = msg.getTopicName();
-        //check if the topic can be wrote
-        if (checkWriteOnTopic(topic, channel)) {
-            return;
-        }
-        final Integer messageID = msg.getMessageID();
+//    private void receivedPublishQos2(Channel channel, PublishMessage msg) {
+//        final AbstractMessage.QOSType qos = QOSType.EXACTLY_ONCE;
+//        final String topic = msg.getTopicName();
+//        //check if the topic can be wrote
+//        if (checkWriteOnTopic(topic, channel)) {
+//            return;
+//        }
+//        final Integer messageID = msg.getMessageID();
+//
+//        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
+//        String clientID = NettyUtils.clientID(channel);
+//        toStoreMsg.setClientID(clientID);
+//        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
+//        //QoS2
+//        MessageGUID  guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+//        if (msg.isLocal()) {
+//            sendPubRec(clientID, messageID);
+//        }
+//        //Next the client will send us a pub rel
+//        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
+//
+//        if (msg.isRetainFlag()) {
+//            if (!msg.getPayload().hasRemaining()) {
+//                m_messagesStore.cleanRetained(topic);
+//            } else {
+//                m_messagesStore.storeRetained(topic, guid);
+//            }
+//        }
+//        String username = NettyUtils.userName(channel);
+//        m_interceptor.notifyTopicPublished(msg, clientID, username);
+//    }
 
-        IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        String clientID = NettyUtils.clientID(channel);
-        toStoreMsg.setClientID(clientID);
-        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", m_server_port, clientID, topic, qos);
-        //QoS2
-        MessageGUID  guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-        if (msg.isLocal()) {
-            sendPubRec(clientID, messageID);
-        }
-        //Next the client will send us a pub rel
-        //NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
-
-        if (msg.isRetainFlag()) {
-            if (!msg.getPayload().hasRemaining()) {
-                m_messagesStore.cleanRetained(topic);
-            } else {
-                m_messagesStore.storeRetained(topic, guid);
-            }
-        }
-        String username = NettyUtils.userName(channel);
-        m_interceptor.notifyTopicPublished(msg, clientID, username);
-    }
-
-    boolean checkWriteOnTopic(String topic, Channel channel) {
-        String clientID = NettyUtils.clientID(channel);
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
-            return true;
-        }
-        return false;
-    }
+//    boolean checkWriteOnTopic(String topic, Channel channel) {
+//        String clientID = NettyUtils.clientID(channel);
+//        String username = NettyUtils.userName(channel);
+//        if (!m_authorizator.canWrite(topic, username, clientID)) {
+//            LOG.debug("topic {} doesn't have write credentials", topic);
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * Intended usage is only for embedded versions of the broker, where the hosting application want to use the
@@ -667,12 +670,12 @@ public class ProtocolProcessor {
         }
     }
 
-    private void sendPubRec(String clientID, int messageID) {
-        LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
-        PubRecMessage pubRecMessage = new PubRecMessage();
-        pubRecMessage.setMessageID(messageID);
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
-    }
+//    private void sendPubRec(String clientID, int messageID) {
+//        LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
+//        PubRecMessage pubRecMessage = new PubRecMessage();
+//        pubRecMessage.setMessageID(messageID);
+//        connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
+//    }
 
 //    private static void sendPubAck(String clientId, int messageID) {
 //        LOG.trace("sendPubAck invoked");
@@ -698,33 +701,34 @@ public class ProtocolProcessor {
      * to all interested subscribers.
      * */
     public void processPubRel(Channel channel, PubRelMessage msg) {
-        String clientID = NettyUtils.clientID(channel);
-        int messageID = msg.getMessageID();
-        LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
-        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
-        final String topic = evt.getTopic();
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        publish2Subscribers(evt, topicMatchingSubscriptions);
-
-        if (evt.isRetained()) {
-            if (!evt.getMessage().hasRemaining()) {
-                m_messagesStore.cleanRetained(topic);
-            } else {
-                m_messagesStore.storeRetained(topic, evt.getGuid());
-            }
-        }
-
-        sendPubComp(clientID, messageID);
+        this.qos2PublishHandler.processPubRel(channel, msg);
+//        String clientID = NettyUtils.clientID(channel);
+//        int messageID = msg.getMessageID();
+//        LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
+//        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+//        IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
+//        final String topic = evt.getTopic();
+//        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+//        publish2Subscribers(evt, topicMatchingSubscriptions);
+//
+//        if (evt.isRetained()) {
+//            if (!evt.getMessage().hasRemaining()) {
+//                m_messagesStore.cleanRetained(topic);
+//            } else {
+//                m_messagesStore.storeRetained(topic, evt.getGuid());
+//            }
+//        }
+//
+//        sendPubComp(clientID, messageID);
     }
 
-    private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
-        PubCompMessage pubCompMessage = new PubCompMessage();
-        pubCompMessage.setMessageID(messageID);
-
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubCompMessage);
-    }
+//    private void sendPubComp(String clientID, int messageID) {
+//        LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
+//        PubCompMessage pubCompMessage = new PubCompMessage();
+//        pubCompMessage.setMessageID(messageID);
+//
+//        connectionDescriptors.get(clientID).channel.writeAndFlush(pubCompMessage);
+//    }
 
     public void processPubRec(Channel channel, PubRecMessage msg) {
         String clientID = NettyUtils.clientID(channel);
