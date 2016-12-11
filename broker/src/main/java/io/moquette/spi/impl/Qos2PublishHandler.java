@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
-public class Qos2PublishHandler {
+class Qos2PublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos1PublishHandler.class);
 

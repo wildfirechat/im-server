@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
-public class Qos0PublishHandler {
+class Qos0PublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos0PublishHandler.class);
 

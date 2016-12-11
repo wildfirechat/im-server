@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
-public class Qos1PublishHandler {
+class Qos1PublishHandler {
     private static final Logger LOG = LoggerFactory.getLogger(Qos1PublishHandler.class);
 
     private final IAuthorizator m_authorizator;
