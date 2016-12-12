@@ -25,7 +25,7 @@ class Qos0PublishHandler {
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final MetaPublisher metaPublisher;
+    private final MessagesPublisher metaPublisher;
 
     public Qos0PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
@@ -34,7 +34,7 @@ class Qos0PublishHandler {
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
-        this.metaPublisher = new MetaPublisher(connectionDescriptors, sessionsStore, messagesStore);
+        this.metaPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messagesStore);
     }
 
     void receivedPublishQos0(Channel channel, PublishMessage msg) {

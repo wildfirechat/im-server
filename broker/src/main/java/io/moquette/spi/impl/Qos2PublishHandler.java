@@ -30,7 +30,7 @@ class Qos2PublishHandler {
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final String brokerPort;
-    private final MetaPublisher metaPublisher;
+    private final MessagesPublisher metaPublisher;
 
     public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
@@ -43,7 +43,7 @@ class Qos2PublishHandler {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.brokerPort = brokerPort;
-        this.metaPublisher = new MetaPublisher(connectionDescriptors, sessionsStore, messagesStore);
+        this.metaPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messagesStore);
     }
 
     void receivedPublishQos2(Channel channel, PublishMessage msg) {

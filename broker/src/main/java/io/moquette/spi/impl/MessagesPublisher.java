@@ -16,17 +16,17 @@ import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
-class MetaPublisher {
+class MessagesPublisher {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MetaPublisher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MessagesPublisher.class);
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final IMessagesStore m_messagesStore;
     private final BestEffortMessageSender bestEffortSender;
     private final PersistentQueueMessageSender persistentSender;
 
-    public MetaPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
-                         IMessagesStore messagesStore) {
+    public MessagesPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
+                             IMessagesStore messagesStore) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
