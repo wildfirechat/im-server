@@ -21,12 +21,12 @@ class PersistentQueueMessageSender {
     }
 
     void publishQos2(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
-                             ByteBuffer message, boolean retained, Integer messageID) {
+                             ByteBuffer message, int messageID) {
         String clientId = clientsession.clientID;
         LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
-                clientId, topic, qos, retained, messageID);
+                clientId, topic, qos, false, messageID);
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(retained);
+        pubMessage.setRetainFlag(false);
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
@@ -38,11 +38,6 @@ class PersistentQueueMessageSender {
         //set the PacketIdentifier only for QoS > 0
         if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
             pubMessage.setMessageID(messageID);
-        } else {
-            if (messageID != null) {
-                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message " +
-                        "with PacketIdentifier: " + messageID);
-            }
         }
 
         if (connectionDescriptors == null) {

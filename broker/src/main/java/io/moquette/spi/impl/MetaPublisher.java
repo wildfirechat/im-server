@@ -63,7 +63,7 @@ class MetaPublisher {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
                     targetSession.inFlightAckWaiting(guid, messageId);
-                    this.persistentSender.publishQos2(targetSession, topic, qos, message, false, messageId);
+                    this.persistentSender.publishQos2(targetSession, topic, qos, message, messageId);
                 }
             } else {
                 if (!targetSession.isCleanSession()) {
