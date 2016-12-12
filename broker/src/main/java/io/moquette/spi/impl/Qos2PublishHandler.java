@@ -35,7 +35,7 @@ class Qos2PublishHandler {
     public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
             ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore, String brokerPort/*,
-                              Qos2Publisher qos2Publisher*/) {
+                              PersistentQueueMessageSender qos2Publisher*/) {
         this.m_authorizator = authorizator;
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;

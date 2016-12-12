@@ -11,28 +11,38 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 
-class Qos0Publisher {
+class PersistentQueueMessageSender {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Qos0Publisher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PersistentQueueMessageSender.class);
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
 
-    public Qos0Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors) {
+    public PersistentQueueMessageSender(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors) {
         this.connectionDescriptors = connectionDescriptors;
     }
 
-    void publishQos0(ClientSession clientsession, String topic, ByteBuffer message) {
+    void publishQos2(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
+                             ByteBuffer message, boolean retained, Integer messageID) {
         String clientId = clientsession.clientID;
-
-        LOG.debug("publishQos0 invoked clientId <{}> on topic <{}>", clientId, topic);
+        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
+                clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
+        pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
-        pubMessage.setQos(AbstractMessage.QOSType.MOST_ONE);
+        pubMessage.setQos(qos);
         pubMessage.setPayload(message);
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(message));
+        }
+        //set the PacketIdentifier only for QoS > 0
+        if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
+            pubMessage.setMessageID(messageID);
+        } else {
+            if (messageID != null) {
+                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message " +
+                        "with PacketIdentifier: " + messageID);
+            }
         }
 
         if (connectionDescriptors == null) {
@@ -46,13 +56,16 @@ class Qos0Publisher {
                     clientId, connectionDescriptors));
         }
         Channel channel = connectionDescriptors.get(clientId).channel;
-        //TODO attention channel could be null, because in the mean time it get closed
-
         LOG.trace("Session for clientId {}", clientId);
         if (channel.isWritable()) {
             LOG.debug("channel is writable");
             //if channel is writable don't enqueue
             channel.writeAndFlush(pubMessage);
+        } else {
+            //enqueue to the client session
+            LOG.debug("enqueue to client session");
+            clientsession.enqueue(pubMessage);
         }
     }
+
 }

@@ -22,16 +22,16 @@ class MetaPublisher {
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final IMessagesStore m_messagesStore;
-    private final Qos0Publisher qos0Publisher;
-    private final Qos2Publisher qos2Publisher;
+    private final BestEffortMessageSender bestEffortSender;
+    private final PersistentQueueMessageSender persistentSender;
 
     public MetaPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
                          IMessagesStore messagesStore) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
-        this.qos0Publisher = new Qos0Publisher(connectionDescriptors);
-        this.qos2Publisher = new Qos2Publisher(connectionDescriptors);
+        this.bestEffortSender = new BestEffortMessageSender(connectionDescriptors);
+        this.persistentSender = new PersistentQueueMessageSender(connectionDescriptors);
     }
 
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
@@ -58,12 +58,12 @@ class MetaPublisher {
             if (targetIsActive) {
                 //QoS 0
                 if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                    this.qos0Publisher.publishQos0(targetSession, topic, message);
+                    this.bestEffortSender.publishQos0(targetSession, topic, message);
                 } else {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
                     targetSession.inFlightAckWaiting(guid, messageId);
-                    this.qos2Publisher.publishQos2(targetSession, topic, qos, message, false, messageId);
+                    this.persistentSender.publishQos2(targetSession, topic, qos, message, false, messageId);
                 }
             } else {
                 if (!targetSession.isCleanSession()) {
