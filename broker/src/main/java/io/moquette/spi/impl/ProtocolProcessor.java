@@ -137,6 +137,7 @@ public class ProtocolProcessor {
     private Qos1PublishHandler qos1PublishHandler;
     private Qos2PublishHandler qos2PublishHandler;
     private Qos2Publisher qos2Publisher;
+    private InternalRepublisher internalRepublisher;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -196,6 +197,8 @@ public class ProtocolProcessor {
         this.qos2Publisher = new Qos2Publisher(connectionDescriptors, sessionsStore, m_messagesStore);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port, this.qos2Publisher);
+
+        this.internalRepublisher = new InternalRepublisher(this.connectionDescriptors);
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {
@@ -409,14 +412,7 @@ public class ProtocolProcessor {
         }
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
-        for (IMessagesStore.StoredMessage pubEvt : publishedEvents) {
-            //put in flight zone
-            LOG.trace("Adding to inflight <{}>", pubEvt.getMessageID());
-            clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
-            directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
-                    pubEvt.getMessage(), false, pubEvt.getMessageID());
-            clientSession.removeEnqueued(pubEvt.getGuid());
-        }
+        this.internalRepublisher.publishStored(clientSession, publishedEvents);
     }
 
     public void processPubAck(Channel channel, PubAckMessage msg) {
@@ -489,7 +485,6 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-//        publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
         this.qos2Publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (!msg.isRetainFlag()) {
@@ -532,54 +527,6 @@ public class ProtocolProcessor {
             qos = sub.getRequestedQos();
         }
         return qos;
-    }
-
-    protected void directSend(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
-                              ByteBuffer message, boolean retained, Integer messageID) {
-        String clientId = clientsession.clientID;
-        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
-                clientId, topic, qos, retained, messageID);
-        PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(retained);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(qos);
-        pubMessage.setPayload(message);
-
-        LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", DebugUtils.payload2Str(message));
-        }
-        //set the PacketIdentifier only for QoS > 0
-        if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
-            pubMessage.setMessageID(messageID);
-        } else {
-            if (messageID != null) {
-                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message " +
-                        "with PacketIdentifier: " + messageID);
-            }
-        }
-
-        if (connectionDescriptors == null) {
-            throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be " +
-                    "initialized, somewhere it's overwritten!!");
-        }
-        if (connectionDescriptors.get(clientId) == null) {
-            //TODO while we were publishing to the target client, that client disconnected,
-            // could happen is not an error HANDLE IT
-            throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client <%s> in cache <%s>",
-                    clientId, connectionDescriptors));
-        }
-        Channel channel = connectionDescriptors.get(clientId).channel;
-        LOG.trace("Session for clientId {}", clientId);
-        if (channel.isWritable()) {
-            LOG.debug("channel is writable");
-            //if channel is writable don't enqueue
-            channel.writeAndFlush(pubMessage);
-        } else {
-            //enqueue to the client session
-            LOG.debug("enqueue to client session");
-            clientsession.enqueue(pubMessage);
-        }
     }
 
     /**
@@ -797,7 +744,7 @@ public class ProtocolProcessor {
 
         //fire the persisted messages in session
         for (Subscription subscription : newSubscriptions) {
-            publishStoredMessagesInSession(subscription, username);
+            publishRetainedMessagesInSession(subscription, username);
         }
 
         boolean success = this.subscriptionInCourse.remove(executionKey, SubscriptionState.STORED);
@@ -860,9 +807,7 @@ public class ProtocolProcessor {
         return ackMessage;
     }
 
-
-
-    private void publishStoredMessagesInSession(final Subscription newSubscription, String username) {
+    private void publishRetainedMessagesInSession(final Subscription newSubscription, String username) {
         LOG.debug("Publish persisted messages in session {}", newSubscription);
 
         //scans retained messages to be published to the new subscription
@@ -876,16 +821,7 @@ public class ProtocolProcessor {
 
         LOG.debug("Found {} messages to republish", messages.size());
         ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
-        for (IMessagesStore.StoredMessage storedMsg : messages) {
-            //fire as retained the message
-            LOG.trace("send publish message for topic {}", newSubscription.getTopicFilter());
-            Integer packetID = storedMsg.getQos() == QOSType.MOST_ONE ? null : targetSession.nextPacketId();
-            if (packetID != null) {
-                LOG.trace("Adding to inflight <{}>", packetID);
-                targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
-            }
-            directSend(targetSession, storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true, packetID);
-        }
+        this.internalRepublisher.publishRetained(targetSession, messages);
 
         //notify the Observables
         m_interceptor.notifyTopicSubscribed(newSubscription, username);
