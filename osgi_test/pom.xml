@@ -1,0 +1,167 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <relativePath>../</relativePath>
+        <artifactId>moquette-parent</artifactId>
+        <groupId>io.moquette</groupId>
+        <version>0.9-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>moquette-osgi-test</artifactId>
+    <packaging>jar</packaging>
+    <name>Moquette - OSGi test</name>
+
+    <properties>
+        <pax.exam.version>4.6.0</pax.exam.version>
+        <url.version>1.4.0</url.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.moquette</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ops4j.pax.exam</groupId>
+            <artifactId>pax-exam-container-native</artifactId>
+            <version>${pax.exam.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ops4j.pax.exam</groupId>
+            <artifactId>pax-exam-junit4</artifactId>
+            <version>${pax.exam.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ops4j.pax.exam</groupId>
+            <artifactId>pax-exam-link-mvn</artifactId>
+            <version>${pax.exam.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ops4j.pax.url</groupId>
+            <artifactId>pax-url-aether</artifactId>
+            <version>${url.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>5.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>0.9.20</version>
+            <scope>test</scope>
+        </dependency>
+
+       <dependency>
+           <groupId>javax.inject</groupId>
+           <artifactId>javax.inject</artifactId>
+           <version>1</version>
+           <scope>test</scope>
+       </dependency>
+              
+       <dependency>
+           <groupId>ch.qos.logback</groupId>
+           <artifactId>logback-classic</artifactId>
+           <version>0.9.20</version>
+           <scope>test</scope>
+       </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <target>
+                                <property name="compile_classpath" refid="maven.compile.classpath"/>
+                                <property name="runtime_classpath" refid="maven.runtime.classpath"/>
+                                <property name="test_classpath" refid="maven.test.classpath"/>
+                                <property name="plugin_classpath" refid="maven.plugin.classpath"/>
+
+                                <echo message="compile classpath: ${compile_classpath}"/>
+                                <echo message="runtime classpath: ${runtime_classpath}"/>
+                                <echo message="test classpath:    ${test_classpath}"/>
+                                <echo message="plugin classpath:  ${plugin_classpath}"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.ops4j.pax.exam</groupId>
+                <artifactId>exam-maven-plugin</artifactId>
+                <version>${pax.exam.version}</version>
+                <configuration>
+                    <configClass>io.moquette.test.osgi.MoquetteOsgiTest</configClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>start-container</goal>
+                            <goal>stop-container</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>depends-maven-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>generate-depends-file</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>generate-depends-file</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <forkMode>always</forkMode>
+                    <parallel>none</parallel>
+                    <threadCount>1</threadCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
