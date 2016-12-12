@@ -1,14 +1,12 @@
 package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +30,8 @@ class MetaPublisher {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
-        this.qos0Publisher = new Qos0Publisher(connectionDescriptors, sessionsStore);
-        this.qos2Publisher = new Qos2Publisher(connectionDescriptors, sessionsStore, m_messagesStore);
+        this.qos0Publisher = new Qos0Publisher(connectionDescriptors);
+        this.qos2Publisher = new Qos2Publisher(connectionDescriptors);
     }
 
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {

@@ -4,26 +4,20 @@ import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.subscriptions.Subscription;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 class Qos0Publisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos0Publisher.class);
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
-    private final ISessionsStore m_sessionsStore;
 
-    public Qos0Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore) {
+    public Qos0Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors) {
         this.connectionDescriptors = connectionDescriptors;
-        this.m_sessionsStore = sessionsStore;
     }
 
     void publishQos0(ClientSession clientsession, String topic, ByteBuffer message) {

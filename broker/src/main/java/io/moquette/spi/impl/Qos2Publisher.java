@@ -4,8 +4,6 @@ import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.ISessionsStore;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +15,9 @@ class Qos2Publisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos2Publisher.class);
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
-    private final ISessionsStore m_sessionsStore;
-    private final IMessagesStore m_messagesStore;
 
-    public Qos2Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
-                         IMessagesStore messagesStore) {
+    public Qos2Publisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors) {
         this.connectionDescriptors = connectionDescriptors;
-        this.m_sessionsStore = sessionsStore;
-        m_messagesStore = messagesStore;
     }
 
     void publishQos2(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
