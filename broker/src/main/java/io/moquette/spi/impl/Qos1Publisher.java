@@ -50,38 +50,50 @@ class Qos1Publisher {
             LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
-            //QoS 1 or 2
-            //if the target subscription is not clean session and is not connected => store it
-            if (!targetSession.isCleanSession() && !targetIsActive) {
-                //store the message in targetSession queue to deliver
-                targetSession.enqueueToDeliver(guid);
-            } else  {
-                //publish
-                if (targetIsActive) {
-                    int messageId = targetSession.nextPacketId();
-                    targetSession.inFlightAckWaiting(guid, messageId);
-                    publishQos1(targetSession, topic, message, messageId, qos);
+            if (qos == AbstractMessage.QOSType.MOST_ONE && targetIsActive) {
+                //QoS 0
+                publishQos1(targetSession, topic, qos, message, false, null);
+            } else {
+                //QoS 1 or 2
+                //if the target subscription is not clean session and is not connected => store it
+                if (!targetSession.isCleanSession() && !targetIsActive) {
+                    //store the message in targetSession queue to deliver
+                    targetSession.enqueueToDeliver(guid);
+                } else {
+                    //publish
+                    if (targetIsActive) {
+                        int messageId = targetSession.nextPacketId();
+                        targetSession.inFlightAckWaiting(guid, messageId);
+                        publishQos1(targetSession, topic, qos, message, false, messageId);
+                    }
                 }
             }
         }
     }
 
-    private void publishQos1(ClientSession clientsession, String topic,
-                               ByteBuffer message, int messageID, AbstractMessage.QOSType qos) {
+    private void publishQos1(ClientSession clientsession, String topic, AbstractMessage.QOSType qos,
+                             ByteBuffer message, boolean retained, Integer messageID) {
         String clientId = clientsession.clientID;
-        LOG.debug("publishQos1 invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
-                clientId, topic, qos, false, messageID);
+        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
+                clientId, topic, qos, retained, messageID);
         PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
+        pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
-        //QoS > 0 => set the PacketIdentifier
-        pubMessage.setMessageID(messageID);
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(message));
+        }
+        //set the PacketIdentifier only for QoS > 0
+        if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
+            pubMessage.setMessageID(messageID);
+        } else {
+            if (messageID != null) {
+                throw new RuntimeException("Internal bad error, trying to forwardPublish a QoS 0 message " +
+                        "with PacketIdentifier: " + messageID);
+            }
         }
 
         if (connectionDescriptors == null) {
