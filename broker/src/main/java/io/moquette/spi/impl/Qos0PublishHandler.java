@@ -25,7 +25,7 @@ class Qos0PublishHandler {
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final Qos0Publisher qos0Publisher;
+    private final MetaPublisher metaPublisher;
 
     public Qos0PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
@@ -34,7 +34,7 @@ class Qos0PublishHandler {
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
-        this.qos0Publisher = new Qos0Publisher(connectionDescriptors, sessionsStore);
+        this.metaPublisher = new MetaPublisher(connectionDescriptors, sessionsStore, messagesStore);
     }
 
     void receivedPublishQos0(Channel channel, PublishMessage msg) {
@@ -55,7 +55,7 @@ class Qos0PublishHandler {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        qos0Publisher.publish2Subscribers_qos0(toStoreMsg, topicMatchingSubscriptions);
+        this.metaPublisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (msg.isRetainFlag()) {
             //QoS == 0 && retain => clean old retained

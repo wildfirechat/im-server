@@ -28,7 +28,7 @@ class Qos1PublishHandler {
     private final BrokerInterceptor m_interceptor;
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final String brokerPort;
-    private final Qos1Publisher qos1Publisher;
+    private final MetaPublisher metaPublisher;
 
     public Qos1PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
@@ -39,7 +39,7 @@ class Qos1PublishHandler {
         this.m_interceptor = interceptor;
         this.connectionDescriptors = connectionDescriptors;
         this.brokerPort = brokerPort;
-        this.qos1Publisher = new Qos1Publisher(connectionDescriptors, sessionsStore, messagesStore);
+        this.metaPublisher = new MetaPublisher(connectionDescriptors, sessionsStore, messagesStore);
     }
 
     void receivedPublishQos1(Channel channel, PublishMessage msg) {
@@ -60,7 +60,7 @@ class Qos1PublishHandler {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        this.qos1Publisher.publish2Subscribers_qos1(toStoreMsg, topicMatchingSubscriptions);
+        this.metaPublisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         //send PUBACK
         final Integer messageID = msg.getMessageID();

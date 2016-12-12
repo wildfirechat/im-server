@@ -26,30 +26,7 @@ class Qos0Publisher {
         this.m_sessionsStore = sessionsStore;
     }
 
-    void publish2Subscribers_qos0(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
-        final String topic = pubMsg.getTopic();
-        final ByteBuffer origMessage = pubMsg.getMessage();
-//        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-//        if (LOG.isTraceEnabled()) {
-//            LOG.trace("content <{}>", DebugUtils.payload2Str(origMessage));
-//            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-//        }
-
-        LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
-        for (final Subscription sub : topicMatchingSubscriptions) {
-            boolean targetIsActive = connectionDescriptors.containsKey(sub.getClientId());
-
-            LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), AbstractMessage.QOSType.MOST_ONE, targetIsActive);
-            if (targetIsActive) {
-                ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
-                ByteBuffer message = origMessage.duplicate();
-                publishQos0(targetSession, topic, message);
-            }
-        }
-    }
-
-    private void publishQos0(ClientSession clientsession, String topic, ByteBuffer message) {
+    void publishQos0(ClientSession clientsession, String topic, ByteBuffer message) {
         String clientId = clientsession.clientID;
 
         LOG.debug("publishQos0 invoked clientId <{}> on topic <{}>", clientId, topic);

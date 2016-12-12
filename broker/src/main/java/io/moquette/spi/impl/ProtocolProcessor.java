@@ -136,7 +136,7 @@ public class ProtocolProcessor {
     private Qos0PublishHandler qos0PublishHandler;
     private Qos1PublishHandler qos1PublishHandler;
     private Qos2PublishHandler qos2PublishHandler;
-    private Qos2Publisher qos2Publisher;
+    private MetaPublisher metaPublisher;
     private InternalRepublisher internalRepublisher;
 
     //maps clientID to Will testament, if specified on CONNECT
@@ -194,9 +194,9 @@ public class ProtocolProcessor {
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore,
                 m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
 
-        this.qos2Publisher = new Qos2Publisher(connectionDescriptors, sessionsStore, m_messagesStore);
+        this.metaPublisher = new MetaPublisher(connectionDescriptors, sessionsStore, m_messagesStore);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore,
-                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port, this.qos2Publisher);
+                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port/*, this.qos2Publisher*/);
 
         this.internalRepublisher = new InternalRepublisher(this.connectionDescriptors);
     }
@@ -488,7 +488,7 @@ public class ProtocolProcessor {
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        this.qos2Publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        this.metaPublisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (!msg.isRetainFlag()) {
             return;
@@ -522,7 +522,7 @@ public class ProtocolProcessor {
         String topic = tobeStored.getTopic();
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
-        this.qos2Publisher.publish2Subscribers(tobeStored, topicMatchingSubscriptions);
+        this.metaPublisher.publish2Subscribers(tobeStored, topicMatchingSubscriptions);
     }
 
     static QOSType lowerQosToTheSubscriptionDesired(Subscription sub, QOSType qos) {
