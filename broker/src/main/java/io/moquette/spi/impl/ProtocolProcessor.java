@@ -413,6 +413,9 @@ public class ProtocolProcessor {
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         this.internalRepublisher.publishStored(clientSession, publishedEvents);
+        for (IMessagesStore.StoredMessage pubEvt : publishedEvents) {
+            clientSession.removeEnqueued(pubEvt.getGuid());
+        }
     }
 
     public void processPubAck(Channel channel, PubAckMessage msg) {

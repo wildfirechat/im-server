@@ -44,7 +44,6 @@ class InternalRepublisher {
             clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
             directSend(clientSession, pubEvt.getTopic(), pubEvt.getQos(),
                     pubEvt.getMessage(), false, pubEvt.getMessageID());
-            clientSession.removeEnqueued(pubEvt.getGuid());
         }
     }
 
