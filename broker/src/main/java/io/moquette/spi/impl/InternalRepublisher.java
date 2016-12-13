@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
+
 class InternalRepublisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(InternalRepublisher.class);
@@ -88,7 +90,7 @@ class InternalRepublisher {
             LOG.debug("channel is writable");
             //if channel is writable don't enqueue
             channel.writeAndFlush(pubMessage);
-        } else {
+        } else if (pubMessage.getQos() != MOST_ONE) {
             //enqueue to the client session
             LOG.debug("enqueue to client session");
             clientsession.enqueue(pubMessage);

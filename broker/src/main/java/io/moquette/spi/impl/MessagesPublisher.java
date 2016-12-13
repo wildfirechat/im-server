@@ -15,8 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
-import static io.moquette.spi.impl.BestEffortMessageSender.createPublishForQos;
+import static io.moquette.spi.impl.PersistentQueueMessageSender.createPublishForQos;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
 class MessagesPublisher {
@@ -25,7 +24,6 @@ class MessagesPublisher {
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final IMessagesStore m_messagesStore;
-    private final BestEffortMessageSender bestEffortSender;
     private final PersistentQueueMessageSender persistentSender;
 
     public MessagesPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
@@ -33,7 +31,6 @@ class MessagesPublisher {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
-        this.bestEffortSender = new BestEffortMessageSender(connectionDescriptors);
         this.persistentSender = new PersistentQueueMessageSender(connectionDescriptors);
     }
 
@@ -61,8 +58,8 @@ class MessagesPublisher {
             if (targetIsActive) {
                 //QoS 0
                 if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                    PublishMessage publishMsg = BestEffortMessageSender.createPublishForQos(topic, MOST_ONE, message);
-                    this.bestEffortSender.publishQos0(targetSession, publishMsg);
+                    PublishMessage publishMsg = createPublishForQos(topic, qos, message);
+                    this.persistentSender.publishQos2(targetSession, publishMsg);
                 } else {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();

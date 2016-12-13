@@ -48,12 +48,5 @@ class BestEffortMessageSender {
         }
     }
 
-    static PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
-        PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(qos);
-        pubMessage.setPayload(message);
-        return pubMessage;
-    }
+
 }

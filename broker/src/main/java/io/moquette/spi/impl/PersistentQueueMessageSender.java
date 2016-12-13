@@ -1,5 +1,6 @@
 package io.moquette.spi.impl;
 
+import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
@@ -7,7 +8,10 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
+
+import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
 
 class PersistentQueueMessageSender {
 
@@ -44,11 +48,20 @@ class PersistentQueueMessageSender {
             LOG.debug("channel is writable");
             //if channel is writable don't enqueue
             channel.writeAndFlush(pubMessage);
-        } else {
+        } else if (pubMessage.getQos() != MOST_ONE) {
             //enqueue to the client session
             LOG.debug("enqueue to client session");
             clientsession.enqueue(pubMessage);
         }
+    }
+
+    static PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+        PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setRetainFlag(false);
+        pubMessage.setTopicName(topic);
+        pubMessage.setQos(qos);
+        pubMessage.setPayload(message);
+        return pubMessage;
     }
 
 }
