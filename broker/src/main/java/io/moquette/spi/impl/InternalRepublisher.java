@@ -6,7 +6,6 @@ import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +13,6 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-
-import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
 
 class InternalRepublisher {
 
@@ -37,7 +34,7 @@ class InternalRepublisher {
                 LOG.trace("Adding to inflight <{}>", packetID);
                 targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
             }
-            PublishMessage publishMsg = retainedPublishForQos(storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload());
+            PublishMessage publishMsg = retainedPublish(storedMsg);
             //set the PacketIdentifier only for QoS > 0
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(packetID);
@@ -51,7 +48,7 @@ class InternalRepublisher {
             //put in flight zone
             LOG.trace("Adding to inflight <{}>", pubEvt.getMessageID());
             clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
-            PublishMessage publishMsg = notRetainedPublishForQos(pubEvt.getTopic(), pubEvt.getQos(), pubEvt.getMessage());
+            PublishMessage publishMsg = notRetainedPublish(pubEvt);
             //set the PacketIdentifier only for QoS > 0
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(pubEvt.getMessageID());
@@ -60,12 +57,12 @@ class InternalRepublisher {
         }
     }
 
-    private PublishMessage notRetainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
-        return createPublishForQos(topic, qos, message, false);
+    private PublishMessage notRetainedPublish(IMessagesStore.StoredMessage storedMessage) {
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), false);
     }
 
-    private PublishMessage retainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
-        return createPublishForQos(topic, qos, message, true);
+    private PublishMessage retainedPublish(IMessagesStore.StoredMessage storedMessage) {
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), true);
     }
 
     private PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {
