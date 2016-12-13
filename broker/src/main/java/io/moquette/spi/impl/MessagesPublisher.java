@@ -1,6 +1,7 @@
 package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
@@ -14,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
+import static io.moquette.spi.impl.BestEffortMessageSender.createPublishForQos;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
 class MessagesPublisher {
@@ -58,12 +61,16 @@ class MessagesPublisher {
             if (targetIsActive) {
                 //QoS 0
                 if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                    this.bestEffortSender.publishQos0(targetSession, topic, message);
+                    PublishMessage publishMsg = BestEffortMessageSender.createPublishForQos(topic, MOST_ONE, message);
+                    this.bestEffortSender.publishQos0(targetSession, topic, message, publishMsg);
                 } else {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
                     targetSession.inFlightAckWaiting(guid, messageId);
-                    this.persistentSender.publishQos2(targetSession, topic, qos, message, messageId);
+                    PublishMessage publishMsg = createPublishForQos(topic, qos, message);
+                    //set the PacketIdentifier only for QoS > 0
+                    publishMsg.setMessageID(messageId);
+                    this.persistentSender.publishQos2(targetSession, publishMsg);
                 }
             } else {
                 if (!targetSession.isCleanSession()) {
