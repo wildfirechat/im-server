@@ -189,16 +189,17 @@ public class ProtocolProcessor {
         m_sessionsStore = sessionsStore;
         m_server_port = serverPort;
 
+        final PersistentQueueMessageSender messageSender = new PersistentQueueMessageSender(this.connectionDescriptors);
+        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, m_messagesStore, messageSender);
+
         this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, subscriptions, m_messagesStore,
-                m_interceptor, this.connectionDescriptors, m_sessionsStore);
+                m_interceptor, this.messagesPublisher);
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore,
-                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port);
-
-        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, m_messagesStore);
+                m_interceptor, this.connectionDescriptors, m_server_port, this.messagesPublisher);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore,
-                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port/*, this.qos2Publisher*/);
+                m_interceptor, this.connectionDescriptors, m_sessionsStore, m_server_port, this.messagesPublisher);
 
-        this.internalRepublisher = new InternalRepublisher(this.connectionDescriptors);
+        this.internalRepublisher = new InternalRepublisher(messageSender);
     }
 
     public void processConnect(Channel channel, ConnectMessage msg) {

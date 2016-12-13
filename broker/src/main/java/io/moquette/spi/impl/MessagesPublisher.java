@@ -23,17 +23,17 @@ class MessagesPublisher {
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final IMessagesStore m_messagesStore;
-    private final PersistentQueueMessageSender persistentSender;
+    private final PersistentQueueMessageSender messageSender;
 
     public MessagesPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
-                             IMessagesStore messagesStore) {
+                             IMessagesStore messagesStore, PersistentQueueMessageSender messageSender) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
-        this.persistentSender = new PersistentQueueMessageSender(connectionDescriptors);
+        this.messageSender = messageSender;
     }
 
-    static PublishMessage notRetainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+    static PublishMessage notRetainedPublish(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(false);
         pubMessage.setTopicName(topic);
@@ -64,7 +64,7 @@ class MessagesPublisher {
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
-                PublishMessage publishMsg = notRetainedPublishForQos(topic, qos, message);
+                PublishMessage publishMsg = notRetainedPublish(topic, qos, message);
                 if (qos != AbstractMessage.QOSType.MOST_ONE) {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
@@ -72,7 +72,7 @@ class MessagesPublisher {
                     //set the PacketIdentifier only for QoS > 0
                     publishMsg.setMessageID(messageId);
                 }
-                this.persistentSender.sendPublish(targetSession, publishMsg);
+                this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
                     //store the message in targetSession queue to deliver

@@ -3,7 +3,6 @@ package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.ConnectionDescriptor;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import org.slf4j.Logger;
@@ -12,18 +11,15 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 class InternalRepublisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(InternalRepublisher.class);
 
-    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
-    private final PersistentQueueMessageSender persistentSender;
+    private final PersistentQueueMessageSender messageSender;
 
-    InternalRepublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors) {
-        this.connectionDescriptors = connectionDescriptors;
-        this.persistentSender = new PersistentQueueMessageSender(connectionDescriptors);
+    InternalRepublisher(PersistentQueueMessageSender messageSender) {
+        this.messageSender = messageSender;
     }
 
     void publishRetained(ClientSession targetSession, Collection<IMessagesStore.StoredMessage> messages) {
@@ -39,7 +35,7 @@ class InternalRepublisher {
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(packetID);
             }
-            this.persistentSender.sendPublish(targetSession, publishMsg);
+            this.messageSender.sendPublish(targetSession, publishMsg);
         }
     }
 
@@ -53,7 +49,7 @@ class InternalRepublisher {
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(pubEvt.getMessageID());
             }
-            this.persistentSender.sendPublish(clientSession, publishMsg);
+            this.messageSender.sendPublish(clientSession, publishMsg);
         }
     }
 

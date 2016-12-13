@@ -1,10 +1,8 @@
 package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.security.IAuthorizator;
@@ -13,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
@@ -25,16 +22,16 @@ class Qos0PublishHandler {
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final MessagesPublisher metaPublisher;
+    private final MessagesPublisher publisher;
 
     public Qos0PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
-                              IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
-            ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore) {
+                              IMessagesStore messagesStore, BrokerInterceptor interceptor,
+                              MessagesPublisher messagesPublisher) {
         this.m_authorizator = authorizator;
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
-        this.metaPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messagesStore);
+        this.publisher = messagesPublisher;
     }
 
     void receivedPublishQos0(Channel channel, PublishMessage msg) {
@@ -55,7 +52,7 @@ class Qos0PublishHandler {
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        this.metaPublisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (msg.isRetainFlag()) {
             //QoS == 0 && retain => clean old retained

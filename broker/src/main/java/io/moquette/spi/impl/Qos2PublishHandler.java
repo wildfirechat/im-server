@@ -30,12 +30,12 @@ class Qos2PublishHandler {
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final String brokerPort;
-    private final MessagesPublisher metaPublisher;
+    private final MessagesPublisher publisher;
 
     public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
-                              IMessagesStore messagesStore, BrokerInterceptor interceptor, ConcurrentMap<String,
-            ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore, String brokerPort/*,
-                              PersistentQueueMessageSender qos2Publisher*/) {
+                              IMessagesStore messagesStore, BrokerInterceptor interceptor,
+                              ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors,
+                              ISessionsStore sessionsStore, String brokerPort, MessagesPublisher messagesPublisher) {
         this.m_authorizator = authorizator;
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
@@ -43,7 +43,7 @@ class Qos2PublishHandler {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.brokerPort = brokerPort;
-        this.metaPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messagesStore);
+        this.publisher = messagesPublisher;
     }
 
     void receivedPublishQos2(Channel channel, PublishMessage msg) {
@@ -95,7 +95,7 @@ class Qos2PublishHandler {
             LOG.trace("content <{}>", DebugUtils.payload2Str(evt.getMessage()));
             LOG.trace("subscription tree {}", subscriptions.dumpTree());
         }
-        this.metaPublisher.publish2Subscribers(evt, topicMatchingSubscriptions);
+        this.publisher.publish2Subscribers(evt, topicMatchingSubscriptions);
 
         if (evt.isRetained()) {
             if (!evt.getMessage().hasRemaining()) {
