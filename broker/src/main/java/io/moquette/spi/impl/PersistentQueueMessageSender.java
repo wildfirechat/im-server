@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 
+import static io.moquette.spi.impl.BestEffortMessageSender.createPublishForQos;
+
 class PersistentQueueMessageSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersistentQueueMessageSender.class);
@@ -25,19 +27,14 @@ class PersistentQueueMessageSender {
         String clientId = clientsession.clientID;
         LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
                 clientId, topic, qos, false, messageID);
-        PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(qos);
-        pubMessage.setPayload(message);
+        PublishMessage pubMessage = createPublishForQos(topic, qos, message);
+
+        //set the PacketIdentifier only for QoS > 0
+        pubMessage.setMessageID(messageID);
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(message));
-        }
-        //set the PacketIdentifier only for QoS > 0
-        if (pubMessage.getQos() != AbstractMessage.QOSType.MOST_ONE) {
-            pubMessage.setMessageID(messageID);
         }
 
         if (connectionDescriptors == null) {

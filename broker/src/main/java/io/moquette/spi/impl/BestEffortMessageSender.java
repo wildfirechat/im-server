@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 
+import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
+
 class BestEffortMessageSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(BestEffortMessageSender.class);
@@ -24,11 +26,7 @@ class BestEffortMessageSender {
         String clientId = clientsession.clientID;
 
         LOG.debug("publishQos0 invoked clientId <{}> on topic <{}>", clientId, topic);
-        PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
-        pubMessage.setTopicName(topic);
-        pubMessage.setQos(AbstractMessage.QOSType.MOST_ONE);
-        pubMessage.setPayload(message);
+        PublishMessage pubMessage = createPublishForQos(topic, MOST_ONE, message);
 
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
@@ -54,5 +52,14 @@ class BestEffortMessageSender {
             //if channel is writable don't enqueue
             channel.writeAndFlush(pubMessage);
         }
+    }
+
+    static PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+        PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setRetainFlag(false);
+        pubMessage.setTopicName(topic);
+        pubMessage.setQos(qos);
+        pubMessage.setPayload(message);
+        return pubMessage;
     }
 }
