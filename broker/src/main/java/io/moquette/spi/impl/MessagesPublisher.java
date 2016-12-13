@@ -52,7 +52,7 @@ class MessagesPublisher {
 
             boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
 
-            LOG.debug("Broker republishing to client <{}> topic <{}> qos <{}>, active {}",
+            LOG.debug("Broker republishing to client <{}> topicFilter <{}> qos <{}>, active {}",
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
