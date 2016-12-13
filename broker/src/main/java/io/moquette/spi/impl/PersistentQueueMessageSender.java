@@ -22,13 +22,12 @@ class PersistentQueueMessageSender {
         this.connectionDescriptors = connectionDescriptors;
     }
 
-    void publishQos2(ClientSession clientsession, PublishMessage pubMessage) {
+    void sendPublish(ClientSession clientsession, PublishMessage pubMessage) {
         String clientId = clientsession.clientID;
-        LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
-                clientId, pubMessage.getTopicName(), pubMessage.getQos(), false, pubMessage.getMessageID());
-
         LOG.info("send publish message to <{}> on topic <{}>", clientId, pubMessage.getTopicName());
         if (LOG.isDebugEnabled()) {
+            LOG.debug("directSend invoked clientId <{}> on topic <{}> QoS {} retained {} messageID {}",
+                    clientId, pubMessage.getTopicName(), pubMessage.getQos(), false, pubMessage.getMessageID());
             LOG.debug("content <{}>", DebugUtils.payload2Str(pubMessage.getPayload()));
         }
 

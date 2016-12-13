@@ -56,19 +56,15 @@ class MessagesPublisher {
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
-                //QoS 0
-                if (qos == AbstractMessage.QOSType.MOST_ONE) {
-                    PublishMessage publishMsg = createPublishForQos(topic, qos, message);
-                    this.persistentSender.publishQos2(targetSession, publishMsg);
-                } else {
+                PublishMessage publishMsg = createPublishForQos(topic, qos, message);
+                if (qos != AbstractMessage.QOSType.MOST_ONE) {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
                     targetSession.inFlightAckWaiting(guid, messageId);
-                    PublishMessage publishMsg = createPublishForQos(topic, qos, message);
                     //set the PacketIdentifier only for QoS > 0
                     publishMsg.setMessageID(messageId);
-                    this.persistentSender.publishQos2(targetSession, publishMsg);
                 }
+                this.persistentSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
                     //store the message in targetSession queue to deliver
