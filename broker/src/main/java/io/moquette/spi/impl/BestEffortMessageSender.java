@@ -20,11 +20,11 @@ class BestEffortMessageSender {
         this.connectionDescriptors = connectionDescriptors;
     }
 
-    void publishQos0(ClientSession clientsession, String topic, ByteBuffer message, PublishMessage pubMessage) {
+    void publishQos0(ClientSession clientsession, PublishMessage pubMessage) {
         String clientId = clientsession.clientID;
-        LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
+        LOG.info("send publish message to <{}> on topic <{}>", clientId, pubMessage.getTopicName());
         if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", DebugUtils.payload2Str(message));
+            LOG.debug("content <{}>", DebugUtils.payload2Str(pubMessage.getPayload()));
         }
 
         if (connectionDescriptors == null) {

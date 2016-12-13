@@ -62,7 +62,7 @@ class MessagesPublisher {
                 //QoS 0
                 if (qos == AbstractMessage.QOSType.MOST_ONE) {
                     PublishMessage publishMsg = BestEffortMessageSender.createPublishForQos(topic, MOST_ONE, message);
-                    this.bestEffortSender.publishQos0(targetSession, topic, message, publishMsg);
+                    this.bestEffortSender.publishQos0(targetSession, publishMsg);
                 } else {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
