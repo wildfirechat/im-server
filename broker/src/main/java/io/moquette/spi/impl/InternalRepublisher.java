@@ -37,7 +37,7 @@ class InternalRepublisher {
                 LOG.trace("Adding to inflight <{}>", packetID);
                 targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
             }
-            PublishMessage publishMsg = createPublishForQos(storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload(), true);
+            PublishMessage publishMsg = retainedPublishForQos(storedMsg.getTopic(), storedMsg.getQos(), storedMsg.getPayload());
             //set the PacketIdentifier only for QoS > 0
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(packetID);
@@ -51,13 +51,21 @@ class InternalRepublisher {
             //put in flight zone
             LOG.trace("Adding to inflight <{}>", pubEvt.getMessageID());
             clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
-            PublishMessage publishMsg = createPublishForQos(pubEvt.getTopic(), pubEvt.getQos(), pubEvt.getMessage(), false);
+            PublishMessage publishMsg = notRetainedPublishForQos(pubEvt.getTopic(), pubEvt.getQos(), pubEvt.getMessage());
             //set the PacketIdentifier only for QoS > 0
             if (publishMsg.getQos() != AbstractMessage.QOSType.MOST_ONE) {
                 publishMsg.setMessageID(pubEvt.getMessageID());
             }
             this.persistentSender.sendPublish(clientSession, publishMsg);
         }
+    }
+
+    private PublishMessage notRetainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+        return createPublishForQos(topic, qos, message, false);
+    }
+
+    private PublishMessage retainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+        return createPublishForQos(topic, qos, message, true);
     }
 
     private PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {

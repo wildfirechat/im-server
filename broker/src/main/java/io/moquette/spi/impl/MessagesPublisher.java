@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import static io.moquette.spi.impl.PersistentQueueMessageSender.createPublishForQos;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
 class MessagesPublisher {
@@ -32,6 +31,15 @@ class MessagesPublisher {
         this.m_sessionsStore = sessionsStore;
         this.m_messagesStore = messagesStore;
         this.persistentSender = new PersistentQueueMessageSender(connectionDescriptors);
+    }
+
+    static PublishMessage notRetainedPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message) {
+        PublishMessage pubMessage = new PublishMessage();
+        pubMessage.setRetainFlag(false);
+        pubMessage.setTopicName(topic);
+        pubMessage.setQos(qos);
+        pubMessage.setPayload(message);
+        return pubMessage;
     }
 
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
@@ -56,7 +64,7 @@ class MessagesPublisher {
                     sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
-                PublishMessage publishMsg = createPublishForQos(topic, qos, message);
+                PublishMessage publishMsg = notRetainedPublishForQos(topic, qos, message);
                 if (qos != AbstractMessage.QOSType.MOST_ONE) {
                     //QoS 1 or 2
                     int messageId = targetSession.nextPacketId();
