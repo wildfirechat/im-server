@@ -33,7 +33,13 @@ public class SubscribeMessage extends MessageIDMessage {
             this.qos = qos;
             this.topicFilter = topic;
         }
-        
+
+        @Override
+        public String toString() {
+            return "[qos=" + qos +
+                    ", topicFilter='" + topicFilter + '\'' +
+                    ']';
+        }
     }
     private List<Couple> m_subscriptions = new ArrayList<>();
 
