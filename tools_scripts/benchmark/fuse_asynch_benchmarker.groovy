@@ -29,6 +29,8 @@ if (args.size() < 3) {
     return
 }
 
+println "*** Histogram measures are in microseconds ***"
+
 String host = args[0]
 int numToSend = args[1] as int
 int messagesPerSecond = args[2] as int
