@@ -69,6 +69,7 @@ class BenchmarkSubscriber {
                     long sentTime = message.split('-')[1] as long
                     long delay = System.nanoTime() - sentTime
                     histogram.recordValue(delay)
+                    print '+'
                     numReceived++
 //        if ((numReceived % 10000) == 0) {
 //            print '.'

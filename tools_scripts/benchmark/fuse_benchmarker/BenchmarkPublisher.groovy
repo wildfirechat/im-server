@@ -81,7 +81,7 @@ class BenchmarkPublisher {
 
             // Once we connect..
             public void onSuccess(Void v) {
-                println "PUB: Succesfully connected to server"
+                println "PUB: Successfully connected to server"
             }
         })
         this.m_latch = new CountDownLatch(1)
@@ -105,6 +105,7 @@ class BenchmarkPublisher {
                     long nanos = System.nanoTime()
                     byte[] message = "Hello world!!-${nanos}".bytes
                     connection.publish("/topic" + dialog_id, message, qos, retain, pubCallback)
+                    print ".\n"
                 }
             })
             timer.sleep(pauseMicroseconds)

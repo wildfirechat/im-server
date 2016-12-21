@@ -1,4 +1,4 @@
-@Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.10')
+@Grab(group='org.fusesource.mqtt-client', module='mqtt-client', version='1.14')
 @Grab(group='org.eclipse.jetty.toolchain', module='jetty-perf-helper', version='1.0.5')
 
 import java.net.URISyntaxException
