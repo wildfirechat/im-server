@@ -41,15 +41,18 @@ MqttAsyncClient pub = new MqttAsyncClient("tcp://${host}:1883", "PublisherClient
 //sub.setCleanSession(true)
 //sub.setClientId("SubscriberClient${dialog_id}")
 
-//BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(mqtt: sub, dialog_id: dialog_id)
-//suscriberBench.connect()
+MqttDefaultFilePersistence dataStoreSub = new MqttDefaultFilePersistence(tmpDir)
+MqttAsyncClient sub = new MqttAsyncClient("tcp://${host}:1883", "SubscriberClient${dialog_id}", dataStoreSub)
+
+BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(client: sub, dialog_id: dialog_id)
+suscriberBench.connect()
 
 BenchmarkPublisher publisherBench = new BenchmarkPublisher(client: pub, numToSend: numToSend,
         messagesPerSecond: messagesPerSecond, dialog_id: dialog_id)
 publisherBench.connect()
 publisherBench.firePublishes()
 
-//suscriberBench.waitFinish()
+suscriberBench.waitFinish()
 publisherBench.waitFinish()
 
 
