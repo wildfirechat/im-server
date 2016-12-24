@@ -26,20 +26,6 @@ String dialog_id = args.size() > 3 ? args[3] : ""
 String tmpDir = System.getProperty("java.io.tmpdir")
 MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir)
 MqttAsyncClient pub = new MqttAsyncClient("tcp://${host}:1883", "PublisherClient${dialog_id}", dataStore)
-//MqttConnectOptions pubConnOptions = new MqttConnectOptions()
-//pubConnOptions.cleanSession = true
-//pub.connect(pubConnOptions).waitForCompletion(1000)
-
-//MQTT pub = new MQTT()
-//pub.setHost(host, 1883)
-//pub.setCleanSession(true)
-//pub.setClientId("PublisherClient${dialog_id}")
-//
-//MQTT sub = new MQTT()
-////mqtt.setHost("test.mosquitto.org", 1883);
-//sub.setHost(host, 1883)
-//sub.setCleanSession(true)
-//sub.setClientId("SubscriberClient${dialog_id}")
 
 MqttDefaultFilePersistence dataStoreSub = new MqttDefaultFilePersistence(tmpDir)
 MqttAsyncClient sub = new MqttAsyncClient("tcp://${host}:1883", "SubscriberClient${dialog_id}", dataStoreSub)
