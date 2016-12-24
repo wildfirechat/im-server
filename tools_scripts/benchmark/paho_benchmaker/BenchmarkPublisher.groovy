@@ -86,11 +86,12 @@ class BenchmarkPublisher {
         //initialize the timer
         PlatformTimer timer = PlatformTimer.detect()
         def pubCallback = new PublishCallback()
+        println ""
         (1..numToSend).each {
             long nanos = System.nanoTime()
             byte[] message = "Hello world!!-${nanos}".bytes
             this.client.publish("/topic" + dialog_id, message, qos, retain, null, pubCallback)
-            print ".\n"
+            print '.'
             timer.sleep(pauseMicroseconds)
         }
 

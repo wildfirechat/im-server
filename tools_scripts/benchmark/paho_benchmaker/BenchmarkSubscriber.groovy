@@ -13,6 +13,10 @@ import org.HdrHistogram.Histogram
 
 class BenchmarkSubscriber {
     class SubscriberCallback implements MqttCallback {
+
+//        private final CountDownLatch m_latch
+//        SubscriberCallback()
+
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             //used to catch the first message published
             if (!alreadyStarted) {
@@ -24,14 +28,19 @@ class BenchmarkSubscriber {
             if (topic.toString().startsWith("/exit")) {
                 println "SUB: ok Exit!"
                 exit = true
-                connection.disconnect()
+                println "Before disconnect"
+                println "Before disconnect clienst $client"
+//                client.disconnect(1000) //wait max 1 sec
+                //client.disconnectForcibly()
+                //client.close()
+                println "After disconnect"
                 long stopTime = System.currentTimeMillis()
                 long spentTime = stopTime - startTime
                 println "SUB: " + topic.toString() + " received"
                 println "SUB: subscriber disconnected, received ${numReceived} messages in ${spentTime} ms"
                 double msgPerSec = (numReceived / spentTime) * 1000
                 println "SUB: Speed: $msgPerSec msg/sec"
-                println "SUB: Latency diagram"
+                println "SUB: Latency diagram [microsecs]"
                 histogram.outputPercentileDistribution(System.out, 1000.0); //nanos/1000
                 m_latch.countDown()
             } else {
@@ -87,7 +96,7 @@ class BenchmarkSubscriber {
             public void onSuccess(IMqttToken asyncActionToken) {
                 this.client.subscribe("/topic" + dialog_id, 1, null, new IMqttActionListener() {
                     public void onFailure(IMqttToken asyncActionToken2, Throwable exception) {
-                        this.connection.disconnect()
+                        this.client.disconnect()
                     }
 
                     public void onSuccess(IMqttToken asyncActionToken2) {
@@ -97,7 +106,7 @@ class BenchmarkSubscriber {
 
                 this.client.subscribe("/exit" + dialog_id, 1, null, new IMqttActionListener() {
                     public void onFailure(IMqttToken asyncActionToken2, Throwable exception) {
-                        this.connection.disconnect()
+                        this.client.disconnect()
                         m_latch.countDown()
                     }
 

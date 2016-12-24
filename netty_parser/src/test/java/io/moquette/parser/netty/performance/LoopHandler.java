@@ -2,10 +2,14 @@ package io.moquette.parser.netty.performance;
 
 import io.moquette.parser.proto.messages.*;
 import static io.moquette.parser.proto.messages.AbstractMessage.*;
+
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.moquette.parser.proto.Utils;
+import io.netty.util.AttributeKey;
+import org.HdrHistogram.Histogram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +23,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoopMQTTHandler.class);
     private ProtocolDecodingServer.SharedState m_state;
+    Histogram processingTime = new Histogram(5);
 
     public LoopMQTTHandler(ProtocolDecodingServer.SharedState state) {
         this.m_state = state;
@@ -27,19 +32,26 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.info("Received a message of type {}", Utils.msgType2String(msg.getMessageType()));
+        String clientID = clientID(ctx.channel());
+
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
-                    handleConnect(ctx, (ConnectMessage) message);
+                    ConnectMessage connect = (ConnectMessage) message;
+                    clientID = connect.getClientID();
+                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
+                    handleConnect(ctx, connect);
                     return;
                 case SUBSCRIBE:
+                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
                     handleSubscribe(ctx, (SubscribeMessage) msg);
                     return;
                 case PUBLISH:
+                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
                     handlePublish(ctx, (PublishMessage) msg);
                     return;
                 case DISCONNECT:
+                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
                     ctx.close();
 //                case PUBACK:
 //                    NettyChannel channel;
@@ -56,6 +68,8 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
                     PingRespMessage pingResp = new PingRespMessage();
                     ctx.writeAndFlush(pingResp);
                     break;
+                default:
+                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
@@ -68,6 +82,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
+        long start = System.nanoTime();
         LOG.debug("push forward message the topic {}", msg.getTopicName());
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", payload2Str(msg.getPayload()));
@@ -80,6 +95,15 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         pubMessage.setPayload(msg.getPayload());
 
         m_state.getSubscriberCh().writeAndFlush(pubMessage);
+        /*Channel subscriberCh = m_state.getSubscriberCh();
+        if (subscriberCh.isWritable()) {
+            subscriberCh.write(pubMessage);
+        } else {
+            subscriberCh.writeAndFlush(pubMessage);
+        }*/
+        long stop = System.nanoTime();
+        processingTime.recordValue(stop - start);
+        LOG.info("Request processed in {} ns, matching {}", stop - start, payload2Str(msg.getPayload()));
     }
 
     private void handleSubscribe(ChannelHandlerContext ctx, SubscribeMessage msg) {
@@ -101,10 +125,11 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
     private void handleConnect(ChannelHandlerContext ctx, ConnectMessage msg) {
         String clientID = msg.getClientID();
+        clientID(ctx.channel(), clientID);
         if (clientID.toLowerCase().startsWith("sub")) {
-            m_state.setSubscriberCh(ctx);
+            m_state.setSubscriberCh(ctx.channel());
         } else if (clientID.toLowerCase().startsWith("pub")) {
-            m_state.setPublisherCh(ctx);
+            m_state.setPublisherCh(ctx.channel());
         } else {
             //we don't admit other names
             ConnAckMessage koResp = new ConnAckMessage();
@@ -120,12 +145,35 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        LOG.info("Received channel inactive");
 //        NettyChannel channel = m_channelMapper.get(ctx);
 //        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
 //        m_messaging.lostConnection(channel, clientID);
-//        ctx.close(/*false*/);
+        ctx.channel().close(/*false*/);
+        System.out.println("Processing histogram (microsecs)");
+        this.processingTime.outputPercentileDistribution(System.out, 1000.0);
 //        synchronized (m_channelMapper) {
 //            m_channelMapper.remove(ctx);
 //        }
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        if (ctx.channel().isWritable()) {
+            String clientID = clientID(ctx.channel());
+            LOG.info("Channel for client <{}> is writable again", clientID);
+            ctx.channel().flush();
+        }
+        ctx.fireChannelWritabilityChanged();
+    }
+
+    private static final AttributeKey<Object> ATTR_KEY_CLIENTID = AttributeKey.valueOf("ClientID");
+
+    private static void clientID(Channel channel, String clientID) {
+        channel.attr(ATTR_KEY_CLIENTID).set(clientID);
+    }
+
+    private static String clientID(Channel channel) {
+        return (String) channel.attr(ATTR_KEY_CLIENTID).get();
     }
 }

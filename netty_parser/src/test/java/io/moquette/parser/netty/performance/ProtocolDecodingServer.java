@@ -11,6 +11,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +46,8 @@ public class ProtocolDecodingServer {
     EventLoopGroup m_workerGroup;
 
     static final class SharedState {
-        private volatile ChannelHandlerContext subscriberCh;
-        private volatile ChannelHandlerContext publisherCh;
+        private volatile Channel subscriberCh;
+        private volatile Channel publisherCh;
         private volatile boolean forwardPublish = false;
 
         public boolean isForwardable() {
@@ -55,15 +58,15 @@ public class ProtocolDecodingServer {
             this.forwardPublish = forwardPublish;
         }
 
-        public void setSubscriberCh(ChannelHandlerContext subscriberCh) {
+        public void setSubscriberCh(Channel subscriberCh) {
             this.subscriberCh = subscriberCh;
         }
 
-        public ChannelHandlerContext getSubscriberCh() {
+        public Channel getSubscriberCh() {
             return subscriberCh;
         }
 
-        public void setPublisherCh(ChannelHandlerContext publisherCh) {
+        public void setPublisherCh(Channel publisherCh) {
             this.publisherCh = publisherCh;
         }
     }
@@ -124,11 +127,13 @@ public class ProtocolDecodingServer {
         System.out.println("Server stopped");
     }
 
-    public static final void main(String[] args) {
+    public static void main(String[] args) throws MqttException, InterruptedException {
         final ProtocolDecodingServer server = new ProtocolDecodingServer();
         server.init();
 
         System.out.println("Loop server started");
+        startClientsTesting();
+        System.out.println("Started clients (sub/pub) for testing");
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -136,5 +141,28 @@ public class ProtocolDecodingServer {
                 server.stop();
             }
         });
+    }
+
+    private static void startClientsTesting() throws MqttException, InterruptedException {
+        String host = "localhost";
+        int numToSend = 10;
+        int messagesPerSecond = 10000;
+        String dialog_id = "test1";
+
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
+        MqttAsyncClient pub = new MqttAsyncClient("tcp://" + host +":1883", "PublisherClient"+dialog_id, dataStore);
+        MqttDefaultFilePersistence dataStoreSub = new MqttDefaultFilePersistence(tmpDir);
+        MqttAsyncClient sub = new MqttAsyncClient("tcp://" + host +":1883", "SubscriberClient"+dialog_id, dataStoreSub);
+
+        BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(sub, dialog_id);
+        suscriberBench.connect();
+
+        BenchmarkPublisher publisherBench = new BenchmarkPublisher(pub, numToSend, messagesPerSecond, dialog_id);
+        publisherBench.connect();
+        publisherBench.firePublishes();
+
+        suscriberBench.waitFinish();
+        publisherBench.waitFinish();
     }
 }
