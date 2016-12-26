@@ -40,6 +40,7 @@ class BenchmarkSubscriber {
                 m_latch.countDown();
             } else {
                 String payload = new String(message.getPayload());
+                //long sentTime = Long.parseLong(payload.split("-")[1]);
                 long sentTime = Long.parseLong(payload.split("-")[1]);
                 long delay = System.nanoTime() - sentTime;
                 histogram.recordValue(delay);
@@ -137,8 +138,9 @@ class BenchmarkSubscriber {
     }
 
 
-    public void waitFinish() throws InterruptedException {
+    public void waitFinish() throws InterruptedException, MqttException {
         this.m_latch.await();
+        this.client.disconnect(1000);
     }
 
 }

@@ -24,6 +24,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(LoopMQTTHandler.class);
     private ProtocolDecodingServer.SharedState m_state;
     Histogram processingTime = new Histogram(5);
+    Histogram forthNetworkTime = new Histogram(5);
 
     public LoopMQTTHandler(ProtocolDecodingServer.SharedState state) {
         this.m_state = state;
@@ -87,6 +88,10 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", payload2Str(msg.getPayload()));
         }
+        String decodedPayload = payload2Str(msg.getPayload());
+        long sentTime = Long.parseLong(decodedPayload.split("-")[1]);
+        forthNetworkTime.recordValue(start - sentTime);
+
         //publish always at Qos0, to don't handle PUBACK or the complete Qos2 workflow
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(false);
@@ -115,7 +120,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         LOG.debug("subscribed client to {}", msg.subscriptions());
     }
 
-    static String  payload2Str(ByteBuffer content) {
+    static String payload2Str(ByteBuffer content) {
         byte[] b = new byte[content.remaining()];
         content.mark();
         content.get(b);
@@ -150,8 +155,12 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 //        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
 //        m_messaging.lostConnection(channel, clientID);
         ctx.channel().close(/*false*/);
-        System.out.println("Processing histogram (microsecs)");
+        System.out.println("Processing time histogram (microsecs)");
         this.processingTime.outputPercentileDistribution(System.out, 1000.0);
+
+        System.out.println("Network time histogram (microsecs)");
+        this.forthNetworkTime.outputPercentileDistribution(System.out, 1000.0);
+
 //        synchronized (m_channelMapper) {
 //            m_channelMapper.remove(ctx);
 //        }

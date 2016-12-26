@@ -1,6 +1,5 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.parser.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
 import io.netty.bootstrap.ServerBootstrap;
@@ -10,7 +9,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
@@ -22,56 +20,12 @@ import org.slf4j.LoggerFactory;
  * to the lone subscriber, it's used just to measure the protocol decoding/encoding overhead.
  *
  */
-public class ProtocolDecodingServer {
+public class ProtocolPublishDecodingServer {
 
-    class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
-        @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt instanceof IdleStateEvent) {
-                IdleState e = ((IdleStateEvent) evt).state();
-                if (e == IdleState.ALL_IDLE) {
-                    //fire a channelInactive to trigger publish of Will
-                    ctx.fireChannelInactive();
-                    ctx.close();
-                } /*else if (e.getState() == IdleState.WRITER_IDLE) {
-                    ctx.writeAndFlush(new PingMessage());
-                }*/
-            }
-        }
-    }
-
-    private static final Logger LOG = LoggerFactory.getLogger(ProtocolDecodingServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProtocolPublishDecodingServer.class);
 
     EventLoopGroup m_bossGroup;
     EventLoopGroup m_workerGroup;
-
-    static final class SharedState {
-        private volatile Channel subscriberCh;
-        private volatile Channel publisherCh;
-        private volatile boolean forwardPublish = false;
-
-        public boolean isForwardable() {
-            return forwardPublish;
-        }
-
-        void setForwardable(boolean forwardPublish) {
-            this.forwardPublish = forwardPublish;
-        }
-
-        public void setSubscriberCh(Channel subscriberCh) {
-            this.subscriberCh = subscriberCh;
-        }
-
-        public Channel getSubscriberCh() {
-            return subscriberCh;
-        }
-
-        public void setPublisherCh(Channel publisherCh) {
-            this.publisherCh = publisherCh;
-        }
-    }
-
-    final SharedState state = new SharedState();
 
     void init() {
         String host = "0.0.0.0";
@@ -87,11 +41,9 @@ public class ProtocolDecodingServer {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         try {
-                            pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
-                            pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimeoutHandler());
                             pipeline.addLast("decoder", new MQTTDecoder());
                             pipeline.addLast("encoder", new MQTTEncoder());
-                            pipeline.addLast("handler", new LoopMQTTHandler(state));
+                            pipeline.addLast("handler", new PublishReceiverHandler());
                         } catch (Throwable th) {
                             LOG.error("Severe error during pipeline creation", th);
                             throw th;
@@ -128,11 +80,13 @@ public class ProtocolDecodingServer {
     }
 
     public static void main(String[] args) throws MqttException, InterruptedException {
-        final ProtocolDecodingServer server = new ProtocolDecodingServer();
+        final ProtocolPublishDecodingServer server = new ProtocolPublishDecodingServer();
         server.init();
 
         System.out.println("Loop server started");
-        startClientsTesting();
+        publishBombing();
+        publishBombing();
+        publishBombing();
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -142,27 +96,12 @@ public class ProtocolDecodingServer {
         });
     }
 
-    private static void startClientsTesting() throws MqttException, InterruptedException {
-        String host = "localhost";
-        int numToSend = 10;
-        int messagesPerSecond = 10000;
-        String dialog_id = "test1";
-
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-        MqttAsyncClient pub = new MqttAsyncClient("tcp://" + host +":1883", "PublisherClient"+dialog_id, dataStore);
-        MqttDefaultFilePersistence dataStoreSub = new MqttDefaultFilePersistence(tmpDir);
-        MqttAsyncClient sub = new MqttAsyncClient("tcp://" + host +":1883", "SubscriberClient"+dialog_id, dataStoreSub);
-
-        BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(sub, dialog_id);
-        suscriberBench.connect();
-
-        BenchmarkPublisher publisherBench = new BenchmarkPublisher(pub, numToSend, messagesPerSecond, dialog_id);
-        publisherBench.connect();
-        publisherBench.firePublishes();
-
-        suscriberBench.waitFinish();
-        publisherBench.waitFinish();
-        System.out.println("Started clients (sub/pub) for testing");
+    private static void publishBombing() {
+        LOG.info("Started publish loop");
+        PublishBomber heavyPublisher = new PublishBomber("localhost", 1883);
+        heavyPublisher.publishLoop(10000, 10000);
+        heavyPublisher.disconnect();
+        LOG.info("Finished publish loop");
     }
+
 }

@@ -42,11 +42,11 @@ class  BenchmarkPublisher {
             long spentTime = stopTime - startedTime;
             LOG.info("PUB: published in {} ms", spentTime);
 
-            try {
-                this.connection.disconnect();
-            } catch (MqttException mex) {
-                LOG.error("Disconnect error", mex);
-            }
+//            try {
+//                this.connection.disconnect();
+//            } catch (MqttException mex) {
+//                LOG.error("Disconnect error", mex);
+//            }
             double msgPerSec = (numToSend / spentTime) * 1000;
             LOG.info( "PUB: speed {} msg/sec", msgPerSec);
             this.stopLatch.countDown();
@@ -101,12 +101,10 @@ class  BenchmarkPublisher {
         //initialize the timer
         PlatformTimer timer = PlatformTimer.detect();
         IMqttActionListener pubCallback = new PublishCallback();
-//        println ""
         for (int i=0; i < numToSend; i++) {
             long nanos = System.nanoTime();
             byte[] message = ("Hello world!!-" + nanos).getBytes();
             this.client.publish("/topic" + dialog_id, message, qos, retain, null, pubCallback);
-//            print '.'
             timer.sleep(pauseMicroseconds);
         }
 
@@ -119,6 +117,11 @@ class  BenchmarkPublisher {
 
     public void waitFinish() throws InterruptedException {
         m_latch.await();
+        try {
+            this.client.disconnect();
+        } catch (MqttException mex) {
+            LOG.error("Disconnect error", mex);
+        }
     }
 
 }
