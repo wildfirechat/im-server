@@ -75,6 +75,7 @@
         <module>distribution</module>
         <module>embedding_moquette</module>
         <module>osgi_test</module>
+        <module>perf</module>
     </modules>
 
     <reporting>
