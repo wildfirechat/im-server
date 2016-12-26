@@ -15,8 +15,6 @@
  */
 package io.moquette.server.config;
 
-import io.moquette.BrokerConstants;
-
 import java.util.Map;
 import java.util.Properties;
 
@@ -61,4 +59,10 @@ public class MemoryConfig extends IConfig {
     public String getProperty(String name, String defaultValue) {
         return m_properties.getProperty(name, defaultValue);
     }
+
+    @Override
+    public IResourceLoader getResourceLoader() {
+        return new FileResourceLoader();
+    }
+
 }

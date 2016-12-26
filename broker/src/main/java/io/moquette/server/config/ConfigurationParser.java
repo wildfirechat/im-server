@@ -15,11 +15,15 @@
  */
 package io.moquette.server.config;
 
-import io.moquette.BrokerConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.text.ParseException;
 import java.util.Properties;
 
@@ -99,6 +103,14 @@ class ConfigurationParser {
             }
         } catch (IOException ex) {
             throw new ParseException("Failed to read", 1);
+        }
+        finally {
+            try {
+                reader.close();
+            }
+            catch (IOException e) {
+                // ignore
+            }
         }
     }
     
