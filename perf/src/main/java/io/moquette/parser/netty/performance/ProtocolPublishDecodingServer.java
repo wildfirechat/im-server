@@ -7,11 +7,9 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import io.netty.handler.codec.mqtt.MqttDecoder;
+import io.netty.handler.codec.mqtt.MqttEncoder;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +42,9 @@ public class ProtocolPublishDecodingServer {
                             pipeline.addLast("decoder", new MQTTDecoder());
                             pipeline.addLast("encoder", new MQTTEncoder());
                             pipeline.addLast("handler", new PublishReceiverHandler());
+//                            pipeline.addLast("decoder", new MqttDecoder());
+//                            pipeline.addLast("encoder", MqttEncoder.INSTANCE);
+//                            pipeline.addLast("handler", new NettyPublishReceiverHandler());
                         } catch (Throwable th) {
                             LOG.error("Severe error during pipeline creation", th);
                             throw th;
@@ -87,6 +88,8 @@ public class ProtocolPublishDecodingServer {
         publishBombing();
         publishBombing();
         publishBombing();
+        publishBombing();
+        publishBombing();
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -99,7 +102,7 @@ public class ProtocolPublishDecodingServer {
     private static void publishBombing() {
         LOG.info("Started publish loop");
         PublishBomber heavyPublisher = new PublishBomber("localhost", 1883);
-        heavyPublisher.publishLoop(10000, 10000);
+        heavyPublisher.publishLoop(25000, 100000);
         heavyPublisher.disconnect();
         LOG.info("Finished publish loop");
     }

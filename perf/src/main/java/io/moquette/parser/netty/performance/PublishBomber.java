@@ -57,8 +57,8 @@ class PublishBomber {
 
 
     public void publishLoop(int messagesPerSecond, int numToSend) {
-        long pauseMicroseconds = (1 / messagesPerSecond) * 1000 * 1000;
-        LOG.info("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
+        long pauseMicroseconds = (int)((1.0 / messagesPerSecond) * 1000 * 1000);
+        LOG.warn("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
 
         LOG.info("PUB: publishing..");
         final long startTime = System.currentTimeMillis();

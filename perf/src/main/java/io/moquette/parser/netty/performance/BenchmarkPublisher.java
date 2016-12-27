@@ -91,7 +91,7 @@ class  BenchmarkPublisher {
     }
 
     public void firePublishes() throws MqttException {
-        long pauseMicroseconds = (1 / this.messagesPerSecond) * 1000 * 1000;
+        long pauseMicroseconds = (int)((1.0 / messagesPerSecond) * 1000 * 1000);
         LOG.info("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
 
         LOG.info("PUB: publishing..");

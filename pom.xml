@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netty.version>4.0.33.Final</netty.version>
+        <netty.version>4.1.6.Final</netty.version>
         <source.version>1.7</source.version>
         <target.version>1.7</target.version>
         <bintray.repo>andsel/maven</bintray.repo>
