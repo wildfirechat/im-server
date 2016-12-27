@@ -16,13 +16,11 @@
 package io.moquette.spi.impl.security;
 
 import io.moquette.spi.security.IAuthenticator;
-import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +42,6 @@ public class FileAuthenticator implements IAuthenticator {
     private static final Logger LOG = LoggerFactory.getLogger(FileAuthenticator.class);
     
     private Map<String, String> m_identities = new HashMap<>();
-    private MessageDigest m_digest;
 
     public FileAuthenticator(String parent, String filePath) {
         File file = new File(parent, filePath);
@@ -52,12 +49,6 @@ public class FileAuthenticator implements IAuthenticator {
         if (file.isDirectory()) {
             LOG.warn(String.format("Bad file reference %s is a directory", file));
             return;
-        }
-        try {
-            this.m_digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException nsaex) {
-            LOG.error("Can't find SHA-256 for password encoding", nsaex);
-            throw new RuntimeException(nsaex);
         }
 
         try {
@@ -117,9 +108,7 @@ public class FileAuthenticator implements IAuthenticator {
         if (foundPwq == null) {
             return false;
         }
-        m_digest.update(password);
-        byte[] digest = m_digest.digest();
-        String encodedPasswd = new String(Hex.encodeHex(digest));
+        String encodedPasswd = DigestUtils.sha256Hex(password);
         return foundPwq.equals(encodedPasswd);
     }
     
