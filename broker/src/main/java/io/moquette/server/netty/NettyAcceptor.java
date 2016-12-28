@@ -38,7 +38,6 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
@@ -197,6 +196,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
             }
         });
@@ -228,6 +228,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
             }
         });
@@ -261,6 +262,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("decoder", new MQTTDecoder());
                 pipeline.addLast("encoder", new MQTTEncoder());
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
+                pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
             }
         });
