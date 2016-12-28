@@ -102,11 +102,10 @@ public class ServerLowlevelMessagesIntegrationTests {
 
         //but after the 2 KEEP ALIVE timeout expires it gets fired,
         //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
-        MqttMessage msg = m_messageCollector.getMessage(3300);
-        long willMessageReceiveTime = System.currentTimeMillis();
+        MqttMessage msg = m_messageCollector.getMessage(5);
         assertNotNull("the will message should be fired after keep alive!", msg);
         //the will message hasn't to be received before the elapsing of Keep Alive timeout
-        assertTrue(willMessageReceiveTime - connectTime  > 3000);
+        assertTrue(System.currentTimeMillis() - connectTime  > 3000);
         
         assertEquals(willTestamentMsg, new String(msg.getPayload()));
         m_willSubscriber.disconnect();
@@ -137,7 +136,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         m_client.close();
 
         //Verify will testament is published
-        MqttMessage receivedTestament = m_messageCollector.getMessage(1000);
+        MqttMessage receivedTestament = m_messageCollector.getMessage(1);
         assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
         m_willSubscriber.disconnect();
     }
