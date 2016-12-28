@@ -37,12 +37,15 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        logMQTTMessage(ctx, (AbstractMessage) message, "C->B");
+        logMQTTMessage(ctx, message, "C->B");
         ctx.fireChannelRead(message);
     }
 
-    private void logMQTTMessage(ChannelHandlerContext ctx, AbstractMessage message, String direction) {
-        AbstractMessage msg = message;
+    private void logMQTTMessage(ChannelHandlerContext ctx, Object message, String direction) {
+        if (!(message instanceof AbstractMessage)) {
+            return;
+        }
+        AbstractMessage msg = (AbstractMessage) message;
         String clientID = NettyUtils.clientID(ctx.channel());
         switch (msg.getMessageType()) {
             case CONNECT:
@@ -89,7 +92,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         if (clientID != null && !clientID.isEmpty()) {
             LOG.info("Channel closed <{}>", clientID);
         }
-        ctx.fireChannelActive();
+        ctx.fireChannelInactive();
     }
 
     @Override

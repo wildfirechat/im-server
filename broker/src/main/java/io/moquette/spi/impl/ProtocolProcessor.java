@@ -385,12 +385,11 @@ public class ProtocolProcessor {
     }
 
     private void setupAutoFlusher(ChannelPipeline pipeline, int flushIntervalMs) {
-        AutoFlushHandler autoFlushHandler = new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS);
         try {
-            pipeline.addAfter("idleEventHandler", "autoFlusher", autoFlushHandler);
+            pipeline.addAfter("idleEventHandler", "autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
         } catch (NoSuchElementException nseex) {
             //the idleEventHandler is not present on the pipeline
-            pipeline.addFirst("autoFlusher", autoFlushHandler);
+            pipeline.addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
         }
     }
 
