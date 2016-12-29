@@ -97,7 +97,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        logMQTTMessage(ctx, (AbstractMessage) msg, "C<-B");
+        logMQTTMessage(ctx, msg, "C<-B");
         ctx.write(msg, promise);
     }
 //
