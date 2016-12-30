@@ -65,15 +65,7 @@
            <artifactId>javax.inject</artifactId>
            <version>1</version>
            <scope>test</scope>
-       </dependency>
-              
-       <dependency>
-           <groupId>ch.qos.logback</groupId>
-           <artifactId>logback-classic</artifactId>
-           <version>0.9.20</version>
-           <scope>test</scope>
-       </dependency>
-
+       </dependency>              
     </dependencies>
 
     <build>
