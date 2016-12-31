@@ -6,11 +6,12 @@ import org.junit.Test;
 
 import io.moquette.BrokerConstants;
 
-public class ClasspathConfigTest {
+public class ClasspathResourceLoaderTest {
 
 	@Test
 	public void testSetProperties() {
-		final IConfig classPathConfig = new ClasspathConfig();
+		IResourceLoader classpathLoader = new ClasspathResourceLoader();
+		final IConfig classPathConfig = new ResourceLoaderConfig(classpathLoader);
         assertEquals(""+BrokerConstants.PORT,classPathConfig.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         classPathConfig.setProperty(BrokerConstants.PORT_PROPERTY_NAME, "9999");
         assertEquals("9999",classPathConfig.getProperty(BrokerConstants.PORT_PROPERTY_NAME));

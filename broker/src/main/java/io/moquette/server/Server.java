@@ -27,10 +27,8 @@ import io.moquette.interception.HazelcastInterceptHandler;
 import io.moquette.interception.HazelcastMsg;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.config.MemoryConfig;
+import io.moquette.server.config.*;
 import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
-import io.moquette.server.config.FilesystemConfig;
-import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -85,8 +83,14 @@ public class Server {
      * located at m_config/moquette.conf
      */
     public void startServer() throws IOException {
-        final IConfig config = new FilesystemConfig();
+        IResourceLoader filesystemLoader = new FileResourceLoader(defaultConfigFile());
+        final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
+    }
+
+    private static File defaultConfigFile() {
+        String configPath = System.getProperty("moquette.path", null);
+        return new File(configPath, IConfig.DEFAULT_CONFIG);
     }
 
     /**
@@ -94,7 +98,8 @@ public class Server {
      */
     public void startServer(File configFile) throws IOException {
         LOG.info("Using m_config file: " + configFile.getAbsolutePath());
-        final IConfig config = new FilesystemConfig(configFile);
+        IResourceLoader filesystemLoader = new FileResourceLoader(configFile);
+        final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
     }
     

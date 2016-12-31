@@ -21,8 +21,7 @@ import io.moquette.interception.messages.*;
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.Server;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.config.ClasspathConfig;
+import io.moquette.server.config.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -40,7 +39,8 @@ import static java.util.Arrays.asList;
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        final IConfig classPathConfig = new ClasspathConfig();
+        IResourceLoader classpathLoader = new ClasspathResourceLoader();
+        final IConfig classPathConfig = new ResourceLoaderConfig(classpathLoader);
 
         final Server mqttBroker = new Server();
         List<? extends InterceptHandler> userHandlers = asList(new PublisherListener());
