@@ -2,6 +2,8 @@ Version 0.9:
     Moved canRead check to topic from publish phase to subscribe (#144)
     Added javadoc and src jars creations for JCenter/Maven central
     Added persisting of clean session flag for already existing client session (fix issue #145)
+    Moved the message logic management fo FSM, to better control the concurrency.
+    Changed default config to use in memory store and not default moquette.mapdb
 
 Version 0.8:
     Introduced authenticator and authorizator implementations.

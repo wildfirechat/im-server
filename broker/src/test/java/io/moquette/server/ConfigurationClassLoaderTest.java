@@ -47,28 +47,22 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     @After
     public void tearDown() throws Exception {
         m_server.stopServer();
-        File dbFile = new File(m_config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
     }
     
     @Test
     public void loadAuthenticator() throws Exception {
         Properties props = new Properties(IntegrationUtils.prepareTestProperties());
-        props.setProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "io.moquette.server.ConfigurationClassLoaderTest");
+        props.setProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, getClass().getName());
         startServer(props);
         assertTrue(true);
-        m_server.stopServer();
     }
     
     @Test
     public void loadAuthorizator() throws Exception {
         Properties props = new Properties(IntegrationUtils.prepareTestProperties());
-        props.setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "io.moquette.server.ConfigurationClassLoaderTest");
+        props.setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, getClass().getName());
         startServer(props);
         assertTrue(true);
-        m_server.stopServer();
     }
 
     @Override

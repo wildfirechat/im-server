@@ -36,7 +36,7 @@ public abstract class IConfig {
         setProperty(BrokerConstants.HOST_PROPERTY_NAME, BrokerConstants.HOST);
         //setProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
         setProperty(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
-        setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
+        //setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
         setProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.TRUE.toString());
         setProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
         setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
