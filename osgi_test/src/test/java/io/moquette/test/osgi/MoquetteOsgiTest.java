@@ -57,13 +57,14 @@ public class MoquetteOsgiTest {
     @Test
     public void testCanFindOsgiBundle() throws Exception {
         for (Bundle b : bundleContext.getBundles()) {
-	System.out.format("%s %d\n", b.getSymbolicName(), b.getState());
-            if (b.getSymbolicName().indexOf("moquette") != -1) {
+            String symbolicName = b.getSymbolicName();
+            System.out.format("%s %d\n", symbolicName, b.getState());
+            if (symbolicName != null && symbolicName.indexOf("moquette") != -1) {
                 return;
             }
         }
 
         // If found no bundles with moquette in the name, fail the test.
-	fail();
+	    fail();
     }
 }
