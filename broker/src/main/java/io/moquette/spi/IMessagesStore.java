@@ -125,24 +125,31 @@ public interface IMessagesStore {
     /**
      * Persist the message. 
      * If the message is empty then the topic is cleaned, else it's stored.
+     * @param topic for the retained.
+     * @param guid of the message to mark as retained.
      */
     void storeRetained(String topic, MessageGUID guid);
 
     /**
      * Return a list of retained messages that satisfy the condition.
+     * @param condition the condition to match during the search.
+     * @return the collection of matching messages.
      */
     Collection<StoredMessage> searchMatching(IMatchingCondition condition);
 
     /**
      * Persist the message.
+     * @param storedMessage the message to store for future usage.
      * @return the unique id in the storage (guid).
      * */
-    MessageGUID storePublishForFuture(StoredMessage evt);
+    MessageGUID storePublishForFuture(StoredMessage storedMessage);
 
     /**
      * Return the list of persisted publishes for the given clientID.
      * For QoS1 and QoS2 with clean session flag, this method return the list of 
      * missed publish events while the client was disconnected.
+     * @param guids the list of of guid to use as search keys.
+     * @return the list of stored messages matching the passed keys.
      */
     List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids);
     

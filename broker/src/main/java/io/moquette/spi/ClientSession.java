@@ -82,6 +82,8 @@ public class ClientSession {
 
     /**
      * Remove the messages stored in a cleanSession false.
+     *
+     * @param guid the guid of the message to remove from the queue.
      */
     public void removeEnqueued(MessageGUID guid) {
         this.m_sessionsStore.removeEnqueued(this.clientID, guid);
@@ -182,6 +184,7 @@ public class ClientSession {
 
     /**
      * Enqueue a message to be sent to the client.
+     * @param pubMessage the message to enqueue.
      * @return false if the queue is full.
      * */
     public boolean enqueue(PublishMessage pubMessage) {

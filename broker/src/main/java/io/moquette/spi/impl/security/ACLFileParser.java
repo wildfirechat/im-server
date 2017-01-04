@@ -24,7 +24,7 @@ import java.text.ParseException;
 /**
  * Parses the acl configuration file.
  * If a line starts with # it's comment.
- * Blank lines are skipped. The format is "topic [read|write|readwrite] <topic name>"
+ * Blank lines are skipped. The format is "topic [read|write|readwrite] {topic name}"
  *
  * @author andrea
  * */
@@ -33,6 +33,9 @@ public class ACLFileParser {
 
     /**
      * Parse the configuration from file.
+     * @param file to parse
+     * @return the collector of authorizations form reader passed into.
+     * @throws ParseException if the format is not compliant.
      */
     public static AuthorizationsCollector parse(File file) throws ParseException {
         if (file == null) {
@@ -54,8 +57,9 @@ public class ACLFileParser {
 
     /**
      * Parse the ACL configuration file
-     *
-     * @throws java.text.ParseException if the format is not compliant.
+     * @param reader to parse
+     * @return the collector of authorizations form reader passed into.
+     * @throws ParseException if the format is not compliant.
      */
     public static AuthorizationsCollector parse(Reader reader) throws ParseException {
         if (reader == null) {

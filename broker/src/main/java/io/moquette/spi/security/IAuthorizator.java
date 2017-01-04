@@ -28,6 +28,10 @@ public interface IAuthorizator {
 
     /**
      * Ask the implementation of the authorizator if the topic can be used in a publish.
+     * @param topic the topic to write to.
+     * @param user the user
+     * @param client the client
+     * @return true if the user from client can publish data on topic.
      * */
     boolean canWrite(String topic, String user, String client);
 

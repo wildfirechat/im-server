@@ -19,7 +19,7 @@ import io.moquette.server.config.FileResourceLoader;
 
 /**
  * Load user credentials from a text file.
- * Each line of the file is formatted as "<username>:<sha256(password)>". The username mustn't contains : char.
+ * Each line of the file is formatted as "[username]:[sha256(password)]". The username mustn't contains : char.
  *
  * To encode your password from command line on Linux systems, you could use:
  * <pre>

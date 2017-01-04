@@ -69,6 +69,7 @@ public class MapDBPersistentStore {
 
     /**
      * Factory method to create message store backed by MapDB
+     * @return the message store instance.
      * */
     public IMessagesStore messagesStore() {
         return m_messageStore;

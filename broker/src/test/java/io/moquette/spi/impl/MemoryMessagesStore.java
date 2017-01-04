@@ -67,14 +67,14 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public MessageGUID storePublishForFuture(StoredMessage evt) {
-        LOG.debug("storePublishForFuture store evt {}", evt);
+    public MessageGUID storePublishForFuture(StoredMessage storedMessage) {
+        LOG.debug("storePublishForFuture store evt {}", storedMessage);
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
-        evt.setGuid(guid);
-        m_persistentMessageStore.put(guid, evt);
+        storedMessage.setGuid(guid);
+        m_persistentMessageStore.put(guid, storedMessage);
         HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) defaultGet(m_messageToGuids,
-                evt.getClientID(), new HashMap<Integer, MessageGUID>());
-        guids.put(evt.getMessageID(), guid);
+                storedMessage.getClientID(), new HashMap<Integer, MessageGUID>());
+        guids.put(storedMessage.getMessageID(), guid);
         return guid;
     }
 

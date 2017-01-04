@@ -74,6 +74,8 @@ public class ProtocolProcessorBootstrapper {
      *                      and fallback on the default one (permit all).
      * @param authorizator an implementation of the authorizator to be used, if null load that specified in config
      *                      and fallback on the default one (permit all).
+     * @param server the serber to init.
+     * @return the processor created for the broker.
      * */
     public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
                                   IAuthenticator authenticator, IAuthorizator authorizator, Server server) {

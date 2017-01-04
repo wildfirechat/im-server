@@ -474,6 +474,8 @@ public class ProtocolProcessor {
      * for Qos1 and Qos2.
      * It also doesn't notifyTopicPublished because using internally the owner should already know where
      * it's publishing.
+     *
+     * @param msg the message to publish.
      * */
     public void internalPublish(PublishMessage msg) {
         final AbstractMessage.QOSType qos = msg.getQos();
@@ -539,6 +541,8 @@ public class ProtocolProcessor {
     /**
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
+     * @param channel the channel of the incoming message.
+     * @param msg the decoded pubrel message.
      * */
     public void processPubRel(Channel channel, PubRelMessage msg) {
         this.qos2PublishHandler.processPubRel(channel, msg);
@@ -684,7 +688,9 @@ public class ProtocolProcessor {
 
     /**
      * Remove the clientID from topic subscription, if not previously subscribed,
-     * doesn't reply any error
+     * doesn't reply any error.
+     * @param channel the channel of the incoming message.
+     * @param msg the decoded unsubscribe message.
      */
     public void processUnsubscribe(Channel channel, UnsubscribeMessage msg) {
         List<String> topics = msg.topicFilters();

@@ -71,16 +71,20 @@ public interface ISessionsStore {
 
     /**
      * Add a new subscription to the session
+     * @param newSubscription the subscription to add.
      */
     void addNewSubscription(Subscription newSubscription);
 
     /**
      * Removed a specific subscription
+     * @param topic the topic of the subscription.
+     * @param clientID the session client.
      * */
     void removeSubscription(String topic, String clientID);
 
     /**
      * Remove all the subscriptions of the session
+     * @param sessionID the client ID
      */
     void wipeSubscriptions(String sessionID);
 
@@ -90,6 +94,7 @@ public interface ISessionsStore {
     List<ClientTopicCouple> listAllSubscriptions();
 
     /**
+     * @param couple the subscription descriptor.
      * @return the subscription stored by clientID and topicFilter, if any else null;
      * */
     Subscription getSubscription(ClientTopicCouple couple);
@@ -100,6 +105,7 @@ public interface ISessionsStore {
     List<Subscription> getSubscriptions();
 
     /**
+     * @param clientID the session client ID.
      * @return true iff there are subscriptions persisted with clientID
      */
     boolean contains(String clientID);
@@ -115,33 +121,46 @@ public interface ISessionsStore {
     void inFlightAck(String clientID, int messageID);
 
     /**
-     * Save the binding messageID, clientID <-> guid
+     * Save the binding messageID, clientID - guid
+     * @param clientID the client ID
+     * @param messageID the message ID
+     * @param guid the uuid of the message to mark as inflight.
      * */
     void inFlight(String clientID, int messageID, MessageGUID guid);
 
     /**
      * Return the next valid packetIdentifier for the given client session.
+     * @param clientID the clientID requesting next packet id.
+     * @return the next valid id.
      * */
     int nextPacketID(String clientID);
 
     /**
      * Store the guid to be later published.
+     * @param guid the message guid to bind.
+     * @param clientID the clientID
      * */
     void bindToDeliver(MessageGUID guid, String clientID);
 
     /**
      * List the guids for retained messages for the session
+     * @param clientID the client ID owning the queue.
+     * @return the list of enqueued message UUIDs.
      * */
     Collection<MessageGUID> enqueued(String clientID);
 
     /**
      * Remove form the queue of stored messages for session.
+     * @param clientID the client ID owning the queue.
+     * @param guid the message guid to dequeue.
      * */
     void removeEnqueued(String clientID, MessageGUID guid);
 
     void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID);
 
     /**
+     * @param clientID the client ID accessing the second phase.
+     * @param messageID the message ID that reached the second phase.
      * @return the guid of message just acked.
      * */
     MessageGUID secondPhaseAcknowledged(String clientID, int messageID);

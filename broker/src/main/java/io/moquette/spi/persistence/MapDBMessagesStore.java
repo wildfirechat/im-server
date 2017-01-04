@@ -74,18 +74,18 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public MessageGUID storePublishForFuture(StoredMessage evt) {
-        LOG.debug("storePublishForFuture store evt {}", evt);
-        if (evt.getClientID() == null) {
-            LOG.error("persisting a message without a clientID, bad programming error msg: {}", evt);
+    public MessageGUID storePublishForFuture(StoredMessage storedMessage) {
+        LOG.debug("storePublishForFuture store evt {}", storedMessage);
+        if (storedMessage.getClientID() == null) {
+            LOG.error("persisting a message without a clientID, bad programming error msg: {}", storedMessage);
             throw new IllegalArgumentException("\"persisting a message without a clientID, bad programming error");
         }
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
-        evt.setGuid(guid);
+        storedMessage.setGuid(guid);
         LOG.debug("storePublishForFuture guid <{}>", guid);
-        m_persistentMessageStore.put(guid, evt);
-        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(evt.getClientID()));
-        messageIdToGuid.put(evt.getMessageID(), guid);
+        m_persistentMessageStore.put(guid, storedMessage);
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
+        messageIdToGuid.put(storedMessage.getMessageID(), guid);
         return guid;
     }
 

@@ -44,6 +44,8 @@ public class SubscriptionsStore {
 
     /**
      * Check if the topic filter of the subscription is well formed
+     * @param topicFilter the filter to validate
+     * @return true if it's correct.
      * */
     public static boolean validate(String topicFilter) {
         try {
@@ -98,6 +100,7 @@ public class SubscriptionsStore {
     /**
      * Initialize the subscription tree with the list of subscriptions.
      * Maintained for compatibility reasons.
+     * @param sessionsStore to be used as backing store from the subscription store.
      */
     public void init(ISessionsStore sessionsStore) {
         LOG.debug("init invoked");
@@ -178,6 +181,7 @@ public class SubscriptionsStore {
     /**
      * Visit the topics tree to remove matching subscriptions with clientID.
      * It's a mutating structure operation so create a new subscription tree (partial or total).
+     * @param clientID the client ID to remove.
      */
     public void removeForClient(String clientID) {
         TreeNode oldRoot;
@@ -194,6 +198,9 @@ public class SubscriptionsStore {
      * Given a topic string return the clients subscriptions that matches it.
      * Topic string can't contain character # and + because they are reserved to
      * listeners subscriptions, and not topic publishing.
+     *
+     * @param topic to use fo searching matching subscriptions.
+     * @return the list of matching subscriptions, or empty if not matching.
      */
     public List<Subscription> matches(String topic) {
         List<Token> tokens;
@@ -252,6 +259,9 @@ public class SubscriptionsStore {
     
     /**
      * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
+     * @param msgTopic the topic to match from the message
+     * @param subscriptionTopic the topic filter of the subscription
+     * @return true if the two topics match.
      */
     //TODO reimplement with iterators or with queues
     public static boolean matchTopics(String msgTopic, String subscriptionTopic) {

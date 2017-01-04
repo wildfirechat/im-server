@@ -136,6 +136,9 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
 
     /**
      * Is called when the write timeout expire.
+     *
+     * @param ctx the channel context.
+     * @throws Exception in case of any IO error.
      */
     protected void channelIdle(ChannelHandlerContext ctx/*, IdleStateEvent evt*/) throws Exception {
 //        ctx.fireUserEventTriggered(evt);
