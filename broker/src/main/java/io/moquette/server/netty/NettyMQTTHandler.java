@@ -28,6 +28,8 @@ import io.netty.handler.codec.CorruptedFrameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  *
  * @author andrea
@@ -100,6 +102,8 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof CorruptedFrameException) {
             //something goes bad with decoding
             LOG.warn("Error decoding a packet, probably a bad formatted packet, message: " + cause.getMessage());
+        } else if (cause instanceof IOException && "Connection reset by peer".equals(cause.getMessage())) {
+            LOG.warn("Network connection closed abruptly");
         } else {
             LOG.error("Ugly error on networking", cause);
         }
