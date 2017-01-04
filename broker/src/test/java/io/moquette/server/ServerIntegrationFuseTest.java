@@ -74,7 +74,7 @@ public class ServerIntegrationFuseTest {
 
     @Test
     public void checkWillTestamentIsPublishedOnConnectionKill_noRetain() throws Exception {
-        LOG.info("checkWillTestamentIsPublishedOnConnectionKill");
+        LOG.info("checkWillTestamentIsPublishedOnConnectionKill_noRetain");
         
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";
@@ -93,7 +93,6 @@ public class ServerIntegrationFuseTest {
         m_mqtt.setClientId("Subscriber");
         m_subscriber = m_mqtt.blockingConnection();
         m_subscriber.connect();
-//        Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_LEAST_ONCE)};
         Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_MOST_ONCE)};
         m_subscriber.subscribe(topics);
         

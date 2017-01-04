@@ -43,6 +43,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.MessageUtils;
 
 /**
  * Class responsible to handle the logic of MQTT protocol it's the director of
@@ -424,12 +425,15 @@ public class ProtocolProcessor {
         String username = NettyUtils.userName(channel);
         LOG.trace("retrieving inflight for messageID <{}>", messageID);
 
-        //Remove the message from message store
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         StoredMessage inflightMsg = targetSession.getInflightMessage(messageID);
         targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
+
+        MessageGUID guid = inflightMsg.getGuid();
+        //Remove the message from message store
+        m_messagesStore.decUsageCounter(guid);
 
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
@@ -632,9 +636,12 @@ public class ProtocolProcessor {
         }
 
         if (descriptor.cleanSession) {
-            LOG.debug("Removing messages in session for client <{}>", clientID);
-            this.m_messagesStore.dropMessagesInSession(clientID);
-            LOG.debug("Removed messages in session for client <{}>", clientID);
+            LOG.debug("Removing messages in session's queue for client <{}>", clientID);
+            Collection<MessageGUID> queue = this.m_sessionsStore.enqueued(clientID);
+            for (MessageGUID guid : queue) {
+                this.m_sessionsStore.removeEnqueued(clientID, guid);
+            }
+            LOG.debug("Removed messages in session for client's queue <{}>", clientID);
         }
         return true;
     }

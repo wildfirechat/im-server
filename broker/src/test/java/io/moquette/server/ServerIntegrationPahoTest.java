@@ -286,6 +286,7 @@ public class ServerIntegrationPahoTest {
         assertEquals("Hello MQTT", m_messagesCollector.getMessage(true).toString());
     }
 
+
     @Test
     public void checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession() throws Exception {
         LOG.info("*** checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession ***");
@@ -461,10 +462,10 @@ public class ServerIntegrationPahoTest {
         clientForPublish.publish("topic", "Hello".getBytes(), 2, true);
 
         //verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
-        System.out.println("Before waiting to receive 1 sec from " + clientForSubscribe1.getClientId());
+        LOG.info("Before waiting to receive 1 sec from " + clientForSubscribe1.getClientId());
         assertFalse(clientForSubscribe1.isConnected());
         assertTrue(clientForSubscribe2.isConnected());
-        System.out.println("Waiting to receive 1 sec from " + clientForSubscribe2.getClientId());
+        LOG.info("Waiting to receive 1 sec from " + clientForSubscribe2.getClientId());
         MqttMessage messageOnB = cbSubscriber2.getMessage(true);
         assertEquals("Hello", new String(messageOnB.getPayload()));
     }

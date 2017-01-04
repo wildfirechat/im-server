@@ -227,9 +227,6 @@ class MapDBSessionsStore implements ISessionsStore {
         List<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
         guids.remove(guid);
         m_enqueuedStore.put(clientID, guids);
-        m_messagesStore.decUsageCounter(guid);
-        //if counter gets to 0 then remove from storage
-        m_messagesStore.removeStoredMessage(guid);
     }
 
     @Override
