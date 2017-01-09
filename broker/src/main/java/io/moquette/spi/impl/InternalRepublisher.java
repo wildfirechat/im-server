@@ -9,8 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 
 class InternalRepublisher {
 
@@ -39,8 +42,11 @@ class InternalRepublisher {
         }
     }
 
-    void publishStored(ClientSession clientSession, List<IMessagesStore.StoredMessage> publishedEvents) {
-        for (IMessagesStore.StoredMessage pubEvt : publishedEvents) {
+    void publishStored(ClientSession clientSession, BlockingQueue<IMessagesStore.StoredMessage> publishedEvents) {
+        List<IMessagesStore.StoredMessage> storedPublishes = new ArrayList<>();
+        publishedEvents.drainTo(storedPublishes);
+
+        for (IMessagesStore.StoredMessage pubEvt : storedPublishes) {
             //put in flight zone
             LOG.trace("Adding to inflight <{}>", pubEvt.getMessageID());
             clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
@@ -61,7 +67,7 @@ class InternalRepublisher {
         return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), true);
     }
 
-    private PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {
+    public static PublishMessage createPublishForQos(String topic, AbstractMessage.QOSType qos, ByteBuffer message, boolean retained) {
         PublishMessage pubMessage = new PublishMessage();
         pubMessage.setRetainFlag(retained);
         pubMessage.setTopicName(topic);

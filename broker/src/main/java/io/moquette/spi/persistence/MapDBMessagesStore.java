@@ -78,7 +78,7 @@ class MapDBMessagesStore implements IMessagesStore {
         LOG.debug("storePublishForFuture store evt {}", storedMessage);
         if (storedMessage.getClientID() == null) {
             LOG.error("persisting a message without a clientID, bad programming error msg: {}", storedMessage);
-            throw new IllegalArgumentException("\"persisting a message without a clientID, bad programming error");
+            throw new IllegalArgumentException("persisting a message without a clientID, bad programming error");
         }
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
@@ -87,15 +87,6 @@ class MapDBMessagesStore implements IMessagesStore {
         ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
         messageIdToGuid.put(storedMessage.getMessageID(), guid);
         return guid;
-    }
-
-    @Override
-    public List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids) {
-        List<StoredMessage> ret = new ArrayList<>();
-        for (MessageGUID guid : guids) {
-            ret.add(m_persistentMessageStore.get(guid));
-        }
-        return ret;
     }
 
     @Override

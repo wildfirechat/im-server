@@ -79,15 +79,6 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids) {
-        List<StoredMessage> ret = new ArrayList<>();
-        for (MessageGUID guid : guids) {
-            ret.add(m_persistentMessageStore.get(guid));
-        }
-        return ret;
-    }
-
-    @Override
     public void dropMessagesInSession(String clientID) {
         Map<Integer, MessageGUID> messageGUIDMap = m_messageToGuids.get(clientID);
         if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {

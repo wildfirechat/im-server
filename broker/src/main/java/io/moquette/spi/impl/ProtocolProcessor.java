@@ -17,9 +17,7 @@ package io.moquette.spi.impl;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.*;
@@ -36,6 +34,8 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 
 import static io.moquette.parser.netty.Utils.VERSION_3_1;
 import static io.moquette.parser.netty.Utils.VERSION_3_1_1;
+import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
+
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.netty.channel.Channel;
@@ -43,7 +43,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.MessageUtils;
 
 /**
  * Class responsible to handle the logic of MQTT protocol it's the director of
@@ -406,7 +405,7 @@ public class ProtocolProcessor {
      * */
     private void republishStoredInSession(ClientSession clientSession) {
         LOG.trace("republishStoredInSession for client <{}>", clientSession);
-        List<IMessagesStore.StoredMessage> publishedEvents = clientSession.storedMessages();
+        BlockingQueue<StoredMessage> publishedEvents = clientSession.queue();
         if (publishedEvents.isEmpty()) {
             LOG.info("No stored messages for client <{}>", clientSession.clientID);
             return;
@@ -414,9 +413,6 @@ public class ProtocolProcessor {
 
         LOG.info("republishing stored messages to client <{}>", clientSession.clientID);
         this.internalRepublisher.publishStored(clientSession, publishedEvents);
-        for (IMessagesStore.StoredMessage pubEvt : publishedEvents) {
-            clientSession.removeEnqueued(pubEvt.getGuid());
-        }
     }
 
     public void processPubAck(Channel channel, PubAckMessage msg) {
@@ -438,7 +434,7 @@ public class ProtocolProcessor {
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
 
-    static IMessagesStore.StoredMessage asStoredMessage(PublishMessage msg) {
+    public static IMessagesStore.StoredMessage asStoredMessage(PublishMessage msg) {
         IMessagesStore.StoredMessage stored = new IMessagesStore.StoredMessage(msg.getPayload().array(), msg.getQos(), msg.getTopicName());
         stored.setRetained(msg.isRetainFlag());
         stored.setMessageID(msg.getMessageID());
@@ -641,10 +637,7 @@ public class ProtocolProcessor {
 
         if (descriptor.cleanSession) {
             LOG.debug("Removing messages in session's queue for client <{}>", clientID);
-            Collection<MessageGUID> queue = this.m_sessionsStore.enqueued(clientID);
-            for (MessageGUID guid : queue) {
-                this.m_sessionsStore.removeEnqueued(clientID, guid);
-            }
+            this.m_sessionsStore.dropQueue(clientID);
             LOG.debug("Removed messages in session for client's queue <{}>", clientID);
         }
         return true;
@@ -848,11 +841,14 @@ public class ProtocolProcessor {
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         boolean emptyQueue = false;
         while (channel.isWritable()  && !emptyQueue) {
-            AbstractMessage msg = clientSession.dequeue();
+            StoredMessage msg = clientSession.queue().poll();
             if (msg == null) {
                 emptyQueue = true;
             } else {
-                channel.write(msg);
+                //recreate a publish from stored publish in queue
+                boolean retained = m_messagesStore.getMessageByGuid(msg.getGuid()) != null;
+                PublishMessage pubMsg = createPublishForQos(msg.getTopic(), msg.getQos(), msg.getMessage(), retained);
+                channel.write(pubMsg);
             }
         }
         channel.flush();

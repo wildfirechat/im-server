@@ -48,6 +48,7 @@ class MessagesPublisher {
         final ByteBuffer origMessage = pubMsg.getMessage();
 
         //if QoS 1 or 2 store the message
+        //TODO perhaps this block is not needed.
         MessageGUID guid = null;
         if (publishingQos != AbstractMessage.QOSType.MOST_ONE) {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
@@ -76,7 +77,7 @@ class MessagesPublisher {
             } else {
                 if (!targetSession.isCleanSession()) {
                     //store the message in targetSession queue to deliver
-                    targetSession.enqueueToDeliver(guid);
+                    targetSession.enqueue(pubMsg);
                 }
             }
         }

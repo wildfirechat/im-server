@@ -16,6 +16,7 @@
 package io.moquette.spi.persistence;
 
 import io.moquette.spi.ClientSession;
+import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,8 +46,6 @@ class MapDBSessionsStore implements ISessionsStore {
     //map clientID <-> set of currently in flight packet identifiers
     private Map<String, Set<Integer>> m_inFlightIds;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
-    //maps clientID->[guid*], insertion order cares, it's queue
-    private ConcurrentMap<String, List<MessageGUID>> m_enqueuedStore;
     //maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, Map<Integer, MessageGUID>> m_secondPhaseStore;
 
@@ -62,7 +62,6 @@ class MapDBSessionsStore implements ISessionsStore {
         m_inflightStore = m_db.getHashMap("inflight");
         m_inFlightIds = m_db.getHashMap("inflightPacketIDs");
         m_persistentSessions = m_db.getHashMap("sessions");
-        m_enqueuedStore = m_db.getHashMap("sessionQueue");
         m_secondPhaseStore = m_db.getHashMap("secondPhase");
     }
 
@@ -210,23 +209,13 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
-    public void bindToDeliver(MessageGUID guid, String clientID) {
-        List<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
-        guids.add(guid);
-        m_enqueuedStore.put(clientID, guids);
-        m_messagesStore.incUsageCounter(guid);
+    public BlockingQueue<StoredMessage> queue(String clientID) {
+        return this.m_db.getQueue(clientID);
     }
 
     @Override
-    public Collection<MessageGUID> enqueued(String clientID) {
-        return Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
-    }
-
-    @Override
-    public void removeEnqueued(String clientID, MessageGUID guid) {
-        List<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new ArrayList<MessageGUID>());
-        guids.remove(guid);
-        m_enqueuedStore.put(clientID, guids);
+    public void dropQueue(String clientID) {
+        this.m_db.delete(clientID);
     }
 
     @Override

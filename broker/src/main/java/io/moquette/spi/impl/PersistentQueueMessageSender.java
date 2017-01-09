@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.parser.proto.messages.AbstractMessage.QOSType.MOST_ONE;
+import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
 class PersistentQueueMessageSender {
 
@@ -48,7 +49,7 @@ class PersistentQueueMessageSender {
         } else if (pubMessage.getQos() != MOST_ONE) {
             //enqueue to the client session
             LOG.debug("enqueue to client session");
-            clientsession.enqueue(pubMessage);
+            clientsession.enqueue(asStoredMessage(pubMessage));
         }
     }
 }

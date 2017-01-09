@@ -38,7 +38,7 @@ To embed Moquette in another maven project is sufficient to include a repository
 <repositories>
   <repository>
     <id>bintray</id>
-    <url>http://dl.bintray.com/andsel/maven/</url>
+    <url>https://jcenter.bintray.com</url>
     <releases>
       <enabled>true</enabled>
     </releases>
@@ -55,7 +55,7 @@ Include dependency in your project:
 <dependency>
       <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
-      <version>0.8</version>
+      <version>0.8.1</version>
 </dependency>
 ```
 

@@ -18,7 +18,6 @@ package io.moquette.spi.impl;
 import io.moquette.parser.proto.messages.*;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
-import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -32,6 +31,8 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+
 import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 import static org.junit.Assert.*;
@@ -382,8 +383,8 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_channel, connectMessage);
 
         //Verify no messages are still stored
-        Collection<MessageGUID> guids = m_sessionStore.enqueued(FAKE_PUBLISHER_ID);
-        assertTrue(m_messagesStore.listMessagesInSession(guids).isEmpty());
+        BlockingQueue<StoredMessage> messages = m_sessionStore.queue(FAKE_PUBLISHER_ID);
+        assertTrue(messages.isEmpty());
     }
     
     @Test

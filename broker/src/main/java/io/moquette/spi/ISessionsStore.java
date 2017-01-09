@@ -15,8 +15,8 @@
  */
 package io.moquette.spi;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -136,25 +136,13 @@ public interface ISessionsStore {
     int nextPacketID(String clientID);
 
     /**
-     * Store the guid to be later published.
-     * @param guid the message guid to bind.
-     * @param clientID the clientID
-     * */
-    void bindToDeliver(MessageGUID guid, String clientID);
-
-    /**
      * List the guids for retained messages for the session
      * @param clientID the client ID owning the queue.
-     * @return the list of enqueued message UUIDs.
+     * @return the list of queue message UUIDs.
      * */
-    Collection<MessageGUID> enqueued(String clientID);
+    BlockingQueue<StoredMessage> queue(String clientID);
 
-    /**
-     * Remove form the queue of stored messages for session.
-     * @param clientID the client ID owning the queue.
-     * @param guid the message guid to dequeue.
-     * */
-    void removeEnqueued(String clientID, MessageGUID guid);
+    void dropQueue(String clientID);
 
     void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID);
 

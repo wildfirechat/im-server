@@ -15,6 +15,7 @@
  */
 package io.moquette.spi.persistence;
 
+import io.moquette.server.Constants;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -27,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -42,8 +45,8 @@ public class MemorySessionStore implements ISessionsStore {
     //maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_inflightStore = new HashMap<>();
 //    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
-    //maps clientID->[guid*]
-    private Map<String, Set<MessageGUID>> m_enqueuedStore = new HashMap<>();
+    //maps clientID->BlockingQueue
+    private Map<String, BlockingQueue<StoredMessage>> queues = new HashMap<>();
     //maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_secondPhaseStore = new HashMap<>();
 
@@ -205,22 +208,13 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void bindToDeliver(MessageGUID guid, String clientID) {
-        Set<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new HashSet<MessageGUID>());
-        guids.add(guid);
-        m_enqueuedStore.put(clientID, guids);
+    public BlockingQueue<StoredMessage> queue(String clientID) {
+        return Utils.defaultGet(queues, clientID, new ArrayBlockingQueue<StoredMessage>(Constants.MAX_MESSAGE_QUEUE));
     }
 
     @Override
-    public Collection<MessageGUID> enqueued(String clientID) {
-        return Utils.defaultGet(m_enqueuedStore, clientID, new HashSet<MessageGUID>());
-    }
-
-    @Override
-    public void removeEnqueued(String clientID, MessageGUID guid) {
-        Set<MessageGUID> guids = Utils.defaultGet(m_enqueuedStore, clientID, new HashSet<MessageGUID>());
-        guids.remove(guid);
-        m_enqueuedStore.put(clientID, guids);
+    public void dropQueue(String clientID) {
+        queues.remove(clientID);
     }
 
     @Override

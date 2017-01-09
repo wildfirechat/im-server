@@ -144,15 +144,6 @@ public interface IMessagesStore {
      * */
     MessageGUID storePublishForFuture(StoredMessage storedMessage);
 
-    /**
-     * Return the list of persisted publishes for the given clientID.
-     * For QoS1 and QoS2 with clean session flag, this method return the list of 
-     * missed publish events while the client was disconnected.
-     * @param guids the list of of guid to use as search keys.
-     * @return the list of stored messages matching the passed keys.
-     */
-    List<StoredMessage> listMessagesInSession(Collection<MessageGUID> guids);
-    
     void dropMessagesInSession(String clientID);
 
     StoredMessage getMessageByGuid(MessageGUID guid);
