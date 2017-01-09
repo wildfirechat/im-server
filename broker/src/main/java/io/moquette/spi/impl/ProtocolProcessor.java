@@ -427,9 +427,9 @@ public class ProtocolProcessor {
 
         String topic = inflightMsg.getTopic();
 
-        MessageGUID guid = inflightMsg.getGuid();
+//        MessageGUID guid = inflightMsg.getGuid();
         //Remove the message from message store
-        m_messagesStore.decUsageCounter(guid);
+//        m_messagesStore.decUsageCounter(guid);
 
         m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
     }
