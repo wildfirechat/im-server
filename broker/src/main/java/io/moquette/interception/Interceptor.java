@@ -49,7 +49,7 @@ public interface Interceptor {
 
     void notifyMessageAcknowledged(InterceptAcknowledgedMessage msg);
 
-    boolean addInterceptHandler(InterceptHandler interceptHandler);
+    void addInterceptHandler(InterceptHandler interceptHandler);
 
-    boolean removeInterceptHandler(InterceptHandler interceptHandler);
+    void removeInterceptHandler(InterceptHandler interceptHandler);
 }

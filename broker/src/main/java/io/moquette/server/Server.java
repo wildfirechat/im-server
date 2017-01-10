@@ -246,11 +246,11 @@ public class Server {
      * @param interceptHandler the handler to add.
      * @return true id operation was successful.
      * */
-    public boolean addInterceptHandler(InterceptHandler interceptHandler) {
+    public void addInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
             throw new IllegalStateException("Can't register interceptors on a server that is not yet started");
         }
-        return m_processor.addInterceptHandler(interceptHandler);
+        m_processor.addInterceptHandler(interceptHandler);
     }
 
     /**
@@ -258,11 +258,11 @@ public class Server {
      * @param interceptHandler the handler to remove.
      * @return true id operation was successful.
      * */
-    public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
+    public void removeInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
             throw new IllegalStateException("Can't deregister interceptors from a server that is not yet started");
         }
-        return m_processor.removeInterceptHandler(interceptHandler);
+        m_processor.removeInterceptHandler(interceptHandler);
     }
 
 }

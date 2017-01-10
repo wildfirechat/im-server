@@ -854,11 +854,11 @@ public class ProtocolProcessor {
         channel.flush();
     }
 
-    public boolean addInterceptHandler(InterceptHandler interceptHandler) {
-        return this.m_interceptor.addInterceptHandler(interceptHandler);
+    public void addInterceptHandler(InterceptHandler interceptHandler) {
+        this.m_interceptor.addInterceptHandler(interceptHandler);
     }
 
-    public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
-        return this.m_interceptor.removeInterceptHandler(interceptHandler);
+    public void removeInterceptHandler(InterceptHandler interceptHandler) {
+        this.m_interceptor.removeInterceptHandler(interceptHandler);
     }
 }

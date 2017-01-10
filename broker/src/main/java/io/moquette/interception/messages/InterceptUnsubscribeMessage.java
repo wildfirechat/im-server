@@ -3,7 +3,7 @@ package io.moquette.interception.messages;
 /**
  * @author Wagner Macedo
  */
-public class InterceptUnsubscribeMessage {
+public class InterceptUnsubscribeMessage implements InterceptMessage {
     private final String topicFilter;
     private final String clientID;
     private final String username;

@@ -15,17 +15,25 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.interception.InterceptHandler;
-import io.moquette.interception.Interceptor;
-import io.moquette.interception.messages.*;
-import io.moquette.parser.proto.messages.ConnectMessage;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.parser.proto.messages.PublishMessage;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import io.moquette.interception.InterceptHandler;
+import io.moquette.interception.Interceptor;
+import io.moquette.interception.messages.InterceptAcknowledgedMessage;
+import io.moquette.interception.messages.InterceptConnectMessage;
+import io.moquette.interception.messages.InterceptConnectionLostMessage;
+import io.moquette.interception.messages.InterceptDisconnectMessage;
+import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.interception.messages.InterceptSubscribeMessage;
+import io.moquette.interception.messages.InterceptUnsubscribeMessage;
+import io.moquette.parser.proto.messages.ConnectMessage;
+import io.moquette.parser.proto.messages.PublishMessage;
+import io.moquette.spi.impl.subscriptions.Subscription;
 
 /**
  * An interceptor that execute the interception tasks asynchronously.
@@ -33,13 +41,19 @@ import java.util.concurrent.Executors;
  * @author Wagner Macedo
  */
 final class BrokerInterceptor implements Interceptor {
-    private final List<InterceptHandler> handlers;
+    private final Map<Class<?>, List<InterceptHandler>> handlers;
     private final ExecutorService executor;
 
-    BrokerInterceptor(List<InterceptHandler> handlers) {
-        this.handlers = new CopyOnWriteArrayList<>(handlers);
-        executor = Executors.newFixedThreadPool(1);
-    }
+	BrokerInterceptor(List<InterceptHandler> handlers) {
+		this.handlers = new HashMap<>();
+		for (Class<?> messageType : InterceptHandler.ALL_MESSAGE_TYPES) {
+			this.handlers.put(messageType, new CopyOnWriteArrayList<InterceptHandler>());
+		}
+		for (InterceptHandler handler : handlers) {
+			this.addInterceptHandler(handler);
+		}
+		executor = Executors.newFixedThreadPool(1);
+	}
 
     /**
      * Shutdown graciously the executor service
@@ -50,7 +64,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptConnectMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -62,7 +76,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientDisconnected(final String clientID, final String username ) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptDisconnectMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -74,7 +88,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyClientConnectionLost(final String clientID, final String username) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptConnectionLostMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -86,7 +100,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicPublished(final PublishMessage msg, final String clientID, final String username) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptPublishMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -98,7 +112,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicSubscribed(final Subscription sub, final String username) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptSubscribeMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -110,7 +124,7 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicUnsubscribed(final String topic, final String clientID, final String username) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptUnsubscribeMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -122,7 +136,7 @@ final class BrokerInterceptor implements Interceptor {
 
 	@Override
 	public void notifyMessageAcknowledged( final InterceptAcknowledgedMessage msg ) {
-        for (final InterceptHandler handler : this.handlers) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptAcknowledgedMessage.class)) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -132,13 +146,25 @@ final class BrokerInterceptor implements Interceptor {
         }
     }
 
-    @Override
-    public boolean addInterceptHandler(InterceptHandler interceptHandler) {
-        return this.handlers.add(interceptHandler);
+	@Override
+	public void addInterceptHandler(InterceptHandler interceptHandler) {
+		for (Class<?> interceptMessageType : getInterceptedMessageTypes(interceptHandler)) {
+			this.handlers.get(interceptMessageType).add(interceptHandler);
+		}
+	}
+
+	@Override
+    public void removeInterceptHandler(InterceptHandler interceptHandler) {
+    	for (Class<?> interceptMessageType : getInterceptedMessageTypes(interceptHandler)) {
+    		this.handlers.get(interceptMessageType).remove(interceptHandler);
+    	}
     }
 
-    @Override
-    public boolean removeInterceptHandler(InterceptHandler interceptHandler) {
-        return this.handlers.remove(interceptHandler);
-    }
+	private static Class<?>[] getInterceptedMessageTypes(InterceptHandler interceptHandler) {
+		Class<?> interceptedMessageTypes[] = interceptHandler.getInterceptedMessageTypes();
+		if (interceptedMessageTypes == null) {
+			return InterceptHandler.ALL_MESSAGE_TYPES;
+		}
+		return interceptedMessageTypes;
+	}
 }
