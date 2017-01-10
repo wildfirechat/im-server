@@ -102,7 +102,7 @@ public class ProtocolProcessorBootstrapper {
                 LOG.error("Can't load the intercept handler {}", ex);
             }
         }
-        m_interceptor = new BrokerInterceptor(observers);
+        m_interceptor = new BrokerInterceptor(props, observers);
 
         subscriptions.init(m_sessionsStore);
 

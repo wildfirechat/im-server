@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.Interceptor;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
@@ -33,6 +35,7 @@ import io.moquette.interception.messages.InterceptSubscribeMessage;
 import io.moquette.interception.messages.InterceptUnsubscribeMessage;
 import io.moquette.parser.proto.messages.ConnectMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
+import io.moquette.server.config.IConfig;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
 /**
@@ -44,7 +47,7 @@ final class BrokerInterceptor implements Interceptor {
     private final Map<Class<?>, List<InterceptHandler>> handlers;
     private final ExecutorService executor;
 
-	BrokerInterceptor(List<InterceptHandler> handlers) {
+	private BrokerInterceptor(int poolSize, List<InterceptHandler> handlers) {
 		this.handlers = new HashMap<>();
 		for (Class<?> messageType : InterceptHandler.ALL_MESSAGE_TYPES) {
 			this.handlers.put(messageType, new CopyOnWriteArrayList<InterceptHandler>());
@@ -52,15 +55,37 @@ final class BrokerInterceptor implements Interceptor {
 		for (InterceptHandler handler : handlers) {
 			this.addInterceptHandler(handler);
 		}
-		executor = Executors.newFixedThreadPool(1);
+		executor = Executors.newFixedThreadPool(poolSize);
+	}
+	
+	/**
+	 * Configures a broker interceptor, with a thread pool of one thread.
+	 * @param handlers
+	 */
+	public BrokerInterceptor(List<InterceptHandler> handlers) {
+		this(1, handlers);
+	}
+	
+	/**
+	 * Configures a broker interceptor using the pool size specified in the
+	 * IConfig argument.
+	 */
+	public BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
+		this(Integer.parseInt(props.getProperty(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, "1")), handlers);
 	}
 
     /**
      * Shutdown graciously the executor service
      */
-    void stop() {
-        executor.shutdown();
-    }
+	void stop() {
+		executor.shutdown();
+		try {
+			executor.awaitTermination(10L, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {}
+		if (!executor.isTerminated()) {
+			executor.shutdownNow();
+		}
+	}
 
     @Override
     public void notifyClientConnected(final ConnectMessage msg) {
