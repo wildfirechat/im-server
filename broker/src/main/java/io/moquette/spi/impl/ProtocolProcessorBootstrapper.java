@@ -106,7 +106,6 @@ public class ProtocolProcessorBootstrapper {
 
         subscriptions.init(m_sessionsStore);
 
-        String configPath = System.getProperty("moquette.path", null);
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
 
         if (!authenticatorClassName.isEmpty()) {

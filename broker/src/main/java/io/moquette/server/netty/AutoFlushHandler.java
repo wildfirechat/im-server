@@ -17,7 +17,6 @@ package io.moquette.server.netty;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.EventExecutor;
 
 import java.util.concurrent.ScheduledFuture;

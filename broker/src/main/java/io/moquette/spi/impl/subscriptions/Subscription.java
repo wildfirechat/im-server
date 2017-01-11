@@ -28,7 +28,8 @@ import io.moquette.spi.ISessionsStore.ClientTopicCouple;
  */
 public final class Subscription implements Serializable {
     
-    final QOSType requestedQos; //max QoS acceptable
+	private static final long serialVersionUID = 1L;
+	final QOSType requestedQos; //max QoS acceptable
     final String clientId;
     final String topicFilter;
     final boolean active;
