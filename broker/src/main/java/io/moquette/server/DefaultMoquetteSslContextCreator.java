@@ -49,11 +49,12 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 
     @Override
     public SSLContext initSSLContext() {
+    	LOG.info("Checking SSL configuration properties...");   	
         final String jksPath = props.getProperty(BrokerConstants.JKS_PATH_PROPERTY_NAME);
-        LOG.info("Starting SSL using keystore at {}", jksPath);
+        LOG.info("Initializing SSL context. KeystorePath = {}.", jksPath);
         if (jksPath == null || jksPath.isEmpty()) {
             //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the jks_path, SSL not started");
+            LOG.warn("The keystore path is null or empty. The SSL context won't be initialized.");
             return null;
         }
 
@@ -63,12 +64,12 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
         final String keyManagerPassword = props.getProperty(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
         if (keyStorePassword == null || keyStorePassword.isEmpty()) {
             //key_store_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_store_password, SSL not started");
+            LOG.warn("The keystore password is null or empty. The SSL context won't be initialized.");
             return null;
         }
         if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
             //key_manager_password or key_manager_password are empty
-            LOG.warn("You have configured the SSL port but not the key_manager_password, SSL not started");
+            LOG.warn("The key manager password is null or empty. The SSL context won't be initialized.");
             return null;
         }
 
@@ -78,26 +79,33 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 		boolean needsClientAuth = Boolean.valueOf(sNeedsClientAuth);
 
         try {
+            LOG.info("Loading keystore. KeystorePath = {}.", jksPath);
             InputStream jksInputStream = jksDatastore(jksPath);
             SSLContext serverContext = SSLContext.getInstance("TLS");
             final KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(jksInputStream, keyStorePassword.toCharArray());
+            LOG.info("Initializing key manager...");
             final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, keyManagerPassword.toCharArray());
 			TrustManager[] trustManagers = null;
 			if (needsClientAuth) {
+				LOG.warn(
+						"Client authentication is enabled. The keystore will be used as a truststore. KeystorePath = {}.",
+						jksPath);
 				// use keystore as truststore, as server needs to trust certificates signed by the server certificates
 				TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 				tmf.init(ks);
 				trustManagers = tmf.getTrustManagers();
 			}
 			// init sslContext
+			LOG.info("Initializing SSL context...");
 			serverContext.init(kmf.getKeyManagers(), trustManagers, null);
-
+			LOG.info("The SSL context has been initialized successfully.");
+			
             return serverContext;
         } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
                 | KeyManagementException | IOException ex) {
-            LOG.error("Can't start SSL layer!", ex);
+            LOG.error("Unable to initialize SSL context. Cause = {}, errorMessage = {}.", ex.getCause(), ex.getMessage());
             return null;
         }
     }
@@ -108,13 +116,13 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
             LOG.info("Starting with jks at {}, jks normal {}", jksUrl.toExternalForm(), jksUrl);
             return getClass().getClassLoader().getResourceAsStream(jksPath);
         }
-        LOG.info("jks not found in bundled resources, try on the filesystem");
+        LOG.warn("No keystore has been found in the bundled resources. Scanning filesystem...");
         File jksFile = new File(jksPath);
         if (jksFile.exists()) {
-            LOG.info("Using {} ", jksFile.getAbsolutePath());
+            LOG.info("Loading external keystore. Url = {}.", jksFile.getAbsolutePath());
             return new FileInputStream(jksFile);
         }
-        LOG.warn("File {} doesn't exists", jksFile.getAbsolutePath());
+        LOG.warn("The keystore file does not exist. Url = {}.", jksFile.getAbsolutePath());
         return null;
     }
 }
