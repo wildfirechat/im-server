@@ -247,7 +247,7 @@ public class SubscriptionsStore {
         return visitor.getResult();
     }
     
-    private void bfsVisit(TreeNode node, IVisitor visitor, int deep) {
+    private void bfsVisit(TreeNode node, IVisitor<?> visitor, int deep) {
         if (node == null) {
             return;
         }

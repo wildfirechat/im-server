@@ -460,6 +460,8 @@ public class ProtocolProcessor {
             case EXACTLY_ONCE:
                 this.qos2PublishHandler.receivedPublishQos2(channel, msg);
                 break;
+            default:
+            	break;
         }
     }
 

@@ -276,8 +276,8 @@ public class NettyAcceptor implements ServerAcceptor {
         if (m_bossGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
         }
-        Future workerWaiter = m_workerGroup.shutdownGracefully();
-        Future bossWaiter = m_bossGroup.shutdownGracefully();
+        Future<?> workerWaiter = m_workerGroup.shutdownGracefully();
+        Future<?> bossWaiter = m_bossGroup.shutdownGracefully();
 
         try {
             workerWaiter.await(100);
