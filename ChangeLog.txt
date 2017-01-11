@@ -1,3 +1,6 @@
+Version 0.10:
+    
+
 Version 0.9:
     Moved canRead check to topic from publish phase to subscribe (#144)
     Added javadoc and src jars creations for JCenter/Maven central

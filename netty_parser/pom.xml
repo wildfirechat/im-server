@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>io.moquette</groupId>
-        <version>0.9</version>
+        <version>0.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>moquette-netty-parser</artifactId>

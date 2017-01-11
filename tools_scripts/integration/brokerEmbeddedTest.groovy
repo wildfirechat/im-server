@@ -1,5 +1,5 @@
 @GrabResolver(name='moquette-bintray', root='http://dl.bintray.com/andsel/maven/')
-@Grab(group='io.moquette', module='moquette-broker', version='0.9')
+@Grab(group='io.moquette', module='moquette-broker', version='0.10-SNAPSHOT')
 
 import io.moquette.server.Server
 
