@@ -23,7 +23,7 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.parser.proto.messages.*;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptor.ConnectionState;
-import io.moquette.server.netty.AutoFlushHandler;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -120,7 +120,7 @@ public class ProtocolProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
-    protected ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    protected ConnectionDescriptorStore connectionDescriptors;
     protected ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private SubscriptionsStore subscriptions;
@@ -158,6 +158,15 @@ public class ProtocolProcessor {
                      boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor) {
         init(subscriptions,storageService,sessionsStore,authenticator,allowAnonymous, allowZeroByteClientId, authorizator,interceptor,null);
     }
+    
+    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+            ISessionsStore sessionsStore,
+            IAuthenticator authenticator,
+            boolean allowAnonymous,
+            boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
+		init(new ConnectionDescriptorStore(), subscriptions, storageService, sessionsStore, authenticator,
+				allowAnonymous, allowZeroByteClientId, authorizator, interceptor, serverPort);
+	}
 
     /**
      * @param subscriptions the subscription store where are stored all the existing
@@ -171,12 +180,12 @@ public class ProtocolProcessor {
      * @param authorizator used to apply ACL policies to publishes and subscriptions.
      * @param interceptor to notify events to an intercept handler
      */
-    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+    void init(ConnectionDescriptorStore connectionDescriptors, SubscriptionsStore subscriptions, IMessagesStore storageService,
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
               boolean allowAnonymous,
               boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
-        this.connectionDescriptors = new ConcurrentHashMap<>();
+        this.connectionDescriptors = connectionDescriptors;
         this.subscriptionInCourse = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
@@ -237,7 +246,7 @@ public class ProtocolProcessor {
 
         final String clientID = msg.getClientID();
         ConnectionDescriptor descriptor = new ConnectionDescriptor(clientID, channel, msg.isCleanSession());
-        ConnectionDescriptor existing = this.connectionDescriptors.putIfAbsent(clientID, descriptor);
+        ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
         if (existing != null) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
             existing.abort();
@@ -312,7 +321,7 @@ public class ProtocolProcessor {
         if (isSessionAlreadyStored) {
             clientSession.cleanSession(msg.isCleanSession());
         }
-        descriptor.channel.writeAndFlush(okResp);
+        descriptor.writeAndFlush(okResp);
         return true;
     }
 
@@ -373,7 +382,7 @@ public class ProtocolProcessor {
             republishStoredInSession(clientSession);
         }
         int flushIntervalMs = 500/*(keepAlive * 1000) / 2*/;
-        setupAutoFlusher(descriptor.channel.pipeline(), flushIntervalMs);
+        descriptor.setupAutoFlusher(flushIntervalMs);
         return true;
     }
 
@@ -382,15 +391,6 @@ public class ProtocolProcessor {
         okResp.setReturnCode(ConnAckMessage.BAD_USERNAME_OR_PASSWORD);
         session.writeAndFlush(okResp);
         LOG.info("Client {} failed to connect with bad username or password.", session);
-    }
-
-    private void setupAutoFlusher(ChannelPipeline pipeline, int flushIntervalMs) {
-        try {
-            pipeline.addAfter("idleEventHandler", "autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        } catch (NoSuchElementException nseex) {
-            //the idleEventHandler is not present on the pipeline
-            pipeline.addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        }
     }
 
     private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
@@ -576,39 +576,39 @@ public class ProtocolProcessor {
     public void processDisconnect(Channel channel) throws InterruptedException {
         channel.flush();
         final String clientID = NettyUtils.clientID(channel);
-        final ConnectionDescriptor existingDescriptor = this.connectionDescriptors.get(clientID);
+        final ConnectionDescriptor existingDescriptor = this.connectionDescriptors.getConnection(clientID);
         if (existingDescriptor == null) {
             //another client with same ID removed the descriptor, we must exit
             channel.close();
             return;
         }
 
-        if (existingDescriptor.channel != channel) {
+        if (existingDescriptor.doesNotUseChannel(channel)) {
             //another client saved it's descriptor, exit
-            channel.close();
+        	existingDescriptor.abort();
             return;
         }
 
         if (!removeSubscriptions(existingDescriptor, clientID)) {
-            channel.close();
+        	existingDescriptor.abort();
             return;
         }
 
         if (!dropStoredMessages(existingDescriptor, clientID)) {
-            channel.close();
+        	existingDescriptor.abort();
             return;
         }
 
         if (!cleanWillMessageAndNotifyInterceptor(existingDescriptor, clientID)) {
-            channel.close();
+        	existingDescriptor.abort();
             return;
         }
 
-        if (!closeChannel(existingDescriptor)) {
+        if (!existingDescriptor.close()) {
             return;
         }
 
-        boolean stillPresent = this.connectionDescriptors.remove(clientID, existingDescriptor);
+        boolean stillPresent = this.connectionDescriptors.removeConnection(existingDescriptor);
         if (!stillPresent) {
             //another descriptor was inserted
             return;
@@ -653,23 +653,14 @@ public class ProtocolProcessor {
 
         //cleanup the will store
         m_willStore.remove(clientID);
-        String username = NettyUtils.userName(descriptor.channel);
+        String username = descriptor.getUsername();
         m_interceptor.notifyClientDisconnected(clientID, username);
-        return true;
-    }
-
-    private boolean closeChannel(ConnectionDescriptor descriptor) {
-        final boolean success = descriptor.assignState(ConnectionState.INTERCEPTORS_NOTIFIED, ConnectionState.DISCONNECTED);
-        if (!success) {
-            return false;
-        }
-        descriptor.channel.close();
         return true;
     }
 
     public void processConnectionLost(String clientID, Channel channel) {
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
-        connectionDescriptors.remove(clientID, oldConnDescr);
+        connectionDescriptors.removeConnection(oldConnDescr);
         //publish the Will message (if any) for the clientID
         if (m_willStore.containsKey(clientID)) {
             WillMessage will = m_willStore.get(clientID);

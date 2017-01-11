@@ -2,7 +2,7 @@ package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.PubAckMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.MessageGUID;
@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
@@ -25,13 +24,13 @@ class Qos1PublishHandler {
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    private final ConnectionDescriptorStore connectionDescriptors;
     private final String brokerPort;
     private final MessagesPublisher publisher;
 
     public Qos1PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors,
+                              ConnectionDescriptorStore connectionDescriptors,
                               String brokerPort, MessagesPublisher messagesPublisher) {
         this.m_authorizator = authorizator;
         this.subscriptions = subscriptions;
@@ -103,10 +102,10 @@ class Qos1PublishHandler {
                 throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should be initialized, somewhere it's overwritten!!");
             }
             LOG.debug("clientIDs are {}", connectionDescriptors);
-            if (connectionDescriptors.get(clientId) == null) {
+            if (!connectionDescriptors.isConnected(clientId)) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s", clientId, connectionDescriptors));
             }
-            connectionDescriptors.get(clientId).channel.writeAndFlush(pubAckMessage);
+            connectionDescriptors.sendMessage(pubAckMessage, messageID, clientId);
         } catch(Throwable t) {
             LOG.error(null, t);
         }

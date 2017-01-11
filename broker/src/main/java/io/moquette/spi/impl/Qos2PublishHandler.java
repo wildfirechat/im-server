@@ -1,7 +1,7 @@
 package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.*;
-import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
@@ -27,14 +26,14 @@ class Qos2PublishHandler {
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final String brokerPort;
     private final MessagesPublisher publisher;
 
     public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors,
+                              ConnectionDescriptorStore connectionDescriptors,
                               ISessionsStore sessionsStore, String brokerPort, MessagesPublisher messagesPublisher) {
         this.m_authorizator = authorizator;
         this.subscriptions = subscriptions;
@@ -122,13 +121,13 @@ class Qos2PublishHandler {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
+        connectionDescriptors.sendMessage(pubRecMessage,messageID, clientID);
     }
 
     private void sendPubComp(String clientID, int messageID) {
         LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubCompMessage);
+        connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);
     }
 }
