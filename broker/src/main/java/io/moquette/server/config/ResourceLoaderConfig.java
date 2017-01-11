@@ -37,6 +37,7 @@ public class ResourceLoaderConfig extends IConfig {
     }
 
     public ResourceLoaderConfig(IResourceLoader resourceLoader, String configName) {
+        LOG.info("Loading configuration. ResourceLoader = {}, configName = {}.", resourceLoader.getName(), configName);
         this.resourceLoader = resourceLoader;
         
         /*
