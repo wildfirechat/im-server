@@ -52,18 +52,20 @@ class MessagesPublisher {
         if (publishingQos != AbstractMessage.QOSType.MOST_ONE) {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
-
-        LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
+        
         for (final Subscription sub : topicMatchingSubscriptions) {
             AbstractMessage.QOSType qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
 
             boolean targetIsActive = this.connectionDescriptors.isConnected(sub.getClientId());
 
-            LOG.debug("Broker republishing to client <{}> topicFilter <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(
+							"Sending PUBLISH message to subscriber. MessageId = {}, mqttClientId = {}, topicFilter = {}, qos = {}, active = {}.",
+							pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
+				}
                 PublishMessage publishMsg = notRetainedPublish(topic, qos, message);
                 if (qos != AbstractMessage.QOSType.MOST_ONE) {
                     //QoS 1 or 2
@@ -75,6 +77,11 @@ class MessagesPublisher {
                 this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(
+								"Storing pending PUBLISH message. MessageId = {}, mqttClientId = {}, topicFilter = {}, qos = {}, active = {}.",
+								pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
+					}
                     //store the message in targetSession queue to deliver
                     targetSession.enqueue(pubMsg);
                 }

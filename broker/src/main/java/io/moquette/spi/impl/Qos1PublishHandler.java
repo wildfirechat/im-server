@@ -17,27 +17,24 @@ import java.util.List;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
-class Qos1PublishHandler {
+class Qos1PublishHandler extends QosPublishHandler {
     private static final Logger LOG = LoggerFactory.getLogger(Qos1PublishHandler.class);
 
-    private final IAuthorizator m_authorizator;
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
     private final ConnectionDescriptorStore connectionDescriptors;
-    private final String brokerPort;
     private final MessagesPublisher publisher;
 
     public Qos1PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
                               ConnectionDescriptorStore connectionDescriptors,
                               String brokerPort, MessagesPublisher messagesPublisher) {
-        this.m_authorizator = authorizator;
+		super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
         this.connectionDescriptors = connectionDescriptors;
-        this.brokerPort = brokerPort;
         this.publisher = messagesPublisher;
     }
 
@@ -53,11 +50,15 @@ class Qos1PublishHandler {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
-        LOG.debug("publish2Subscribers_qos1 republishing to existing subscribers that matches the topic {}", topic);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("content <{}>", DebugUtils.payload2Str(toStoreMsg.getMessage()));
-            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-        }
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
+					subscriptions.dumpTree());
+		} else {
+			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
+					topic, msg.getMessageID());
+		}
+
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
@@ -66,7 +67,6 @@ class Qos1PublishHandler {
         if (msg.isLocal()) {
             sendPubAck(clientID, messageID);
         }
-        LOG.info("server {} replying with PubAck to MSG ID {}", brokerPort, messageID);
 
         if (msg.isRetainFlag()) {
             if (!msg.getPayload().hasRemaining()) {
@@ -80,16 +80,6 @@ class Qos1PublishHandler {
 
         String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
-    }
-
-    boolean checkWriteOnTopic(String topic, Channel channel) {
-        String clientID = NettyUtils.clientID(channel);
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
-            return true;
-        }
-        return false;
     }
 
     private void sendPubAck(String clientId, int messageID) {
