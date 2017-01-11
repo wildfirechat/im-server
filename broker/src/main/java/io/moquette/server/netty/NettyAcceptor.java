@@ -49,6 +49,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -96,7 +97,8 @@ public class NettyAcceptor implements ServerAcceptor {
 
     @Override
     public void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException {
-        m_bossGroup = new NioEventLoopGroup();
+    	LOG.info("Initializing Netty acceptor...");
+    	m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
         
@@ -115,7 +117,8 @@ public class NettyAcceptor implements ServerAcceptor {
         }
     }
 
-    private void initFactory(String host, int port, final PipelineInitializer pipeliner) {
+    private void initFactory(String host, int port, String protocol, final PipelineInitializer pipeliner) {
+    	LOG.info("Initializing server. Protocol = {}.", protocol);
         ServerBootstrap b = new ServerBootstrap();
         b.group(m_bossGroup, m_workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -136,25 +139,27 @@ public class NettyAcceptor implements ServerAcceptor {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         try {
+        	LOG.info("Binding server. Protocol = {}, host = {}, port = {}.", host, port);
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
-            LOG.info("Server binded host: {}, port: {}", host, port);
+            LOG.info("The server has been binded. Protocol = {}, host = {}, port = {}", host, port);
             f.sync();
         } catch (InterruptedException ex) {
-            LOG.error(null, ex);
+            LOG.error("An interruptedException was caught while initializing server. Protocol = {}.", protocol, ex);
         }
     }
     
     private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
+    	LOG.info("Configuring TCP MQTT transport...");
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         String tcpPortProp = props.getProperty(PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
         if (DISABLED_PORT_BIND.equals(tcpPortProp)) {
-            LOG.info("tcp MQTT is disabled because the value for the property with key {}", BrokerConstants.PORT_PROPERTY_NAME);
+            LOG.info("The property {} has been setted to {}. TCP MQTT will be disabled.", BrokerConstants.PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
             return;
         }
         int port = Integer.parseInt(tcpPortProp);
-        initFactory(host, port, new PipelineInitializer() {
+        initFactory(host, port, "TCP MQTT", new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
@@ -171,10 +176,12 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeWebSocketTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
+    	LOG.info("Configuring Websocket MQTT transport...");
         String webSocketPortProp = props.getProperty(WEB_SOCKET_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
         if (DISABLED_PORT_BIND.equals(webSocketPortProp)) {
             //Do nothing no WebSocket configured
-            LOG.info("WebSocket is disabled");
+			LOG.info("The property {} has been setted to {}. Websocket MQTT will be disabled.",
+					BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
             return;
         }
         int port = Integer.parseInt(webSocketPortProp);
@@ -182,7 +189,7 @@ public class NettyAcceptor implements ServerAcceptor {
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
 
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
-        initFactory(host, port, new PipelineInitializer() {
+        initFactory(host, port, "Websocket MQTT", new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
                 pipeline.addLast(new HttpServerCodec());
@@ -203,10 +210,12 @@ public class NettyAcceptor implements ServerAcceptor {
     }
     
     private void initializeSSLTCPTransport(final NettyMQTTHandler handler, IConfig props, final SSLContext sslContext) throws IOException {
-        String sslPortProp = props.getProperty(SSL_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+    	LOG.info("Configuring SSL MQTT transport...");
+    	String sslPortProp = props.getProperty(SSL_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
         if (DISABLED_PORT_BIND.equals(sslPortProp)) {
             //Do nothing no SSL configured
-            LOG.info("SSL MQTT is disabled because there is no value in properties for key {}", BrokerConstants.SSL_PORT_PROPERTY_NAME);
+			LOG.info("The property {} has been setted to {}. SSL MQTT will be disabled.",
+					BrokerConstants.SSL_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
             return;
         }
 
@@ -217,7 +226,7 @@ public class NettyAcceptor implements ServerAcceptor {
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
         final boolean needsClientAuth =  Boolean.valueOf(sNeedsClientAuth);
-        initFactory(host, sslPort, new PipelineInitializer() {
+        initFactory(host, sslPort, "SSL MQTT", new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
                 pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
@@ -235,10 +244,12 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
     private void initializeWSSTransport(final NettyMQTTHandler handler, IConfig props, final SSLContext sslContext) throws IOException {
-        String sslPortProp = props.getProperty(WSS_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
+    	LOG.info("Configuring secure websocket MQTT transport...");
+    	String sslPortProp = props.getProperty(WSS_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
         if (DISABLED_PORT_BIND.equals(sslPortProp)) {
             //Do nothing no SSL configured
-            LOG.info("SSL websocket is disabled because there is no value in properties for key {}", BrokerConstants.WSS_PORT_PROPERTY_NAME);
+        	LOG.info("The property {} has been setted to {}. Secure websocket MQTT will be disabled.",
+					BrokerConstants.WSS_PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
             return;
         }
         int sslPort = Integer.parseInt(sslPortProp);
@@ -246,7 +257,7 @@ public class NettyAcceptor implements ServerAcceptor {
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
         String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
         final boolean needsClientAuth =  Boolean.valueOf(sNeedsClientAuth);
-        initFactory(host, sslPort, new PipelineInitializer() {
+        initFactory(host, sslPort, "Secure websocket", new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
                 pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
@@ -269,32 +280,45 @@ public class NettyAcceptor implements ServerAcceptor {
     }
 
     public void close() {
-        if (m_workerGroup == null) {
-            throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
-        }
-        if (m_bossGroup == null) {
-            throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
-        }
+    	LOG.info("Closing Netty acceptor...");
+		if (m_workerGroup == null || m_bossGroup == null) {
+			LOG.error("The Netty acceptor is not initialized.");
+			throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
+		}
         Future<?> workerWaiter = m_workerGroup.shutdownGracefully();
         Future<?> bossWaiter = m_bossGroup.shutdownGracefully();
-
+        
+		/*
+		 * We shouldn't raise an IllegalStateException if we are interrupted. If
+		 * we did so, the broker is not shut down properly.
+		 */
+        LOG.info("Waiting for worker and boss event loop groups to terminate...");
         try {
-            workerWaiter.await(100);
+            workerWaiter.await(10, TimeUnit.SECONDS);
+            bossWaiter.await(10, TimeUnit.SECONDS);
         } catch (InterruptedException iex) {
-            throw new IllegalStateException(iex);
+        	LOG.warn("An InterruptedException was caught while waiting for event loops to terminate...");
+        }
+        
+        if (!m_workerGroup.isTerminated()) {
+        	LOG.warn("Forcing shutdown of worker event loop...");
+        	m_workerGroup.shutdownGracefully(0L, 0L, TimeUnit.MILLISECONDS);
+        }
+        
+        if (!m_bossGroup.isTerminated()) {
+        	LOG.warn("Forcing shutdown of boss event loop...");
+        	m_bossGroup.shutdownGracefully(0L, 0L, TimeUnit.MILLISECONDS);
         }
 
-        try {
-            bossWaiter.await(100);
-        } catch (InterruptedException iex) {
-            throw new IllegalStateException(iex);
-        }
-
+        LOG.info("Collecting message metrics...");
         MessageMetrics metrics = m_metricsCollector.computeMetrics();
-        LOG.info("Msg read: {}, msg wrote: {}", metrics.messagesRead(), metrics.messagesWrote());
+        LOG.info("The metrics have been collected. Read messages = {}, written messages = {}.", 
+        		metrics.messagesRead(), metrics.messagesWrote());
 
+        LOG.info("Collecting bytes metrics...");
         BytesMetrics bytesMetrics = m_bytesMetricsCollector.computeMetrics();
-        LOG.info(String.format("Bytes read: %d, bytes wrote: %d", bytesMetrics.readBytes(), bytesMetrics.wroteBytes()));
+        LOG.info("The bytes metrics have been collected. Read bytes = {}, written bytes = {}.", bytesMetrics.readBytes(),
+				bytesMetrics.wroteBytes());
     }
 
     private ChannelHandler createSslHandler(SSLContext sslContext, boolean needsClientAuth) {
