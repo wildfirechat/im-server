@@ -104,12 +104,7 @@ public class ProtocolPublishDecodingServer {
         publishBombing();
         publishBombing();
         //Bind  a shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                server.stop();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
     }
 
     private static void publishBombing() {

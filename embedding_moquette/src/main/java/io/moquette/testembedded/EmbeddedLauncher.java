@@ -59,14 +59,11 @@ final class EmbeddedLauncher {
 
         System.out.println("Broker started press [CTRL+C] to stop");
         //Bind  a shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                System.out.println("Stopping broker");
-                mqttBroker.stopServer();
-                System.out.println("Broker stopped");
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Stopping broker");
+            mqttBroker.stopServer();
+            System.out.println("Broker stopped");
+        }));
 
         Thread.sleep(20000);
         System.out.println("Before self publish");

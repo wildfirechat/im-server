@@ -134,12 +134,9 @@ public class Client {
 
     private void doConnect(MqttConnectMessage connectMessage) {
         final CountDownLatch latch = new CountDownLatch(1);
-        this.setCallback(new Client.ICallback() {
-
-            public void call(MqttMessage msg) {
-                receivedMsg = msg;
-                latch.countDown();
-            }
+        this.setCallback(msg -> {
+            receivedMsg = msg;
+            latch.countDown();
         });
 
         this.sendMessage(connectMessage);

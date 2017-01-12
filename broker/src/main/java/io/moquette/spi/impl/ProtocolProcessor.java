@@ -822,8 +822,10 @@ public class ProtocolProcessor {
             if (req.qualityOfService() == FAILURE) {
                 continue;
             }
-            Subscription newSubscription =
-                    new Subscription(clientID, new Topic(req.topicName()), req.qualityOfService());
+            Subscription newSubscription = new Subscription(
+                    clientID,
+                    new Topic(req.topicName()),
+                    req.qualityOfService());
 
             clientSession.subscribe(newSubscription);
             newSubscriptions.add(newSubscription);
@@ -889,13 +891,8 @@ public class ProtocolProcessor {
 
         // scans retained messages to be published to the new subscription
         // TODO this is ugly, it does a linear scan on potential big dataset
-        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
-
-            @Override
-            public boolean match(Topic key) {
-                return key.match(newSubscription.getTopicFilter());
-            }
-        });
+        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore
+                .searchMatching(key -> key.match(newSubscription.getTopicFilter()));
 
         if (!messages.isEmpty()) {
             LOG.info("Publishing retained messages CId={}, topics={}, messagesNo={}",
