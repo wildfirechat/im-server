@@ -164,7 +164,7 @@ public class ProtocolProcessor {
             IAuthenticator authenticator,
             boolean allowAnonymous,
             boolean allowZeroByteClientId, IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
-		init(new ConnectionDescriptorStore(), subscriptions, storageService, sessionsStore, authenticator,
+		init(new ConnectionDescriptorStore(sessionsStore), subscriptions, storageService, sessionsStore, authenticator,
 				allowAnonymous, allowZeroByteClientId, authorizator, interceptor, serverPort);
 	}
 

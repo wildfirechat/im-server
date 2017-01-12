@@ -168,6 +168,15 @@ class MapDBSessionsStore implements ISessionsStore {
         PersistentSession storedSession = m_persistentSessions.get(clientID);
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
+    
+    @Override
+    public Collection<ClientSession> getAllSessions() {
+        Collection<ClientSession> result = new ArrayList<ClientSession>();
+        for (Map.Entry<String, PersistentSession> entry : m_persistentSessions.entrySet()) {
+            result.add(new ClientSession(entry.getKey(), m_messagesStore, this, entry.getValue().cleanSession));
+        }
+        return result;
+    }
 
     @Override
     public void updateCleanStatus(String clientID, boolean cleanSession) {
@@ -318,4 +327,25 @@ class MapDBSessionsStore implements ISessionsStore {
         }
 		return m_messagesStore.getMessageByGuid(guid);
 	}
+
+    @Override
+    public int getInflightMessagesNo(String clientID) {
+        if (!m_inflightStore.containsKey(clientID))
+            return 0;
+        else
+            return m_inflightStore.get(clientID).size();
+    }
+
+    @Override
+    public int getPendingPublishMessagesNo(String clientID) {
+        return m_messagesStore.getPendingPublishMessages(clientID);
+    }
+
+    @Override
+    public int getSecondPhaseAckPendingMessages(String clientID) {
+        if (!m_secondPhaseStore.containsKey(clientID))
+            return 0;
+        else
+            return m_secondPhaseStore.get(clientID).size();
+    }
 }

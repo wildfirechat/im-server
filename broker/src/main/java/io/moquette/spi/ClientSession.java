@@ -189,4 +189,21 @@ public class ClientSession {
     public IMessagesStore.StoredMessage getInflightMessage(int messageID) {
         return m_sessionsStore.getInflightMessage(clientID, messageID);
     }
+
+    public Set<Subscription> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public int getPendingPublishMessagesNo() {
+        return m_sessionsStore.getPendingPublishMessagesNo(clientID);
+    }
+
+    public int getSecondPhaseAckPendingMessages() {
+        return m_sessionsStore.getSecondPhaseAckPendingMessages(clientID);
+    }
+
+    public int getInflightMessagesNo() {
+        return m_sessionsStore.getInflightMessagesNo(clientID);
+    }
+
 }

@@ -15,6 +15,7 @@
  */
 package io.moquette.spi;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -117,6 +118,12 @@ public interface ISessionsStore {
      * @return the session for the given clientID, null if not found.
      * */
     ClientSession sessionForClient(String clientID);
+    
+    /**
+     * Returns all the sessions
+     * @return
+     */
+    Collection<ClientSession> getAllSessions();
 
     void inFlightAck(String clientID, int messageID);
 
@@ -156,4 +163,29 @@ public interface ISessionsStore {
     MessageGUID mapToGuid(String clientID, int messageID);
     
     StoredMessage getInflightMessage(String clientID, int messageID);
+
+    /**
+     * Returns the number of inflight messages for the given client ID
+     * 
+     * @param clientID
+     * @return
+     */
+    int getInflightMessagesNo(String clientID);
+
+    /**
+     * Returns the size of the session queue for the given client ID
+     * 
+     * @param clientID
+     * @return
+     */
+    int getPendingPublishMessagesNo(String clientID);
+
+    /**
+     * Returns the number of second-phase ACK pending messages for the given
+     * client ID
+     * 
+     * @param clientID
+     * @return
+     */
+    int getSecondPhaseAckPendingMessages(String clientID);
 }

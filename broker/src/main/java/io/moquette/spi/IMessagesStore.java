@@ -135,4 +135,6 @@ public interface IMessagesStore {
     StoredMessage getMessageByGuid(MessageGUID guid);
 
     void cleanRetained(String topic);
+
+    int getPendingPublishMessages(String clientID);
 }

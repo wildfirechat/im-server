@@ -17,6 +17,7 @@ package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.Server;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.IResourceLoader;
@@ -59,6 +60,8 @@ public class ProtocolProcessorBootstrapper {
     private BrokerInterceptor m_interceptor;
 
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
+    
+    private ConnectionDescriptorStore connectionDescriptors;
 
     public ProtocolProcessorBootstrapper() {
     }
@@ -141,11 +144,14 @@ public class ProtocolProcessorBootstrapper {
             }
             LOG.info("An {} authorizator instance will be used.", authorizator.getClass().getName());
         }
+        
+        LOG.info("Initializing connection descriptor store...");
+        connectionDescriptors = new ConnectionDescriptorStore(m_sessionsStore);
 
         LOG.info("Initializing MQTT protocol processor...");
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         boolean allowZeroByteClientId = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
-        m_processor.init(subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
+        m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
     
@@ -213,5 +219,9 @@ public class ProtocolProcessorBootstrapper {
 
     public void shutdown() {
         this.m_mapStorage.close();
+    }
+
+    public ConnectionDescriptorStore getConnectionDescriptors() {
+        return connectionDescriptors;
     }
 }

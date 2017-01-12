@@ -137,4 +137,11 @@ class MapDBMessagesStore implements IMessagesStore {
         }
         m_retainedStore.remove(topic);
     }
+
+    @Override
+    public int getPendingPublishMessages(String clientID) {
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuidMap = m_db
+                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+        return messageIdToGuidMap.size();
+    }
 }

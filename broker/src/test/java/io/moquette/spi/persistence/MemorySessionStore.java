@@ -23,6 +23,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +129,15 @@ public class MemorySessionStore implements ISessionsStore {
 
         MapDBPersistentStore.PersistentSession storedSession = m_persistentSessions.get(clientID);
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
+    }
+    
+    @Override
+    public Collection<ClientSession> getAllSessions() {
+        Collection<ClientSession> result = new ArrayList<ClientSession>();
+        for (Map.Entry<String, PersistentSession> entry : m_persistentSessions.entrySet()) {
+            result.add(new ClientSession(entry.getKey(), m_messagesStore, this, entry.getValue().cleanSession));
+        }
+        return result;
     }
 
     @Override
@@ -252,4 +262,28 @@ public class MemorySessionStore implements ISessionsStore {
 	public StoredMessage getInflightMessage( String clientID, int messageID ) {
 		return null;
 	}
+
+    @Override
+    public int getInflightMessagesNo(String clientID) {
+        Map<Integer, MessageGUID> inflightMessages = m_inflightStore.get(clientID);
+        if (inflightMessages == null)
+            return 0;
+        else
+            return inflightMessages.size();
+    }
+
+    @Override
+    public int getPendingPublishMessagesNo(String clientID) {
+        return m_messagesStore.getPendingPublishMessages(clientID);
+    }
+
+    @Override
+    public int getSecondPhaseAckPendingMessages(String clientID) {
+        Map<Integer, MessageGUID> pendingAcks = m_secondPhaseStore.get(clientID);
+        if (pendingAcks == null)
+            return 0;
+        else
+            return pendingAcks.size();
+    }
+
 }

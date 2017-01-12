@@ -23,6 +23,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.ITopic;
 import io.moquette.BrokerConstants;
+import io.moquette.connections.IConnectionsManager;
 import io.moquette.interception.HazelcastInterceptHandler;
 import io.moquette.interception.HazelcastMsg;
 import io.moquette.interception.InterceptHandler;
@@ -293,6 +294,15 @@ public class Server {
         }
         LOG.info("Removing MQTT message interceptor. InterceptorId = {}.", interceptHandler.getID());
         m_processor.removeInterceptHandler(interceptHandler);
+    }
+
+    /**
+     * Returns the connections manager of this broker.
+     * 
+     * @return
+     */
+    public IConnectionsManager getConnectionsManager() {
+        return m_processorBootstrapper.getConnectionDescriptors();
     }
 
 }
