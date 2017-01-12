@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>io.moquette</groupId>
-        <version>0.9-SNAPSHOT</version>
+        <version>0.9.1.sofia</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
