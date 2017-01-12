@@ -18,6 +18,7 @@ public class MqttSession {
 	private int pendingPublishMessagesNo;
 	private int secondPhaseAckPendingMessages;
 	private Collection<MqttSubscription> activeSubscriptions;
+	private MqttConnectionMetrics connectionMetrics;
 
 	public boolean isConnectionEstablished() {
 		return connectionEstablished;
@@ -51,20 +52,28 @@ public class MqttSession {
 		this.inflightMessages = inflightMessages;
 	}
 
-	public int getSecondPhaseAckPendingMessages() {
-		return secondPhaseAckPendingMessages;
-	}
+    public int getSecondPhaseAckPendingMessages() {
+        return secondPhaseAckPendingMessages;
+    }
 
-	public void setSecondPhaseAckPendingMessages(int secondPhaseAckPendingMessages) {
-		this.secondPhaseAckPendingMessages = secondPhaseAckPendingMessages;
-	}
+    public void setSecondPhaseAckPendingMessages(int secondPhaseAckPendingMessages) {
+        this.secondPhaseAckPendingMessages = secondPhaseAckPendingMessages;
+    }
 
-	public Collection<MqttSubscription> getActiveSubscriptions() {
-		return activeSubscriptions;
-	}
+    public Collection<MqttSubscription> getActiveSubscriptions() {
+        return activeSubscriptions;
+    }
 
-	public void setActiveSubscriptions(Collection<MqttSubscription> activeSubscriptions) {
-		this.activeSubscriptions = activeSubscriptions;
-	}
+    public void setActiveSubscriptions(Collection<MqttSubscription> activeSubscriptions) {
+        this.activeSubscriptions = activeSubscriptions;
+    }
+
+    public MqttConnectionMetrics getConnectionMetrics() {
+        return connectionMetrics;
+    }
+
+    public void setConnectionMetrics(MqttConnectionMetrics connectionMetrics) {
+        this.connectionMetrics = connectionMetrics;
+    }
 
 }

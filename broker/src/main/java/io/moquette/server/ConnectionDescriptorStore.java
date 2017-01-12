@@ -9,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.moquette.connections.IConnectionsManager;
+import io.moquette.connections.MqttConnectionMetrics;
 import io.moquette.connections.MqttSession;
 import io.moquette.connections.MqttSubscription;
 import io.moquette.parser.proto.messages.AbstractMessage;
+import io.moquette.server.netty.metrics.BytesMetrics;
+import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -150,7 +153,16 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         }
         result.setActiveSubscriptions(mqttSubscriptions);
         result.setCleanSession(session.isCleanSession());
-        result.setConnectionEstablished(this.isConnected(session.clientID));
+        ConnectionDescriptor descriptor = this.getConnection(session.clientID);
+        if (descriptor != null) {
+            result.setConnectionEstablished(true);
+            BytesMetrics bytesMetrics = descriptor.getBytesMetrics();
+            MessageMetrics messageMetrics = descriptor.getMessageMetrics();
+            result.setConnectionMetrics(new MqttConnectionMetrics(bytesMetrics.readBytes(), bytesMetrics.wroteBytes(),
+                    messageMetrics.messagesRead(), messageMetrics.messagesWrote()));
+        } else {
+            result.setConnectionEstablished(false);
+        }
         result.setPendingPublishMessagesNo(session.getPendingPublishMessagesNo());
         result.setSecondPhaseAckPendingMessages(session.getSecondPhaseAckPendingMessages());
         result.setInflightMessages(session.getInflightMessagesNo());

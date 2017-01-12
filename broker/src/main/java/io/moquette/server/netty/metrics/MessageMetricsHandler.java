@@ -15,6 +15,7 @@
  */
 package io.moquette.server.netty.metrics;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -61,5 +62,9 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
         super.close(ctx, promise);
+    }
+
+    public static MessageMetrics getMessageMetrics(Channel channel) {
+        return channel.attr(ATTR_KEY_METRICS).get();
     }
 }

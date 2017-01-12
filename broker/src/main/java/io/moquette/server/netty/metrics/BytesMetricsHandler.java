@@ -16,6 +16,7 @@
 package io.moquette.server.netty.metrics;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -62,5 +63,9 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
         m_collector.sumReadBytes(metrics.readBytes());
         m_collector.sumWroteBytes(metrics.wroteBytes());
         super.close(ctx, promise);
+    }
+
+    public static BytesMetrics getBytesMetrics(Channel channel) {
+        return channel.attr(ATTR_KEY_METRICS).get();
     }
 }

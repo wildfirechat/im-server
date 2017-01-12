@@ -15,16 +15,20 @@
  */
 package io.moquette.server;
 
-import io.netty.channel.Channel;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
 import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
+import io.moquette.server.netty.metrics.BytesMetrics;
+import io.moquette.server.netty.metrics.BytesMetricsHandler;
+import io.moquette.server.netty.metrics.MessageMetrics;
+import io.moquette.server.netty.metrics.MessageMetricsHandler;
+import io.netty.channel.Channel;
 
 
 /**
@@ -127,6 +131,14 @@ public class ConnectionDescriptor {
         if (clientID != null ? !clientID.equals(that.clientID) : that.clientID != null) return false;
         return !(channel != null ? !channel.equals(that.channel) : that.channel != null);
 
+    }
+
+    public BytesMetrics getBytesMetrics() {
+        return BytesMetricsHandler.getBytesMetrics(channel);
+    }
+
+    public MessageMetrics getMessageMetrics() {
+        return MessageMetricsHandler.getMessageMetrics(channel);
     }
 
     @Override
