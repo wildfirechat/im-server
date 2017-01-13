@@ -95,10 +95,21 @@ public class NettyAcceptor implements ServerAcceptor {
     BytesMetricsCollector m_bytesMetricsCollector = new BytesMetricsCollector();
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
 
+    private int nettySoBacklog;
+    private boolean nettySoReuseaddr;
+    private boolean nettyTcpNodelay;
+    private boolean nettySoKeepalive;
+
     @Override
     public void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException {
-    	LOG.info("Initializing Netty acceptor...");
-    	m_bossGroup = new NioEventLoopGroup();
+        LOG.info("Initializing Netty acceptor...");
+
+        nettySoBacklog = Integer.parseInt(props.getProperty(BrokerConstants.NETTY_SO_BACKLOG, "128"));
+        nettySoReuseaddr = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_REUSEADDR, "true"));
+        nettyTcpNodelay = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_TCP_NODELAY, "true"));
+        nettySoKeepalive = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_KEEPALIVE, "true"));
+
+        m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
         
@@ -134,10 +145,10 @@ public class NettyAcceptor implements ServerAcceptor {
                         }
                     }
                 })
-                .option(ChannelOption.SO_BACKLOG, 128)
-                .option(ChannelOption.SO_REUSEADDR, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
+                .option(ChannelOption.SO_BACKLOG, nettySoBacklog)
+                .option(ChannelOption.SO_REUSEADDR, nettySoReuseaddr)
+                .option(ChannelOption.TCP_NODELAY, nettyTcpNodelay)
+                .childOption(ChannelOption.SO_KEEPALIVE, nettySoKeepalive);
         try {
         	LOG.info("Binding server. Protocol = {}, host = {}, port = {}.", host, port);
             // Bind and start to accept incoming connections.
