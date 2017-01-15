@@ -17,7 +17,6 @@ package io.moquette.server.netty;
 
 import io.moquette.BrokerConstants;
 import static io.moquette.BrokerConstants.*;
-import io.moquette.parser.commons.Constants;
 import io.moquette.parser.netty.MQTTDecoder;
 import io.moquette.parser.netty.MQTTEncoder;
 import io.moquette.spi.security.ISslContextCreator;
@@ -99,16 +98,19 @@ public class NettyAcceptor implements ServerAcceptor {
     private boolean nettySoReuseaddr;
     private boolean nettyTcpNodelay;
     private boolean nettySoKeepalive;
+    private int nettyChannelTimeoutSeconds;
 
     @Override
     public void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException {
         LOG.info("Initializing Netty acceptor...");
 
-        nettySoBacklog = Integer.parseInt(props.getProperty(BrokerConstants.NETTY_SO_BACKLOG, "128"));
-        nettySoReuseaddr = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_REUSEADDR, "true"));
-        nettyTcpNodelay = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_TCP_NODELAY, "true"));
-        nettySoKeepalive = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_KEEPALIVE, "true"));
-
+        nettySoBacklog = Integer.parseInt(props.getProperty(BrokerConstants.NETTY_SO_BACKLOG_PROPERTY_NAME, "128"));
+        nettySoReuseaddr = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_REUSEADDR_PROPERTY_NAME, "true"));
+        nettyTcpNodelay = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_TCP_NODELAY_PROPERTY_NAME, "true"));
+        nettySoKeepalive = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_KEEPALIVE_PROPERTY_NAME, "true"));
+        nettyChannelTimeoutSeconds = Integer
+                .parseInt(props.getProperty(BrokerConstants.NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME, "10"));
+        
         m_bossGroup = new NioEventLoopGroup();
         m_workerGroup = new NioEventLoopGroup();
         final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
@@ -173,7 +175,7 @@ public class NettyAcceptor implements ServerAcceptor {
         initFactory(host, port, "TCP MQTT", new PipelineInitializer() {
             @Override
             void init(ChannelPipeline pipeline) {
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
 //                pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
@@ -208,7 +210,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt", MQTT_SUBPROTOCOL_CSV_LIST));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());
@@ -241,7 +243,7 @@ public class NettyAcceptor implements ServerAcceptor {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
                 pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
@@ -278,7 +280,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler("/mqtt", MQTT_SUBPROTOCOL_CSV_LIST));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MQTTDecoder());

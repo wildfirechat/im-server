@@ -51,8 +51,9 @@ public class BrokerConstants {
     public static final String HOST = "0.0.0.0";
     public static final String NEED_CLIENT_AUTH = "need_client_auth";
     public static final String HAZELCAST_CONFIGURATION = "hazelcast.configuration";
-    public static final String NETTY_SO_BACKLOG = "netty.so_backlog";
-    public static final String NETTY_SO_REUSEADDR = "netty.so_reuseaddr";
-    public static final String NETTY_TCP_NODELAY = "netty.tcp_nodelay";
-    public static final String NETTY_SO_KEEPALIVE = "netty.so_keepalive";
+    public static final String NETTY_SO_BACKLOG_PROPERTY_NAME = "netty.so_backlog";
+    public static final String NETTY_SO_REUSEADDR_PROPERTY_NAME = "netty.so_reuseaddr";
+    public static final String NETTY_TCP_NODELAY_PROPERTY_NAME = "netty.tcp_nodelay";
+    public static final String NETTY_SO_KEEPALIVE_PROPERTY_NAME = "netty.so_keepalive";
+    public static final String NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME = "netty.channel_timeout.seconds";
 }
