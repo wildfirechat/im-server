@@ -22,7 +22,6 @@ public class DBAuthenticator implements IAuthenticator {
 
     private static final Logger LOG = LoggerFactory.getLogger(DBAuthenticator.class);
 
-    private final String sqlQuery;
     private final MessageDigest messageDigest;
     private final PreparedStatement preparedStatement;
 
@@ -44,7 +43,6 @@ public class DBAuthenticator implements IAuthenticator {
      */
     public DBAuthenticator(String driver, String jdbcUrl, String sqlQuery, String digestMethod){
 
-        this.sqlQuery = sqlQuery;
         try {
             Class.forName(driver);
             final Connection connection = DriverManager.getConnection(jdbcUrl);

@@ -6,7 +6,11 @@
         <relativePath>../</relativePath>
         <artifactId>moquette-parent</artifactId>
         <groupId>io.moquette</groupId>
+<<<<<<< HEAD
         <version>0.10-SNAPSHOT</version>
+=======
+        <version>0.9.1.sofia</version>
+>>>>>>> ebdee0bb4483b9c3b2332e8be1fe9835e332bc50
     </parent>
 
     <artifactId>moquette-netty-parser</artifactId>

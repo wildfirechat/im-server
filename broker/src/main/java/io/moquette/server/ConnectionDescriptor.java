@@ -15,11 +15,21 @@
  */
 package io.moquette.server;
 
-import io.netty.channel.Channel;
+import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
+import io.moquette.server.netty.AutoFlushHandler;
+import io.moquette.server.netty.NettyUtils;
+import io.moquette.server.netty.metrics.BytesMetrics;
+import io.moquette.server.netty.metrics.BytesMetricsHandler;
+import io.moquette.server.netty.metrics.MessageMetrics;
+import io.moquette.server.netty.metrics.MessageMetricsHandler;
+import io.netty.channel.Channel;
+
 
 /**
  * Value object to maintain the information of single connection, like ClientID, Channel,
@@ -40,7 +50,7 @@ public class ConnectionDescriptor {
     }
 
     public final String clientID;
-    public final Channel channel;
+    private final Channel channel;
     public final boolean cleanSession;
     private final AtomicReference<ConnectionState> channelState = new AtomicReference<>(ConnectionState.DISCONNECTED);
 
@@ -49,20 +59,59 @@ public class ConnectionDescriptor {
         this.channel = session;
         this.cleanSession = cleanSession;
     }
+    
+    public void writeAndFlush(Object payload) {
+    	this.channel.writeAndFlush(payload);
+    }
+    
+    public void setupAutoFlusher(int flushIntervalMs) {
+        try {
+            this.channel.pipeline().addAfter("idleEventHandler", "autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
+        } catch (NoSuchElementException nseex) {
+            //the idleEventHandler is not present on the pipeline
+            this.channel.pipeline().addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
+        }
+    }
+    
+    public boolean doesNotUseChannel(Channel channel) {
+    	return !(this.channel.equals(channel));
+    }
+    
+	public boolean close() {
+		LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
+		final boolean success = assignState(ConnectionState.INTERCEPTORS_NOTIFIED, ConnectionState.DISCONNECTED);
+		if (!success) {
+			return false;
+		}
+		this.channel.close();
+		return true;
+	}
+	
+    public String getUsername() {
+    	return NettyUtils.userName(this.channel);
+    }
 
     public void abort() {
-        LOG.info("closing the channel");
+    	LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
 //        try {
             //this.channel.disconnect().sync();
-            this.channel.close();//.sync();
+        this.channel.close();//.sync();
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
     }
 
     public boolean assignState(ConnectionState expected, ConnectionState newState) {
-        return channelState.compareAndSet(expected, newState);
-    }
+		LOG.debug("Updating state of connection descriptor. MqttClientId = {}, expectedState = {}, newState = {}.",
+				clientID, expected, newState);
+		boolean retval = channelState.compareAndSet(expected, newState);
+		if (!retval) {
+			LOG.error(
+					"Unable to update state of connection descriptor. MqttclientId = {}, expectedState = {}, newState = {}.",
+					clientID, expected, newState);
+		}
+		return retval;
+	}
 
     @Override
     public String toString() {
@@ -82,6 +131,14 @@ public class ConnectionDescriptor {
         if (clientID != null ? !clientID.equals(that.clientID) : that.clientID != null) return false;
         return !(channel != null ? !channel.equals(that.channel) : that.channel != null);
 
+    }
+
+    public BytesMetrics getBytesMetrics() {
+        return BytesMetricsHandler.getBytesMetrics(channel);
+    }
+
+    public MessageMetrics getMessageMetrics() {
+        return MessageMetricsHandler.getMessageMetrics(channel);
     }
 
     @Override

@@ -74,6 +74,7 @@ public class ClientSession {
      * @return the list of messages to be delivered for client related to the session.
      * */
     public BlockingQueue<IMessagesStore.StoredMessage> queue() {
+        LOG.info("Retrieving stored messages. MqttClientId = {}.", clientID);
         return this.m_sessionsStore.queue(clientID);
     }
 
@@ -83,11 +84,12 @@ public class ClientSession {
     }
 
     public boolean subscribe(Subscription newSubscription) {
-        LOG.info("<{}> subscribed to the topic filter <{}> with QoS {}",
-                newSubscription.getClientId(), newSubscription.getTopicFilter(),
-                AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
+        LOG.info("Adding new subscription. MqttClientId = {}, topics = {}, qos = {}.", newSubscription.getClientId(),
+				newSubscription.getTopicFilter(), AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
         boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {
+            LOG.error("The topic filter is not valid. MqttClientId = {}, topics = {}.", newSubscription.getClientId(),
+					newSubscription.getTopicFilter());
             //send SUBACK with 0x80 for this topic filter
             return false;
         }
@@ -96,6 +98,9 @@ public class ClientSession {
         //update the selected subscriptions if not present or if has a greater qos
         if (existingSub == null || existingSub.getRequestedQos().byteValue() < newSubscription.getRequestedQos().byteValue()) {
             if (existingSub != null) {
+                LOG.info("The subscription already existed with a lower QoS value. It will be updated. MqttClientId = {}, topics = {}, existingQos = {}, newQos = {}.",
+                        newSubscription.getClientId(), newSubscription.getTopicFilter(), existingSub.getRequestedQos(),
+                        newSubscription.getRequestedQos());
                 subscriptions.remove(newSubscription);
             }
             subscriptions.add(newSubscription);
@@ -105,6 +110,7 @@ public class ClientSession {
     }
 
     public void unsubscribeFrom(String topicFilter) {
+        LOG.info("Removing subscription. MqttClientID = {}, topics = {}.", clientID, topicFilter);
         m_sessionsStore.removeSubscription(topicFilter, clientID);
         Set<Subscription> subscriptionsToRemove = new HashSet<>();
         for (Subscription sub : this.subscriptions) {
@@ -117,6 +123,7 @@ public class ClientSession {
 
     public void disconnect() {
         if (this.cleanSession) {
+            LOG.info("The client has disconnected. Removing its subscriptions. MqttClientId = {}.", clientID);
             //cleanup topic subscriptions
             cleanSession();
         }
@@ -124,13 +131,12 @@ public class ClientSession {
     }
 
     public void cleanSession() {
-        LOG.info("cleaning old saved subscriptions for client <{}>", this.clientID);
+        LOG.info("Wiping existing subscriptions. MqttClientId = {}.", this.clientID);
         m_sessionsStore.wipeSubscriptions(this.clientID);
-        LOG.debug("Wiped subscriptions for client <{}>", this.clientID);
 
         //remove also the messages stored of type QoS1/2
+        LOG.info("Removing stored messages with QoS 1 and 2. MqttClientId = {}.", this.clientID);
         messagesStore.dropMessagesInSession(this.clientID);
-        LOG.debug("Removed messages in session for client <{}>", this.clientID);
     }
 
     public boolean isCleanSession() {
@@ -147,12 +153,14 @@ public class ClientSession {
     }
 
     public void inFlightAcknowledged(int messageID) {
-        LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", this.clientID, messageID);
+	if (LOG.isTraceEnabled())
+            LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", this.clientID, messageID);
         m_sessionsStore.inFlightAck(this.clientID, messageID);
     }
 
     public void inFlightAckWaiting(MessageGUID guid, int messageID) {
-        LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
         m_sessionsStore.inFlight(this.clientID, messageID, guid);
     }
 
@@ -181,4 +189,21 @@ public class ClientSession {
     public IMessagesStore.StoredMessage getInflightMessage(int messageID) {
         return m_sessionsStore.getInflightMessage(clientID, messageID);
     }
+
+    public Set<Subscription> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public int getPendingPublishMessagesNo() {
+        return m_sessionsStore.getPendingPublishMessagesNo(clientID);
+    }
+
+    public int getSecondPhaseAckPendingMessages() {
+        return m_sessionsStore.getSecondPhaseAckPendingMessages(clientID);
+    }
+
+    public int getInflightMessagesNo() {
+        return m_sessionsStore.getInflightMessagesNo(clientID);
+    }
+
 }

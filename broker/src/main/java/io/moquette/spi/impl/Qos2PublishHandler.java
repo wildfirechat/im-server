@@ -1,7 +1,7 @@
 package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.*;
-import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
@@ -14,40 +14,36 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
-class Qos2PublishHandler {
+import java.util.List;
+
+class Qos2PublishHandler extends QosPublishHandler  {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos1PublishHandler.class);
 
-    private final IAuthorizator m_authorizator;
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
-    private final String brokerPort;
     private final MessagesPublisher publisher;
 
     public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors,
+                              ConnectionDescriptorStore connectionDescriptors,
                               ISessionsStore sessionsStore, String brokerPort, MessagesPublisher messagesPublisher) {
-        this.m_authorizator = authorizator;
+		super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
-        this.brokerPort = brokerPort;
         this.publisher = messagesPublisher;
     }
 
     void receivedPublishQos2(Channel channel, PublishMessage msg) {
-        final AbstractMessage.QOSType qos = AbstractMessage.QOSType.EXACTLY_ONCE;
         final String topic = msg.getTopicName();
         //check if the topic can be wrote
         if (checkWriteOnTopic(topic, channel)) {
@@ -58,7 +54,16 @@ class Qos2PublishHandler {
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
-        LOG.info("PUBLISH on server {} from clientID <{}> on topic <{}> with QoS {}", this.brokerPort, clientID, topic, qos);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
+					subscriptions.dumpTree());
+		} else {
+			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
+					topic, msg.getMessageID());
+		}
+
         //QoS2
         MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         if (msg.isLocal()) {
@@ -85,16 +90,20 @@ class Qos2PublishHandler {
     void processPubRel(Channel channel, PubRelMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
-        LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
+        LOG.info("Processing PUBREL message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         final String topic = evt.getTopic();
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("content <{}>", DebugUtils.payload2Str(evt.getMessage()));
-            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-        }
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(evt.getMessage()),
+					subscriptions.dumpTree());
+		} else {
+			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
+					topic, msg.getMessageID());
+		}
         this.publisher.publish2Subscribers(evt, topicMatchingSubscriptions);
 
         if (evt.isRetained()) {
@@ -108,27 +117,22 @@ class Qos2PublishHandler {
         sendPubComp(clientID, messageID);
     }
 
-    private boolean checkWriteOnTopic(String topic, Channel channel) {
-        String clientID = NettyUtils.clientID(channel);
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
-            return true;
-        }
-        return false;
-    }
 
     private void sendPubRec(String clientID, int messageID) {
-        LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
+		}
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubRecMessage);
+        connectionDescriptors.sendMessage(pubRecMessage,messageID, clientID);
     }
 
     private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
+		}
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
-        connectionDescriptors.get(clientID).channel.writeAndFlush(pubCompMessage);
+        connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);
     }
 }

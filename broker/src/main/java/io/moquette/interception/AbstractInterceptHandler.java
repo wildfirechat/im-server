@@ -15,7 +15,13 @@
  */
 package io.moquette.interception;
 
-import io.moquette.interception.messages.*;
+import io.moquette.interception.messages.InterceptAcknowledgedMessage;
+import io.moquette.interception.messages.InterceptConnectMessage;
+import io.moquette.interception.messages.InterceptConnectionLostMessage;
+import io.moquette.interception.messages.InterceptDisconnectMessage;
+import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.interception.messages.InterceptSubscribeMessage;
+import io.moquette.interception.messages.InterceptUnsubscribeMessage;
 
 /**
  * Basic abstract class usefull to avoid empty methods creation in subclasses.
@@ -23,7 +29,12 @@ import io.moquette.interception.messages.*;
  * Created by andrea on 08/12/15.
  */
 public abstract class AbstractInterceptHandler implements InterceptHandler {
-
+	
+	@Override
+	public Class<?>[] getInterceptedMessageTypes() {
+		return InterceptHandler.ALL_MESSAGE_TYPES;
+	}
+	
     @Override
     public void onConnect(InterceptConnectMessage msg) {}
 

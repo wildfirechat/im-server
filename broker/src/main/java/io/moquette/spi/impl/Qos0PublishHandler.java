@@ -14,11 +14,10 @@ import java.util.List;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
-class Qos0PublishHandler {
+class Qos0PublishHandler extends QosPublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos0PublishHandler.class);
 
-    private final IAuthorizator m_authorizator;
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
@@ -27,7 +26,7 @@ class Qos0PublishHandler {
     public Qos0PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
                               MessagesPublisher messagesPublisher) {
-        this.m_authorizator = authorizator;
+		super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
@@ -46,11 +45,15 @@ class Qos0PublishHandler {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
-        LOG.debug("publish2Subscribers republishing to existing subscribers that matches the topic {}", topic);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("content <{}>", DebugUtils.payload2Str(toStoreMsg.getMessage()));
-            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-        }
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
+					subscriptions.dumpTree());
+		} else {
+			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
+					topic, msg.getMessageID());
+		}
+		
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
@@ -61,15 +64,5 @@ class Qos0PublishHandler {
 
         String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
-    }
-
-    boolean checkWriteOnTopic(String topic, Channel channel) {
-        String clientID = NettyUtils.clientID(channel);
-        String username = NettyUtils.userName(channel);
-        if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.debug("topic {} doesn't have write credentials", topic);
-            return true;
-        }
-        return false;
     }
 }

@@ -31,6 +31,11 @@ import static java.util.Arrays.asList;
 
     public class EmbeddedLauncher {
     static class PublisherListener extends AbstractInterceptHandler {
+    	
+    	@Override
+    	public String getID() {
+    		return "EmbeddedLauncherPublishListener";
+    	}
 
         @Override
         public void onPublish(InterceptPublishMessage msg) {

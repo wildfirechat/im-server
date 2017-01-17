@@ -35,9 +35,9 @@ class AuthorizationsCollector implements IAuthorizator {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizationsCollector.class);
 
-    private List<Authorization> m_globalAuthorizations = new ArrayList();
-    private List<Authorization> m_patternAuthorizations = new ArrayList();
-    private Map<String, List<Authorization>> m_userAuthorizations = new HashMap();
+    private List<Authorization> m_globalAuthorizations = new ArrayList<>();
+    private List<Authorization> m_patternAuthorizations = new ArrayList<>();
+    private Map<String, List<Authorization>> m_userAuthorizations = new HashMap<>();
     private boolean m_parsingUsersSpecificSection = false;
     private boolean m_parsingPatternSpecificSection = false;
     private String m_currentUser = "";
@@ -59,7 +59,7 @@ class AuthorizationsCollector implements IAuthorizator {
         if (m_parsingUsersSpecificSection) {
             //TODO in java 8 switch to m_userAuthorizations.putIfAbsent(m_currentUser, new ArrayList());
             if (!m_userAuthorizations.containsKey(m_currentUser)) {
-                m_userAuthorizations.put(m_currentUser, new ArrayList());
+                m_userAuthorizations.put(m_currentUser, new ArrayList<Authorization>());
             }
             List<Authorization> userAuths = m_userAuthorizations.get(m_currentUser);
             userAuths.add(acl);
