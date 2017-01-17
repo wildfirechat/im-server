@@ -1,3 +1,5 @@
+/build
+*/build/
 /target/
 /parser/target/
 /benchmarking/target/
@@ -31,7 +33,6 @@ broker/runner
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
@@ -43,3 +44,4 @@ broker/nb-configuration.xml
 broker/nbactions-Server.xml
 
 maven-metadata.xml
+/.gradle/

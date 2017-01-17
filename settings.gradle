@@ -1,0 +1,16 @@
+rootProject.name = 'moquette-parent'
+include ':moquette-broker'
+include ':distribution'
+include ':moquette-h2-storage'
+include ':moquette-mapdb-storage'
+include ':moquette-embedded-test'
+include ':moquette-osgi-test'
+include ':moquette-performance'
+
+project(':moquette-broker').projectDir = "$rootDir/broker" as File
+project(':distribution').projectDir = "$rootDir/distribution" as File
+project(':moquette-embedded-test').projectDir = "$rootDir/embedding_moquette" as File
+project(':moquette-osgi-test').projectDir = "$rootDir/osgi_test" as File
+project(':moquette-performance').projectDir = "$rootDir/perf" as File
+project(':moquette-h2-storage').projectDir = "$rootDir/h2_storage" as File
+project(':moquette-mapdb-storage').projectDir = "$rootDir/mapdb_storage" as File

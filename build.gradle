@@ -1,0 +1,89 @@
+allprojects  {
+  apply plugin: 'maven'
+
+  group = 'io.moquette'
+  version = '0.11-SNAPSHOT'
+}
+
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.8'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+  }
+}
+
+subprojects {
+
+  repositories {
+    mavenLocal()
+
+    maven { url "https://repo.eclipse.org/content/repositories/paho-releases/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+  }
+
+  apply from: new File(rootDir, 'gradle/java.gradle')
+  apply from: new File(rootDir, 'gradle/test.gradle')
+  apply from: new File(rootDir, 'gradle/lint.gradle')
+  apply plugin: 'com.jfrog.bintray'
+  apply plugin: 'eclipse'
+  apply plugin: 'net.ltgt.errorprone'
+  configurations.errorprone {
+    resolutionStrategy.force 'com.google.errorprone:error_prone_core:2.0.14'
+  }
+
+  ext {
+    nettyVersion = '4.1.12.Final'
+  }
+
+  task packageTests(type: Jar) {
+    from sourceSets.test.output
+    from sourceSets.test.allSource
+    from sourceSets.test.resources
+    classifier = 'tests'
+  }
+  artifacts.archives packageTests
+
+  dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+
+    testCompile group: 'junit', name: 'junit', version:'4.8.2'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'2.6.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version:'1.9.0'
+    testCompile group: 'org.awaitility', name: 'awaitility', version: '3.0.0'
+
+  }
+
+  test {
+    systemProperties.put "moquette.path", "build/resources/test/"
+    systemProperties.put "io.netty.leakDetectionLevel", "paranoid"
+    testLogging {
+      exceptionFormat 'full'
+      events "passed", "skipped", "failed"
+    }
+  }
+
+  // Deploy set environment variables and run ./gradlew bintrayUpload
+  bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+      repo = '${project.group}'
+      name = "${project.name}"
+      userOrg = 'andsel'
+      licenses = ['Apache-2.0']
+      vcsUrl = "https://api.bintray.com/maven/andsel/maven/${project.group}.${project.name}"
+    }
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.3'
+}

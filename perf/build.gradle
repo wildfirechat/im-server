@@ -1,0 +1,9 @@
+
+description = 'Moquette - performance tests'
+dependencies {
+  compile project(':moquette-broker')
+  compile group: 'io.netty', name: 'netty-codec-mqtt', version:"${nettyVersion}"
+  compile group: 'org.hdrhistogram', name: 'HdrHistogram', version:'2.1.2'
+  compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version:'1.1.0'
+  compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-perf-helper', version:'1.0.5'
+}

@@ -64,6 +64,7 @@ Include dependency in your project:
 
 ## Build from sources
 
-After a git clone of the repository, cd into the cloned sources and: `mvn clean package`. 
-In distribution/target directory will be produced the selfcontained tar for the broker with all dependencies and a running script. 
+After a git clone of the repository, cd into the cloned sources and: `./gradlew clean distribution:distMoquetteTar` or 
+`./gradlew clean distribution:distMoquetteZip`. 
+In distribution/build directory will be produced the selfcontained file for the broker with all dependencies and a running script. 
   

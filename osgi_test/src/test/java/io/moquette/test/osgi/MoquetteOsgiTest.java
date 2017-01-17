@@ -16,11 +16,14 @@
 
 package io.moquette.test.osgi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.CoreOptions.*;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import javax.inject.Inject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -30,7 +33,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.inject.Inject;
 
 /**
  * Run a set of unit tests inside of an OSGi container to make sure
@@ -45,46 +47,34 @@ public class MoquetteOsgiTest {
     private BundleContext bundleContext;
 
     @Configuration
-    public Option[] config() {
+    public Option[] config() throws IOException {
+        String nettyV = "4.1.12.Final";
 
         return options(
             junitBundles(),
 
-            mavenBundle("com.google.guava", "guava").versionAsInProject(),
-            //mavenBundle("com.google.code.findbugs", "jsr305").versionAsInProject(),
+            mavenBundle("com.hazelcast", "hazelcast"),
 
-            mavenBundle("com.fasterxml.jackson.core", "jackson-core").versionAsInProject().start(),
-            mavenBundle("com.fasterxml.jackson.core", "jackson-databind").versionAsInProject(),
-            mavenBundle("com.fasterxml.jackson.core", "jackson-annotations").versionAsInProject(),
-            //mavenBundle("com.librato.metrics", "librato-java").versionAsInProject(),
-            //mavenBundle("com.librato.metrics", "metrics-librato").versionAsInProject(),
-            mavenBundle("io.dropwizard.metrics", "metrics-core").versionAsInProject(),
-            mavenBundle("io.dropwizard.metrics", "metrics-jvm").versionAsInProject(),
-            mavenBundle("com.hazelcast", "hazelcast").versionAsInProject(),
+            mavenBundle("io.netty", "netty-common", nettyV),
+            mavenBundle("io.netty", "netty-buffer", nettyV),
+            mavenBundle("io.netty", "netty-transport", nettyV),
+            mavenBundle("io.netty", "netty-resolver", nettyV),
+            mavenBundle("io.netty", "netty-handler", nettyV),
+            mavenBundle("io.netty", "netty-codec", nettyV),
+            mavenBundle("io.netty", "netty-codec-http", nettyV),
+            mavenBundle("io.netty", "netty-codec-mqtt", nettyV),
+            mavenBundle("io.netty", "netty-transport-native-epoll", nettyV),
+            mavenBundle("io.netty", "netty-transport-native-unix-common", nettyV),
 
-            mavenBundle("io.netty", "netty-common").versionAsInProject(),
-            mavenBundle("io.netty", "netty-buffer").versionAsInProject(),
-            mavenBundle("io.netty", "netty-transport").versionAsInProject(),
-            mavenBundle("io.netty", "netty-resolver").versionAsInProject(),
-            mavenBundle("io.netty", "netty-handler").versionAsInProject(),
-            mavenBundle("io.netty", "netty-handler").versionAsInProject(),
-            mavenBundle("io.netty", "netty-codec").versionAsInProject(),
-            mavenBundle("io.netty", "netty-codec-http").versionAsInProject(),
-            mavenBundle("io.netty", "netty-codec-mqtt").versionAsInProject(),
-            mavenBundle("io.netty", "netty-transport-native-epoll").versionAsInProject(),
-            mavenBundle("io.netty", "netty-transport-native-unix-common").versionAsInProject(),
+            mavenBundle("commons-codec", "commons-codec"),
 
-            mavenBundle("commons-codec", "commons-codec").versionAsInProject(),
+            mavenBundle("io.moquette", "moquette-broker"),
 
-            mavenBundle("javax.servlet", "javax.servlet-api").versionAsInProject(),
+            mavenBundle("com.h2database", "h2-mvstore"),
+            mavenBundle("io.moquette", "moquette-h2-storage"),
 
-            mavenBundle("io.moquette", "moquette-broker").versionAsInProject(),
-
-            mavenBundle("com.h2database", "h2-mvstore").versionAsInProject(),
-            mavenBundle("io.moquette", "moquette-h2-storage").versionAsInProject(),
-
-            mavenBundle("org.mapdb", "mapdb").versionAsInProject(),
-            mavenBundle("io.moquette", "moquette-mapdb-storage").versionAsInProject()
+            mavenBundle("org.mapdb", "mapdb", "1.0.8"),
+            mavenBundle("io.moquette", "moquette-mapdb-storage")
         );
     }
 
