@@ -85,9 +85,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
         long start = System.nanoTime();
         LOG.debug("push forward message the topic {}", msg.getTopicName());
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", payload2Str(msg.getPayload()));
-        }
+        LOG.debug("content <{}>", payload2Str(msg.getPayload()));
         String decodedPayload = payload2Str(msg.getPayload());
         long sentTime = Long.parseLong(decodedPayload.split("-")[1]);
         forthNetworkTime.recordValue(start - sentTime);

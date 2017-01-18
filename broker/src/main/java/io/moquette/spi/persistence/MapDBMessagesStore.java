@@ -55,18 +55,13 @@ class MapDBMessagesStore implements IMessagesStore {
 
     @Override
     public void storeRetained(String topic, MessageGUID guid) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Storing retained messages. Topic = {}, guid = {}.", topic, guid);
-        }
+        LOG.debug("Storing retained messages. Topic = {}, guid = {}.", topic, guid);
         m_retainedStore.put(topic, guid);
     }
 
     @Override
     public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Scanning retained messages...");
-        }
-
+        LOG.debug("Scanning retained messages...");
         List<StoredMessage> results = new ArrayList<>();
         for (Map.Entry<String, MessageGUID> entry : m_retainedStore.entrySet()) {
             final MessageGUID guid = entry.getValue();
@@ -76,8 +71,8 @@ class MapDBMessagesStore implements IMessagesStore {
             }
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The retained messages have been scanned. MatchingMessages = {}.", results);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("The retained messages have been scanned. MatchingMessages = {}.", results);
         }
 
         return results;
@@ -88,10 +83,8 @@ class MapDBMessagesStore implements IMessagesStore {
         assert storedMessage.getClientID() != null : "The message to be persisted must have a valid client ID";
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Storing publish event. MqttClientId = {}, messageId = {}, guid = {}, topic = {}.", storedMessage.getClientID(),
-                storedMessage.getMessageID(), guid, storedMessage.getTopic());
-        }
+        LOG.debug("Storing publish event. MqttClientId = {}, messageId = {}, guid = {}, topic = {}.",
+                storedMessage.getClientID(), storedMessage.getMessageID(), guid, storedMessage.getTopic());
         m_persistentMessageStore.put(guid, storedMessage);
         ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
         messageIdToGuid.put(storedMessage.getMessageID(), guid);
@@ -100,9 +93,7 @@ class MapDBMessagesStore implements IMessagesStore {
 
     @Override
     public void dropMessagesInSession(String clientID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Dropping stored messages. ClientId = {}.", clientID);
-        }
+        LOG.debug("Dropping stored messages. ClientId = {}.", clientID);
         ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
         for (MessageGUID guid : messageIdToGuid.values()) {
             removeStoredMessage(guid);
@@ -114,27 +105,21 @@ class MapDBMessagesStore implements IMessagesStore {
         //remove only the not retained and no more referenced
         StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         if (!storedMessage.isRetained()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Dropping stored message. ClientId = {}, messageId = {}, guid = {}, topic = {}.",
-						storedMessage.getClientID(), storedMessage.getMessageID(), guid, storedMessage.getTopic());
-            }
+            LOG.debug("Dropping stored message. ClientId = {}, messageId = {}, guid = {}, topic = {}.",
+                    storedMessage.getClientID(), storedMessage.getMessageID(), guid, storedMessage.getTopic());
             m_persistentMessageStore.remove(guid);
         }
     }
 
     @Override
     public StoredMessage getMessageByGuid(MessageGUID guid) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Retrieving stored message. Guid = {}.", guid);
-        }
+        LOG.debug("Retrieving stored message. Guid = {}.", guid);
         return m_persistentMessageStore.get(guid);
     }
 
     @Override
     public void cleanRetained(String topic) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Cleaning retained messages. Topic = {}.", topic);
-        }
+        LOG.debug("Cleaning retained messages. Topic = {}.", topic);
         m_retainedStore.remove(topic);
     }
 

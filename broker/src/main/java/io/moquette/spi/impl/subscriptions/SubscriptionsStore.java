@@ -108,16 +108,16 @@ public class SubscriptionsStore {
         m_sessionsStore = sessionsStore;
         List<ClientTopicCouple> subscriptions = sessionsStore.listAllSubscriptions();
         //reload any subscriptions persisted
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Reloading all stored subscriptions. SubscriptionTree = {}.", dumpTree());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}.", dumpTree());
         }
 
         for (ClientTopicCouple clientTopic : subscriptions) {
             LOG.info("Re-subscribing client to topic. ClientId = {}, topicFilter = {}.", clientTopic.clientID, clientTopic.topicFilter);
             add(clientTopic);
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The stored subscriptions have been reloaded. SubscriptionTree = {}.", dumpTree());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("The stored subscriptions have been reloaded. SubscriptionTree = {}.", dumpTree());
         }
     }
 
@@ -133,14 +133,12 @@ public class SubscriptionsStore {
             couple.createdNode.addSubscription(newSubscription); //createdNode could be null?
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
         } while(!subscriptions.compareAndSet(oldRoot, couple.root));
-        if (LOG.isDebugEnabled()) {
-        	LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
-        }
+        LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
     }
 
 
     protected NodeCouple recreatePath(String topic, final TreeNode oldRoot) {
-        List<Token> tokens = new ArrayList<>();
+        List<Token> tokens;
         try {
             tokens = parseTopic(topic);
         } catch (ParseException ex) {

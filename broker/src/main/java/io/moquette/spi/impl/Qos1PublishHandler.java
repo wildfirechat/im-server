@@ -50,8 +50,8 @@ class Qos1PublishHandler extends QosPublishHandler {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
 					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
 					subscriptions.dumpTree());
 		} else {

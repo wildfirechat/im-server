@@ -88,7 +88,7 @@ public class ClientSession {
 				newSubscription.getTopicFilter(), AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
         boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {
-            LOG.error("The topic filter is not valid. MqttClientId = {}, topics = {}.", newSubscription.getClientId(),
+            LOG.warn("The topic filter is not valid. MqttClientId = {}, topics = {}.", newSubscription.getClientId(),
 					newSubscription.getTopicFilter());
             //send SUBACK with 0x80 for this topic filter
             return false;

@@ -55,8 +55,8 @@ class Qos2PublishHandler extends QosPublishHandler  {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
 					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
 					subscriptions.dumpTree());
 		} else {
@@ -119,18 +119,14 @@ class Qos2PublishHandler extends QosPublishHandler  {
 
 
     private void sendPubRec(String clientID, int messageID) {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Sending PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
-		}
+        LOG.debug("Sending PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
         connectionDescriptors.sendMessage(pubRecMessage,messageID, clientID);
     }
 
     private void sendPubComp(String clientID, int messageID) {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Sending PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
-		}
+        LOG.debug("Sending PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         PubCompMessage pubCompMessage = new PubCompMessage();
         pubCompMessage.setMessageID(messageID);
         connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);

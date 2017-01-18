@@ -225,13 +225,11 @@ public class Server {
      * */
     public void internalPublish(PublishMessage msg) {
         if (!m_initialized) {
-                LOG.error("The server is not started. The message cannot be published. MqttClientId = {}, messageId = {}.",
-					msg.getClientId(), msg.getMessageID());
-                throw new IllegalStateException("Can't publish on a server is not yet started");
+            LOG.error("The server is not started. The message cannot be published. MqttClientId = {}, messageId = {}.",
+                msg.getClientId(), msg.getMessageID());
+            throw new IllegalStateException("Can't publish on a server is not yet started");
         }
-        if (LOG.isDebugEnabled()) {
-                LOG.debug("Publishing message. MqttClientId = {}, messageId = {}.", msg.getClientId(), msg.getMessageID());
-        }
+        LOG.debug("Publishing message. MqttClientId = {}, messageId = {}.", msg.getClientId(), msg.getMessageID());
         m_processor.internalPublish(msg);
     }
     

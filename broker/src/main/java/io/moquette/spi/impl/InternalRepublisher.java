@@ -29,10 +29,8 @@ class InternalRepublisher {
             //fire as retained the message
             Integer packetID = storedMsg.getQos() == AbstractMessage.QOSType.MOST_ONE ? null : targetSession.nextPacketId();
             if (packetID != null) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Adding message to inflight zone. MqttClientId = {}, packetId = {}, messageId = {}, topic = {}.",
-							targetSession.clientID, packetID, storedMsg.getMessageID(), storedMsg.getTopic());
-				}
+                LOG.debug("Adding message to inflight zone. MqttClientId = {}, packetId = {}, messageId = {}, topic = {}.",
+                        targetSession.clientID, packetID, storedMsg.getMessageID(), storedMsg.getTopic());
                 targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
             }
             PublishMessage publishMsg = retainedPublish(storedMsg);
@@ -50,10 +48,8 @@ class InternalRepublisher {
 
         for (IMessagesStore.StoredMessage pubEvt : storedPublishes) {
             //put in flight zone
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Adding message ot inflight zone. MqttClientId = {}, guid = {}, messageId = {}, topic = {}.",
-        				clientSession.clientID, pubEvt.getGuid(), pubEvt.getMessageID(), pubEvt.getTopic());
-            }
+            LOG.debug("Adding message ot inflight zone. MqttClientId = {}, guid = {}, messageId = {}, topic = {}.",
+                    clientSession.clientID, pubEvt.getGuid(), pubEvt.getMessageID(), pubEvt.getTopic());
             clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
             PublishMessage publishMsg = notRetainedPublish(pubEvt);
             //set the PacketIdentifier only for QoS > 0

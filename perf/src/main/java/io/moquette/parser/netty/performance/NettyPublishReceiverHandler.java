@@ -44,9 +44,7 @@ class NettyPublishReceiverHandler extends ChannelInboundHandlerAdapter {
     private void handlePublish(MqttPublishMessage msg) {
         long start = System.nanoTime();
         LOG.debug("push forward message the topic {}", msg.variableHeader().topicName());
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("content <{}>", payload2Str(msg.content()));
-        }
+        LOG.debug("content <{}>", payload2Str(msg.content()));
         String decodedPayload = payload2Str(msg.content());
         long sentTime = Long.parseLong(decodedPayload.split("-")[1]);
         forthNetworkTime.recordValue(start - sentTime);

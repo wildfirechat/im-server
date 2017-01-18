@@ -577,9 +577,7 @@ public class ProtocolProcessor {
         int messageID = msg.getMessageID();
         targetSession.moveInFlightToSecondPhaseAckWaiting(messageID);
         //once received a PUBREC reply with a PUBREL(messageID)
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Processing PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
-		}
+        LOG.debug("Processing PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         PubRelMessage pubRelMessage = new PubRelMessage();
         pubRelMessage.setMessageID(messageID);
         pubRelMessage.setQos(AbstractMessage.QOSType.LEAST_ONE);
@@ -590,9 +588,7 @@ public class ProtocolProcessor {
     public void processPubComp(Channel channel, PubCompMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Processing PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
-		}
+        LOG.debug("Processing PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         //once received the PUBCOMP then remove the message from the temp memory
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
@@ -733,9 +729,7 @@ public class ProtocolProcessor {
                 return;
             }
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Removing subscription. MqttClientId = {}, topic = {}.", clientID, topic);
-			}
+            LOG.debug("Removing subscription. MqttClientId = {}, topic = {}.", clientID, topic);
             subscriptions.removeSubscription(topic, clientID);
             clientSession.unsubscribeFrom(topic);
             String username = NettyUtils.userName(channel);

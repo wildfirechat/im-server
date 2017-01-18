@@ -71,8 +71,8 @@ class MapDBSessionsStore implements ISessionsStore {
         final String clientID = newSubscription.getClientId();
         m_db.getHashMap("subscriptions_" + clientID).put(newSubscription.getTopicFilter(), newSubscription);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The subscription has been added. MqttClientId = {}, topics = {}, clientSubscriptions = {}.",
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("The subscription has been added. MqttClientId = {}, topics = {}, clientSubscriptions = {}.",
                     newSubscription.getClientId(), newSubscription.getTopicFilter(),
                     m_db.getHashMap("subscriptions_" + clientID));
         }
@@ -111,8 +111,8 @@ class MapDBSessionsStore implements ISessionsStore {
                 allSubscriptions.add(new ClientTopicCouple(clientID, topicFilter));
             }
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The existing subscriptions have been retrieved. Result = {}.", allSubscriptions);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("The existing subscriptions have been retrieved. Result = {}.", allSubscriptions);
         }
         return allSubscriptions;
     }
@@ -133,9 +133,7 @@ class MapDBSessionsStore implements ISessionsStore {
             ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
             subscriptions.addAll(clientSubscriptions.values());
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The existing subscriptions have been retrieved. Result = {}.", subscriptions);
-        }
+        LOG.debug("The existing subscriptions have been retrieved. Result = {}.", subscriptions);
         return subscriptions;
     }
 
@@ -213,9 +211,7 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void inFlightAck(String clientID, int messageID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Acknowledging inflight message. MqttClientId = {}, messageId = {}.", clientID, messageID);
-        }
+        LOG.debug("Acknowledging inflight message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             LOG.warn("Unable to retrieve inflight message record. MqttClientId = {}, messageId = {}.", clientID, messageID);
@@ -232,10 +228,7 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void inFlight(String clientID, int messageID, MessageGUID guid) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Storing inflight message. MqttClientId = {}, messageId = {}, guid = {}.", clientID, messageID,
-                    guid);
-        }
+        LOG.debug("Storing inflight message. MqttClientId = {}, messageId = {}, guid = {}.", clientID, messageID, guid);
         ConcurrentMap<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             m = new ConcurrentHashMap<>();
@@ -295,15 +288,11 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public MessageGUID mapToGuid(String clientID, int messageID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Mapping message ID to GUID. MqttClientId = {}, messageId = {}.", clientID, messageID);
-        }
+        LOG.debug("Mapping message ID to GUID. MqttClientId = {}, messageId = {}.", clientID, messageID);
         ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
         MessageGUID result = messageIdToGuid.get(messageID);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("The message ID has been mapped to a GUID. MqttClientId = {}, messageId = {}, guid = {}.",
-                    clientID, messageID, result);
-        }
+        LOG.debug("The message ID has been mapped to a GUID. MqttClientId = {}, messageId = {}, guid = {}.",
+                clientID, messageID, result);
         return result;
     }
 

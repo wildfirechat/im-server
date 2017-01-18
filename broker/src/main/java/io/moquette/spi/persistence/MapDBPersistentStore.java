@@ -102,9 +102,7 @@ public class MapDBPersistentStore {
         m_scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Committing to MapDB...");
-                }
+                LOG.debug("Committing to MapDB...");
                 m_db.commit();
             }
         }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
