@@ -21,7 +21,7 @@ import java.io.Serializable;
  * Value object for GUIDs of messages.
  * */
 public class MessageGUID implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 4315161987111542406L;
 	private final String guid;
 
     public MessageGUID(String guid) {

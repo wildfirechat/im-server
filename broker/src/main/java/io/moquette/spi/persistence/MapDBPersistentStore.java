@@ -45,8 +45,8 @@ public class MapDBPersistentStore {
      * a session.
      * */
     public static class PersistentSession implements Serializable {
-		private static final long serialVersionUID = 1L;
-		public final boolean cleanSession;
+        private static final long serialVersionUID = 5052054783220481854L;
+        public final boolean cleanSession;
 
         public PersistentSession(boolean cleanSession) {
             this.cleanSession = cleanSession;
