@@ -20,7 +20,7 @@ import io.moquette.parser.proto.messages.AbstractMessage;
 /**
  * @author Wagner Macedo
  */
-public abstract class InterceptAbstractMessage {
+public abstract class InterceptAbstractMessage implements InterceptMessage {
     private final AbstractMessage msg;
 
     InterceptAbstractMessage(AbstractMessage msg) {

@@ -17,8 +17,10 @@ package io.moquette.server.netty;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.EventExecutor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AutoFlushHandler extends ChannelDuplexHandler {
 
+	private static final Logger LOG = LoggerFactory.getLogger(AutoFlushHandler.class);
     private static final long MIN_TIMEOUT_NANOS = TimeUnit.MILLISECONDS.toNanos(1);
 
     private final long writerIdleTimeNanos;
@@ -109,6 +112,9 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     private void initialize(ChannelHandlerContext ctx) {
         // Avoid the case where destroy() is called before scheduling timeouts.
         // See: https://github.com/netty/netty/issues/143
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Initializing autoflush handler. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+    	}
         switch (state) {
             case 1:
             case 2:
@@ -142,6 +148,9 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
      */
     protected void channelIdle(ChannelHandlerContext ctx/*, IdleStateEvent evt*/) throws Exception {
 //        ctx.fireUserEventTriggered(evt);
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Flushing idle Netty channel. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+    	}
         ctx.channel().flush();
     }
 

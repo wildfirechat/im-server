@@ -45,7 +45,8 @@ public class MapDBPersistentStore {
      * a session.
      * */
     public static class PersistentSession implements Serializable {
-        public final boolean cleanSession;
+		private static final long serialVersionUID = 1L;
+		public final boolean cleanSession;
 
         public PersistentSession(boolean cleanSession) {
             this.cleanSession = cleanSession;
@@ -80,23 +81,30 @@ public class MapDBPersistentStore {
     }
     
     public void initStore() {
+        LOG.info("Initializing MapDB store...");
         if (m_storePath == null || m_storePath.isEmpty()) {
+            LOG.warn("The MapDB store file path is empty. Using in-memory store.");
             m_db = DBMaker.newMemoryDB().make();
         } else {
             File tmpFile;
             try {
+                LOG.info("Using user-defined MapDB store file. Path = {}.", m_storePath);
                 tmpFile = new File(m_storePath);
                 boolean fileNewlyCreated = tmpFile.createNewFile();
-                LOG.info("Starting with {} [{}] db file", fileNewlyCreated ? "fresh" : "existing", m_storePath);
+                LOG.warn("Using {} MapDB store file. Path = {}.", fileNewlyCreated ? "fresh" : "existing", m_storePath);
             } catch (IOException ex) {
-                LOG.error(null, ex);
+                LOG.error("Unable to open MapDB store file. Path = {}, cause = {}, errorMessage = {}.", m_storePath, ex.getCause(), ex.getMessage());
                 throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
             }
             m_db = DBMaker.newFileDB(tmpFile).make();
         }
+        LOG.info("Scheduling MapDB commit task...");
         m_scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Committing to MapDB...");
+                }
                 m_db.commit();
             }
         }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
@@ -111,14 +119,22 @@ public class MapDBPersistentStore {
 
     public void close() {
         if (this.m_db.isClosed()) {
-            LOG.debug("already closed");
+            LOG.warn("The MapDB store is already closed. Nothing will be done.");
             return;
         }
+        LOG.info("Performing last commit to MapDB...");
         this.m_db.commit();
-        //LOG.debug("persisted subscriptions {}", m_persistentSubscriptions);
+        LOG.info("Closing MapDB store...");
         this.m_db.close();
-        LOG.debug("closed disk storage");
+        LOG.info("Stopping MapDB commit tasks...");
         this.m_scheduler.shutdown();
-        LOG.debug("Persistence commit scheduler is shutdown");
+        try {
+            m_scheduler.awaitTermination(10L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {}
+        if (!m_scheduler.isTerminated()) {
+            LOG.warn("Forcing shutdown of MapDB commit tasks...");
+            m_scheduler.shutdown();
+        }
+        LOG.info("The MapDB store has been closed successfully.");
     }
 }

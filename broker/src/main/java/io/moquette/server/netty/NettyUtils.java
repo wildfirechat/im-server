@@ -16,7 +16,6 @@
 package io.moquette.server.netty;
 
 import io.moquette.server.Constants;
-import io.moquette.spi.impl.ProtocolProcessor;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Attribute;

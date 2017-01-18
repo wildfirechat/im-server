@@ -6,7 +6,7 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 /**
  * @author Wagner Macedo
  */
-public class InterceptSubscribeMessage {
+public class InterceptSubscribeMessage implements InterceptMessage {
     private final Subscription subscription;
     private final String username;
 

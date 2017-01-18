@@ -3,7 +3,7 @@ package io.moquette.interception.messages;
 /**
  * @author Wagner Macedo
  */
-public class InterceptConnectionLostMessage {
+public class InterceptConnectionLostMessage implements InterceptMessage {
     private final String clientID;
     private final String username;
 

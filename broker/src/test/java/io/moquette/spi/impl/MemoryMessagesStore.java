@@ -98,4 +98,13 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void cleanRetained(String topic) {
         m_retainedStore.remove(topic);
     }
+
+    @Override
+    public int getPendingPublishMessages(String clientID) {
+        Map<Integer, MessageGUID> messageToGuids = m_messageToGuids.get(clientID);
+        if (messageToGuids == null)
+            return 0;
+        else
+            return messageToGuids.size();
+    }
 }

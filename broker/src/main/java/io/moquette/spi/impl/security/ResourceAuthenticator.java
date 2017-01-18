@@ -17,7 +17,6 @@ package io.moquette.spi.impl.security;
 
 import io.moquette.server.config.IResourceLoader;
 import io.moquette.spi.security.IAuthenticator;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

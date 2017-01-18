@@ -17,6 +17,7 @@ package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.Server;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.IResourceLoader;
@@ -35,7 +36,6 @@ import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -60,6 +60,8 @@ public class ProtocolProcessorBootstrapper {
     private BrokerInterceptor m_interceptor;
 
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
+    
+    private ConnectionDescriptorStore connectionDescriptors;
 
     public ProtocolProcessorBootstrapper() {
     }
@@ -81,37 +83,32 @@ public class ProtocolProcessorBootstrapper {
                                   IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
         subscriptions = new SubscriptionsStore();
 
+        LOG.info("Initializing messages and sessions stores...");
         m_mapStorage = new MapDBPersistentStore(props);
         m_mapStorage.initStore();
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
         m_sessionsStore = m_mapStorage.sessionsStore();
 
+        LOG.info("Configuring message interceptors...");
+
         List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (interceptorClassName != null && !interceptorClassName.isEmpty()) {
-            try {
-                InterceptHandler handler;
-                try {
-                    final Constructor<? extends InterceptHandler> constructor = Class.forName(interceptorClassName).asSubclass(InterceptHandler.class).getConstructor(Server.class);
-                    handler = constructor.newInstance(server);
-                } catch (NoSuchMethodException nsme){
-                    handler = Class.forName(interceptorClassName).asSubclass(InterceptHandler.class).newInstance();
+                InterceptHandler handler = loadClass(interceptorClassName, InterceptHandler.class, Server.class, server);
+                if (handler != null) {
+                    observers.add(handler);
                 }
-                observers.add(handler);
-            } catch (Throwable ex) {
-                LOG.error("Can't load the intercept handler {}", ex);
-            }
         }
-        m_interceptor = new BrokerInterceptor(observers);
+        m_interceptor = new BrokerInterceptor(props, observers);
 
+        LOG.info("Initializing subscriptions store...");
         subscriptions.init(m_sessionsStore);
 
-        String configPath = System.getProperty("moquette.path", null);
+        LOG.info("Configuring MQTT authenticator...");
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
 
-        if (!authenticatorClassName.isEmpty()) {
-            authenticator = (IAuthenticator)loadClass(authenticatorClassName, IAuthenticator.class, props);
-            LOG.info("Loaded custom authenticator {}", authenticatorClassName);
+        if (authenticator == null && !authenticatorClassName.isEmpty()) {
+            authenticator = loadClass(authenticatorClassName, IAuthenticator.class, IConfig.class, props);
         }
 
         IResourceLoader resourceLoader = props.getResourceLoader();
@@ -122,12 +119,13 @@ public class ProtocolProcessorBootstrapper {
             } else {
                 authenticator = new ResourceAuthenticator(resourceLoader, passwdPath);
             }
+            LOG.info("An {} authenticator instance will be used.", authenticator.getClass().getName());
         }
 
+        LOG.info("Configuring MQTT authorizator...");
         String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
-        if (!authorizatorClassName.isEmpty()) {
-            authorizator = (IAuthorizator)loadClass(authorizatorClassName, IAuthorizator.class, props);
-            LOG.info("Loaded custom authorizator {}", authorizatorClassName);
+        if (authorizator == null && !authorizatorClassName.isEmpty()) {
+            authorizator = loadClass(authorizatorClassName, IAuthorizator.class, IConfig.class, props);
         }
 
         if (authorizator == null) {
@@ -135,70 +133,85 @@ public class ProtocolProcessorBootstrapper {
             if (aclFilePath != null && !aclFilePath.isEmpty()) {
                 authorizator = new DenyAllAuthorizator();
                 try {
+                    LOG.info("Parsing ACL file. Path = {}.", aclFilePath);
                     authorizator = ACLFileParser.parse(resourceLoader.loadResource(aclFilePath));
                 } catch (ParseException pex) {
-                    LOG.error(String.format("Format error in parsing acl %s %s", resourceLoader.getName(), aclFilePath), pex);
+                    LOG.error("Unable to parse ACL file. Path = {}, cause = {}, errorMessage = {}.", aclFilePath,
+							pex.getCause(), pex.getMessage());
                 }
-                LOG.info("Using acl file defined at path {}", aclFilePath);
             } else {
                 authorizator = new PermitAllAuthorizator();
-                LOG.info("Starting without ACL definition");
             }
-
+            LOG.info("An {} authorizator instance will be used.", authorizator.getClass().getName());
         }
+        
+        LOG.info("Initializing connection descriptor store...");
+        connectionDescriptors = new ConnectionDescriptorStore(m_sessionsStore);
 
+        LOG.info("Initializing MQTT protocol processor...");
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
         boolean allowZeroByteClientId = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
-        m_processor.init(subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
+        m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
     
-    private Object loadClass(String className, Class<?> cls, IConfig props) {
-        Object instance = null;
-        try {
-            Class<?> clazz = Class.forName(className);
+	@SuppressWarnings("unchecked")
+	private <T, U> T loadClass(String className, Class<T> iface, Class<U> constructorArgClass, U props) {
+		T instance = null;
+		try {
+			LOG.info("Loading class. ClassName = {}, interfaceName = {}.", className, iface.getName());
+			Class<?> clazz = Class.forName(className);
 
-            // check if method getInstance exists
-            Method method = clazz.getMethod("getInstance", new Class[] {});
-            try {
-                instance = method.invoke(null, new Object[] {});
-            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
-                LOG.error(null, ex);
-                throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
-            }
-        }
-        catch (NoSuchMethodException nsmex) {
-            try {
-                // check if constructor with IConfig parameter exists
-                instance = this.getClass().getClassLoader()
-                        .loadClass(className)
-                        .asSubclass(cls)
-                        .getConstructor(IConfig.class).newInstance(props);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.error(null, ex);
-                throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
-            } catch (NoSuchMethodException | InvocationTargetException e) {
-                try {
-                    // fallback to default constructor
-                    instance = this.getClass().getClassLoader()
-                            .loadClass(className)
-                            .asSubclass(cls)
-                            .newInstance();
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                    LOG.error(null, ex);
-                    throw new RuntimeException("Cannot load custom authenticator class " + className, ex);
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            LOG.error(null, ex);
-            throw new RuntimeException("Class " + className + " not found", ex);
-        } catch (SecurityException ex) {
-            LOG.error(null, ex);
-            throw new RuntimeException("Cannot call method "+ className +".getInstance", ex);
-        }
+			// check if method getInstance exists
+			Method method = clazz.getMethod("getInstance", new Class[] {});
+			try {
+				LOG.info("Invoking getInstance() method. ClassName = {}, interfaceName = {}.", className,
+						iface.getName());
+				instance = (T) method.invoke(null, new Object[] {});
+			} catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
+				LOG.error(
+						"Unable to invoke getInstance() method. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+						className, iface.getName(), ex.getCause(), ex.getMessage());
+				return null;
+			}
+		} catch (NoSuchMethodException nsmex) {
+			try {
+				// check if constructor with constructor arg class parameter
+				// exists
+				LOG.info("Invoking constructor with {} argument. ClassName = {}, interfaceName = {}.",
+						constructorArgClass.getName(), className, iface.getName());
+				instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface)
+						.getConstructor(constructorArgClass).newInstance(props);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+				LOG.warn(
+						"Unable to invoke constructor with {} argument. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+						constructorArgClass.getName(), className, iface.getName(), ex.getCause(), ex.getMessage());
+				return null;
+			} catch (NoSuchMethodException | InvocationTargetException e) {
+				try {
+					LOG.info("Invoking default constructor. ClassName = {}, interfaceName = {}.", className,
+							iface.getName());
+					// fallback to default constructor
+					instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface).newInstance();
+				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+					LOG.error(
+							"Unable to invoke default constructor. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+							className, iface.getName(), ex.getCause(), ex.getMessage());
+					return null;
+				}
+			}
+		} catch (ClassNotFoundException ex) {
+			LOG.error("The class does not exist. ClassName = {}, interfaceName = {}.", className, iface.getName());
+			return null;
+		} catch (SecurityException ex) {
+			LOG.error(
+					"Unable to load class due to a security violation. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+					className, iface.getName(), ex.getCause(), ex.getMessage());
+			return null;
+		}
 
-        return instance;
-    }
+		return instance;
+	}
 
     public List<Subscription> getSubscriptions() {
         return m_sessionsStore.getSubscriptions();
@@ -206,5 +219,9 @@ public class ProtocolProcessorBootstrapper {
 
     public void shutdown() {
         this.m_mapStorage.close();
+    }
+
+    public ConnectionDescriptorStore getConnectionDescriptors() {
+        return connectionDescriptors;
     }
 }

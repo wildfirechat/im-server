@@ -15,6 +15,7 @@
  */
 package io.moquette.server.netty.metrics;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -33,7 +34,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Attribute<MessageMetrics> attr = ctx.attr(ATTR_KEY_METRICS);
+        Attribute<MessageMetrics> attr = ctx.channel().attr(ATTR_KEY_METRICS);
         attr.set(new MessageMetrics());
 
         super.channelActive(ctx);
@@ -41,14 +42,14 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        MessageMetrics metrics = ctx.attr(ATTR_KEY_METRICS).get();
+        MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementRead(1);
         ctx.fireChannelRead(msg);
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        MessageMetrics metrics = ctx.attr(ATTR_KEY_METRICS).get();
+        MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementWrote(1);
         ctx.write(msg, promise);
     }
@@ -57,9 +58,13 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     @Override
     public void close(ChannelHandlerContext ctx,
                       ChannelPromise promise) throws Exception {
-        MessageMetrics metrics = ctx.attr(ATTR_KEY_METRICS).get();
+        MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
         super.close(ctx, promise);
+    }
+
+    public static MessageMetrics getMessageMetrics(Channel channel) {
+        return channel.attr(ATTR_KEY_METRICS).get();
     }
 }

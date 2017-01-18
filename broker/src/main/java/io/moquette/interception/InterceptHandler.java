@@ -15,7 +15,13 @@
  */
 package io.moquette.interception;
 
-import io.moquette.interception.messages.*;
+import io.moquette.interception.messages.InterceptAcknowledgedMessage;
+import io.moquette.interception.messages.InterceptConnectMessage;
+import io.moquette.interception.messages.InterceptConnectionLostMessage;
+import io.moquette.interception.messages.InterceptDisconnectMessage;
+import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.interception.messages.InterceptSubscribeMessage;
+import io.moquette.interception.messages.InterceptUnsubscribeMessage;
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
@@ -32,7 +38,24 @@ import io.moquette.spi.impl.subscriptions.Subscription;
  * @author Wagner Macedo
  */
 public interface InterceptHandler {
-
+	
+	public static final Class<?> ALL_MESSAGE_TYPES[] = { InterceptConnectMessage.class,
+			InterceptDisconnectMessage.class, InterceptConnectionLostMessage.class, InterceptPublishMessage.class,
+			InterceptSubscribeMessage.class, InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class };
+	
+	/**
+	 * Returns the identifier of this intercept handler.
+	 * @return
+	 */
+	String getID();
+	
+	/**
+	 * Returns the InterceptMessage subtypes that this handler can process. If the result is null or equal to ALL_MESSAGE_TYPES,
+	 * all the message types will be processed.
+	 * @return
+	 */
+	Class<?>[] getInterceptedMessageTypes();
+	
     void onConnect(InterceptConnectMessage msg);
 
     void onDisconnect(InterceptDisconnectMessage msg);

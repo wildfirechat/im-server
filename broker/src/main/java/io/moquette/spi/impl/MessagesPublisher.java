@@ -2,7 +2,7 @@ package io.moquette.spi.impl;
 
 import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.ConnectionDescriptor;
+import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
@@ -13,19 +13,18 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 
 class MessagesPublisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessagesPublisher.class);
-    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final IMessagesStore m_messagesStore;
     private final PersistentQueueMessageSender messageSender;
 
-    public MessagesPublisher(ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors, ISessionsStore sessionsStore,
+    public MessagesPublisher(ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
                              IMessagesStore messagesStore, PersistentQueueMessageSender messageSender) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
@@ -53,18 +52,20 @@ class MessagesPublisher {
         if (publishingQos != AbstractMessage.QOSType.MOST_ONE) {
             guid = m_messagesStore.storePublishForFuture(pubMsg);
         }
-
-        LOG.trace("Found {} matching subscriptions to <{}>", topicMatchingSubscriptions.size(), topic);
+        
         for (final Subscription sub : topicMatchingSubscriptions) {
             AbstractMessage.QOSType qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
 
-            boolean targetIsActive = this.connectionDescriptors.containsKey(sub.getClientId());
+            boolean targetIsActive = this.connectionDescriptors.isConnected(sub.getClientId());
 
-            LOG.debug("Broker republishing to client <{}> topicFilter <{}> qos <{}>, active {}",
-                    sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
             ByteBuffer message = origMessage.duplicate();
             if (targetIsActive) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(
+							"Sending PUBLISH message to subscriber. MessageId = {}, mqttClientId = {}, topicFilter = {}, qos = {}, active = {}.",
+							pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
+				}
                 PublishMessage publishMsg = notRetainedPublish(topic, qos, message);
                 if (qos != AbstractMessage.QOSType.MOST_ONE) {
                     //QoS 1 or 2
@@ -76,6 +77,11 @@ class MessagesPublisher {
                 this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(
+								"Storing pending PUBLISH message. MessageId = {}, mqttClientId = {}, topicFilter = {}, qos = {}, active = {}.",
+								pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos, targetIsActive);
+					}
                     //store the message in targetSession queue to deliver
                     targetSession.enqueue(pubMsg);
                 }

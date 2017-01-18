@@ -2,7 +2,7 @@ package io.moquette.interception.messages;
 
 import static io.moquette.spi.IMessagesStore.StoredMessage;
 
-public class InterceptAcknowledgedMessage {
+public class InterceptAcknowledgedMessage implements InterceptMessage {
 	final private StoredMessage msg;
 	private final String username;
 	private final String topic;

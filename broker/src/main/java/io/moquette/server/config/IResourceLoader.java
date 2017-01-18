@@ -11,7 +11,9 @@ public interface IResourceLoader {
     String getName();
 
     class ResourceIsDirectoryException extends RuntimeException {
-        public ResourceIsDirectoryException(String message) {
+		private static final long serialVersionUID = 1L;
+
+		public ResourceIsDirectoryException(String message) {
             super(message);
         }
     }

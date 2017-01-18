@@ -18,6 +18,11 @@ public class HazelcastInterceptHandler extends AbstractInterceptHandler {
     public HazelcastInterceptHandler(Server server){
         this.hz = server.getHazelcastInstance();
     }
+    
+    @Override
+    public String getID() {
+    	return HazelcastInterceptHandler.class.getName() + "@" + hz.getName();
+    }
 
     @Override
     public void onPublish(InterceptPublishMessage msg) {

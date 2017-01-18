@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 import io.moquette.parser.proto.messages.AbstractMessage;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Defines the SPI to be implemented by a StorageService that handle persistence of messages
@@ -29,7 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public interface IMessagesStore {
 
     class StoredMessage implements Serializable {
-        final AbstractMessage.QOSType m_qos;
+		private static final long serialVersionUID = 1L;
+		final AbstractMessage.QOSType m_qos;
         final byte[] m_payload;
         final String m_topic;
         private boolean m_retained;
@@ -136,4 +135,6 @@ public interface IMessagesStore {
     StoredMessage getMessageByGuid(MessageGUID guid);
 
     void cleanRetained(String topic);
+
+    int getPendingPublishMessages(String clientID);
 }
