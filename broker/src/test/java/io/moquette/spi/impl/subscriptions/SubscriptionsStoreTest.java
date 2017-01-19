@@ -53,22 +53,22 @@ public class SubscriptionsStoreTest {
     @Test
     public void testParseTopic() throws ParseException {
         List<Token> tokens = SubscriptionsStore.parseTopic("finance/stock/ibm");
-        assertThat(tokens).containsExactly(asArray("finance", "stock", "ibm"));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray("finance", "stock", "ibm"));
 
         tokens = SubscriptionsStore.parseTopic("/finance/stock/ibm");
-        assertThat(tokens).containsExactly(asArray(Token.EMPTY, "finance", "stock", "ibm"));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray(Token.EMPTY, "finance", "stock", "ibm"));
 
         tokens = SubscriptionsStore.parseTopic("/");
-        assertThat(tokens).containsExactly(asArray(Token.EMPTY, Token.EMPTY));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray(Token.EMPTY, Token.EMPTY));
     }
 
     @Test
     public void testParseTopicMultiValid() throws ParseException {
         List<Token> tokens = SubscriptionsStore.parseTopic("finance/stock/#");
-        assertThat(tokens).containsExactly(asArray("finance", "stock", Token.MULTI));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray("finance", "stock", Token.MULTI));
 
         tokens = SubscriptionsStore.parseTopic("#");
-        assertThat(tokens).containsExactly(asArray(Token.MULTI));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray(Token.MULTI));
     }
 
     @Test(expected = ParseException.class)
@@ -89,13 +89,13 @@ public class SubscriptionsStoreTest {
     @Test
     public void testParseTopicSingleValid() throws ParseException {
         List<Token> tokens = SubscriptionsStore.parseTopic("finance/stock/+");
-        assertThat(tokens).containsExactly(asArray("finance", "stock", Token.SINGLE));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray("finance", "stock", Token.SINGLE));
 
         tokens = SubscriptionsStore.parseTopic("+");
-        assertThat(tokens).containsExactly(asArray(Token.SINGLE));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray(Token.SINGLE));
 
         tokens = SubscriptionsStore.parseTopic("finance/+/ibm");
-        assertThat(tokens).containsExactly(asArray("finance", Token.SINGLE, "ibm"));
+        assertThat(tokens).containsExactlyInAnyOrder(asArray("finance", Token.SINGLE, "ibm"));
     }
 
     @Test(expected = ParseException.class)
@@ -207,7 +207,7 @@ public class SubscriptionsStoreTest {
         store.add(slashPlusDeepSub.asClientTopicCouple());
 
         //Verify
-        assertThat(store.matches("/finance/stock/ibm")).containsExactly(slashPlusSub, slashPlusDeepSub);
+        assertThat(store.matches("/finance/stock/ibm")).containsExactlyInAnyOrder(slashPlusSub, slashPlusDeepSub);
     }
 
     @Test
