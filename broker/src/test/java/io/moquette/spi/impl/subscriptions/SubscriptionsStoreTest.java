@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @author andrea
  */
 public class SubscriptionsStoreTest {
-    
+
     private SubscriptionsStore store;
     private ISessionsStore sessionsStore;
 
@@ -50,7 +50,7 @@ public class SubscriptionsStoreTest {
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);
     }
-    
+
     @Test
     public void testParseTopic() throws ParseException {
         List<Token> tokens = store.parseTopic("finance/stock/ibm");
@@ -115,24 +115,24 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(slashFinanceSub);
         store.add(slashFinanceSub.asClientTopicCouple());
         assertTrue(store.matches("finance").isEmpty());
-        
+
         assertTrue(store.matches("/finance").contains(slashFinanceSub));
         assertTrue(store.matches("/").contains(slashSub));
     }
-    
+
     @Test
     public void testMatchSimpleMulti() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(anySub);
         store.add(anySub.asClientTopicCouple());
         assertTrue(store.matches("finance").contains(anySub));
-        
+
         Subscription financeAnySub = new Subscription("FAKE_CLI_ID_2", "finance/#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(financeAnySub);
         store.add(financeAnySub.asClientTopicCouple());
         assertTrue(store.matches("finance").containsAll(Arrays.asList(financeAnySub, anySub)));
     }
-    
+
     @Test
     public void testMatchingDeepMulti_one_layer() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "#", MqttQoS.AT_MOST_ONCE);
@@ -141,47 +141,47 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(financeAnySub);
         store.add(anySub.asClientTopicCouple());
         store.add(financeAnySub.asClientTopicCouple());
-        
+
         //Verify
         assertTrue(store.matches("finance/stock").containsAll(Arrays.asList(financeAnySub, anySub)));
         assertTrue(store.matches("finance/stock/ibm").containsAll(Arrays.asList(financeAnySub, anySub)));
     }
-    
-    
+
+
     @Test
     public void testMatchingDeepMulti_two_layer() {
         Subscription financeAnySub = new Subscription("FAKE_CLI_ID_1", "finance/stock/#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(financeAnySub);
         store.add(financeAnySub.asClientTopicCouple());
-        
+
         //Verify
         assertTrue(store.matches("finance/stock/ibm").contains(financeAnySub));
     }
-    
+
     @Test
     public void testMatchSimpleSingle() {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(anySub);
         store.add(anySub.asClientTopicCouple());
         assertTrue(store.matches("finance").contains(anySub));
-        
+
         Subscription financeOne = new Subscription("FAKE_CLI_ID_1", "finance/+", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(financeOne);
         store.add(financeOne.asClientTopicCouple());
         assertTrue(store.matches("finance/stock").contains(financeOne));
     }
-    
+
     @Test
     public void testMatchManySingle() {
         Subscription manySub = new Subscription("FAKE_CLI_ID_1", "+/+", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(manySub);
         store.add(manySub.asClientTopicCouple());
-        
+
         //verify
         assertTrue(store.matches("/finance").contains(manySub));
     }
-    
-    
+
+
     @Test
     public void testMatchSlashSingle() {
         Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/+", MqttQoS.AT_MOST_ONCE);
@@ -190,24 +190,24 @@ public class SubscriptionsStoreTest {
         Subscription anySub = new Subscription("FAKE_CLI_ID_1", "+", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(anySub);
         store.add(anySub.asClientTopicCouple());
-        
+
         //Verify
         assertEquals(1, store.matches("/finance").size());
         assertTrue(store.matches("/finance").contains(slashPlusSub));
         assertFalse(store.matches("/finance").contains(anySub));
     }
-    
-    
+
+
     @Test
     public void testMatchManyDeepSingle() {
         Subscription slashPlusSub = new Subscription("FAKE_CLI_ID_1", "/finance/+/ibm", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(slashPlusSub);
         store.add(slashPlusSub.asClientTopicCouple());
-        
+
         Subscription slashPlusDeepSub = new Subscription("FAKE_CLI_ID_2", "/+/stock/+", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(slashPlusDeepSub);
         store.add(slashPlusDeepSub.asClientTopicCouple());
-        
+
         //Verify
         assertTrue(store.matches("/finance/stock/ibm").containsAll(Arrays.asList(slashPlusSub, slashPlusDeepSub)));
     }
@@ -229,7 +229,7 @@ public class SubscriptionsStoreTest {
         store.add(sub.asClientTopicCouple());
         assertFalse(store.matches("finance").isEmpty());
     }
-    
+
     @Test
     public void rogerLightTopicMatches() {
         assertMatch("foo/bar", "foo/bar");
@@ -253,7 +253,7 @@ public class SubscriptionsStoreTest {
         assertMatch("foo/+/+/baz", "foo///baz");
         assertMatch("foo/bar/+", "foo/bar/");
     }
-    
+
     private void assertMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
@@ -265,7 +265,7 @@ public class SubscriptionsStoreTest {
         store.add(sub.asClientTopicCouple());
         assertFalse(store.matches(topic).isEmpty());
     }
-    
+
     private void assertNotMatch(String subscription, String topic) {
         store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
@@ -276,32 +276,32 @@ public class SubscriptionsStoreTest {
         store.add(sub.asClientTopicCouple());
         assertTrue(store.matches(topic).isEmpty());
     }
-    
-    
+
+
     @Test
     public void testRemoveClientSubscriptions_existingClientID() {
         String cliendID = "FAKE_CLID_1";
         Subscription sub = new Subscription(cliendID, "finance/#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(sub);
         store.add(sub.asClientTopicCouple());
-        
+
         //Exercise
         store.removeForClient(cliendID);
-        
+
         //Verify
         assertEquals(0, store.size());
     }
-    
+
     @Test
     public void testRemoveClientSubscriptions_notexistingClientID() {
         String clientID = "FAKE_CLID_1";
         Subscription s = new Subscription(clientID, "finance/#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(s);
         store.add(s.asClientTopicCouple());
-        
+
         //Exercise
         store.removeForClient("FAKE_CLID_2");
-        
+
         //Verify
         assertEquals(1, store.size());
     }
@@ -347,7 +347,7 @@ public class SubscriptionsStoreTest {
         assertTrue(SubscriptionsStore.matchTopics("sport/", "sport/+"));
         assertFalse(SubscriptionsStore.matchTopics("/finance/stock", "+"));
     }
-    
+
     @Test
     public void rogerLightMatchTopics() {
         assertTrue(SubscriptionsStore.matchTopics("foo/bar", "foo/bar"));
@@ -355,22 +355,22 @@ public class SubscriptionsStoreTest {
         assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+/baz"));
         assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+/#"));
         assertTrue(SubscriptionsStore.matchTopics("foo/bar/baz", "#"));
-        
+
         assertFalse(SubscriptionsStore.matchTopics("foo", "foo/bar"));
         assertFalse(SubscriptionsStore.matchTopics("foo/bar/baz", "foo/+"));
         assertFalse(SubscriptionsStore.matchTopics("foo/bar/bar", "foo/+/baz"));
         assertFalse(SubscriptionsStore.matchTopics("fo2/bar/baz", "foo/+/#"));
-        
+
         assertTrue(SubscriptionsStore.matchTopics("/foo/bar", "#"));
         assertTrue(SubscriptionsStore.matchTopics("/foo/bar", "/#"));
         assertFalse(SubscriptionsStore.matchTopics("foo/bar", "/#"));
-        
+
         assertTrue(SubscriptionsStore.matchTopics("foo//bar", "foo//bar"));
         assertTrue(SubscriptionsStore.matchTopics("foo//bar", "foo//+"));
         assertTrue(SubscriptionsStore.matchTopics("foo///baz", "foo/+/+/baz"));
         assertTrue(SubscriptionsStore.matchTopics("foo/bar/", "foo/bar/+"));
     }
-    
+
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
         SubscriptionsStore aStore = new SubscriptionsStore();
@@ -388,10 +388,10 @@ public class SubscriptionsStoreTest {
         Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(slashSub2);
         aStore.add(new ClientTopicCouple("FAKE_CLI_ID_2", "/topic"));
-        
+
         //Exercise
         aStore.removeSubscription("/topic", slashSub2.getClientId());
-        
+
         //Verify
         Subscription remainedSubscription = aStore.matches("/topic").get(0);
         assertEquals(slashSub.getClientId(), remainedSubscription.getClientId());
