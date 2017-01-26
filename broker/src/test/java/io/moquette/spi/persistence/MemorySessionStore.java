@@ -37,9 +37,10 @@ import java.util.concurrent.BlockingQueue;
  * @author andrea
  */
 public class MemorySessionStore implements ISessionsStore {
+
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
-    private Map<String, Set<Subscription>> m_persistentSubscriptions = new HashMap<>();
+    private Map<String, Map<String, Subscription>> m_persistentSubscriptions = new HashMap<>();
 
     private Map<String, MapDBPersistentStore.PersistentSession> m_persistentSessions = new HashMap<>();
 
@@ -65,19 +66,8 @@ public class MemorySessionStore implements ISessionsStore {
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             return;
         }
-        Set<Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
-        //search for the subscription to remove
-        Subscription toBeRemoved = null;
-        for (Subscription sub : clientSubscriptions) {
-            if (sub.getTopicFilter().equals(topic)) {
-                toBeRemoved = sub;
-                break;
-            }
-        }
-
-        if (toBeRemoved != null) {
-            clientSubscriptions.remove(toBeRemoved);
-        }
+        Map<String, Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
+        clientSubscriptions.remove(topic);
     }
 
     @Override
@@ -89,13 +79,10 @@ public class MemorySessionStore implements ISessionsStore {
     public void addNewSubscription(Subscription newSubscription) {
         final String clientID = newSubscription.getClientId();
         if (!m_persistentSubscriptions.containsKey(clientID)) {
-            m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+            m_persistentSubscriptions.put(clientID, new HashMap<String, Subscription>());
         }
 
-        Set<Subscription> subs = m_persistentSubscriptions.get(clientID);
-        subs.remove(newSubscription); //same topic and clientID
-        subs.add(newSubscription);
-        m_persistentSubscriptions.put(clientID, subs);
+        m_persistentSubscriptions.get(clientID).put(newSubscription.getTopicFilter(), newSubscription);
     }
 
     @Override
@@ -116,7 +103,7 @@ public class MemorySessionStore implements ISessionsStore {
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
-        m_persistentSubscriptions.put(clientID, new HashSet<Subscription>());
+        m_persistentSubscriptions.put(clientID, new HashMap<String, Subscription>());
         m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
@@ -130,10 +117,10 @@ public class MemorySessionStore implements ISessionsStore {
         MapDBPersistentStore.PersistentSession storedSession = m_persistentSessions.get(clientID);
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
-    
+
     @Override
     public Collection<ClientSession> getAllSessions() {
-        Collection<ClientSession> result = new ArrayList<ClientSession>();
+        Collection<ClientSession> result = new ArrayList<>();
         for (Map.Entry<String, PersistentSession> entry : m_persistentSessions.entrySet()) {
             result.add(new ClientSession(entry.getKey(), m_messagesStore, this, entry.getValue().cleanSession));
         }
@@ -148,8 +135,8 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public List<ClientTopicCouple> listAllSubscriptions() {
         List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
-        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
-            for (Subscription sub : entry.getValue()) {
+        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+            for (Subscription sub : entry.getValue().values()) {
                 allSubscriptions.add(sub.asClientTopicCouple());
             }
         }
@@ -158,23 +145,18 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
-        Set<Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
+        Map<String, Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
         if (subscriptions == null || subscriptions.isEmpty()) {
             return null;
         }
-        for (Subscription sub : subscriptions) {
-            if (sub.getTopicFilter().equals(couple.topicFilter)) {
-                return sub;
-            }
-        }
-        return null;
+        return subscriptions.get(couple.topicFilter);
     }
 
     @Override
     public List<Subscription> getSubscriptions() {
         List<Subscription> subscriptions = new ArrayList<>();
-        for (Map.Entry<String, Set<Subscription>> entry : m_persistentSubscriptions.entrySet()) {
-            subscriptions.addAll(entry.getValue());
+        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+            subscriptions.addAll(entry.getValue().values());
         }
         return subscriptions;
     }
