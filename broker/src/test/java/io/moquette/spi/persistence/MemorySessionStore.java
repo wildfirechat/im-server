@@ -40,7 +40,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
-    private Map<String, HashMap<String, Subscription>> m_persistentSubscriptions = new HashMap<>();
+    private Map<String, Map<String, Subscription>> m_persistentSubscriptions = new HashMap<>();
 
     private Map<String, MapDBPersistentStore.PersistentSession> m_persistentSessions = new HashMap<>();
 
@@ -66,7 +66,7 @@ public class MemorySessionStore implements ISessionsStore {
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             return;
         }
-        HashMap<String, Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
+        Map<String, Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
         clientSubscriptions.remove(topic);
     }
 
@@ -135,7 +135,7 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public List<ClientTopicCouple> listAllSubscriptions() {
         List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
-        for (Map.Entry<String, HashMap<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             for (Subscription sub : entry.getValue().values()) {
                 allSubscriptions.add(sub.asClientTopicCouple());
             }
@@ -145,7 +145,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
-        HashMap<String, Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
+        Map<String, Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
         if (subscriptions == null || subscriptions.isEmpty()) {
             return null;
         }
@@ -155,7 +155,7 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public List<Subscription> getSubscriptions() {
         List<Subscription> subscriptions = new ArrayList<>();
-        for (Map.Entry<String, HashMap<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             subscriptions.addAll(entry.getValue().values());
         }
         return subscriptions;
