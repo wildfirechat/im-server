@@ -25,6 +25,19 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>io.netty</groupId>-->
             <!--<artifactId>netty-common</artifactId>-->
