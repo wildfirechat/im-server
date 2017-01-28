@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.impl;
 
+import io.netty.buffer.ByteBuf;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -22,11 +24,16 @@ import java.nio.ByteBuffer;
  * @author andrea
  */
 class DebugUtils {
-    static String  payload2Str(ByteBuffer content) {
+    static String payload2Str(ByteBuffer content) {
         byte[] b = new byte[content.remaining()];
         content.mark();
         content.get(b);
         content.reset();
         return new String(b);
-    } 
+    }
+
+    static String payload2Str(ByteBuf content) {
+        //byte[] b = new byte[content.readableBytes()];
+        return new String(content.copy().array());
+    }
 }

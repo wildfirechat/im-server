@@ -28,9 +28,9 @@ import io.moquette.spi.security.IAuthenticator;
 class MockAuthenticator implements IAuthenticator {
 
     private Set<String> m_clientIds;
-    private Map<String, byte[]> m_userPwds;
+    private Map<String, String> m_userPwds;
     
-    MockAuthenticator(Set<String> clientIds, Map<String, byte[]> userPwds) {
+    MockAuthenticator(Set<String> clientIds, Map<String, String> userPwds) {
         m_clientIds = clientIds;
         m_userPwds = userPwds;
     }
@@ -42,7 +42,10 @@ class MockAuthenticator implements IAuthenticator {
         if (!m_userPwds.containsKey(username)) {
             return false;
         }
-        return m_userPwds.get(username).equals(password);
+        if (password == null) {
+            return false;
+        }
+        return m_userPwds.get(username).equals(new String(password));
     }
     
 }

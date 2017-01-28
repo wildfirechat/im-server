@@ -15,27 +15,28 @@
  */
 package io.moquette.interception.messages;
 
-import io.moquette.parser.proto.messages.AbstractMessage;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
 
 /**
  * @author Wagner Macedo
  */
 public abstract class InterceptAbstractMessage implements InterceptMessage {
-    private final AbstractMessage msg;
+    private final MqttMessage msg;
 
-    InterceptAbstractMessage(AbstractMessage msg) {
+    InterceptAbstractMessage(MqttMessage msg) {
         this.msg = msg;
     }
 
     public boolean isRetainFlag() {
-        return msg.isRetainFlag();
+        return msg.fixedHeader().isRetain();
     }
 
     public boolean isDupFlag() {
-        return msg.isDupFlag();
+        return msg.fixedHeader().isDup();
     }
 
-    public AbstractMessage.QOSType getQos() {
-        return msg.getQos();
+    public MqttQoS getQos() {
+        return msg.fixedHeader().qosLevel();
     }
 }

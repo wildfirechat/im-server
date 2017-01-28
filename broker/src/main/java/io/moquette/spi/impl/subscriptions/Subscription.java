@@ -15,9 +15,10 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import java.io.Serializable;
-import io.moquette.parser.proto.messages.AbstractMessage.QOSType;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
+import io.netty.handler.codec.mqtt.MqttQoS;
+
+import java.io.Serializable;
 
 /**
  * Maintain the information about which Topic a certain ClientID is subscribed 
@@ -29,12 +30,12 @@ import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 public final class Subscription implements Serializable {
 
     private static final long serialVersionUID = -3383457629635732794L;
-    final QOSType requestedQos; //max QoS acceptable
+    final MqttQoS requestedQos; //max QoS acceptable
     final String clientId;
     final String topicFilter;
     final boolean active;
     
-    public Subscription(String clientId, String topicFilter, QOSType requestedQos) {
+    public Subscription(String clientId, String topicFilter, MqttQoS requestedQos) {
         this.requestedQos = requestedQos;
         this.clientId = clientId;
         this.topicFilter = topicFilter;
@@ -52,7 +53,7 @@ public final class Subscription implements Serializable {
         return clientId;
     }
 
-    public QOSType getRequestedQos() {
+    public MqttQoS getRequestedQos() {
         return requestedQos;
     }
 
@@ -85,7 +86,8 @@ public final class Subscription implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId, this.requestedQos, this.active);
+        return String.format("[filter:%s, cliID: %s, qos: %s, active: %s]", this.topicFilter, this.clientId,
+                this.requestedQos, this.active);
     }
 
     @Override

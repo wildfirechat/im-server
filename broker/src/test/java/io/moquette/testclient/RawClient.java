@@ -8,7 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.ReferenceCountUtil;
-import io.moquette.parser.netty.Utils;
+import io.moquette.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

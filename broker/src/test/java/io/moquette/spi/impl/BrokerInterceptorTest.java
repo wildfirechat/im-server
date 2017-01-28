@@ -15,12 +15,11 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.interception.messages.*;
-import io.moquette.parser.proto.messages.ConnectMessage;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
+import io.moquette.interception.messages.*;
+import io.moquette.server.netty.MessageBuilder;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,9 +27,10 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Wagner Macedo
@@ -105,7 +105,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyClientConnected() throws Exception {
-        interceptor.notifyClientConnected(new ConnectMessage());
+        interceptor.notifyClientConnected(MessageBuilder.connect().build());
         interval();
         assertEquals(40, n.get());
     }
@@ -119,14 +119,17 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicPublished() throws Exception {
-        interceptor.notifyTopicPublished(new PublishMessage(), "cli1234", "cli1234");
+        interceptor.notifyTopicPublished(MessageBuilder.publish()
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .payload("Hello".getBytes())
+                .build(), "cli1234", "cli1234");
         interval();
         assertEquals(60, n.get());
     }
 
     @Test
     public void testNotifyTopicSubscribed() throws Exception {
-        interceptor.notifyTopicSubscribed(new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE), "cli1234");
+        interceptor.notifyTopicSubscribed(new Subscription("cli1", "o2", MqttQoS.AT_MOST_ONCE), "cli1234");
         interval();
         assertEquals(70, n.get());
     }
@@ -146,7 +149,7 @@ public class BrokerInterceptorTest {
         interceptor.addInterceptHandler(interceptHandlerMock1);
         interceptor.addInterceptHandler(interceptHandlerMock2);
 
-        Subscription subscription = new Subscription("cli1", "o2", AbstractMessage.QOSType.MOST_ONE);
+        Subscription subscription = new Subscription("cli1", "o2", MqttQoS.AT_MOST_ONCE);
         interceptor.notifyTopicSubscribed(subscription, "cli1234");
         interval();
 

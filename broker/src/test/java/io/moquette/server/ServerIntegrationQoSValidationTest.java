@@ -100,7 +100,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 0);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(), 0, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS0", message.toString());
         assertEquals(0, message.getQos());
     }
@@ -111,7 +111,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 0);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(), 1, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS1", message.toString());
         assertEquals(0, message.getQos());
     }
@@ -122,7 +122,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 0);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", message.toString());
         assertEquals(0, message.getQos());
     }
@@ -133,7 +133,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 1);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(), 0, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS0", message.toString());
         assertEquals(0, message.getQos());
     }
@@ -144,7 +144,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 1);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(), 1, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS1", message.toString());
         assertEquals(1, message.getQos());
     }
@@ -155,7 +155,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 1);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", message.toString());
         assertEquals(1, message.getQos());
     }
@@ -166,7 +166,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 2);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 0, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", message.toString());
         assertEquals(0, message.getQos());
     }
@@ -177,7 +177,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 2);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 1, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", message.toString());
         assertEquals(1, message.getQos());
     }
@@ -188,7 +188,7 @@ public class ServerIntegrationQoSValidationTest {
         m_subscriber.subscribe("/topic", 2);
         
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);
-        MqttMessage message = m_callback.getMessage(true);
+        MqttMessage message = m_callback.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", message.toString());
         assertEquals(2, message.getQos());
     }

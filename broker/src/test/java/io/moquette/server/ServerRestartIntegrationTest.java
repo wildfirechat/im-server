@@ -112,10 +112,10 @@ public class ServerRestartIntegrationTest {
         m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), 1, false);
         
         //read the messages
-        MqttMessage msg = m_messageCollector.getMessage(true);
+        MqttMessage msg = m_messageCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
         //no more messages on the same topic will be received
-        assertNull(m_messageCollector.getMessage(1));
+        assertNull(m_messageCollector.waitMessage(1));
     }
 
 
@@ -161,7 +161,7 @@ public class ServerRestartIntegrationTest {
 
         //Expected
         //the subscriber doesn't get notified (it's fully unsubscribed)
-        assertNull(m_messageCollector.getMessage(1));
+        assertNull(m_messageCollector.waitMessage(1));
     }
 
     /**
@@ -174,7 +174,7 @@ public class ServerRestartIntegrationTest {
         client.connect();
         client.subscribe(topic, 1);
         client.publish(topic, "Hello world MQTT!!".getBytes(), 0, false);
-        MqttMessage msg = collector.getMessage(true);
+        MqttMessage msg = collector.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
         return client;
     }

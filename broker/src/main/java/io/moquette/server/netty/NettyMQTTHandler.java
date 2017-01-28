@@ -15,17 +15,15 @@
  */
 package io.moquette.server.netty;
 
-import io.moquette.parser.proto.Utils;
-import io.moquette.parser.proto.messages.*;
 import io.moquette.spi.impl.ProtocolProcessor;
-import static io.moquette.parser.proto.messages.AbstractMessage.*;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-
-
+import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 
 /**
@@ -44,47 +42,46 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        AbstractMessage msg = (AbstractMessage) message;
-        String messageType = Utils.msgType2String(msg.getMessageType());
-        LOG.debug("Processing MQTT message. MessageType = {}.", messageType);
+        MqttMessage msg = (MqttMessage) message;
+        MqttMessageType messageType = msg.fixedHeader().messageType();
+        LOG.debug("Processing MQTT message, type={}", messageType);
         try {
-            switch (msg.getMessageType()) {
+            switch (messageType) {
                 case CONNECT:
-                    m_processor.processConnect(ctx.channel(), (ConnectMessage) msg);
+                    m_processor.processConnect(ctx.channel(), (MqttConnectMessage) msg);
                     break;
                 case SUBSCRIBE:
-                    m_processor.processSubscribe(ctx.channel(), (SubscribeMessage) msg);
+                    m_processor.processSubscribe(ctx.channel(), (MqttSubscribeMessage) msg);
                     break;
                 case UNSUBSCRIBE:
-                    m_processor.processUnsubscribe(ctx.channel(), (UnsubscribeMessage) msg);
+                    m_processor.processUnsubscribe(ctx.channel(), (MqttUnsubscribeMessage) msg);
                     break;
                 case PUBLISH:
-                    m_processor.processPublish(ctx.channel(), (PublishMessage) msg);
+                    m_processor.processPublish(ctx.channel(), (MqttPublishMessage) msg);
                     break;
                 case PUBREC:
-                    m_processor.processPubRec(ctx.channel(), (PubRecMessage) msg);
+                    m_processor.processPubRec(ctx.channel(), msg);
                     break;
                 case PUBCOMP:
-                    m_processor.processPubComp(ctx.channel(), (PubCompMessage) msg);
+                    m_processor.processPubComp(ctx.channel(), msg);
                     break;
                 case PUBREL:
-                    m_processor.processPubRel(ctx.channel(), (PubRelMessage) msg);
+                    m_processor.processPubRel(ctx.channel(), msg);
                     break;
                 case DISCONNECT:
                     m_processor.processDisconnect(ctx.channel());
                     break;
                 case PUBACK:
-                    m_processor.processPubAck(ctx.channel(), (PubAckMessage) msg);
+                    m_processor.processPubAck(ctx.channel(), (MqttPubAckMessage) msg);
                     break;
                 case PINGREQ:
-                    PingRespMessage pingResp = new PingRespMessage();
+                    MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGRESP, false, AT_MOST_ONCE, false, 0);
+                    MqttMessage pingResp = new MqttMessage(pingHeader);
                     ctx.writeAndFlush(pingResp);
                     break;
             }
         } catch (Throwable ex) {
-			LOG.error(
-					"An unexpected exception was caught while processing MQTT message. MessageType = {}, cause = {}, errorMessage = {}.",
-					messageType, ex.getCause(), ex.getMessage());
+			LOG.error("Exception was caught while processing MQTT message, " + ex.getCause(), ex);
 			ctx.fireExceptionCaught(ex);
         }
     }

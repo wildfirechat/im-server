@@ -15,16 +15,16 @@
  */
 package io.moquette.server.netty.metrics;
 
-import io.moquette.parser.proto.messages.*;
 import io.moquette.server.netty.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.moquette.parser.proto.messages.AbstractMessage.*;
+import static io.moquette.spi.impl.Utils.messageId;
 
 /**
  *
@@ -42,46 +42,42 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
     }
 
     private void logMQTTMessage(ChannelHandlerContext ctx, Object message, String direction) {
-        if (!(message instanceof AbstractMessage)) {
+        if (!(message instanceof MqttMessage)) {
             return;
         }
-        AbstractMessage msg = (AbstractMessage) message;
+        MqttMessage msg = (MqttMessage) message;
         String clientID = NettyUtils.clientID(ctx.channel());
-        switch (msg.getMessageType()) {
+        MqttMessageType messageType = msg.fixedHeader().messageType();
+        switch (messageType) {
             case CONNECT:
-                ConnectMessage connect = (ConnectMessage) msg;
-                LOG.info("{} CONNECT client <{}>", direction, connect.getClientID());
+                LOG.info("{} CONNECT client <{}>", direction, clientID);
                 break;
             case SUBSCRIBE:
-                SubscribeMessage subscribe = (SubscribeMessage) msg;
-                LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID, subscribe.subscriptions());
+                MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
+                LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID, subscribe.payload().topicSubscriptions());
                 break;
             case UNSUBSCRIBE:
-                UnsubscribeMessage unsubscribe = (UnsubscribeMessage) msg;
-                LOG.info("{} UNSUBSCRIBE <{}> to topics <{}>", direction, clientID, unsubscribe.topicFilters());
+                MqttUnsubscribeMessage unsubscribe = (MqttUnsubscribeMessage) msg;
+                LOG.info("{} UNSUBSCRIBE <{}> to topics <{}>", direction, clientID, unsubscribe.payload().topics());
                 break;
             case PUBLISH:
-                PublishMessage publish = (PublishMessage) msg;
-                LOG.info("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.getTopicName());
+                MqttPublishMessage publish = (MqttPublishMessage) msg;
+                LOG.info("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.variableHeader().topicName());
                 break;
             case PUBREC:
-                PubRecMessage pubrec = (PubRecMessage) msg;
-                LOG.info("{} PUBREC <{}> packetID <{}>", direction, clientID, pubrec.getMessageID());
+                LOG.info("{} PUBREC <{}> packetID <{}>", direction, clientID, messageId(msg));
                 break;
             case PUBCOMP:
-                PubCompMessage pubCompleted = (PubCompMessage) msg;
-                LOG.info("{} PUBCOMP <{}> packetID <{}>", direction, clientID, pubCompleted.getMessageID());
+                LOG.info("{} PUBCOMP <{}> packetID <{}>", direction, clientID, messageId(msg));
                 break;
             case PUBREL:
-                PubRelMessage pubRelease = (PubRelMessage) msg;
-                LOG.info("{} PUBREL <{}> packetID <{}>", direction, clientID, pubRelease.getMessageID());
+                LOG.info("{} PUBREL <{}> packetID <{}>", direction, clientID, messageId(msg));
                 break;
             case DISCONNECT:
                 LOG.info("{} DISCONNECT <{}>", direction, clientID);
                 break;
             case PUBACK:
-                PubAckMessage pubAck = (PubAckMessage) msg;
-                LOG.info("{} PUBACK <{}> packetID <{}>", direction, clientID, pubAck.getMessageID());
+                LOG.info("{} PUBACK <{}> packetID <{}>", direction, clientID, messageId(msg));
                 break;
         }
     }
@@ -100,24 +96,4 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         logMQTTMessage(ctx, msg, "C<-B");
         ctx.write(msg, promise);
     }
-//
-//    @Override
-//    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-//        if (cause instanceof CorruptedFrameException) {
-//            //something goes bad with decoding
-//            LOG.warn("Error decoding a packet, probably a bad formatted packet, message: " + cause.getMessage());
-//        } else {
-//            LOG.error("Ugly error on networking", cause);
-//        }
-//        ctx.close();
-//    }
-//
-//    @Override
-//    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-//        if (ctx.channel().isWritable()) {
-//            m_processor.notifyChannelWritable(ctx.channel());
-//        }
-//        ctx.fireChannelWritabilityChanged();
-//    }
-
 }

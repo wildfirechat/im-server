@@ -15,12 +15,11 @@
  */
 package io.moquette.server;
 
-import io.moquette.parser.proto.messages.ConnectMessage;
-import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.parser.proto.messages.ConnAckMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.testclient.Client;
+import io.netty.handler.codec.mqtt.*;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import org.eclipse.paho.client.mqttv3.*;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
-
+import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static org.junit.Assert.*;
 
 /**
@@ -45,7 +44,7 @@ public class ServerLowlevelMessagesIntegrationTests {
     IMqttClient m_willSubscriber;
     MessageCollector m_messageCollector;
     IConfig m_config;
-    AbstractMessage receivedMsg;
+    MqttMessage receivedMsg;
 
     protected void startServer() throws IOException {
         m_server = new Server();
@@ -72,20 +71,40 @@ public class ServerLowlevelMessagesIntegrationTests {
         LOG.debug("After asked server to stop");
         IntegrationUtils.cleanPersistenceFile(m_config);
     }
-    
+
     @Test
     public void elapseKeepAliveTime() throws InterruptedException {
         int keepAlive = 2; //secs
-        ConnectMessage connectMessage = new ConnectMessage();
+
+        MqttConnectMessage connectMessage = createConnectMessage("FAKECLNT", keepAlive);
+
+        /*ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID("FAKECLNT");
-        connectMessage.setKeepAlive(keepAlive);
+        connectMessage.setKeepAlive(keepAlive);*/
         m_client.sendMessage(connectMessage);
         
         //wait 2 times the keepAlive
         Thread.sleep(keepAlive * 2 * 1000);
         
         assertTrue(m_client.isConnectionLost());
+    }
+
+    private static MqttConnectMessage createConnectMessage(String clientID, int keepAlive) {
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
+        MqttConnectVariableHeader mqttConnectVariableHeader =
+                new MqttConnectVariableHeader(
+                        MqttVersion.MQTT_3_1.protocolName(),
+                        MqttVersion.MQTT_3_1.protocolLevel(),
+                        false,
+                        false,
+                        false,
+                        1,
+                        false,
+                        true,
+                        keepAlive);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, null, null, null, null);
+        return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
     }
     
     @Test
@@ -102,7 +121,7 @@ public class ServerLowlevelMessagesIntegrationTests {
 
         //but after the 2 KEEP ALIVE timeout expires it gets fired,
         //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
-        MqttMessage msg = m_messageCollector.getMessage(5);
+        org.eclipse.paho.client.mqttv3.MqttMessage msg = m_messageCollector.waitMessage(5);
         assertNotNull("the will message should be fired after keep alive!", msg);
         //the will message hasn't to be received before the elapsing of Keep Alive timeout
         assertTrue(System.currentTimeMillis() - connectTime  > 3000);
@@ -118,9 +137,9 @@ public class ServerLowlevelMessagesIntegrationTests {
 
         this.receivedMsg = this.m_client.lastReceivedMessage();
 
-        assertTrue(receivedMsg instanceof ConnAckMessage);
-        ConnAckMessage connAck = (ConnAckMessage) receivedMsg;
-        assertEquals(ConnAckMessage.IDENTIFIER_REJECTED, connAck.getReturnCode());
+        assertTrue(receivedMsg instanceof MqttConnAckMessage);
+        MqttConnAckMessage connAck = (MqttConnAckMessage) receivedMsg;
+        assertEquals(CONNECTION_REFUSED_IDENTIFIER_REJECTED, connAck.variableHeader().connectReturnCode());
     }
 
     @Test
@@ -136,7 +155,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         m_client.close();
 
         //Verify will testament is published
-        MqttMessage receivedTestament = m_messageCollector.getMessage(1);
+        org.eclipse.paho.client.mqttv3.MqttMessage receivedTestament = m_messageCollector.waitMessage(1);
         assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
         m_willSubscriber.disconnect();
     }

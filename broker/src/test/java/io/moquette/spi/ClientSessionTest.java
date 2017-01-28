@@ -1,9 +1,9 @@
 package io.moquette.spi;
 
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.MemoryStorageService;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import static io.netty.handler.codec.mqtt.MqttQoS.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,9 +11,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by nedermail on 17/07/16.
- */
 public class ClientSessionTest {
 
     ClientSession session1;
@@ -36,12 +33,12 @@ public class ClientSessionTest {
     @Test
     public void overridingSubscriptions() {
         // Subscribe on /topic with QOSType.MOST_ONE
-        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", AbstractMessage.QOSType.MOST_ONE);
+        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", AT_MOST_ONCE);
         session1.subscribe(oldSubscription);
         store.add(oldSubscription.asClientTopicCouple());
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overrindingSubscription = new Subscription(session1.clientID, "/topic", AbstractMessage.QOSType.EXACTLY_ONCE);
+        Subscription overrindingSubscription = new Subscription(session1.clientID, "/topic", EXACTLY_ONCE);
         session1.subscribe(overrindingSubscription);
         store.add(overrindingSubscription.asClientTopicCouple());
 

@@ -16,27 +16,18 @@
 package io.moquette.testclient;
 
 import io.moquette.BrokerConstants;
-import io.moquette.parser.netty.MQTTDecoder;
-import io.moquette.parser.netty.MQTTEncoder;
-import io.moquette.parser.proto.messages.ConnAckMessage;
-import io.moquette.parser.proto.messages.ConnectMessage;
+import io.moquette.server.netty.MessageBuilder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.moquette.parser.proto.messages.AbstractMessage;
+import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login 
@@ -47,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 public class Client {
     
     public interface ICallback {
-        void call(AbstractMessage msg);
+        void call(MqttMessage msg);
     }
     
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
@@ -57,7 +48,7 @@ public class Client {
     private boolean m_connectionLost = false;
     private ICallback callback;
     private String clientId;
-    private AbstractMessage receivedMsg;
+    private MqttMessage receivedMsg;
     
     public Client(String host) {
         this(host, BrokerConstants.PORT);
@@ -75,8 +66,8 @@ public class Client {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast("decoder", new MQTTDecoder());
-                    pipeline.addLast("encoder", new MQTTEncoder());
+                    pipeline.addLast("decoder", new MqttDecoder());
+                    pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                     pipeline.addLast("handler", handler);
                 }
             });
@@ -95,34 +86,53 @@ public class Client {
     }
 
     public void connect(String willTestamentTopic, String willTestamentMsg) {
-        ConnectMessage connectMessage = new ConnectMessage();
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
+        MqttConnectVariableHeader mqttConnectVariableHeader =
+                new MqttConnectVariableHeader(
+                        MqttVersion.MQTT_3_1.protocolName(),
+                        MqttVersion.MQTT_3_1.protocolLevel(),
+                        false,
+                        false,
+                        false,
+                        MqttQoS.AT_MOST_ONCE.value(),
+                        true,
+                        true,
+                        2);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(this.clientId, willTestamentTopic, willTestamentMsg,
+                null, null);
+        MqttConnectMessage connectMessage = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader,
+                mqttConnectPayload);
+
+
+        /*ConnectMessage connectMessage = new ConnectMessage();
         connectMessage.setProtocolVersion((byte) 3);
         connectMessage.setClientID(this.clientId);
         connectMessage.setKeepAlive(2); //secs
         connectMessage.setWillFlag(true);
         connectMessage.setWillMessage(willTestamentMsg.getBytes());
         connectMessage.setWillTopic(willTestamentTopic);
-        connectMessage.setWillQos(AbstractMessage.QOSType.MOST_ONE.byteValue());
+        connectMessage.setWillQos(MqttQoS.AT_MOST_ONCE.byteValue());*/
 
         doConnect(connectMessage);
     }
 
     public void connect() {
-        ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 4);
-        connectMessage.setClientID("");
-        connectMessage.setKeepAlive(2); //secs
-        connectMessage.setWillFlag(false);
-        connectMessage.setWillQos(AbstractMessage.QOSType.MOST_ONE.byteValue());
+        MqttConnectMessage connectMessage = MessageBuilder.connect()
+                .protocolVersion(MqttVersion.MQTT_3_1_1)
+                .clientId("")
+                .keepAlive(2) //secs
+                .willFlag(false)
+                .willQoS(MqttQoS.AT_MOST_ONCE)
+                .build();
 
         doConnect(connectMessage);
     }
 
-    private void doConnect(ConnectMessage connectMessage) {
+    private void doConnect(MqttConnectMessage connectMessage) {
         final CountDownLatch latch = new CountDownLatch(1);
         this.setCallback(new Client.ICallback() {
 
-            public void call(AbstractMessage msg) {
+            public void call(MqttMessage msg) {
                 receivedMsg = msg;
                 latch.countDown();
             }
@@ -135,8 +145,9 @@ public class Client {
         } catch (InterruptedException e) {
             throw new RuntimeException("Cannot receive message in 200 ms", e);
         }
-        if (!(this.receivedMsg instanceof ConnAckMessage)) {
-            throw new RuntimeException("Expected a CONN_ACK message but received " + this.receivedMsg.getMessageType());
+        if (!(this.receivedMsg instanceof MqttConnAckMessage)) {
+            MqttMessageType messageType = this.receivedMsg.fixedHeader().messageType();
+            throw new RuntimeException("Expected a CONN_ACK message but received " + messageType);
         }
     }
 
@@ -144,15 +155,15 @@ public class Client {
         this.callback = callback;
     }
     
-    public void sendMessage(AbstractMessage msg) {
+    public void sendMessage(MqttMessage msg) {
         m_channel.writeAndFlush(msg);
     }
 
-    public AbstractMessage lastReceivedMessage() {
+    public MqttMessage lastReceivedMessage() {
         return this.receivedMsg;
     }
 
-    void messageReceived(AbstractMessage msg) {
+    void messageReceived(MqttMessage msg) {
         LOG.info("Received message {}", msg);
         if (this.callback != null) {
             this.callback.call(msg);

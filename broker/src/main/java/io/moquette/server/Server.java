@@ -27,15 +27,15 @@ import io.moquette.connections.IConnectionsManager;
 import io.moquette.interception.HazelcastInterceptHandler;
 import io.moquette.interception.HazelcastMsg;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.config.*;
-import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,16 +221,18 @@ public class Server {
      * It can be used only after the server is correctly started with startServer.
      *
      * @param msg the message to forward.
+     * @param clientId the id of the sending server.
      * @throws IllegalStateException if the server is not yet started
      * */
-    public void internalPublish(PublishMessage msg) {
+    public void internalPublish(MqttPublishMessage msg, final String clientId) {
+        final int messageID = msg.variableHeader().messageId();
         if (!m_initialized) {
-            LOG.error("The server is not started. The message cannot be published. MqttClientId = {}, messageId = {}.",
-                msg.getClientId(), msg.getMessageID());
+            LOG.error("The server is not started. The message cannot be published. MqttClientId = {}, messageId = {}",
+                    clientId, messageID);
             throw new IllegalStateException("Can't publish on a server is not yet started");
         }
-        LOG.debug("Publishing message. MqttClientId = {}, messageId = {}.", msg.getClientId(), msg.getMessageID());
-        m_processor.internalPublish(msg);
+        LOG.debug("Publishing message. MqttClientId = {}, messageId = {}", clientId, messageID);
+        m_processor.internalPublish(msg, clientId);
     }
     
     public void stopServer() {
@@ -266,7 +268,6 @@ public class Server {
     /**
      * SPI method used by Broker embedded applications to add intercept handlers.
      * @param interceptHandler the handler to add.
-     * @return true id operation was successful.
      * */
     public void addInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
@@ -282,7 +283,6 @@ public class Server {
     /**
      * SPI method used by Broker embedded applications to remove intercept handlers.
      * @param interceptHandler the handler to remove.
-     * @return true id operation was successful.
      * */
     public void removeInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
@@ -297,7 +297,7 @@ public class Server {
     /**
      * Returns the connections manager of this broker.
      * 
-     * @return
+     * @return IConnectionsManager the instance used bt the broker.
      */
     public IConnectionsManager getConnectionsManager() {
         return m_processorBootstrapper.getConnectionDescriptors();

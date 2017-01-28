@@ -12,10 +12,11 @@
  * http://www.opensource.org/licenses/apache2.0.php
  *
  * You may elect to redistribute this code under either of these licenses.
- */package io.moquette.spi.impl;
+ */
+package io.moquette.spi.impl;
 
+import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.util.AttributeKey;
-import io.moquette.parser.proto.messages.AbstractMessage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +24,8 @@ import java.util.Map;
 /**
  * This a synchronous channel that avoid output ring buffer from Processor
  */
-class MockReceiverChannel /*implements ServerChannel*/ {
-    //        byte m_returnCode;
-    AbstractMessage m_receivedMessage;
+class MockReceiverChannel {
+    MqttMessage m_receivedMessage;
     private Map<Object, Object> m_attributes = new HashMap<>();
 
     public Object getAttribute(AttributeKey<Object> key) {
@@ -42,20 +42,13 @@ class MockReceiverChannel /*implements ServerChannel*/ {
     public void close(boolean immediately) {
     }
 
-    public AbstractMessage getMessage() {
+    public MqttMessage getMessage() {
         return this.m_receivedMessage;
     }
 
-//        public byte getReturnCode() {
-//            return this.m_returnCode;
-//        }
-
     public void write(Object value) {
         try {
-            this.m_receivedMessage = (AbstractMessage) value;
-//                if (this.m_receivedMessage instanceof PublishMessage) {
-//                    T buf = (T) this.m_receivedMessage;
-//                }
+            this.m_receivedMessage = (MqttMessage) value;
         } catch (Exception ex) {
             throw new AssertionError("Wrong return code");
         }

@@ -19,10 +19,7 @@ import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +173,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
         //Ugly, we need to get self notified after the publish
-        assertEquals("Test my payload", new String(subListener.getMessage(1).getPayload()));
+        assertEquals("Test my payload", new String(subListener.waitMessage(1).getPayload()));
 
         //close
         m_client.disconnect();
@@ -231,7 +228,7 @@ public class ServerIntegrationPahoTest {
         m_messagesCollector.reinit();
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_messagesCollector.getMessage(false));
+        assertNull(m_messagesCollector.getMessageImmediate());
     }
 
     @Test
@@ -252,7 +249,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
-        assertNull(m_messagesCollector.getMessage(false));
+        assertNull(m_messagesCollector.getMessageImmediate());
     }
 
     @Test
@@ -264,7 +261,7 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
 
         //reconnect and publish
-        MqttMessage message = m_messagesCollector.getMessage(true);
+        MqttMessage message = m_messagesCollector.waitMessage(1);
         assertEquals("Hello MQTT", message.toString());
         assertEquals(1, message.getQos());
     }
@@ -283,7 +280,7 @@ public class ServerIntegrationPahoTest {
 
         m_client.connect(options);
 
-        assertEquals("Hello MQTT", m_messagesCollector.getMessage(true).toString());
+        assertEquals("Hello MQTT", m_messagesCollector.waitMessage(1).toString());
     }
 
 
@@ -303,7 +300,7 @@ public class ServerIntegrationPahoTest {
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1);
 
         //Verify that after a reconnection the client receive the message
-        MqttMessage message = m_messagesCollector.getMessage(true);
+        MqttMessage message = m_messagesCollector.waitMessage(1);
         assertNotNull(message);
         assertEquals("Hello MQTT", message.toString());
     }
@@ -329,7 +326,7 @@ public class ServerIntegrationPahoTest {
         m_messagesCollector.reinit();
         m_client.connect(options);
 
-        MqttMessage message = m_messagesCollector.getMessage(true);
+        MqttMessage message = m_messagesCollector.waitMessage(1);
         assertEquals("Hello MQTT", message.toString());
         assertEquals(2, message.getQos());
     }
@@ -349,7 +346,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
 
         assertNotNull(m_messagesCollector);
-        MqttMessage message = m_messagesCollector.getMessage(true);
+        MqttMessage message = m_messagesCollector.waitMessage(1);
         assertNotNull(message);
         assertEquals("Hello MQTT", message.toString());
     }
@@ -368,7 +365,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
 
         assertNotNull(m_messagesCollector);
-        MqttMessage message = m_messagesCollector.getMessage(true);
+        MqttMessage message = m_messagesCollector.waitMessage(1);
         assertNotNull(message);
         assertEquals("Hello MQTT 1", message.toString());
         m_client.disconnect();
@@ -380,7 +377,7 @@ public class ServerIntegrationPahoTest {
         m_messagesCollector.reinit();
         m_client.connect(options);
         assertNotNull(m_messagesCollector);
-        message = m_messagesCollector.getMessage(true);
+        message = m_messagesCollector.waitMessage(1);
         assertNotNull(message);
         assertEquals("Hello MQTT 2", message.toString());
     }
@@ -417,12 +414,12 @@ public class ServerIntegrationPahoTest {
         m_client.connect();
         m_client.publish("a/b", "Hello world MQTT!!".getBytes(), 2, false);
 
-        MqttMessage messageOnA = cbSubscriberA.getMessage(true);
+        MqttMessage messageOnA = cbSubscriberA.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(messageOnA.getPayload()));
         assertEquals(1, messageOnA.getQos());
         subscriberA.disconnect();
 
-        MqttMessage messageOnB = cbSubscriberB.getMessage(true);
+        MqttMessage messageOnB = cbSubscriberB.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload()));
         assertEquals(2, messageOnB.getQos());
         subscriberB.disconnect();
@@ -466,7 +463,7 @@ public class ServerIntegrationPahoTest {
         assertFalse(clientForSubscribe1.isConnected());
         assertTrue(clientForSubscribe2.isConnected());
         LOG.info("Waiting to receive 1 sec from " + clientForSubscribe2.getClientId());
-        MqttMessage messageOnB = cbSubscriber2.getMessage(true);
+        MqttMessage messageOnB = cbSubscriber2.waitMessage(1);
         assertEquals("Hello", new String(messageOnB.getPayload()));
     }
 
@@ -495,7 +492,7 @@ public class ServerIntegrationPahoTest {
 
         //Verify that the second subscriber client get notified and not the first.
         assertTrue(cbSubscriber1.connectionLost());
-        assertEquals("Hello 2", new String(cbSubscriber2.getMessage(true).getPayload()));
+        assertEquals("Hello 2", new String(cbSubscriber2.waitMessage(1).getPayload()));
     }
 
     @Test
@@ -533,7 +530,7 @@ public class ServerIntegrationPahoTest {
         m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
 
         //read the first message and drop the connection
-        MqttMessage msg = m_messagesCollector.getMessage(true);
+        MqttMessage msg = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
         m_client.disconnect();
 
@@ -542,10 +539,10 @@ public class ServerIntegrationPahoTest {
 
         //reconnect and expect to receive the hello 2 message
         m_client.connect(options);
-        msg = m_messagesCollector.getMessage(true);
+        msg = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
 
-        msg = m_messagesCollector.getMessage(true);
+        msg = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!-3", new String(msg.getPayload()));
         m_client.disconnect();
     }
@@ -569,7 +566,7 @@ public class ServerIntegrationPahoTest {
         //reconnect and expect to receive the hello 2 message
         m_client.connect(options);
         m_client.subscribe("/topic", 1);
-        MqttMessage msg = messagesCollector.getMessage(true);
+        MqttMessage msg = messagesCollector.waitMessage(1);
         assertNotNull(msg);
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
     }
@@ -599,10 +596,10 @@ public class ServerIntegrationPahoTest {
         //subscriber reconnects
         m_client.connect(options);
         //subscriber should receive the 2 messages missed
-        MqttMessage msg = messagesCollector.getMessage(1);
+        MqttMessage msg = messagesCollector.waitMessage(1);
         assertNotNull(msg);
         assertEquals("Hello1", new String(msg.getPayload()));
-        msg = messagesCollector.getMessage(1);
+        msg = messagesCollector.waitMessage(1);
         assertNotNull(msg);
         assertEquals("Hello2", new String(msg.getPayload()));
     }
@@ -629,11 +626,11 @@ public class ServerIntegrationPahoTest {
         m_publisher.publish("a/b", "Hello world MQTT!!".getBytes(), 1, false);
 
         //reconnect and expect to receive the hello 2 message
-        MqttMessage msg = messagesCollector.getMessage(1);
+        MqttMessage msg = messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
 
         //try to listen a second publish
-        msg = messagesCollector.getMessage(1);
+        msg = messagesCollector.waitMessage(1);
         assertNull(msg);
     }
 

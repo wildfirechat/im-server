@@ -15,6 +15,17 @@
  */
 package io.moquette.spi.impl;
 
+import io.moquette.BrokerConstants;
+import io.moquette.interception.InterceptHandler;
+import io.moquette.interception.Interceptor;
+import io.moquette.interception.messages.*;
+import io.moquette.server.config.IConfig;
+import io.moquette.spi.impl.subscriptions.Subscription;
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,23 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import io.moquette.BrokerConstants;
-import io.moquette.interception.InterceptHandler;
-import io.moquette.interception.Interceptor;
-import io.moquette.interception.messages.InterceptAcknowledgedMessage;
-import io.moquette.interception.messages.InterceptConnectMessage;
-import io.moquette.interception.messages.InterceptConnectionLostMessage;
-import io.moquette.interception.messages.InterceptDisconnectMessage;
-import io.moquette.interception.messages.InterceptPublishMessage;
-import io.moquette.interception.messages.InterceptSubscribeMessage;
-import io.moquette.interception.messages.InterceptUnsubscribeMessage;
-import io.moquette.parser.proto.messages.ConnectMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.config.IConfig;
-import io.moquette.spi.impl.subscriptions.Subscription;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 
 /**
@@ -98,10 +92,10 @@ final class BrokerInterceptor implements Interceptor {
 	}
 
     @Override
-    public void notifyClientConnected(final ConnectMessage msg) {
+    public void notifyClientConnected(final MqttConnectMessage msg) {
         for (final InterceptHandler handler : this.handlers.get(InterceptConnectMessage.class)) {
             LOG.debug("Sending MQTT CONNECT message to interceptor. MqttClientId = {}, interceptorId = {}.",
-                    msg.getClientID(), handler.getID());
+                    msg.payload().clientIdentifier(), handler.getID());
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -140,10 +134,12 @@ final class BrokerInterceptor implements Interceptor {
     }
 
     @Override
-    public void notifyTopicPublished(final PublishMessage msg, final String clientID, final String username) {
+    public void notifyTopicPublished(final MqttPublishMessage msg, final String clientID, final String username) {
+        int messageId = msg.variableHeader().messageId();
+        String topic = msg.variableHeader().topicName();
         for (final InterceptHandler handler : this.handlers.get(InterceptPublishMessage.class)) {
             LOG.debug("Notifying MQTT PUBLISH message to interceptor. MqttClientId = {}, messageId = {}, topic = {}, " +
-                    "interceptorId = {}.", clientID, msg.getMessageID(), msg.getTopicName(), handler.getID());
+                    "interceptorId = {}.", clientID, messageId, topic, handler.getID());
             executor.execute(new Runnable() {
                 @Override
                 public void run() {

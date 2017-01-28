@@ -15,12 +15,12 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.parser.proto.messages.ConnAckMessage;
-import io.moquette.parser.proto.messages.SubAckMessage;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.mqtt.MqttConnAckMessage;
+import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import io.netty.handler.codec.mqtt.MqttSubAckMessage;
 
-import static io.moquette.parser.proto.messages.ConnAckMessage.CONNECTION_ACCEPTED;
-
+import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -29,18 +29,18 @@ import static org.junit.Assert.assertTrue;
  */
 class NettyChannelAssertions {
 
-    static void assertEqualsConnAck(byte expectedCode, Object connAck) {
+    static void assertEqualsConnAck(MqttConnectReturnCode expectedCode, Object connAck) {
         assertEqualsConnAck(null, expectedCode, connAck);
     }
 
-    static void assertEqualsConnAck(String msg, byte expectedCode, Object connAck) {
-        assertTrue("connAck is not an instance of ConnAckMessage", connAck instanceof ConnAckMessage);
-        ConnAckMessage connAckMsg = (ConnAckMessage) connAck;
+    static void assertEqualsConnAck(String msg, MqttConnectReturnCode expectedCode, Object connAck) {
+        assertTrue("connAck is not an instance of ConnAckMessage", connAck instanceof MqttConnAckMessage);
+        MqttConnAckMessage connAckMsg = (MqttConnAckMessage) connAck;
 
-        if(msg == null)
-            assertEquals(expectedCode, connAckMsg.getReturnCode());
+        if (msg == null)
+            assertEquals(expectedCode, connAckMsg.variableHeader().connectReturnCode());
         else
-            assertEquals(msg, expectedCode, connAckMsg.getReturnCode());
+            assertEquals(msg, expectedCode, connAckMsg.variableHeader().connectReturnCode());
     }
 
     static void assertConnAckAccepted(EmbeddedChannel channel) {
@@ -49,7 +49,7 @@ class NettyChannelAssertions {
     }
 
     static void assertEqualsSubAck(/*byte expectedCode,*/ Object subAck) {
-        assertTrue(subAck instanceof SubAckMessage);
+        assertTrue(subAck instanceof MqttSubAckMessage);
         //SubAckMessage connAckMsg = (SubAckMessage) connAck;
         //assertEquals(expectedCode, connAckMsg.getReturnCode());
     }

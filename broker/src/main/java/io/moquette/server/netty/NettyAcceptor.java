@@ -16,14 +16,11 @@
 package io.moquette.server.netty;
 
 import io.moquette.BrokerConstants;
-import static io.moquette.BrokerConstants.*;
-import io.moquette.parser.netty.MQTTDecoder;
-import io.moquette.parser.netty.MQTTEncoder;
-import io.moquette.spi.security.ISslContextCreator;
 import io.moquette.server.ServerAcceptor;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.metrics.*;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.security.ISslContextCreator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -38,6 +35,8 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.mqtt.MqttDecoder;
+import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
@@ -49,6 +48,8 @@ import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static io.moquette.BrokerConstants.*;
 
 /**
  *
@@ -179,8 +180,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
 //                pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
-                pipeline.addLast("decoder", new MQTTDecoder());
-                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("decoder", new MqttDecoder());
+                pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
                 pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
@@ -213,8 +214,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
-                pipeline.addLast("decoder", new MQTTDecoder());
-                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("decoder", new MqttDecoder());
+                pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
                 pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
@@ -247,8 +248,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 //pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
-                pipeline.addLast("decoder", new MQTTDecoder());
-                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("decoder", new MqttDecoder());
+                pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
                 pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);
@@ -283,8 +284,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
-                pipeline.addLast("decoder", new MQTTDecoder());
-                pipeline.addLast("encoder", new MQTTEncoder());
+                pipeline.addLast("decoder", new MqttDecoder());
+                pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
                 pipeline.addLast("messageLogger", new MQTTMessageLogger());
                 pipeline.addLast("handler", handler);

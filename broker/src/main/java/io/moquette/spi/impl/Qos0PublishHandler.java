@@ -1,12 +1,12 @@
 package io.moquette.spi.impl;
 
-import io.moquette.parser.proto.messages.PublishMessage;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +33,9 @@ class Qos0PublishHandler extends QosPublishHandler {
         this.publisher = messagesPublisher;
     }
 
-    void receivedPublishQos0(Channel channel, PublishMessage msg) {
+    void receivedPublishQos0(Channel channel, MqttPublishMessage msg) {
         //verify if topic can be write
-        final String topic = msg.getTopicName();
+        final String topic = msg.variableHeader().topicName();
         if (checkWriteOnTopic(topic, channel)) {
             return;
         }
@@ -45,19 +45,21 @@ class Qos0PublishHandler extends QosPublishHandler {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
+        final int messageID = msg.variableHeader().messageId();
+
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
-					clientID, topic, msg.getMessageID(), DebugUtils.payload2Str(toStoreMsg.getMessage()),
+					clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
 					subscriptions.dumpTree());
 		} else {
 			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
-					topic, msg.getMessageID());
+					topic, messageID);
 		}
 		
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
-        if (msg.isRetainFlag()) {
+        if (msg.fixedHeader().isRetain()) {
             //QoS == 0 && retain => clean old retained
             m_messagesStore.cleanRetained(topic);
         }

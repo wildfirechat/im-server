@@ -15,12 +15,11 @@
  */
 package io.moquette.testclient;
 
-import io.moquette.parser.proto.Utils;
+import io.moquette.server.netty.NettyMQTTHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.server.netty.NettyMQTTHandler;
+import io.netty.handler.codec.mqtt.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +35,8 @@ class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        AbstractMessage msg = (AbstractMessage) message;
-        LOG.info("Received a message of type {}", Utils.msgType2String(msg.getMessageType()));
+        MqttMessage msg = (MqttMessage) message;
+        LOG.info("Received a message of type {}", msg.fixedHeader().messageType());
         m_client.messageReceived(msg);
     }
     

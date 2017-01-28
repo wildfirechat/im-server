@@ -15,10 +15,12 @@
  */
 package io.moquette.spi;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttQoS;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import io.moquette.parser.proto.messages.AbstractMessage;
-
 import java.util.Collection;
 
 /**
@@ -28,7 +30,7 @@ public interface IMessagesStore {
 
     class StoredMessage implements Serializable {
         private static final long serialVersionUID = 1755296138639817304L;
-        final AbstractMessage.QOSType m_qos;
+        final MqttQoS m_qos;
         final byte[] m_payload;
         final String m_topic;
         private boolean m_retained;
@@ -37,13 +39,13 @@ public interface IMessagesStore {
         private Integer m_msgID;
         private MessageGUID m_guid;
 
-        public StoredMessage(byte[] message, AbstractMessage.QOSType qos, String topic) {
+        public StoredMessage(byte[] message, MqttQoS qos, String topic) {
             m_qos = qos;
             m_payload = message;
             m_topic = topic;
         }
 
-        public AbstractMessage.QOSType getQos() {
+        public MqttQoS getQos() {
             return m_qos;
         }
 
@@ -79,8 +81,8 @@ public interface IMessagesStore {
             return m_msgID;
         }
 
-        public ByteBuffer getMessage() {
-            return ByteBuffer.wrap(m_payload);
+        public ByteBuf getMessage() {
+            return Unpooled.copiedBuffer(m_payload);
         }
 
         public void setRetained(boolean retained) {

@@ -15,15 +15,15 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.atomic.AtomicReference;
-
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.ParseException;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Represents a tree of topics subscriptions.
@@ -235,7 +235,7 @@ public class SubscriptionsStore {
                 continue;
             }
             //update the selected subscriptions if not present or if has a greater qos
-            if (existingSub == null || existingSub.getRequestedQos().byteValue() < sub.getRequestedQos().byteValue()) {
+            if (existingSub == null || existingSub.getRequestedQos().value() < sub.getRequestedQos().value()) {
                 subsForClient.put(matchingCouple.clientID, sub);
             }
         }

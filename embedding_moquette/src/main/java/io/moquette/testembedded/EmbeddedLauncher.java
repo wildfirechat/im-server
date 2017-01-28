@@ -15,19 +15,22 @@
  */
 package io.moquette.testembedded;
 
-import io.moquette.interception.AbstractInterceptHandler;
-import io.moquette.interception.InterceptHandler;
-import io.moquette.interception.messages.*;
-import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
-import io.moquette.server.Server;
-import io.moquette.server.config.*;
+    import io.moquette.interception.AbstractInterceptHandler;
+    import io.moquette.interception.InterceptHandler;
+    import io.moquette.interception.messages.InterceptPublishMessage;
+    import io.moquette.server.Server;
+    import io.moquette.server.config.ClasspathResourceLoader;
+    import io.moquette.server.config.IConfig;
+    import io.moquette.server.config.IResourceLoader;
+    import io.moquette.server.config.ResourceLoaderConfig;
+    import io.moquette.server.netty.MessageBuilder;
+    import io.netty.handler.codec.mqtt.MqttPublishMessage;
+    import io.netty.handler.codec.mqtt.MqttQoS;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.List;
+    import java.io.IOException;
+    import java.util.List;
 
-import static java.util.Arrays.asList;
+    import static java.util.Arrays.asList;
 
     public class EmbeddedLauncher {
     static class PublisherListener extends AbstractInterceptHandler {
@@ -64,14 +67,15 @@ import static java.util.Arrays.asList;
 
         Thread.sleep(20000);
         System.out.println("Before self publish");
-        PublishMessage message = new PublishMessage();
-        message.setTopicName("/exit");
-        message.setRetainFlag(true);
-//        message.setQos(AbstractMessage.QOSType.MOST_ONE);
-//        message.setQos(AbstractMessage.QOSType.LEAST_ONE);
-        message.setQos(AbstractMessage.QOSType.EXACTLY_ONCE);
-        message.setPayload(ByteBuffer.wrap("Hello World!!".getBytes()));
-        mqttBroker.internalPublish(message);
+        MqttPublishMessage message = MessageBuilder.publish()
+                .topicName("/exit")
+                .retained(true)
+//        qos(MqttQoS.AT_MOST_ONCE);
+//        qQos(MqttQoS.AT_LEAST_ONCE);
+                .qos(MqttQoS.EXACTLY_ONCE)
+                .payload("Hello World!!".getBytes())
+                .build();
+        mqttBroker.internalPublish(message, "INTRLPUB");
         System.out.println("After self publish");
     }
 }

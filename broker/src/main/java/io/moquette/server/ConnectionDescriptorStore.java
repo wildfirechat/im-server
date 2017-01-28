@@ -1,23 +1,23 @@
 package io.moquette.server;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.moquette.connections.IConnectionsManager;
 import io.moquette.connections.MqttConnectionMetrics;
 import io.moquette.connections.MqttSession;
 import io.moquette.connections.MqttSubscription;
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.server.netty.metrics.BytesMetrics;
 import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ConnectionDescriptorStore implements IConnectionsManager {
 
@@ -27,38 +27,29 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
 	private final ISessionsStore sessionsStore;
 
 	public ConnectionDescriptorStore(ISessionsStore sessionsStore) {
-		this.connectionDescriptors = new ConcurrentHashMap<String, ConnectionDescriptor>();
+		this.connectionDescriptors = new ConcurrentHashMap<>();
 		this.sessionsStore = sessionsStore;
 	}
 
-	public boolean sendMessage(AbstractMessage message, String clientId) {
-		return sendMessage(message, null, clientId);
-	}
-
-	public boolean sendMessage(AbstractMessage message, Integer messageID, String clientID) {
+	public boolean sendMessage(MqttMessage message, Integer messageID, String clientID) {
+        final MqttMessageType messageType = message.fixedHeader().messageType();
 		try {
-			// The connection descriptors map will never be null: it's a final
-			// attribute.
-
 			if (messageID != null) {
-				LOG.info("Sending {} message. MqttClientId = {}, messageId = {}.", message.getMessageType(), clientID,
-						messageID);
+				LOG.info("Sending {} message CId=<{}>, messageId={}", messageType, clientID, messageID);
 			} else {
-				LOG.debug("Sending {} message. MqttClientId = {}.", message.getMessageType(), clientID);
+				LOG.debug("Sending {} message CId=<{}>", messageType, clientID);
 			}
 
 			ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
 			if (descriptor == null) {
 				if (messageID != null) {
-					LOG.error(
-							"The client has just disconnected. The {} message could not be sent. MqttClientId = {}, messageId = {}.",
-							message.getMessageType(), clientID, messageID);
+					LOG.error("Client has just disconnected. The {} message could not be sent. CId=<{}>, messageId={}",
+							messageType, clientID, messageID);
 				} else {
-					LOG.error("The client has just disconnected. The {} could not be sent. MqttClientId = {}.",
-							message.getMessageType(), clientID);
+					LOG.error("Client has just disconnected. The {} could not be sent. CId=<{}>", messageType, clientID);
 				}
 				/*
-				 * If the client hast just disconnected, its connection
+				 * If the client has just disconnected, its connection
 				 * descriptor will be null. We don't have to make the broker
 				 * crash: we'll just discard the PUBACK message.
 				 */
@@ -67,14 +58,11 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
 			descriptor.writeAndFlush(message);
 			return true;
 		} catch (Throwable e) {
+            String errorMsg = "Unable to send " + messageType + " message. CId=<" + clientID + ">";
 			if (messageID != null) {
-				LOG.error(
-						"Unable to send {} message. MqttClientId = {}, messageId = {}, cause = {}, errorMessage = {}.",
-						message.getMessageType(), clientID, messageID, e.getCause(), e.getMessage());
-			} else {
-				LOG.error("Unable to send {} message. MqttClientId = {}, cause = {}, errorMessage = {}.",
-						message.getMessageType(), clientID, e.getCause(), e.getMessage());
+                errorMsg += ", messageId=" + messageID;
 			}
+            LOG.error(errorMsg, e);
 			return false;
 		}
 	}
@@ -111,7 +99,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
         if (descriptor == null) {
             LOG.error(
-                    "The connection descriptor doesn't exist. The MQTT connection cannot be closed. MqttClientId = {}, closeImmediately = {}.",
+                    "The connection descriptor doesn't exist. The MQTT connection cannot be closed. CId=<{}>, closeImmediately = {}.",
                     clientID, closeImmediately);
             return false;
         }
@@ -125,10 +113,10 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
 
     @Override
     public MqttSession getSessionStatus(String clientID) {
-        LOG.info("Retrieving status of session. MqttClientId = {}.", clientID);
+        LOG.info("Retrieving status of session. CId=<{}>", clientID);
         ClientSession session = sessionsStore.sessionForClient(clientID);
         if (session == null) {
-            LOG.error("The given MQTT client ID doesn't have an associated session. MqttClientId = {}.", clientID);
+            LOG.error("The given MQTT client ID doesn't have an associated session. CId=<{}>", clientID);
             return null;
         }
         return buildMqttSession(session);
@@ -166,7 +154,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         result.setPendingPublishMessagesNo(session.getPendingPublishMessagesNo());
         result.setSecondPhaseAckPendingMessages(session.getSecondPhaseAckPendingMessages());
         result.setInflightMessages(session.getInflightMessagesNo());
-        LOG.info("The status of the session has been retrieved successfully. MqttClientId = {}.", session.clientID);
+        LOG.info("The status of the session has been retrieved successfully. CId=<{}>", session.clientID);
         return result;
     }
 

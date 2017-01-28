@@ -19,7 +19,6 @@ package io.moquette.spi.persistence;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.parser.proto.MQTTException;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
@@ -32,8 +31,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 
 /**
  * MapDB main persistence implementation
@@ -94,7 +93,7 @@ public class MapDBPersistentStore {
                 LOG.warn("Using {} MapDB store file. Path = {}.", fileNewlyCreated ? "fresh" : "existing", m_storePath);
             } catch (IOException ex) {
                 LOG.error("Unable to open MapDB store file. Path = {}, cause = {}, errorMessage = {}.", m_storePath, ex.getCause(), ex.getMessage());
-                throw new MQTTException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
+                throw new RuntimeException("Can't create temp file for subscriptions storage [" + m_storePath + "]", ex);
             }
             m_db = DBMaker.newFileDB(tmpFile).make();
         }

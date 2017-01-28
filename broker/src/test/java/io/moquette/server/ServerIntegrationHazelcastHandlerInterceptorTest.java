@@ -105,21 +105,21 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest{
         m_listener.subscribe("/topic", 1);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(), 0, false);
-        MqttMessage messageQos0 = m_messagesCollector.getMessage(true);
+        MqttMessage messageQos0 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS0", messageQos0.toString());
         assertEquals(0, messageQos0.getQos());
 
         m_listener.subscribe("/topic", 1);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(), 1, false);
-        MqttMessage messageQos1 = m_messagesCollector.getMessage(true);
+        MqttMessage messageQos1 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS1", messageQos1.toString());
         assertEquals(1, messageQos1.getQos());
 
         m_listener.subscribe("/topic", 2);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);
-        MqttMessage messageQos2 = m_messagesCollector.getMessage(true);
+        MqttMessage messageQos2 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", messageQos2.toString());
         assertEquals(2, messageQos2.getQos());
     }

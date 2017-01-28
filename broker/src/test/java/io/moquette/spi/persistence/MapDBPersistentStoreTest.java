@@ -23,9 +23,9 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,11 +73,11 @@ public class MapDBPersistentStoreTest {
         ClientSession session1 = m_sessionsStore.createNewSession("SESSION_ID_1", true);
 
         // Subscribe on /topic with QOSType.MOST_ONE
-        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", AbstractMessage.QOSType.MOST_ONE);
+        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", MqttQoS.AT_MOST_ONCE);
         session1.subscribe(oldSubscription);
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overridingSubscription = new Subscription(session1.clientID, "/topic", AbstractMessage.QOSType.EXACTLY_ONCE);
+        Subscription overridingSubscription = new Subscription(session1.clientID, "/topic", MqttQoS.EXACTLY_ONCE);
         session1.subscribe(overridingSubscription);
 
         //Verify
@@ -134,7 +134,7 @@ public class MapDBPersistentStoreTest {
     public void testDropMessagesInSessionCleanAllNotRetainedStoredMessages() {
         m_sessionsStore.createNewSession("TestClient", true);
         IMessagesStore.StoredMessage publishToStore = new IMessagesStore.StoredMessage("Hello".getBytes(),
-                AbstractMessage.QOSType.EXACTLY_ONCE, "/topic");
+                MqttQoS.EXACTLY_ONCE, "/topic");
         publishToStore.setClientID(TEST_CLIENT);
         publishToStore.setMessageID(1);
         publishToStore.setRetained(false);
@@ -152,7 +152,7 @@ public class MapDBPersistentStoreTest {
     public void testDropMessagesInSessionDoesntCleanAnyRetainedStoredMessages() {
         m_sessionsStore.createNewSession("TestClient", true);
         IMessagesStore.StoredMessage publishToStore = new IMessagesStore.StoredMessage("Hello".getBytes(),
-                AbstractMessage.QOSType.EXACTLY_ONCE, "/topic");
+                MqttQoS.EXACTLY_ONCE, "/topic");
         publishToStore.setClientID(TEST_CLIENT);
         publishToStore.setMessageID(1);
         publishToStore.setRetained(true);

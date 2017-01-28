@@ -15,7 +15,6 @@
  */
 package io.moquette.spi;
 
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
@@ -85,7 +84,7 @@ public class ClientSession {
 
     public boolean subscribe(Subscription newSubscription) {
         LOG.info("Adding new subscription. MqttClientId = {}, topics = {}, qos = {}.", newSubscription.getClientId(),
-				newSubscription.getTopicFilter(), AbstractMessage.QOSType.formatQoS(newSubscription.getRequestedQos()));
+				newSubscription.getTopicFilter(), newSubscription.getRequestedQos());
         boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {
             LOG.warn("The topic filter is not valid. MqttClientId = {}, topics = {}.", newSubscription.getClientId(),
@@ -96,7 +95,7 @@ public class ClientSession {
         ClientTopicCouple matchingCouple = new ClientTopicCouple(this.clientID, newSubscription.getTopicFilter());
         Subscription existingSub = m_sessionsStore.getSubscription(matchingCouple);
         //update the selected subscriptions if not present or if has a greater qos
-        if (existingSub == null || existingSub.getRequestedQos().byteValue() < newSubscription.getRequestedQos().byteValue()) {
+        if (existingSub == null || existingSub.getRequestedQos().value() < newSubscription.getRequestedQos().value()) {
             if (existingSub != null) {
                 LOG.info("The subscription already existed with a lower QoS value. It will be updated. MqttClientId = {}, topics = {}, existingQos = {}, newQos = {}.",
                         newSubscription.getClientId(), newSubscription.getTopicFilter(), existingSub.getRequestedQos(),
