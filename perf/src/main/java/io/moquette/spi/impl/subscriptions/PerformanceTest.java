@@ -4,9 +4,9 @@ package io.moquette.spi.impl.subscriptions;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import io.moquette.parser.proto.messages.AbstractMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MemoryStorageService;
+import io.netty.handler.codec.mqtt.MqttQoS;
 
 public class PerformanceTest {
 
@@ -39,7 +39,7 @@ public class PerformanceTest {
             topics[i] = (i % users) + "/" + ((i / users) % devices) + "/" + ((i / (users * devices)) % values) + "/"
                     + ((i / (users * devices * values)) % subs);
 
-            Subscription sub = new Subscription("CLI_ID_" + (i % users), topics[i], AbstractMessage.QOSType.MOST_ONE);
+            Subscription sub = new Subscription("CLI_ID_" + (i % users), topics[i], MqttQoS.AT_MOST_ONCE);
             aSessionsStore.addNewSubscription(sub);
             store.add(sub.asClientTopicCouple());
         }
