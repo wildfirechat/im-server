@@ -29,7 +29,9 @@
   </module>
    -->
   <module name="FileTabCharacter"/>
+  <!--
   <module name="JavadocPackage"/>
+  -->
   <module name="NewlineAtEndOfFile" />
   <!-- Copyright headers -->
   <module name="RegexpSingleline">
