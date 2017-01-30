@@ -33,7 +33,7 @@
   <module name="NewlineAtEndOfFile" />
   <!-- Copyright headers -->
   <module name="RegexpSingleline">
-    <property name="format" value="^(\s|\*)*Copyright\s+[0-9]+\s+The Netty Project\s*$"/>
+    <property name="format" value="^(\s|\*)*Copyright\s.*$"/>
     <property name="minimum" value="1"/>
     <property name="maximum" value="1"/>
     <property name="message" value="missing copyright header"/>
