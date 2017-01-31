@@ -188,7 +188,7 @@ public class ClientSession {
     }
 
     public IMessagesStore.StoredMessage storedMessage(int messageID) {
-        final MessageGUID guid = m_sessionsStore.mapToGuid(clientID, messageID);
+        final MessageGUID guid = messagesStore.mapToGuid(clientID, messageID);
         return messagesStore.getMessageByGuid(guid);
     }
 

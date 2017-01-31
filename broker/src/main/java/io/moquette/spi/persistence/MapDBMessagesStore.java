@@ -91,7 +91,7 @@ class MapDBMessagesStore implements IMessagesStore {
                 storedMessage.getTopic());
         m_persistentMessageStore.put(guid, storedMessage);
         ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db
-                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
+                .getHashMap(messageId2GuidsMapName(storedMessage.getClientID()));
         messageIdToGuid.put(storedMessage.getMessageID(), guid);
         return guid;
     }
@@ -99,8 +99,7 @@ class MapDBMessagesStore implements IMessagesStore {
     @Override
     public void dropMessagesInSession(String clientID) {
         LOG.debug("Dropping stored messages. ClientId = {}.", clientID);
-        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db
-                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
         for (MessageGUID guid : messageIdToGuid.values()) {
             removeStoredMessage(guid);
         }
@@ -136,7 +135,20 @@ class MapDBMessagesStore implements IMessagesStore {
     @Override
     public int getPendingPublishMessages(String clientID) {
         ConcurrentMap<Integer, MessageGUID> messageIdToGuidMap = m_db
-                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+                .getHashMap(messageId2GuidsMapName(clientID));
         return messageIdToGuidMap.size();
+    }
+
+    @Override
+    public MessageGUID mapToGuid(String clientID, int messageID) {
+        LOG.debug("Mapping message ID to GUID CId={}, messageId={}", clientID, messageID);
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
+        MessageGUID result = messageIdToGuid.get(messageID);
+        LOG.debug("Message ID has been mapped to a GUID CId={}, messageId={}, guid={}", clientID, messageID, result);
+        return result;
+    }
+
+    static String messageId2GuidsMapName(String clientID) {
+        return "guidsMapping_" + clientID;
     }
 }

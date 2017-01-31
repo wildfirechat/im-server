@@ -142,4 +142,6 @@ public interface IMessagesStore {
     void cleanRetained(Topic topic);
 
     int getPendingPublishMessages(String clientID);
+
+    MessageGUID mapToGuid(String clientID, int messageID);
 }

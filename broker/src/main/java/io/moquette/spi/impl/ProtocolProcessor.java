@@ -136,8 +136,11 @@ public class ProtocolProcessor {
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
     private IAuthorizator m_authorizator;
+
     private IMessagesStore m_messagesStore;
+
     private ISessionsStore m_sessionsStore;
+
     private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
     private String m_server_port;
@@ -1062,5 +1065,13 @@ public class ProtocolProcessor {
 
     public void removeInterceptHandler(InterceptHandler interceptHandler) {
         this.m_interceptor.removeInterceptHandler(interceptHandler);
+    }
+    
+    public IMessagesStore getMessagesStore() {
+        return m_messagesStore;
+    }
+    
+    public ISessionsStore getSessionsStore() {
+        return m_sessionsStore;
     }
 }

@@ -24,6 +24,7 @@ import io.moquette.server.config.IConfig;
 import io.moquette.server.config.IResourceLoader;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.IStore;
 import io.moquette.spi.impl.security.ACLFileParser;
 import io.moquette.spi.impl.security.AcceptAllAuthenticator;
 import io.moquette.spi.impl.security.DenyAllAuthorizator;
@@ -53,9 +54,9 @@ public class ProtocolProcessorBootstrapper {
 
     private SubscriptionsStore subscriptions;
 
-    private MapDBPersistentStore m_mapStorage;
-
     private ISessionsStore m_sessionsStore;
+
+    private Runnable storeShutdown = null;
 
     private BrokerInterceptor m_interceptor;
 
@@ -89,11 +90,31 @@ public class ProtocolProcessorBootstrapper {
             IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
         subscriptions = new SubscriptionsStore();
 
+        IMessagesStore messagesStore;
         LOG.info("Initializing messages and sessions stores...");
-        m_mapStorage = new MapDBPersistentStore(props);
-        m_mapStorage.initStore();
-        IMessagesStore messagesStore = m_mapStorage.messagesStore();
-        m_sessionsStore = m_mapStorage.sessionsStore();
+        String storageClassName = props.getProperty(BrokerConstants.STORAGE_CLASS_NAME, "");
+        if (storageClassName != null && !storageClassName.isEmpty()) {
+            final IStore store = loadClass(storageClassName, IStore.class, Server.class, server);
+            messagesStore = store.messagesStore();
+            m_sessionsStore = store.sessionsStore();
+            storeShutdown = new Runnable() {
+				@Override
+				public void run() {
+					store.close();
+				}
+			};
+        } else {
+            final MapDBPersistentStore m_mapStorage = new MapDBPersistentStore(props);
+            m_mapStorage.initStore();
+            messagesStore = m_mapStorage.messagesStore();
+            m_sessionsStore = m_mapStorage.sessionsStore();
+            storeShutdown = new Runnable() {
+				@Override
+				public void run() {
+					m_mapStorage.close();
+				}
+			};
+        }
 
         LOG.info("Configuring message interceptors...");
 
@@ -258,12 +279,17 @@ public class ProtocolProcessorBootstrapper {
         return instance;
     }
 
+    public ISessionsStore getSessionsStore() {
+        return m_sessionsStore;
+    }
+    
     public List<Subscription> getSubscriptions() {
         return m_sessionsStore.getSubscriptions();
     }
 
     public void shutdown() {
-        this.m_mapStorage.close();
+        if (storeShutdown != null)
+            storeShutdown.run();
     }
 
     public ConnectionDescriptorStore getConnectionDescriptors() {

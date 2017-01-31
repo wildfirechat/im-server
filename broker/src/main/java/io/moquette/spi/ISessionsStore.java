@@ -183,8 +183,6 @@ public interface ISessionsStore {
      */
     MessageGUID secondPhaseAcknowledged(String clientID, int messageID);
 
-    MessageGUID mapToGuid(String clientID, int messageID);
-
     StoredMessage getInflightMessage(String clientID, int messageID);
 
     /**
