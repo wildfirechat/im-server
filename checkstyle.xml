@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2012 The Netty Project
+  ~
+  ~ The Netty Project licenses this file to you under the Apache License,
+  ~ version 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License. You may obtain a copy of the License at:
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<!DOCTYPE module PUBLIC
+  "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+  "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<module name="Checker">
+  <property name="severity" value="warning"/>
+
+  <!--
+  <module name="SuppressionFilter">
+    <property name="file" value="/io/netty/suppressions.xml" />
+  </module>
+  <module name="io.netty.build.checkstyle.SuppressionFilter">
+    <property name="pattern" value="((LocalTime|WorldClock)Protocol|LinkedTransferQueue|Version|jzlib/.*|chmv8/.*|com/sun/nio/sctp/.*)\.java" />
+  </module>
+   -->
+  <module name="FileTabCharacter"/>
+  <!--
+  <module name="JavadocPackage"/>
+  -->
+  <module name="NewlineAtEndOfFile" />
+  <!-- Copyright headers -->
+  <module name="RegexpSingleline">
+    <property name="format" value="^(\s|\*)*Copyright\s.*$"/>
+    <property name="minimum" value="1"/>
+    <property name="maximum" value="1"/>
+    <property name="message" value="missing copyright header"/>
+  </module>
+  <!-- Unmaintainable Javadoc tags -->
+  <module name="RegexpSingleline">
+    <property name="format" value="(@(author|version)|\(non-Javadoc\))"/>
+    <property name="ignoreCase" value="true"/>
+    <property name="message" value="unmaintainable Javadoc tags: @author, @version, or (non-Javadoc)"/>
+  </module>
+  <!-- IDE-generated comment -->
+  <module name="RegexpSingleline">
+    <property name="format" value="File \| Settings \| File Templates"/>
+    <property name="message" value="IDE-generated comment"/>
+  </module>
+  <!-- Force UNIX line separator 
+  <module name="io.netty.build.checkstyle.NewlineCheck"/>
+  -->
+
+  <!-- Trailing whitespace -->
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="trailing whitespace"/>
+  </module> 
+  <!-- Prohibit consecutive empty lines (except the lines after package/import) -->
+  <module name="RegexpMultiline">
+    <property name="format" value="\n *(?!package )(?!import )[^\n]+\n{3,}"/>
+    <property name="message" value="two or more consecutive empty lines"/>
+  </module>
+  <!-- Prohibit an empty after { or before } -->
+  <module name="RegexpMultiline">
+    <property name="format" value="\n\n\s+\}[^\n]{0,10}\n"/>
+    <property name="message" value="an empty line before '}'"/>
+  </module>
+  <module name="RegexpMultiline">
+    <property name="format" value="\n\s+[^\n]{1,8}\{\n\n"/>
+    <property name="message" value="an empty line after a short line that ends with '{'"/>
+  </module>
+
+  <module name="TreeWalker">
+    <module name="LineLength">
+      <property name="max" value="120"/>
+    </module>
+    <module name="WhitespaceAfter"/>
+    <module name="WhitespaceAround">
+      <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LCURLY, LE, LITERAL_ASSERT, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, RCURLY, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND"/>
+    </module>
+    <!-- Commented out due to false positives.
+    <module name="MissingDeprecated"/>
+    -->
+    <module name="MissingOverride"/>
+    <module name="PackageAnnotation"/>
+    <module name="EmptyBlock">
+      <property name="option" value="text"/>
+    </module>
+    <module name="LeftCurly"/>
+    <module name="RightCurly"/>
+    <module name="NeedBraces"/>
+    <module name="AvoidNestedBlocks">
+      <property name="allowInSwitchCase" value="true"/>
+    </module>
+    <module name="FinalClass"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="CovariantEquals"/>
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <!--
+    <module name="FinalLocalVariable"/>
+    -->
+    <!-- Commented out due to http://jira.codehaus.org/browse/MCHECKSTYLE-111
+    <module name="RedundantThrows">
+      <property name="logLoadErrors" value="false"/>
+      <property name="suppressLoadErrors" value="true"/>
+    </module>
+    -->
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="SuperFinalize"/>
+    <module name="PackageDeclaration"/>
+    <module name="ExplicitInitialization"/>
+    <module name="DefaultComesLast"/>
+    <module name="UnnecessaryParentheses"/>
+    <module name="AvoidStarImport">
+      <property name="allowStaticMemberImports" value="true"/>
+    </module>
+    <module name="RedundantImport"/>
+    <!-- Commented out due to false positives.
+    <module name="UnusedImports">
+      <property name="processJavadoc" value="true"/>
+    </module>
+    -->
+    <module name="JavadocStyle">
+      <property name="checkFirstSentence" value="false"/>
+    </module>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="OuterTypeFilename"/>
+    <module name="ModifierOrder"/>
+    <module name="RedundantModifier"/>
+    <module name="GenericWhitespace"/>
+    <module name="EmptyForInitializerPad"/>
+    <module name="EmptyForIteratorPad"/>
+    <module name="MethodParamPad"/>
+    <module name="ParenPad"/>
+    <module name="TypecastParenPad"/>
+    <module name="ParameterName">
+      <property name="format" value="^(?!arg[0-9])[_a-z][_a-zA-Z0-9]*$" />
+    </module>
+  </module>
+</module>
