@@ -1,9 +1,8 @@
+
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptPublishMessage;
-
 import java.io.Serializable;
-
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 
 /**
