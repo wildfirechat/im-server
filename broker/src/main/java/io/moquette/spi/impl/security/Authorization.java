@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.security;
 
 import static io.moquette.spi.impl.security.Authorization.Permission.READWRITE;
@@ -23,12 +24,13 @@ import static io.moquette.spi.impl.security.Authorization.Permission.READWRITE;
  * @author andrea
  */
 public class Authorization {
+
     protected final String topic;
     protected final Permission permission;
 
     /**
      * Access rights
-     * */
+     */
     enum Permission {
         READ, WRITE, READWRITE
     }
@@ -48,13 +50,17 @@ public class Authorization {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Authorization that = (Authorization) o;
 
-        if (permission != that.permission) return false;
-        if (!topic.equals(that.topic)) return false;
+        if (permission != that.permission)
+            return false;
+        if (!topic.equals(that.topic))
+            return false;
 
         return true;
     }
