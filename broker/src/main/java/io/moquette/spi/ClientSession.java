@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi;
 
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
@@ -20,7 +21,6 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -55,10 +55,11 @@ public class ClientSession {
 
     private volatile boolean cleanSession;
 
-//    private BlockingQueue<AbstractMessage> m_queueToPublish = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
+    // private BlockingQueue<AbstractMessage> m_queueToPublish = new
+    // ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
 
     public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore,
-                         boolean cleanSession) {
+            boolean cleanSession) {
         this.clientID = clientID;
         this.messagesStore = messagesStore;
         this.m_sessionsStore = sessionsStore;
@@ -66,12 +67,12 @@ public class ClientSession {
     }
 
     /**
-     * Return the list of persisted publishes for the given clientID.
-     * For QoS1 and QoS2 with clean session flag, this method return the list of
-     * missed publish events while the client was disconnected.
+     * Return the list of persisted publishes for the given clientID. For QoS1 and QoS2 with clean
+     * session flag, this method return the list of missed publish events while the client was
+     * disconnected.
      *
      * @return the list of messages to be delivered for client related to the session.
-     * */
+     */
     public BlockingQueue<IMessagesStore.StoredMessage> queue() {
         LOG.info("Retrieving stored messages. MqttClientId = {}.", clientID);
         return this.m_sessionsStore.queue(clientID);
@@ -79,26 +80,35 @@ public class ClientSession {
 
     @Override
     public String toString() {
-        return "ClientSession{clientID='" + clientID + '\'' +"}";
+        return "ClientSession{clientID='" + clientID + '\'' + "}";
     }
 
     public boolean subscribe(Subscription newSubscription) {
-        LOG.info("Adding new subscription. MqttClientId = {}, topics = {}, qos = {}.", newSubscription.getClientId(),
-				newSubscription.getTopicFilter(), newSubscription.getRequestedQos());
+        LOG.info(
+                "Adding new subscription. MqttClientId = {}, topics = {}, qos = {}.",
+                newSubscription.getClientId(),
+                newSubscription.getTopicFilter(),
+                newSubscription.getRequestedQos());
         boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
         if (!validTopic) {
-            LOG.warn("The topic filter is not valid. MqttClientId = {}, topics = {}.", newSubscription.getClientId(),
-					newSubscription.getTopicFilter());
-            //send SUBACK with 0x80 for this topic filter
+            LOG.warn(
+                    "The topic filter is not valid. MqttClientId = {}, topics = {}.",
+                    newSubscription.getClientId(),
+                    newSubscription.getTopicFilter());
+            // send SUBACK with 0x80 for this topic filter
             return false;
         }
         ClientTopicCouple matchingCouple = new ClientTopicCouple(this.clientID, newSubscription.getTopicFilter());
         Subscription existingSub = m_sessionsStore.getSubscription(matchingCouple);
-        //update the selected subscriptions if not present or if has a greater qos
+        // update the selected subscriptions if not present or if has a greater qos
         if (existingSub == null || existingSub.getRequestedQos().value() < newSubscription.getRequestedQos().value()) {
             if (existingSub != null) {
-                LOG.info("The subscription already existed with a lower QoS value. It will be updated. MqttClientId = {}, topics = {}, existingQos = {}, newQos = {}.",
-                        newSubscription.getClientId(), newSubscription.getTopicFilter(), existingSub.getRequestedQos(),
+                LOG.info(
+                        "The subscription already existed with a lower QoS value. It will be updated. "
+                        + "MqttClientId = {}, topics = {}, existingQos = {}, newQos = {}.",
+                        newSubscription.getClientId(),
+                        newSubscription.getTopicFilter(),
+                        existingSub.getRequestedQos(),
                         newSubscription.getRequestedQos());
                 subscriptions.remove(newSubscription);
             }
@@ -123,17 +133,16 @@ public class ClientSession {
     public void disconnect() {
         if (this.cleanSession) {
             LOG.info("The client has disconnected. Removing its subscriptions. MqttClientId = {}.", clientID);
-            //cleanup topic subscriptions
+            // cleanup topic subscriptions
             cleanSession();
         }
-
     }
 
     public void cleanSession() {
         LOG.info("Wiping existing subscriptions. MqttClientId = {}.", this.clientID);
         m_sessionsStore.wipeSubscriptions(this.clientID);
 
-        //remove also the messages stored of type QoS1/2
+        // remove also the messages stored of type QoS1/2
         LOG.info("Removing stored messages with QoS 1 and 2. MqttClientId = {}.", this.clientID);
         messagesStore.dropMessagesInSession(this.clientID);
     }
@@ -152,7 +161,7 @@ public class ClientSession {
     }
 
     public void inFlightAcknowledged(int messageID) {
-	if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled())
             LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", this.clientID, messageID);
         m_sessionsStore.inFlightAck(this.clientID, messageID);
     }
@@ -170,8 +179,10 @@ public class ClientSession {
 
     /**
      * Enqueue a message to be sent to the client.
-     * @param message the message to enqueue.
-     * */
+     *
+     * @param message
+     *            the message to enqueue.
+     */
     public void enqueue(IMessagesStore.StoredMessage message) {
         this.m_sessionsStore.queue(this.clientID).add(message);
     }
