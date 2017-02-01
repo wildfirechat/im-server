@@ -13,14 +13,14 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi;
 
 /**
  * Callback interface used to be notified of some events from the input event queue.
- * 
- * It's the abstraction of the messaging stuff attached in after the front protocol
- * parsing stuff.
- * 
+ *
+ * It's the abstraction of the messaging stuff attached in after the front protocol parsing stuff.
+ *
  * @author andrea
  */
 public interface IMessaging {
