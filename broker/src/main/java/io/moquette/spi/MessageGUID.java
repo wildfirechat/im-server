@@ -40,7 +40,6 @@ public class MessageGUID implements Serializable {
         MessageGUID that = (MessageGUID) o;
 
         return guid != null ? guid.equals(that.guid) : that.guid == null;
-
     }
 
     @Override
