@@ -13,11 +13,12 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.subscriptions;
 
 /**
  * Internal use only class.
- * */
+ */
 public class Token {
 
     static final Token EMPTY = new Token("");
