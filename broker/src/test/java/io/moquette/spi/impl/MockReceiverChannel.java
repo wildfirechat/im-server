@@ -13,11 +13,11 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.util.AttributeKey;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +25,7 @@ import java.util.Map;
  * This a synchronous channel that avoid output ring buffer from Processor
  */
 class MockReceiverChannel {
+
     MqttMessage m_receivedMessage;
     private Map<Object, Object> m_attributes = new HashMap<>();
 
