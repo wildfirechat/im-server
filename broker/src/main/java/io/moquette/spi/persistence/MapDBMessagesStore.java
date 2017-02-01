@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.persistence;
 
 import io.moquette.spi.IMatchingCondition;
@@ -21,7 +22,6 @@ import io.moquette.spi.MessageGUID;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -36,11 +36,10 @@ class MapDBMessagesStore implements IMessagesStore {
 
     private DB m_db;
 
-    //maps clientID -> guid
+    // maps clientID -> guid
     private ConcurrentMap<String, MessageGUID> m_retainedStore;
-    //maps guid to message, it's message store
+    // maps guid to message, it's message store
     private ConcurrentMap<MessageGUID, IMessagesStore.StoredMessage> m_persistentMessageStore;
-
 
     MapDBMessagesStore(DB db) {
         m_db = db;
@@ -83,10 +82,15 @@ class MapDBMessagesStore implements IMessagesStore {
         assert storedMessage.getClientID() != null : "The message to be persisted must have a valid client ID";
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
-        LOG.debug("Storing publish event. MqttClientId = {}, messageId = {}, guid = {}, topic = {}.",
-                storedMessage.getClientID(), storedMessage.getMessageID(), guid, storedMessage.getTopic());
+        LOG.debug(
+                "Storing publish event. MqttClientId = {}, messageId = {}, guid = {}, topic = {}.",
+                storedMessage.getClientID(),
+                storedMessage.getMessageID(),
+                guid,
+                storedMessage.getTopic());
         m_persistentMessageStore.put(guid, storedMessage);
-        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db
+                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(storedMessage.getClientID()));
         messageIdToGuid.put(storedMessage.getMessageID(), guid);
         return guid;
     }
@@ -94,7 +98,8 @@ class MapDBMessagesStore implements IMessagesStore {
     @Override
     public void dropMessagesInSession(String clientID) {
         LOG.debug("Dropping stored messages. ClientId = {}.", clientID);
-        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db
+                .getHashMap(MapDBSessionsStore.messageId2GuidsMapName(clientID));
         for (MessageGUID guid : messageIdToGuid.values()) {
             removeStoredMessage(guid);
         }
@@ -102,11 +107,15 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     void removeStoredMessage(MessageGUID guid) {
-        //remove only the not retained and no more referenced
+        // remove only the not retained and no more referenced
         StoredMessage storedMessage = m_persistentMessageStore.get(guid);
         if (!storedMessage.isRetained()) {
-            LOG.debug("Dropping stored message. ClientId = {}, messageId = {}, guid = {}, topic = {}.",
-                    storedMessage.getClientID(), storedMessage.getMessageID(), guid, storedMessage.getTopic());
+            LOG.debug(
+                    "Dropping stored message. ClientId = {}, messageId = {}, guid = {}, topic = {}.",
+                    storedMessage.getClientID(),
+                    storedMessage.getMessageID(),
+                    guid,
+                    storedMessage.getTopic());
             m_persistentMessageStore.remove(guid);
         }
     }
