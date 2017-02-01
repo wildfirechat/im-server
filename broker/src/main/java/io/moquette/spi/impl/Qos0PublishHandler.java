@@ -1,3 +1,4 @@
+
 package io.moquette.spi.impl;
 
 import io.moquette.server.netty.NettyUtils;
@@ -9,9 +10,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
-
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 
 class Qos0PublishHandler extends QosPublishHandler {
@@ -24,9 +23,8 @@ class Qos0PublishHandler extends QosPublishHandler {
     private final MessagesPublisher publisher;
 
     public Qos0PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
-                              IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              MessagesPublisher messagesPublisher) {
-		super(authorizator);
+            IMessagesStore messagesStore, BrokerInterceptor interceptor, MessagesPublisher messagesPublisher) {
+        super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
@@ -34,33 +32,41 @@ class Qos0PublishHandler extends QosPublishHandler {
     }
 
     void receivedPublishQos0(Channel channel, MqttPublishMessage msg) {
-        //verify if topic can be write
+        // verify if topic can be write
         final String topic = msg.variableHeader().topicName();
         if (checkWriteOnTopic(topic, channel)) {
             return;
         }
 
-        //route message to subscribers
+        // route message to subscribers
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
         final int messageID = msg.variableHeader().messageId();
 
-		if (LOG.isTraceEnabled()) {
-			LOG.trace("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
-					clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
-					subscriptions.dumpTree());
-		} else {
-			LOG.info("Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.", clientID,
-					topic, messageID);
-		}
-		
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(
+                    "Sending publish message to subscribers. "
+                    + "MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
+                    clientID,
+                    topic,
+                    messageID,
+                    DebugUtils.payload2Str(toStoreMsg.getMessage()),
+                    subscriptions.dumpTree());
+        } else {
+            LOG.info(
+                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.",
+                    clientID,
+                    topic,
+                    messageID);
+        }
+
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
         if (msg.fixedHeader().isRetain()) {
-            //QoS == 0 && retain => clean old retained
+            // QoS == 0 && retain => clean old retained
             m_messagesStore.cleanRetained(topic);
         }
 
