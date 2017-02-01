@@ -13,23 +13,23 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import java.util.Map;
 import java.util.Set;
-
 import io.moquette.spi.security.IAuthenticator;
 
 /**
  * Test utility to implements authenticator instance.
- * 
+ *
  * @author andrea
  */
 class MockAuthenticator implements IAuthenticator {
 
     private Set<String> m_clientIds;
     private Map<String, String> m_userPwds;
-    
+
     MockAuthenticator(Set<String> clientIds, Map<String, String> userPwds) {
         m_clientIds = clientIds;
         m_userPwds = userPwds;
@@ -47,5 +47,5 @@ class MockAuthenticator implements IAuthenticator {
         }
         return m_userPwds.get(username).equals(new String(password));
     }
-    
+
 }
