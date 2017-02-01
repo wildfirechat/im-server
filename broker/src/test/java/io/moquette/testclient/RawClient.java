@@ -1,3 +1,4 @@
+
 package io.moquette.testclient;
 
 import io.netty.bootstrap.Bootstrap;
@@ -11,15 +12,14 @@ import io.netty.util.ReferenceCountUtil;
 import io.moquette.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class is used to have a fluent interface to interact with a server.
- * Inspired by org.kaazing.robot
+ * This class is used to have a fluent interface to interact with a server. Inspired by
+ * org.kaazing.robot
  */
 public class RawClient {
 
@@ -41,9 +41,9 @@ public class RawClient {
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            //m_client.setConnectionLost(true);
+            // m_client.setConnectionLost(true);
             disconnectLatch.countDown();
-            ctx.close(/*false*/);
+            ctx.close(/* false */);
         }
     }
 
@@ -71,6 +71,7 @@ public class RawClient {
             b.channel(NioSocketChannel.class);
             b.option(ChannelOption.SO_KEEPALIVE, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
+
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
@@ -117,14 +118,14 @@ public class RawClient {
 
     /**
      * Write just String bytes not length
-     * */
+     */
     public RawClient write(String str) {
         ByteBuf out = Unpooled.buffer(str.length());
         byte[] raw;
         try {
             raw = str.getBytes("UTF-8");
-            //NB every Java platform has got UTF-8 encoding by default, so this
-            //exception are never raised.
+            // NB every Java platform has got UTF-8 encoding by default, so this
+            // exception are never raised.
         } catch (UnsupportedEncodingException ex) {
             throw new IllegalStateException(ex);
         }
@@ -153,14 +154,14 @@ public class RawClient {
 
     /**
      * Expect the closing of the underling channel, with timeout
-     * */
+     */
     public void closed(long timeout) throws InterruptedException {
         disconnectLatch.await(timeout, TimeUnit.MILLISECONDS);
     }
 
     /**
      * Expect closing the connect with unbound time
-     * */
+     */
     public void closed() throws InterruptedException {
         disconnectLatch.await();
     }
