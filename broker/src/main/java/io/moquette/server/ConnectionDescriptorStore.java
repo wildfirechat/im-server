@@ -1,3 +1,4 @@
+
 package io.moquette.server;
 
 import io.moquette.connections.IConnectionsManager;
@@ -13,7 +14,6 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,64 +21,69 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ConnectionDescriptorStore implements IConnectionsManager {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ConnectionDescriptorStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionDescriptorStore.class);
 
-	private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
-	private final ISessionsStore sessionsStore;
+    private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
+    private final ISessionsStore sessionsStore;
 
-	public ConnectionDescriptorStore(ISessionsStore sessionsStore) {
-		this.connectionDescriptors = new ConcurrentHashMap<>();
-		this.sessionsStore = sessionsStore;
-	}
+    public ConnectionDescriptorStore(ISessionsStore sessionsStore) {
+        this.connectionDescriptors = new ConcurrentHashMap<>();
+        this.sessionsStore = sessionsStore;
+    }
 
-	public boolean sendMessage(MqttMessage message, Integer messageID, String clientID) {
+    public boolean sendMessage(MqttMessage message, Integer messageID, String clientID) {
         final MqttMessageType messageType = message.fixedHeader().messageType();
-		try {
-			if (messageID != null) {
-				LOG.info("Sending {} message CId=<{}>, messageId={}", messageType, clientID, messageID);
-			} else {
-				LOG.debug("Sending {} message CId=<{}>", messageType, clientID);
-			}
+        try {
+            if (messageID != null) {
+                LOG.info("Sending {} message CId=<{}>, messageId={}", messageType, clientID, messageID);
+            } else {
+                LOG.debug("Sending {} message CId=<{}>", messageType, clientID);
+            }
 
-			ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
-			if (descriptor == null) {
-				if (messageID != null) {
-					LOG.error("Client has just disconnected. The {} message could not be sent. CId=<{}>, messageId={}",
-							messageType, clientID, messageID);
-				} else {
-					LOG.error("Client has just disconnected. The {} could not be sent. CId=<{}>", messageType, clientID);
-				}
-				/*
-				 * If the client has just disconnected, its connection
-				 * descriptor will be null. We don't have to make the broker
-				 * crash: we'll just discard the PUBACK message.
-				 */
-				return false;
-			}
-			descriptor.writeAndFlush(message);
-			return true;
-		} catch (Throwable e) {
+            ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
+            if (descriptor == null) {
+                if (messageID != null) {
+                    LOG.error(
+                            "Client has just disconnected. The {} message could not be sent. CId=<{}>, messageId={}",
+                            messageType,
+                            clientID,
+                            messageID);
+                } else {
+                    LOG.error(
+                            "Client has just disconnected. The {} could not be sent. CId=<{}>",
+                            messageType,
+                            clientID);
+                }
+                /*
+                 * If the client has just disconnected, its connection descriptor will be null. We
+                 * don't have to make the broker crash: we'll just discard the PUBACK message.
+                 */
+                return false;
+            }
+            descriptor.writeAndFlush(message);
+            return true;
+        } catch (Throwable e) {
             String errorMsg = "Unable to send " + messageType + " message. CId=<" + clientID + ">";
-			if (messageID != null) {
+            if (messageID != null) {
                 errorMsg += ", messageId=" + messageID;
-			}
+            }
             LOG.error(errorMsg, e);
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	public ConnectionDescriptor addConnection(ConnectionDescriptor descriptor) {
-		return connectionDescriptors.putIfAbsent(descriptor.clientID, descriptor);
-	}
+    public ConnectionDescriptor addConnection(ConnectionDescriptor descriptor) {
+        return connectionDescriptors.putIfAbsent(descriptor.clientID, descriptor);
+    }
 
-	public boolean removeConnection(ConnectionDescriptor descriptor) {
-		return connectionDescriptors.remove(descriptor.clientID, descriptor);
-	}
+    public boolean removeConnection(ConnectionDescriptor descriptor) {
+        return connectionDescriptors.remove(descriptor.clientID, descriptor);
+    }
 
-	public ConnectionDescriptor getConnection(String clientID) {
-		return connectionDescriptors.get(clientID);
-	}
-	
+    public ConnectionDescriptor getConnection(String clientID) {
+        return connectionDescriptors.get(clientID);
+    }
+
     @Override
     public boolean isConnected(String clientID) {
         return connectionDescriptors.containsKey(clientID);
@@ -99,8 +104,10 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
         if (descriptor == null) {
             LOG.error(
-                    "The connection descriptor doesn't exist. The MQTT connection cannot be closed. CId=<{}>, closeImmediately = {}.",
-                    clientID, closeImmediately);
+                    "The connection descriptor doesn't exist. "
+                    + "The MQTT connection cannot be closed. CId=<{}>, closeImmediately = {}.",
+                    clientID,
+                    closeImmediately);
             return false;
         }
         if (closeImmediately) {
@@ -125,7 +132,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
     @Override
     public Collection<MqttSession> getSessions() {
         LOG.info("Retrieving status of all sessions.");
-        Collection<MqttSession> result = new ArrayList<MqttSession>();
+        Collection<MqttSession> result = new ArrayList<>();
         for (ClientSession session : sessionsStore.getAllSessions()) {
             result.add(buildMqttSession(session));
         }
@@ -136,8 +143,12 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         MqttSession result = new MqttSession();
         Collection<MqttSubscription> mqttSubscriptions = new ArrayList<>();
         for (Subscription subscription : session.getSubscriptions()) {
-            mqttSubscriptions.add(new MqttSubscription(subscription.getRequestedQos().toString(),
-                    subscription.getClientId(), subscription.getTopicFilter(), subscription.isActive()));
+            mqttSubscriptions.add(
+                    new MqttSubscription(
+                            subscription.getRequestedQos().toString(),
+                            subscription.getClientId(),
+                            subscription.getTopicFilter(),
+                            subscription.isActive()));
         }
         result.setActiveSubscriptions(mqttSubscriptions);
         result.setCleanSession(session.isCleanSession());
@@ -146,8 +157,12 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
             result.setConnectionEstablished(true);
             BytesMetrics bytesMetrics = descriptor.getBytesMetrics();
             MessageMetrics messageMetrics = descriptor.getMessageMetrics();
-            result.setConnectionMetrics(new MqttConnectionMetrics(bytesMetrics.readBytes(), bytesMetrics.wroteBytes(),
-                    messageMetrics.messagesRead(), messageMetrics.messagesWrote()));
+            result.setConnectionMetrics(
+                    new MqttConnectionMetrics(
+                            bytesMetrics.readBytes(),
+                            bytesMetrics.wroteBytes(),
+                            messageMetrics.messagesRead(),
+                            messageMetrics.messagesWrote()));
         } else {
             result.setConnectionEstablished(false);
         }
