@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.server.netty.MessageBuilder;
@@ -28,11 +29,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-
 import static org.junit.Assert.*;
 
 public class ServerIntegrationEmbeddedPublishTest {
@@ -89,12 +88,8 @@ public class ServerIntegrationEmbeddedPublishTest {
     }
 
     private void internalPublishToWithQosAndRetained(String topic, MqttQoS qos, boolean retained) {
-        MqttPublishMessage message = MessageBuilder.publish()
-                .topicName(topic)
-                .retained(retained)
-                .qos(qos)
-                .payload("Hello world MQTT!!".getBytes())
-                .build();
+        MqttPublishMessage message = MessageBuilder.publish().topicName(topic).retained(retained).qos(qos)
+                .payload("Hello world MQTT!!".getBytes()).build();
         m_server.internalPublish(message, "INTRPUBL");
     }
 
@@ -115,7 +110,7 @@ public class ServerIntegrationEmbeddedPublishTest {
     }
 
     private void verifyMessageIsReceivedSuccessfully() throws Exception {
-        //check in 2 seconds
+        // check in 2 seconds
         MqttMessage msg = m_callback.waitMessage(2);
         assertNotNull(msg);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
@@ -125,11 +120,11 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterNotRetainedQoS0IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterNotRetainedQoS0IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_MOST_ONCE, false);
         subscribeToWithQos("/topic", 0);
 
-        //Verify
+        // Verify
         verifyNoMessageIsReceived();
     }
 
@@ -139,10 +134,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 0);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_MOST_ONCE, false);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -152,10 +147,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 0);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_MOST_ONCE, true);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -163,12 +158,12 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterRetainedQoS0IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterRetainedQoS0IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_MOST_ONCE, true);
-        //LOG.info("** post internalPublish **");
+        // LOG.info("** post internalPublish **");
         subscribeToWithQos("/topic", 0);
 
-        //Verify
+        // Verify
         verifyNoMessageIsReceived();
     }
 
@@ -178,10 +173,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 1);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_LEAST_ONCE, false);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -189,11 +184,11 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterNotRetainedQoS1IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterNotRetainedQoS1IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_LEAST_ONCE, false);
         subscribeToWithQos("/topic", 1);
 
-        //Verify
+        // Verify
         verifyNoMessageIsReceived();
     }
 
@@ -203,10 +198,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 1);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_LEAST_ONCE, true);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -214,12 +209,12 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterRetainedQoS1IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterRetainedQoS0IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.AT_LEAST_ONCE, true);
         subscribeToWithQos("/topic", MqttQoS.AT_LEAST_ONCE.value());
         LOG.info("** After subscribe **");
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
         LOG.info("** Post verify **");
     }
@@ -230,10 +225,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 2);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.EXACTLY_ONCE, false);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -241,11 +236,11 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterNotRetainedQoS2IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterNotRetainedQoS2IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.EXACTLY_ONCE, false);
         subscribeToWithQos("/topic", 2);
 
-        //Verify
+        // Verify
         verifyNoMessageIsReceived();
     }
 
@@ -255,10 +250,10 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         subscribeToWithQos("/topic", 2);
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.EXACTLY_ONCE, true);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -266,11 +261,11 @@ public class ServerIntegrationEmbeddedPublishTest {
     public void testClientSubscribeAfterRetainedQoS2IsSent() throws Exception {
         LOG.info("*** testClientSubscribeAfterRetainedQoS2IsSent ***");
 
-        //Exercise
+        // Exercise
         internalPublishToWithQosAndRetained("/topic", MqttQoS.EXACTLY_ONCE, true);
         subscribeToWithQos("/topic", 2);
 
-        //Verify
+        // Verify
         verifyMessageIsReceivedSuccessfully();
     }
 
@@ -283,8 +278,8 @@ public class ServerIntegrationEmbeddedPublishTest {
 
         internalPublishToWithQosAndRetained("foo", MqttQoS.AT_MOST_ONCE, false);
 
-        //verifyMessageIsReceivedSuccessfully();
-        //m_subscriber.receive(2, TimeUnit.MILLISECONDS);
+        // verifyMessageIsReceivedSuccessfully();
+        // m_subscriber.receive(2, TimeUnit.MILLISECONDS);
         MqttMessage message = m_callback.waitMessage(1);
         assertTrue(message == null);
     }
