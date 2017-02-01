@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette;
 
 import java.io.File;
@@ -21,7 +22,8 @@ import java.io.File;
  * Created by andrea on 08/12/15.
  */
 public class BrokerConstants {
-    public static final String INTERCEPT_HANDLER_PROPERTY_NAME ="intercept.handler";
+
+    public static final String INTERCEPT_HANDLER_PROPERTY_NAME = "intercept.handler";
     public static final String BROKER_INTERCEPTOR_THREAD_POOL_SIZE = "intercept.thread_pool.size";
     public static final String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
     public static final String AUTOSAVE_INTERVAL_PROPERTY_NAME = "autosave_interval";
@@ -29,7 +31,8 @@ public class BrokerConstants {
     public static final String PORT_PROPERTY_NAME = "port";
     public static final String HOST_PROPERTY_NAME = "host";
     public static final String DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME = "moquette_store.mapdb";
-    public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.dir") + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+    public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.dir") + File.separator
+            + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     public static final String WEB_SOCKET_PORT_PROPERTY_NAME = "websocket_port";
     public static final String WSS_PORT_PROPERTY_NAME = "secure_websocket_port";
     public static final String SSL_PORT_PROPERTY_NAME = "ssl_port";
