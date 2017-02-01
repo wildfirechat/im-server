@@ -1,3 +1,4 @@
+
 package io.moquette.interception.messages;
 
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
@@ -6,6 +7,7 @@ import io.netty.handler.codec.mqtt.MqttConnectMessage;
  * @author Wagner Macedo
  */
 public class InterceptConnectMessage extends InterceptAbstractMessage {
+
     private final MqttConnectMessage msg;
 
     public InterceptConnectMessage(MqttConnectMessage msg) {
