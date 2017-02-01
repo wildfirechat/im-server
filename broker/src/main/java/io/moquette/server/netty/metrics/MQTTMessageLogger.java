@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty.metrics;
 
 import io.moquette.server.netty.NettyUtils;
@@ -23,7 +24,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import static io.moquette.spi.impl.Utils.messageId;
 
 /**
@@ -54,7 +54,11 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 break;
             case SUBSCRIBE:
                 MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
-                LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID, subscribe.payload().topicSubscriptions());
+                LOG.info(
+                        "{} SUBSCRIBE <{}> to topics {}",
+                        direction,
+                        clientID,
+                        subscribe.payload().topicSubscriptions());
                 break;
             case UNSUBSCRIBE:
                 MqttUnsubscribeMessage unsubscribe = (MqttUnsubscribeMessage) msg;
