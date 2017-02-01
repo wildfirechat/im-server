@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.interception;
 
 import io.moquette.interception.messages.*;
@@ -24,32 +25,33 @@ import io.netty.handler.codec.mqtt.MqttMessage;
  * <p>
  * The events can act only as observers.
  * <p>
- * Almost every method receives a subclass of {@link MqttMessage}, except
- * <code>onDisconnect</code> that receives the client id string and
- * <code>onSubscribe</code> and <code>onUnsubscribe</code> that receive a
- * {@link Subscription} object.
+ * Almost every method receives a subclass of {@link MqttMessage}, except <code>onDisconnect</code>
+ * that receives the client id string and <code>onSubscribe</code> and <code>onUnsubscribe</code>
+ * that receive a {@link Subscription} object.
  *
  * @author Wagner Macedo
  */
 public interface InterceptHandler {
-	
-	public static final Class<?> ALL_MESSAGE_TYPES[] = { InterceptConnectMessage.class,
-			InterceptDisconnectMessage.class, InterceptConnectionLostMessage.class, InterceptPublishMessage.class,
-			InterceptSubscribeMessage.class, InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class };
-	
-	/**
-	 * Returns the identifier of this intercept handler.
-	 * @return
-	 */
-	String getID();
-	
-	/**
-	 * Returns the InterceptMessage subtypes that this handler can process. If the result is null or equal to ALL_MESSAGE_TYPES,
-	 * all the message types will be processed.
-	 * @return
-	 */
-	Class<?>[] getInterceptedMessageTypes();
-	
+
+    public static final Class<?> ALL_MESSAGE_TYPES[] = {InterceptConnectMessage.class, InterceptDisconnectMessage.class,
+            InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptSubscribeMessage.class,
+            InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class};
+
+    /**
+     * Returns the identifier of this intercept handler.
+     *
+     * @return
+     */
+    String getID();
+
+    /**
+     * Returns the InterceptMessage subtypes that this handler can process. If the result is null or
+     * equal to ALL_MESSAGE_TYPES, all the message types will be processed.
+     *
+     * @return
+     */
+    Class<?>[] getInterceptedMessageTypes();
+
     void onConnect(InterceptConnectMessage msg);
 
     void onDisconnect(InterceptDisconnectMessage msg);
@@ -61,6 +63,6 @@ public interface InterceptHandler {
     void onSubscribe(InterceptSubscribeMessage msg);
 
     void onUnsubscribe(InterceptUnsubscribeMessage msg);
-    
+
     void onMessageAcknowledged(InterceptAcknowledgedMessage msg);
 }
