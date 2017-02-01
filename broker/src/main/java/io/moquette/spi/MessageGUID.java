@@ -13,16 +13,18 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi;
 
 import java.io.Serializable;
 
 /**
  * Value object for GUIDs of messages.
- * */
+ */
 public class MessageGUID implements Serializable {
+
     private static final long serialVersionUID = 4315161987111542406L;
-	private final String guid;
+    private final String guid;
 
     public MessageGUID(String guid) {
         this.guid = guid;
@@ -30,8 +32,10 @@ public class MessageGUID implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         MessageGUID that = (MessageGUID) o;
 
@@ -46,8 +50,6 @@ public class MessageGUID implements Serializable {
 
     @Override
     public String toString() {
-        return "MessageGUID{" +
-                "guid='" + guid + '\'' +
-                '}';
+        return "MessageGUID{" + "guid='" + guid + '\'' + '}';
     }
 }
