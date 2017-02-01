@@ -116,7 +116,6 @@ public class ProtocolProcessor {
 
             return packetId == that.packetId
                     && (clientID != null ? clientID.equals(that.clientID) : that.clientID == null);
-
         }
 
         @Override
@@ -952,7 +951,8 @@ public class ProtocolProcessor {
             if (!m_authorizator.canRead(req.topicName(), username, clientSession.clientID)) {
                 // send SUBACK with 0x80, the user hasn't credentials to read the topic
                 LOG.error(
-                        "The client does not have read permissions on the topic. CId = {}, username = {}, messageId = {}, topic = {}.",
+                        "The client does not have read permissions on the topic. "
+                        + "CId = {}, username = {}, messageId = {}, topic = {}.",
                         clientID,
                         username,
                         messageId,
