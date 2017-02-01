@@ -13,10 +13,10 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import static org.junit.Assert.assertFalse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,13 +27,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Properties;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-
 import io.moquette.BrokerConstants;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -51,10 +49,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Check that Moquette could also handle SSL.
- * 
+ *
  * @author andrea
  */
 public class ServerIntegrationSSLTest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationSSLTest.class);
 
     Server m_server;
@@ -92,8 +91,8 @@ public class ServerIntegrationSSLTest {
         startServer();
 
         m_client = new MqttClient("ssl://localhost:8883", "TestClient", s_dataStore);
-//        m_client = new MqttClient("ssl://test.mosquitto.org:8883", "TestClient", s_dataStore);
-        
+        // m_client = new MqttClient("ssl://test.mosquitto.org:8883", "TestClient", s_dataStore);
+
         m_callback = new MessageCollector();
         m_client.setCallback(m_callback);
     }
@@ -114,12 +113,12 @@ public class ServerIntegrationSSLTest {
         }
         assertFalse(dbFile.exists());
     }
-    
+
     @Test
     public void checkSupportSSL() throws Exception {
         LOG.info("*** checkSupportSSL ***");
         SSLSocketFactory ssf = configureSSLSocketFactory();
-        
+
         MqttConnectOptions options = new MqttConnectOptions();
         options.setSocketFactory(ssf);
         m_client.connect(options);
@@ -131,38 +130,38 @@ public class ServerIntegrationSSLTest {
     public void checkSupportSSLForMultipleClient() throws Exception {
         LOG.info("*** checkSupportSSLForMultipleClient ***");
         SSLSocketFactory ssf = configureSSLSocketFactory();
-        
+
         MqttConnectOptions options = new MqttConnectOptions();
         options.setSocketFactory(ssf);
         m_client.connect(options);
         m_client.subscribe("/topic", 0);
-        
+
         MqttClient secondClient = new MqttClient("ssl://localhost:8883", "secondTestClient", new MemoryPersistence());
         MqttConnectOptions secondClientOptions = new MqttConnectOptions();
         secondClientOptions.setSocketFactory(ssf);
         secondClient.connect(secondClientOptions);
         secondClient.publish("/topic", new MqttMessage("message".getBytes()));
         secondClient.disconnect();
-        
+
         m_client.disconnect();
     }
+
     /**
      * keystore generated into test/resources with command:
-     * 
-     * keytool -keystore clientkeystore.jks -alias testclient -genkey -keyalg RSA
-     * -> mandatory to put the name surname
-     * -> password is passw0rd
-     * -> type yes at the end
-     * 
-     * to generate the crt file from the keystore
-     * -- keytool -certreq -alias testclient -keystore clientkeystore.jks -file testclient.csr
-     * 
+     *
+     * keytool -keystore clientkeystore.jks -alias testclient -genkey -keyalg RSA -> mandatory to
+     * put the name surname -> password is passw0rd -> type yes at the end
+     *
+     * to generate the crt file from the keystore -- keytool -certreq -alias testclient -keystore
+     * clientkeystore.jks -file testclient.csr
+     *
      * keytool -export -alias testclient -keystore clientkeystore.jks -file testclient.crt
-     * 
-     * to import an existing certificate:
-     * keytool -keystore clientkeystore.jks -import -alias testclient -file testclient.crt -trustcacerts
+     *
+     * to import an existing certificate: keytool -keystore clientkeystore.jks -import -alias
+     * testclient -file testclient.crt -trustcacerts
      */
-    private SSLSocketFactory configureSSLSocketFactory() throws KeyManagementException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException, CertificateException, KeyStoreException {
+    private SSLSocketFactory configureSSLSocketFactory() throws KeyManagementException, NoSuchAlgorithmException,
+            UnrecoverableKeyException, IOException, CertificateException, KeyStoreException {
         KeyStore ks = KeyStore.getInstance("JKS");
         InputStream jksInputStream = getClass().getClassLoader().getResourceAsStream("clientkeystore.jks");
         ks.load(jksInputStream, "passw0rd".toCharArray());
@@ -173,9 +172,9 @@ public class ServerIntegrationSSLTest {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(ks);
 
-        SSLContext sc = SSLContext.getInstance("TLS"); 
-        TrustManager[] trustManagers = tmf.getTrustManagers(); 
-        sc.init(kmf.getKeyManagers(), trustManagers, null); 
+        SSLContext sc = SSLContext.getInstance("TLS");
+        TrustManager[] trustManagers = tmf.getTrustManagers();
+        sc.init(kmf.getKeyManagers(), trustManagers, null);
 
         SSLSocketFactory ssf = sc.getSocketFactory();
         return ssf;
