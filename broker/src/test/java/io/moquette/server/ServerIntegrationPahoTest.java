@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.server.config.IConfig;
@@ -22,11 +23,9 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-
 import static org.junit.Assert.*;
 
 public class ServerIntegrationPahoTest {
@@ -35,7 +34,7 @@ public class ServerIntegrationPahoTest {
 
     static MqttClientPersistence s_dataStore;
     static MqttClientPersistence s_pubDataStore;
-    
+
     Server m_server;
     IMqttClient m_client;
     IMqttClient m_publisher;
@@ -113,7 +112,6 @@ public class ServerIntegrationPahoTest {
 
         assertEquals("/topic", m_messagesCollector.getTopic());
     }
-    
 
     @Test
     public void testCleanSession_maintainClientSubscriptions() throws Exception {
@@ -124,7 +122,7 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 0);
         m_client.disconnect();
 
-        //reconnect and publish
+        // reconnect and publish
         MqttClient anotherClient = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
         m_messagesCollector = new MessageCollector();
         anotherClient.setCallback(m_messagesCollector);
@@ -133,7 +131,6 @@ public class ServerIntegrationPahoTest {
 
         assertEquals("/topic", m_messagesCollector.getTopic());
     }
-
 
     @Test
     public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() throws Exception {
@@ -144,7 +141,7 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 0);
         m_client.disconnect();
 
-        //reconnect and publish
+        // reconnect and publish
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
@@ -152,9 +149,9 @@ public class ServerIntegrationPahoTest {
     }
 
     /**
-     * Check that after a client has connected with clean session false, subscribed
-     * to some topic and exited, if it reconnects with clean session true, the m_server
-     * correctly cleanup every previous subscription
+     * Check that after a client has connected with clean session false, subscribed to some topic
+     * and exited, if it reconnects with clean session true, the m_server correctly cleanup every
+     * previous subscription
      */
     @Test
     public void testCleanSession_correctlyClientSubscriptions() throws Exception {
@@ -165,17 +162,17 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 0);
         m_client.disconnect();
 
-        //reconnect and publish
-        //options.setCleanSession(false);
+        // reconnect and publish
+        // options.setCleanSession(false);
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
         MessageCollector subListener = new MessageCollector();
         m_client.setCallback(subListener);
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
-        //Ugly, we need to get self notified after the publish
+        // Ugly, we need to get self notified after the publish
         assertEquals("Test my payload", new String(subListener.waitMessage(1).getPayload()));
 
-        //close
+        // close
         m_client.disconnect();
     }
 
@@ -192,7 +189,7 @@ public class ServerIntegrationPahoTest {
 
         m_server.startServer(IntegrationUtils.prepareTestProperties());
 
-        //reconnect and publish
+        // reconnect and publish
         m_client.connect(options);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
 
@@ -206,7 +203,7 @@ public class ServerIntegrationPahoTest {
         m_client.publish("/topic", "Test my payload".getBytes(), 1, true);
         m_client.disconnect();
 
-        //reconnect and publish
+        // reconnect and publish
         m_client.connect();
         m_client.subscribe("/topic", 0);
 
@@ -221,7 +218,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.subscribe("/topic", 0);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
-        //m_client.disconnect();
+        // m_client.disconnect();
         assertEquals("/topic", m_messagesCollector.getTopic());
 
         m_client.unsubscribe("/topic");
@@ -239,7 +236,7 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.subscribe("/topic", 0);
         m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
-        //m_client.disconnect();
+        // m_client.disconnect();
         assertEquals("/topic", m_messagesCollector.getTopic());
 
         m_client.unsubscribe("/topic");
@@ -260,7 +257,7 @@ public class ServerIntegrationPahoTest {
         m_client.publish("/topic", "Hello MQTT".getBytes(), 1, false);
         m_client.disconnect();
 
-        //reconnect and publish
+        // reconnect and publish
         MqttMessage message = m_messagesCollector.waitMessage(1);
         assertEquals("Hello MQTT", message.toString());
         assertEquals(1, message.getQos());
@@ -275,14 +272,13 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 1);
         m_client.disconnect();
 
-        //publish a QoS 1 message another client publish a message on the topic
+        // publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1);
 
         m_client.connect(options);
 
         assertEquals("Hello MQTT", m_messagesCollector.waitMessage(1).toString());
     }
-
 
     @Test
     public void checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession() throws Exception {
@@ -296,10 +292,10 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.subscribe("/topic", 1);
 
-        //publish a QoS 1 message another client publish a message on the topic
+        // publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 1);
 
-        //Verify that after a reconnection the client receive the message
+        // Verify that after a reconnection the client receive the message
         MqttMessage message = m_messagesCollector.waitMessage(1);
         assertNotNull(message);
         assertEquals("Hello MQTT", message.toString());
@@ -321,7 +317,7 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 2);
         m_client.disconnect();
 
-        //publish a QoS 1 message another client publish a message on the topic
+        // publish a QoS 1 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
         m_messagesCollector.reinit();
         m_client.connect(options);
@@ -340,7 +336,7 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 2);
         m_client.disconnect();
 
-        //publish a QoS 2 message another client publish a message on the topic
+        // publish a QoS 2 message another client publish a message on the topic
         publishFromAnotherClient("/topic", "Hello MQTT".getBytes(), 2);
         m_messagesCollector.reinit();
         m_client.connect(options);
@@ -370,10 +366,10 @@ public class ServerIntegrationPahoTest {
         assertEquals("Hello MQTT 1", message.toString());
         m_client.disconnect();
 
-        //publish other message
+        // publish other message
         publishFromAnotherClient("/topic", "Hello MQTT 2".getBytes(), 1);
 
-        //reconnect the second time
+        // reconnect the second time
         m_messagesCollector.reinit();
         m_client.connect(options);
         assertNotNull(m_messagesCollector);
@@ -383,11 +379,9 @@ public class ServerIntegrationPahoTest {
     }
 
     /**
-     * subscriber A connect and subscribe on "a/b" QoS 1
-     * subscriber B connect and subscribe on "a/+"  BUT with QoS 2
-     * publisher connects and send a message "hello" on "a/b"
-     * subscriber A must receive a notification with QoS1
-     * subscriber B must receive a notification with QoS2
+     * subscriber A connect and subscribe on "a/b" QoS 1 subscriber B connect and subscribe on "a/+"
+     * BUT with QoS 2 publisher connects and send a message "hello" on "a/b" subscriber A must
+     * receive a notification with QoS1 subscriber B must receive a notification with QoS2
      */
     @Test
     public void checkSubscribersGetCorrectQosNotifications() throws Exception {
@@ -410,7 +404,6 @@ public class ServerIntegrationPahoTest {
         subscriberB.connect();
         subscriberB.subscribe("a/+", 2);
 
-
         m_client.connect();
         m_client.publish("a/b", "Hello world MQTT!!".getBytes(), 2, false);
 
@@ -429,8 +422,9 @@ public class ServerIntegrationPahoTest {
     public void testSubcriptionDoesntStayActiveAfterARestart() throws Exception {
         LOG.info("*** testSubcriptionDoesntStayActiveAfterARestart ***");
         String tmpDir = System.getProperty("java.io.tmpdir");
-        //clientForSubscribe1 connect and subscribe to /topic QoS2
-        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe1");
+        // clientForSubscribe1 connect and subscribe to /topic QoS2
+        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(
+                tmpDir + File.separator + "clientForSubscribe1");
 
         MqttClient clientForSubscribe1 = new MqttClient("tcp://localhost:1883", "clientForSubscribe1", dsSubscriberA);
         MessageCollector cbSubscriber1 = new MessageCollector();
@@ -438,27 +432,29 @@ public class ServerIntegrationPahoTest {
         clientForSubscribe1.connect();
         clientForSubscribe1.subscribe("topic", 0);
 
-        //server stop
+        // server stop
         m_server.stopServer();
         System.out.println("\n\n SEVER REBOOTING \n\n");
-        //server start
+        // server start
         startServer();
 
-        //clientForSubscribe2 connect and subscribe to /topic QoS2
-        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForSubscribe2");
+        // clientForSubscribe2 connect and subscribe to /topic QoS2
+        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(
+                tmpDir + File.separator + "clientForSubscribe2");
         MqttClient clientForSubscribe2 = new MqttClient("tcp://localhost:1883", "clientForSubscribe2", dsSubscriberB);
         MessageCollector cbSubscriber2 = new MessageCollector();
         clientForSubscribe2.setCallback(cbSubscriber2);
         clientForSubscribe2.connect();
         clientForSubscribe2.subscribe("topic", 0);
 
-        //clientForPublish publish on /topic with QoS2 a message
-        MqttClientPersistence dsSubscriberPUB = new MqttDefaultFilePersistence(tmpDir + File.separator + "clientForPublish");
+        // clientForPublish publish on /topic with QoS2 a message
+        MqttClientPersistence dsSubscriberPUB = new MqttDefaultFilePersistence(
+                tmpDir + File.separator + "clientForPublish");
         MqttClient clientForPublish = new MqttClient("tcp://localhost:1883", "clientForPublish", dsSubscriberPUB);
         clientForPublish.connect();
         clientForPublish.publish("topic", "Hello".getBytes(), 2, true);
 
-        //verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
+        // verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
         LOG.info("Before waiting to receive 1 sec from " + clientForSubscribe1.getClientId());
         assertFalse(clientForSubscribe1.isConnected());
         assertTrue(clientForSubscribe2.isConnected());
@@ -490,7 +486,7 @@ public class ServerIntegrationPahoTest {
         MqttClient clientYB = createClient("publisher", "Y");
         clientYB.publish("topic", "Hello 2".getBytes(), 2, true);
 
-        //Verify that the second subscriber client get notified and not the first.
+        // Verify that the second subscriber client get notified and not the first.
         assertTrue(cbSubscriber1.connectionLost());
         assertEquals("Hello 2", new String(cbSubscriber2.waitMessage(1).getPayload()));
     }
@@ -505,11 +501,11 @@ public class ServerIntegrationPahoTest {
         m_client.publish("/topic", "Hello".getBytes(), 0, true);
         m_client.disconnect();
 
-        //second loop
+        // second loop
         m_client.connect(options);
         m_client.subscribe("/topic", 0);
         m_client.publish("/topic", "Hello".getBytes(), 0, true);
-        m_client.disconnect(); //this should give timeout
+        m_client.disconnect(); // this should give timeout
 
         assertFalse("after a disconnect the client should be disconnected", m_client.isConnected());
     }
@@ -517,8 +513,8 @@ public class ServerIntegrationPahoTest {
     @Test
     public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws Exception {
         LOG.info("*** checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1 ***");
-//        MessageCollector m_messagesCollector = new MessageCollector();
-//        m_client.setCallback(m_messagesCollector);
+        // MessageCollector m_messagesCollector = new MessageCollector();
+        // m_client.setCallback(m_messagesCollector);
         m_publisher.connect();
 
         MqttConnectOptions options = new MqttConnectOptions();
@@ -526,10 +522,10 @@ public class ServerIntegrationPahoTest {
         m_client.connect(options);
         m_client.subscribe("/topic", 1);
 
-        //force the publisher to send
+        // force the publisher to send
         m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
 
-        //read the first message and drop the connection
+        // read the first message and drop the connection
         MqttMessage msg = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!-1", new String(msg.getPayload()));
         m_client.disconnect();
@@ -537,7 +533,7 @@ public class ServerIntegrationPahoTest {
         m_publisher.publish("/topic", "Hello world MQTT!!-2".getBytes(), 1, false);
         m_publisher.publish("/topic", "Hello world MQTT!!-3".getBytes(), 1, false);
 
-        //reconnect and expect to receive the hello 2 message
+        // reconnect and expect to receive the hello 2 message
         m_client.connect(options);
         msg = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!-2", new String(msg.getPayload()));
@@ -560,10 +556,10 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("/topic", 1);
         m_client.disconnect();
 
-        //force the publisher to send
+        // force the publisher to send
         m_publisher.publish("/topic", "Hello world MQTT!!-1".getBytes(), 1, false);
 
-        //reconnect and expect to receive the hello 2 message
+        // reconnect and expect to receive the hello 2 message
         m_client.connect(options);
         m_client.subscribe("/topic", 1);
         MqttMessage msg = messagesCollector.waitMessage(1);
@@ -572,10 +568,9 @@ public class ServerIntegrationPahoTest {
     }
 
     /**
-     * subscriber connect and subscribe on "topic"
-     * subscriber disconnects
-     * publisher connects and send two message "hello1" "hello2" to "topic"
-     * subscriber connects again and receive "hello1" "hello2"
+     * subscriber connect and subscribe on "topic" subscriber disconnects publisher connects and
+     * send two message "hello1" "hello2" to "topic" subscriber connects again and receive "hello1"
+     * "hello2"
      */
     @Test
     public void checkQoS2SubscriberDisconnectReceivePersistedPublishes() throws Exception {
@@ -593,9 +588,9 @@ public class ServerIntegrationPahoTest {
         m_publisher.publish("topic", "Hello2".getBytes(), 2, true);
         m_publisher.disconnect();
 
-        //subscriber reconnects
+        // subscriber reconnects
         m_client.connect(options);
-        //subscriber should receive the 2 messages missed
+        // subscriber should receive the 2 messages missed
         MqttMessage msg = messagesCollector.waitMessage(1);
         assertNotNull(msg);
         assertEquals("Hello1", new String(msg.getPayload()));
@@ -605,9 +600,8 @@ public class ServerIntegrationPahoTest {
     }
 
     /**
-     * subscriber connect and subscribe on "a/b" QoS 1 and "a/+" QoS 2
-     * publisher connects and send a message "hello" on "a/b"
-     * subscriber must receive only a single message not twice
+     * subscriber connect and subscribe on "a/b" QoS 1 and "a/+" QoS 2 publisher connects and send a
+     * message "hello" on "a/b" subscriber must receive only a single message not twice
      */
     @Test
     public void checkSinglePublishOnOverlappingSubscriptions() throws Exception {
@@ -622,18 +616,17 @@ public class ServerIntegrationPahoTest {
         m_client.subscribe("a/+", 2);
         m_client.subscribe("a/b", 1);
 
-        //force the publisher to send
+        // force the publisher to send
         m_publisher.publish("a/b", "Hello world MQTT!!".getBytes(), 1, false);
 
-        //reconnect and expect to receive the hello 2 message
+        // reconnect and expect to receive the hello 2 message
         MqttMessage msg = messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
 
-        //try to listen a second publish
+        // try to listen a second publish
         msg = messagesCollector.waitMessage(1);
         assertNull(msg);
     }
-
 
     protected MqttClient createClient(String clientName, String storeSuffix) throws MqttException {
         return createClient(clientName, storeSuffix, null);
@@ -641,8 +634,9 @@ public class ServerIntegrationPahoTest {
 
     protected MqttClient createClient(String clientName, String storeSuffix, MessageCollector cb) throws MqttException {
         String tmpDir = System.getProperty("java.io.tmpdir");
-        //clientX connect and subscribe to /topic QoS2
-        MqttClientPersistence dsClient = new MqttDefaultFilePersistence(tmpDir + File.separator + storeSuffix + clientName);
+        // clientX connect and subscribe to /topic QoS2
+        MqttClientPersistence dsClient = new MqttDefaultFilePersistence(
+                tmpDir + File.separator + storeSuffix + clientName);
         MqttClient client = new MqttClient("tcp://localhost:1883", clientName, dsClient);
         if (cb != null) {
             client.setCallback(cb);
