@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.moquette.interception.InterceptHandler;
@@ -23,10 +24,8 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
@@ -36,19 +35,23 @@ import static org.mockito.Mockito.verify;
  * @author Wagner Macedo
  */
 public class BrokerInterceptorTest {
+
     // value to check for changes after every notification
     private static final AtomicInteger n = new AtomicInteger(0);
 
     // Interceptor loaded with a custom InterceptHandler special for the tests
     private static final class MockObserver implements InterceptHandler {
-    	@Override
-    	public String getID() {
-    		return "MockObserver";
-    	}
-    	@Override
-    	public Class<?>[] getInterceptedMessageTypes() {
-    		return InterceptHandler.ALL_MESSAGE_TYPES;
-    	}
+
+        @Override
+        public String getID() {
+            return "MockObserver";
+        }
+
+        @Override
+        public Class<?>[] getInterceptedMessageTypes() {
+            return InterceptHandler.ALL_MESSAGE_TYPES;
+        }
+
         @Override
         public void onConnect(InterceptConnectMessage msg) {
             n.set(40);
@@ -79,13 +82,14 @@ public class BrokerInterceptorTest {
             n.set(80);
         }
 
-		@Override
-		public void onMessageAcknowledged( InterceptAcknowledgedMessage msg ) {
-			n.set(90);
-		}
+        @Override
+        public void onMessageAcknowledged(InterceptAcknowledgedMessage msg) {
+            n.set(90);
+        }
     }
 
-    private static final BrokerInterceptor interceptor = new BrokerInterceptor(Arrays.<InterceptHandler>asList(new MockObserver()));
+    private static final BrokerInterceptor interceptor = new BrokerInterceptor(
+            Arrays.<InterceptHandler>asList(new MockObserver()));
 
     @BeforeClass
     public static void beforeAllTests() {
@@ -112,17 +116,17 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyClientDisconnected() throws Exception {
-        interceptor.notifyClientDisconnected("cli1234","cli1234");
+        interceptor.notifyClientDisconnected("cli1234", "cli1234");
         interval();
         assertEquals(50, n.get());
     }
 
     @Test
     public void testNotifyTopicPublished() throws Exception {
-        interceptor.notifyTopicPublished(MessageBuilder.publish()
-                .qos(MqttQoS.AT_MOST_ONCE)
-                .payload("Hello".getBytes())
-                .build(), "cli1234", "cli1234");
+        interceptor.notifyTopicPublished(
+                MessageBuilder.publish().qos(MqttQoS.AT_MOST_ONCE).payload("Hello".getBytes()).build(),
+                "cli1234",
+                "cli1234");
         interval();
         assertEquals(60, n.get());
     }
@@ -163,7 +167,7 @@ public class BrokerInterceptorTest {
         interval();
         // removeInterceptHandler() performs another interaction
         // TODO: fix this
-//        verifyNoMoreInteractions(interceptHandlerMock1); 
+        // verifyNoMoreInteractions(interceptHandlerMock1);
         verify(interceptHandlerMock2).onSubscribe(refEq(new InterceptSubscribeMessage(subscription, "cli1235")));
     }
 }
