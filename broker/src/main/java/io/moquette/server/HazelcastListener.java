@@ -1,3 +1,4 @@
+
 package io.moquette.server;
 
 import com.hazelcast.core.Message;
@@ -13,11 +14,12 @@ import org.slf4j.LoggerFactory;
  * Created by mackristof on 28/05/2016.
  */
 public class HazelcastListener implements MessageListener<HazelcastMsg> {
+
     private static final Logger LOG = LoggerFactory.getLogger(HazelcastListener.class);
 
     private final Server server;
 
-    public HazelcastListener(Server server){
+    public HazelcastListener(Server server) {
         this.server = server;
     }
 
@@ -26,9 +28,12 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
         try {
             if (!msg.getPublishingMember().equals(server.getHazelcastInstance().getCluster().getLocalMember())) {
                 HazelcastMsg hzMsg = msg.getMessageObject();
-                LOG.info("{} received from hazelcast for topic {} message: {}", hzMsg.getClientId(),
-                        hzMsg.getTopic(), hzMsg.getPayload());
-                //TODO pass forward this information in somehow publishMessage.setLocal(false);
+                LOG.info(
+                        "{} received from hazelcast for topic {} message: {}",
+                        hzMsg.getClientId(),
+                        hzMsg.getTopic(),
+                        hzMsg.getPayload());
+                // TODO pass forward this information in somehow publishMessage.setLocal(false);
 
                 MqttQoS qos = MqttQoS.valueOf(hzMsg.getQos());
                 MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, qos, false, 0);
