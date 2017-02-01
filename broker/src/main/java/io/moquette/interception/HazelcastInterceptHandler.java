@@ -1,3 +1,4 @@
+
 package io.moquette.interception;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -7,7 +8,6 @@ import io.moquette.server.Server;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 
 /**
@@ -18,18 +18,18 @@ public class HazelcastInterceptHandler extends AbstractInterceptHandler {
     private static final Logger LOG = LoggerFactory.getLogger(HazelcastInterceptHandler.class);
     private final HazelcastInstance hz;
 
-    public HazelcastInterceptHandler(Server server){
+    public HazelcastInterceptHandler(Server server) {
         this.hz = server.getHazelcastInstance();
     }
-    
+
     @Override
     public String getID() {
-    	return HazelcastInterceptHandler.class.getName() + "@" + hz.getName();
+        return HazelcastInterceptHandler.class.getName() + "@" + hz.getName();
     }
 
     @Override
     public void onPublish(InterceptPublishMessage msg) {
-        //TODO ugly, too much array copy
+        // TODO ugly, too much array copy
         ByteBuf payload = msg.getPayload();
         byte[] payloadContent = readBytesAndRewind(payload);
 
