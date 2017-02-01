@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.persistence;
 
 import io.moquette.server.Constants;
@@ -24,10 +25,8 @@ import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -44,12 +43,12 @@ public class MemorySessionStore implements ISessionsStore {
 
     private Map<String, MapDBPersistentStore.PersistentSession> m_persistentSessions = new HashMap<>();
 
-    //maps clientID->[MessageId -> guid]
+    // maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_inflightStore = new HashMap<>();
-//    private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
-    //maps clientID->BlockingQueue
+    // private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
+    // maps clientID->BlockingQueue
     private Map<String, BlockingQueue<StoredMessage>> queues = new HashMap<>();
-    //maps clientID->[MessageId -> guid]
+    // maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_secondPhaseStore = new HashMap<>();
 
     private Map<String, Map<Integer, MessageGUID>> m_messageToGuids;
@@ -183,7 +182,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     /**
      * Return the next valid packetIdentifier for the given client session.
-     * */
+     */
     @Override
     public int nextPacketID(String clientID) {
         Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
@@ -220,14 +219,16 @@ public class MemorySessionStore implements ISessionsStore {
         MessageGUID guid = m.remove(messageID);
 
         LOG.info("Moving to second phase store");
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        Map<Integer, MessageGUID> messageIDs = Utils
+                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
         messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
 
     @Override
     public MessageGUID secondPhaseAcknowledged(String clientID, int messageID) {
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        Map<Integer, MessageGUID> messageIDs = Utils
+                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
         MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
@@ -235,15 +236,15 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public MessageGUID mapToGuid(String clientID, int messageID) {
-        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) Utils.defaultGet(m_messageToGuids,
-                clientID, new HashMap<Integer, MessageGUID>());
+        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) Utils
+                .defaultGet(m_messageToGuids, clientID, new HashMap<Integer, MessageGUID>());
         return guids.get(messageID);
     }
 
-	@Override
-	public StoredMessage getInflightMessage( String clientID, int messageID ) {
-		return null;
-	}
+    @Override
+    public StoredMessage getInflightMessage(String clientID, int messageID) {
+        return null;
+    }
 
     @Override
     public int getInflightMessagesNo(String clientID) {
