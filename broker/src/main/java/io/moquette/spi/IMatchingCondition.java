@@ -13,11 +13,12 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi;
 
 /**
  */
 public interface IMatchingCondition {
+
     boolean match(String key);
 }
-
