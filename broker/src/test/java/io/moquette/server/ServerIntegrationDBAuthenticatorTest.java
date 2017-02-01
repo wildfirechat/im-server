@@ -1,3 +1,4 @@
+
 package io.moquette.server;
 
 import io.moquette.BrokerConstants;
@@ -10,19 +11,18 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Properties;
-
 import static org.junit.Assert.assertTrue;
 
 /**
  * Created by mackristof on 13/05/2016.
  */
 public class ServerIntegrationDBAuthenticatorTest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationDBAuthenticatorTest.class);
 
     static MqttClientPersistence s_dataStore;
@@ -34,8 +34,6 @@ public class ServerIntegrationDBAuthenticatorTest {
     IMqttClient m_publisher;
     MessageCollector m_messagesCollector;
     IConfig m_config;
-
-
 
     @BeforeClass
     public static void beforeTests() throws NoSuchAlgorithmException, SQLException, ClassNotFoundException {
@@ -52,7 +50,6 @@ public class ServerIntegrationDBAuthenticatorTest {
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);
     }
-
 
     private void stopServer() {
         m_server.stopServer();
@@ -96,7 +93,7 @@ public class ServerIntegrationDBAuthenticatorTest {
     }
 
     @AfterClass
-    public static void shutdown(){
+    public static void shutdown() {
         dbAuthenticatorTest.teardown();
     }
 
@@ -111,9 +108,8 @@ public class ServerIntegrationDBAuthenticatorTest {
         assertTrue(true);
     }
 
-
     @Test
-    public void connectWithWrongCredentials()  {
+    public void connectWithWrongCredentials() {
         LOG.info("*** connectWithWrongCredentials ***");
         try {
             m_client = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
@@ -121,18 +117,16 @@ public class ServerIntegrationDBAuthenticatorTest {
             options.setUserName("dbuser");
             options.setPassword("wrongPassword".toCharArray());
             m_client.connect(options);
-        } catch (MqttException e){
+        } catch (MqttException e) {
             if (e instanceof MqttSecurityException) {
                 assertTrue(true);
                 return;
             } else {
-                assertTrue(e.getMessage(),false);
+                assertTrue(e.getMessage(), false);
                 return;
             }
         }
-        assertTrue("must not be connected. cause : wrong password given to client",false);
-
+        assertTrue("must not be connected. cause : wrong password given to client", false);
     }
-
 
 }
