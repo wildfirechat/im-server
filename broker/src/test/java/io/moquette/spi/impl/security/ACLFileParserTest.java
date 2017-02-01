@@ -13,19 +13,18 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.security;
 
 import org.junit.Test;
-
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.ParseException;
-
 import static org.junit.Assert.*;
 
 /**
  * @author andrea
- * */
+ */
 public class ACLFileParserTest {
 
     @Test
@@ -33,7 +32,7 @@ public class ACLFileParserTest {
         Reader conf = new StringReader("  ");
         AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
-        //Verify
+        // Verify
         assertTrue(authorizations.isEmpty());
     }
 
@@ -42,7 +41,7 @@ public class ACLFileParserTest {
         Reader conf = new StringReader("#simple comment");
         AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
-        //Verify
+        // Verify
         assertTrue(authorizations.isEmpty());
     }
 
@@ -57,7 +56,7 @@ public class ACLFileParserTest {
         Reader conf = new StringReader("topic /weather/italy/anemometer");
         AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
-        //Verify
+        // Verify
         assertTrue(authorizations.canRead("/weather/italy/anemometer", "", ""));
         assertTrue(authorizations.canWrite("/weather/italy/anemometer", "", ""));
     }
