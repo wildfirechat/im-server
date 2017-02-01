@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty.metrics;
 
 import io.netty.channel.Channel;
@@ -29,7 +30,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     private MessageMetricsCollector m_collector;
 
     public MessageMetricsHandler(MessageMetricsCollector collector) {
-          m_collector = collector;
+        m_collector = collector;
     }
 
     @Override
@@ -54,10 +55,8 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
         ctx.write(msg, promise);
     }
 
-
     @Override
-    public void close(ChannelHandlerContext ctx,
-                      ChannelPromise promise) throws Exception {
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
