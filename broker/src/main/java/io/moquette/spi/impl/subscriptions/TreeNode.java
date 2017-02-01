@@ -13,10 +13,10 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
-
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -24,7 +24,7 @@ class TreeNode {
 
     Token m_token;
     List<TreeNode> m_children = new ArrayList<>();
-    //TODO move to set of ClientIDthe set of clientIDs that has subscriptions to this topic
+    // TODO move to set of ClientIDthe set of clientIDs that has subscriptions to this topic
     Set<ClientTopicCouple> m_subscriptions = new HashSet<>();
 
     TreeNode() {
@@ -47,9 +47,8 @@ class TreeNode {
     }
 
     /**
-     * Creates a shallow copy of the current node.
-     * Copy the token and the children.
-     * */
+     * Creates a shallow copy of the current node. Copy the token and the children.
+     */
     TreeNode copy() {
         final TreeNode copy = new TreeNode();
         copy.m_children = new ArrayList<>(m_children);
@@ -59,8 +58,7 @@ class TreeNode {
     }
 
     /**
-     * Search for children that has the specified token, if not found return
-     * null;
+     * Search for children that has the specified token, if not found return null;
      */
     TreeNode childWithToken(Token token) {
         for (TreeNode child : m_children) {
@@ -85,14 +83,14 @@ class TreeNode {
         m_subscriptions.remove(clientTopicCouple);
     }
 
-    //TODO smell a query method that return the result modifing the parameter (matchingSubs)
+    // TODO smell a query method that return the result modifing the parameter (matchingSubs)
     void matches(Queue<Token> tokens, List<ClientTopicCouple> matchingSubs) {
         Token t = tokens.poll();
 
-        //check if t is null <=> tokens finished
+        // check if t is null <=> tokens finished
         if (t == null) {
             matchingSubs.addAll(m_subscriptions);
-            //check if it has got a MULTI child and add its subscriptions
+            // check if it has got a MULTI child and add its subscriptions
             for (TreeNode n : m_children) {
                 if (n.getToken() == Token.MULTI || n.getToken() == Token.SINGLE) {
                     matchingSubs.addAll(n.subscriptions());
@@ -102,7 +100,7 @@ class TreeNode {
             return;
         }
 
-        //we are on MULTI, than add subscriptions and return
+        // we are on MULTI, than add subscriptions and return
         if (m_token == Token.MULTI) {
             matchingSubs.addAll(m_subscriptions);
             return;
@@ -110,10 +108,10 @@ class TreeNode {
 
         for (TreeNode n : m_children) {
             if (n.getToken().match(t)) {
-                //Create a copy of token, else if navigate 2 sibling it
-                //consumes 2 elements on the queue instead of one
+                // Create a copy of token, else if navigate 2 sibling it
+                // consumes 2 elements on the queue instead of one
                 n.matches(new LinkedBlockingQueue<>(tokens), matchingSubs);
-                //TODO don't create a copy n.matches(tokens, matchingSubs);
+                // TODO don't create a copy n.matches(tokens, matchingSubs);
             }
         }
     }
@@ -131,9 +129,9 @@ class TreeNode {
 
     /**
      * Create a copied subtree rooted on this node but purged of clientID's subscriptions.
-     * */
+     */
     TreeNode removeClientSubscriptions(String clientID) {
-        //collect what to delete and then delete to avoid ConcurrentModification
+        // collect what to delete and then delete to avoid ConcurrentModification
         TreeNode newSubRoot = this.copy();
         List<ClientTopicCouple> subsToRemove = new ArrayList<>();
         for (ClientTopicCouple s : newSubRoot.m_subscriptions) {
@@ -146,7 +144,7 @@ class TreeNode {
             newSubRoot.m_subscriptions.remove(s);
         }
 
-        //go deep
+        // go deep
         List<TreeNode> newChildren = new ArrayList<>(newSubRoot.m_children.size());
         for (TreeNode child : newSubRoot.m_children) {
             newChildren.add(child.removeClientSubscriptions(clientID));
