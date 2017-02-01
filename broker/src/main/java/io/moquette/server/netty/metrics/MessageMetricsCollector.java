@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty.metrics;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Collects all the metrics from the various pipeline.
  */
 public class MessageMetricsCollector {
+
     private AtomicLong readMsgs = new AtomicLong();
     private AtomicLong wroteMsgs = new AtomicLong();
 
