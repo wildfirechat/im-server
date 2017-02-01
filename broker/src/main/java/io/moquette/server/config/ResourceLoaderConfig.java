@@ -13,11 +13,11 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.Reader;
 import java.text.ParseException;
 import java.util.Properties;
@@ -39,38 +39,45 @@ public class ResourceLoaderConfig extends IConfig {
     public ResourceLoaderConfig(IResourceLoader resourceLoader, String configName) {
         LOG.info("Loading configuration. ResourceLoader = {}, configName = {}.", resourceLoader.getName(), configName);
         this.resourceLoader = resourceLoader;
-        
+
         /*
-		 * If we use a conditional operator, the loadResource() and the
-		 * loadDefaultResource() methods will be always called. This makes the
-		 * log traces confusing.
-		 */
-        
+         * If we use a conditional operator, the loadResource() and the loadDefaultResource()
+         * methods will be always called. This makes the log traces confusing.
+         */
+
         Reader configReader;
         if (configName != null) {
-        	configReader = resourceLoader.loadResource(configName);
+            configReader = resourceLoader.loadResource(configName);
         } else {
-        	configReader = resourceLoader.loadDefaultResource();
+            configReader = resourceLoader.loadDefaultResource();
         }
-        
+
         if (configReader == null) {
-        	LOG.error("The resource loader returned no configuration reader. ResourceLoader = {}, configName = {}.",
-					resourceLoader.getName(), configName);
-			throw new IllegalArgumentException("Can't locate " + resourceLoader.getName() + " \"" + configName + "\"");
+            LOG.error(
+                    "The resource loader returned no configuration reader. ResourceLoader = {}, configName = {}.",
+                    resourceLoader.getName(),
+                    configName);
+            throw new IllegalArgumentException("Can't locate " + resourceLoader.getName() + " \"" + configName + "\"");
         }
-        
-        LOG.info("Parsing configuration properties. ResourceLoader = {}, configName = {}.", resourceLoader.getName(),
-				configName);
+
+        LOG.info(
+                "Parsing configuration properties. ResourceLoader = {}, configName = {}.",
+                resourceLoader.getName(),
+                configName);
         ConfigurationParser confParser = new ConfigurationParser();
         m_properties = confParser.getProperties();
         assignDefaults();
-		try {
-			confParser.parse(configReader);
-		} catch (ParseException pex) {
-			LOG.warn(
-					"Unable to parse configuration properties. Using default configuration. ResourceLoader = {}, configName = {}, cause = {}, errorMessage = {}.",
-					resourceLoader.getName(), configName, pex.getCause(), pex.getMessage());
-		}
+        try {
+            confParser.parse(configReader);
+        } catch (ParseException pex) {
+            LOG.warn(
+                    "Unable to parse configuration properties. Using default configuration. "
+                    + "ResourceLoader = {}, configName = {}, cause = {}, errorMessage = {}.",
+                    resourceLoader.getName(),
+                    configName,
+                    pex.getCause(),
+                    pex.getMessage());
+        }
     }
 
     @Override
