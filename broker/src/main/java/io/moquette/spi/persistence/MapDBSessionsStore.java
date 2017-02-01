@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.persistence;
 
 import io.moquette.spi.ClientSession;
@@ -25,7 +26,6 @@ import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,12 +40,12 @@ class MapDBSessionsStore implements ISessionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MapDBSessionsStore.class);
 
-    //maps clientID->[MessageId -> guid]
+    // maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, ConcurrentMap<Integer, MessageGUID>> m_inflightStore;
-    //map clientID <-> set of currently in flight packet identifiers
+    // map clientID <-> set of currently in flight packet identifiers
     private Map<String, Set<Integer>> m_inFlightIds;
     private ConcurrentMap<String, PersistentSession> m_persistentSessions;
-    //maps clientID->[MessageId -> guid]
+    // maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, Map<Integer, MessageGUID>> m_secondPhaseStore;
 
     private final DB m_db;
@@ -66,14 +66,18 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void addNewSubscription(Subscription newSubscription) {
-        LOG.info("Adding new subscription. CId= {}, topics = {}.", newSubscription.getClientId(),
+        LOG.info(
+                "Adding new subscription. CId= {}, topics = {}.",
+                newSubscription.getClientId(),
                 newSubscription.getTopicFilter());
         final String clientID = newSubscription.getClientId();
         m_db.getHashMap("subscriptions_" + clientID).put(newSubscription.getTopicFilter(), newSubscription);
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace("The subscription has been added. CId= {}, topics = {}, clientSubscriptions = {}.",
-                    newSubscription.getClientId(), newSubscription.getTopicFilter(),
+            LOG.trace(
+                    "The subscription has been added. CId= {}, topics = {}, clientSubscriptions = {}.",
+                    newSubscription.getClientId(),
+                    newSubscription.getTopicFilter(),
                     m_db.getHashMap("subscriptions_" + clientID));
         }
     }
@@ -86,8 +90,11 @@ class MapDBSessionsStore implements ISessionsStore {
         }
         m_db.getHashMap("subscriptions_" + clientID).remove(topicFilter);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("The subscription has been removed. CId= {}, topics = {}, clientSubscriptions = {}.",
-                    clientID, topicFilter, m_db.getHashMap("subscriptions_" + clientID));
+            LOG.debug(
+                    "The subscription has been removed. CId= {}, topics = {}, clientSubscriptions = {}.",
+                    clientID,
+                    topicFilter,
+                    m_db.getHashMap("subscriptions_" + clientID));
         }
     }
 
@@ -96,7 +103,9 @@ class MapDBSessionsStore implements ISessionsStore {
         LOG.info("Wiping subscriptions. CId= {}.", clientID);
         m_db.delete("subscriptions_" + clientID);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("The subscriptions have been removed. CId= {}, clientSubscriptions = {}.", clientID,
+            LOG.debug(
+                    "The subscriptions have been removed. CId= {}, clientSubscriptions = {}.",
+                    clientID,
                     m_db.getHashMap("subscriptions_" + clientID));
         }
     }
@@ -120,8 +129,7 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
         ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + couple.clientID);
-        LOG.info("Retrieving subscriptions. CId= {}, subscriptions = {}.", couple.clientID,
-                clientSubscriptions);
+        LOG.info("Retrieving subscriptions. CId= {}, subscriptions = {}.", couple.clientID, clientSubscriptions);
         return clientSubscriptions.get(couple.topicFilter);
     }
 
@@ -147,7 +155,8 @@ class MapDBSessionsStore implements ISessionsStore {
         if (m_persistentSessions.containsKey(clientID)) {
             LOG.error(
                     "Unable to create a new session: the client ID is already in use. CId= {}, cleanSession = {}.",
-                    clientID, cleanSession);
+                    clientID,
+                    cleanSession);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.info("Creating new session. CId= {}, cleanSession = {}.", clientID, cleanSession);
@@ -166,10 +175,10 @@ class MapDBSessionsStore implements ISessionsStore {
         PersistentSession storedSession = m_persistentSessions.get(clientID);
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
-    
+
     @Override
     public Collection<ClientSession> getAllSessions() {
-        Collection<ClientSession> result = new ArrayList<ClientSession>();
+        Collection<ClientSession> result = new ArrayList<>();
         for (Map.Entry<String, PersistentSession> entry : m_persistentSessions.entrySet()) {
             result.add(new ClientSession(entry.getKey(), m_messagesStore, this, entry.getValue().cleanSession));
         }
@@ -184,7 +193,7 @@ class MapDBSessionsStore implements ISessionsStore {
 
     /**
      * Return the next valid packetIdentifier for the given client session.
-     * */
+     */
     @Override
     public int nextPacketID(String clientID) {
         if (LOG.isDebugEnabled()) {
@@ -219,7 +228,7 @@ class MapDBSessionsStore implements ISessionsStore {
         }
         m.remove(messageID);
 
-        //remove from the ids store
+        // remove from the ids store
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
         if (inFlightForClient != null) {
             inFlightForClient.remove(messageID);
@@ -262,13 +271,14 @@ class MapDBSessionsStore implements ISessionsStore {
         }
         MessageGUID guid = m.remove(messageID);
 
-        //remove from the ids store
+        // remove from the ids store
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
         if (inFlightForClient != null) {
             inFlightForClient.remove(messageID);
         }
 
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        Map<Integer, MessageGUID> messageIDs = Utils
+                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
         messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
@@ -278,7 +288,8 @@ class MapDBSessionsStore implements ISessionsStore {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Processing second phase ACK CId={}, messageId={}", clientID, messageID);
         }
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        Map<Integer, MessageGUID> messageIDs = Utils
+                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
         MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
@@ -297,22 +308,21 @@ class MapDBSessionsStore implements ISessionsStore {
         return "guidsMapping_" + clientID;
     }
 
-	@Override
-	public StoredMessage getInflightMessage(String clientID, int messageID) {
+    @Override
+    public StoredMessage getInflightMessage(String clientID, int messageID) {
         LOG.info("Retrieving inflight message CId={}, messageId={}", clientID, messageID);
-		Map<Integer, MessageGUID> clientEntries = m_inflightStore.get(clientID);
+        Map<Integer, MessageGUID> clientEntries = m_inflightStore.get(clientID);
         if (clientEntries == null) {
             LOG.warn("The client has no inflight messages CId={}, messageId={}", clientID, messageID);
             return null;
         }
         MessageGUID guid = clientEntries.get(messageID);
         if (guid == null) {
-            LOG.warn("The message ID does not have an associated GUID. CId= {}, messageId = {}.", clientID,
-                    messageID);
+            LOG.warn("The message ID does not have an associated GUID. CId= {}, messageId = {}.", clientID, messageID);
             return null;
         }
-		return m_messagesStore.getMessageByGuid(guid);
-	}
+        return m_messagesStore.getMessageByGuid(guid);
+    }
 
     @Override
     public int getInflightMessagesNo(String clientID) {
