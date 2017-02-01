@@ -13,10 +13,10 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.netty.buffer.ByteBuf;
-
 import java.nio.ByteBuffer;
 
 /**
@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
  * @author andrea
  */
 class DebugUtils {
+
     static String payload2Str(ByteBuffer content) {
         byte[] b = new byte[content.remaining()];
         content.mark();
@@ -33,7 +34,7 @@ class DebugUtils {
     }
 
     static String payload2Str(ByteBuf content) {
-        //byte[] b = new byte[content.readableBytes()];
+        // byte[] b = new byte[content.readableBytes()];
         return new String(content.copy().array());
     }
 }
