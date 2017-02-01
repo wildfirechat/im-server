@@ -22,7 +22,7 @@
 
   <!--
   <module name="SuppressionFilter">
-    <property name="file" value="/io/netty/suppressions.xml" />
+    <property name="file" value="checkstyle-suppressions.xml" />
   </module>
   <module name="io.netty.build.checkstyle.SuppressionFilter">
     <property name="pattern" value="((LocalTime|WorldClock)Protocol|LinkedTransferQueue|Version|jzlib/.*|chmv8/.*|com/sun/nio/sctp/.*)\.java" />

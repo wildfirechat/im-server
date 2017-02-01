@@ -138,6 +138,7 @@
               <version>2.17</version>
               <configuration>
                   <configLocation>checkstyle.xml</configLocation>
+                  <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                   <!--
                      <configLocation>/google_checks.xml</configLocation>
                    -->
