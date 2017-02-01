@@ -13,13 +13,13 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttConnAckMessage;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttSubAckMessage;
-
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -48,10 +48,10 @@ class NettyChannelAssertions {
         assertEqualsConnAck(CONNECTION_ACCEPTED, channel.readOutbound());
     }
 
-    static void assertEqualsSubAck(/*byte expectedCode,*/ Object subAck) {
+    static void assertEqualsSubAck(/* byte expectedCode, */ Object subAck) {
         assertTrue(subAck instanceof MqttSubAckMessage);
-        //SubAckMessage connAckMsg = (SubAckMessage) connAck;
-        //assertEquals(expectedCode, connAckMsg.getReturnCode());
+        // SubAckMessage connAckMsg = (SubAckMessage) connAck;
+        // assertEquals(expectedCode, connAckMsg.getReturnCode());
     }
 
 }
