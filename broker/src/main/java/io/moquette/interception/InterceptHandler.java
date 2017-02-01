@@ -33,7 +33,7 @@ import io.netty.handler.codec.mqtt.MqttMessage;
  */
 public interface InterceptHandler {
 
-    public static final Class<?> ALL_MESSAGE_TYPES[] = {InterceptConnectMessage.class, InterceptDisconnectMessage.class,
+    Class<?>[] ALL_MESSAGE_TYPES = {InterceptConnectMessage.class, InterceptDisconnectMessage.class,
             InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptSubscribeMessage.class,
             InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class};
 
