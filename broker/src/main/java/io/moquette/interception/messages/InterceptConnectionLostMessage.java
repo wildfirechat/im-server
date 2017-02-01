@@ -1,9 +1,11 @@
+
 package io.moquette.interception.messages;
 
 /**
  * @author Wagner Macedo
  */
 public class InterceptConnectionLostMessage implements InterceptMessage {
+
     private final String clientID;
     private final String username;
 
@@ -16,7 +18,7 @@ public class InterceptConnectionLostMessage implements InterceptMessage {
         return clientID;
     }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 }
