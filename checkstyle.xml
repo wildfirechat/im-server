@@ -93,7 +93,9 @@
     </module>
     <module name="LeftCurly"/>
     <module name="RightCurly"/>
+    <!--
     <module name="NeedBraces"/>
+    -->
     <module name="AvoidNestedBlocks">
       <property name="allowInSwitchCase" value="true"/>
     </module>
