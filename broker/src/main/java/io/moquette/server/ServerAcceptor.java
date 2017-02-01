@@ -13,10 +13,10 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import java.io.IOException;
-
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.security.ISslContextCreator;
@@ -26,8 +26,8 @@ import io.moquette.spi.security.ISslContextCreator;
  * @author andrea
  */
 public interface ServerAcceptor {
-    
+
     void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException;
-    
+
     void close();
 }
