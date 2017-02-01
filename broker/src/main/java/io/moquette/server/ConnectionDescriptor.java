@@ -103,7 +103,7 @@ public class ConnectionDescriptor {
         LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
         // try {
         // this.channel.disconnect().sync();
-        this.channel.close();// .sync();
+        this.channel.close(); // .sync();
         // } catch (InterruptedException e) {
         // e.printStackTrace();
         // }
@@ -145,7 +145,6 @@ public class ConnectionDescriptor {
         if (clientID != null ? !clientID.equals(that.clientID) : that.clientID != null)
             return false;
         return !(channel != null ? !channel.equals(that.channel) : that.channel != null);
-
     }
 
     public BytesMetrics getBytesMetrics() {
