@@ -42,7 +42,7 @@ public class PublishMessage extends MessageIDMessage {
     }
 
     public ByteBuffer getPayload() {
-        return m_payload;
+        return m_payload.duplicate();
     }
 
     public void setPayload(ByteBuffer payload) {

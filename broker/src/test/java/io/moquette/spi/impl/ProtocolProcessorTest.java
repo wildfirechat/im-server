@@ -461,7 +461,14 @@ public class ProtocolProcessorTest {
                 .messageId(100)
                 .build();
         m_processor.processPublish(m_channel, msg);
-        
+
+        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
+            public boolean match(String key) {
+                return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
+            }
+        });
+        assertFalse(messages.isEmpty());
+
         //Exercise
         MqttPublishMessage cleanPubMsg = MessageBuilder.publish()
                 .topicName(FAKE_TOPIC)
@@ -473,7 +480,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_channel, cleanPubMsg);
         
         //Verify
-        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
+        messages = m_messagesStore.searchMatching(new IMatchingCondition() {
             public boolean match(String key) {
                 return  SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
             }
