@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.config;
 
 import java.util.Map;
@@ -34,16 +35,18 @@ public class MemoryConfig extends IConfig {
         }
     }
 
-//    private void createDefaults() {
-//        m_properties.put(BrokerConstants.PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.PORT));
-//        m_properties.put(BrokerConstants.HOST_PROPERTY_NAME, BrokerConstants.HOST);
-//        m_properties.put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
-//        m_properties.put(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
-//        m_properties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
-//        m_properties.put(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, true);
-//        m_properties.put(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
-//        m_properties.put(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
-//    }
+    // private void createDefaults() {
+    // m_properties.put(BrokerConstants.PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.PORT));
+    // m_properties.put(BrokerConstants.HOST_PROPERTY_NAME, BrokerConstants.HOST);
+    // m_properties.put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME,
+    // Integer.toString(BrokerConstants.WEBSOCKET_PORT));
+    // m_properties.put(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
+    // m_properties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME,
+    // BrokerConstants.DEFAULT_PERSISTENT_PATH);
+    // m_properties.put(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, true);
+    // m_properties.put(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
+    // m_properties.put(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
+    // }
 
     @Override
     public void setProperty(String name, String value) {
