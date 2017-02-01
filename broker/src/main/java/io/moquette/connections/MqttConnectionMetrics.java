@@ -1,12 +1,14 @@
+
 package io.moquette.connections;
 
 /**
  * A class that represents the metrics of a given MQTT connection.
- * 
+ *
  * @author lbarrios
  *
  */
 public class MqttConnectionMetrics {
+
     private long readKb;
     private long writtenKb;
     private long readMessages;
