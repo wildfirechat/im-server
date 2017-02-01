@@ -1,3 +1,4 @@
+
 package io.moquette.spi;
 
 import io.moquette.spi.impl.MemoryStorageService;
@@ -6,9 +7,7 @@ import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 public class ClientSessionTest {
@@ -42,7 +41,7 @@ public class ClientSessionTest {
         session1.subscribe(overrindingSubscription);
         store.add(overrindingSubscription.asClientTopicCouple());
 
-        //Verify
+        // Verify
         List<Subscription> subscriptions = store.matches("/topic");
         assertEquals(1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
