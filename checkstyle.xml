@@ -118,9 +118,11 @@
     <module name="ExplicitInitialization"/>
     <module name="DefaultComesLast"/>
     <module name="UnnecessaryParentheses"/>
+    <!--
     <module name="AvoidStarImport">
       <property name="allowStaticMemberImports" value="true"/>
     </module>
+    -->
     <module name="RedundantImport"/>
     <!-- Commented out due to false positives.
     <module name="UnusedImports">
