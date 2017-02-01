@@ -76,7 +76,6 @@ public final class Subscription implements Serializable {
         if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null)
             return false;
         return !(topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null);
-
     }
 
     @Override
