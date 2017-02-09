@@ -13,9 +13,11 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty.metrics;
 
 public class MessageMetrics {
+
     private long m_messagesRead = 0;
     private long m_messageWrote = 0;
 

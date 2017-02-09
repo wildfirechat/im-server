@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.testclient;
 
 import io.moquette.server.netty.NettyMQTTHandler;
@@ -29,25 +30,25 @@ import org.slf4j.LoggerFactory;
  */
 @ChannelHandler.Sharable
 class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
     private Client m_client;
-    
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;
         LOG.info("Received a message of type {}", msg.fixedHeader().messageType());
         m_client.messageReceived(msg);
     }
-    
+
     @Override
-    public void channelInactive(ChannelHandlerContext ctx)throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         m_client.setConnectionLost(true);
-        ctx.close(/*false*/);
+        ctx.close(/* false */);
     }
 
     void setClient(Client client) {
         m_client = client;
     }
-    
+
 }

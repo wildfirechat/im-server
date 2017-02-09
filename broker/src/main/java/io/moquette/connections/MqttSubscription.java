@@ -1,12 +1,14 @@
+
 package io.moquette.connections;
 
 /**
- * A class that represents a MQTT subscription. 
- * 
+ * A class that represents a MQTT subscription.
+ *
  * @author lbarrios
  *
  */
 public class MqttSubscription {
+
     private final String requestedQos;
     private final String clientId;
     private final String topicFilter;

@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.BrokerConstants;
@@ -25,21 +26,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.assertTrue;
-
 
 /**
  * Integration test to check the function of Moquette with a WebSocket channel.
- * 
+ *
  * @author andrea
  */
 public class ServerIntegrationWebSocketTest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationWebSocketTest.class);
 
     Server m_server;
@@ -49,7 +48,8 @@ public class ServerIntegrationWebSocketTest {
     protected void startServer() throws IOException {
         m_server = new Server();
         final Properties configProps = IntegrationUtils.prepareTestProperties();
-        configProps.put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
+        configProps
+                .put(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, Integer.toString(BrokerConstants.WEBSOCKET_PORT));
         m_config = new MemoryConfig(configProps);
         m_server.startServer(m_config);
     }
@@ -63,16 +63,16 @@ public class ServerIntegrationWebSocketTest {
     @After
     public void tearDown() throws Exception {
         client.stop();
-        
+
         m_server.stopServer();
         IntegrationUtils.cleanPersistenceFile(m_config);
     }
-    
+
     @Test
     public void checkPlainConnect() throws Exception {
         LOG.info("*** checkPlainConnect ***");
         String destUri = "ws://localhost:" + BrokerConstants.WEBSOCKET_PORT + "/mqtt";
-        
+
         MQTTWebSocket socket = new MQTTWebSocket();
         client.start();
         URI echoUri = new URI(destUri);

@@ -13,19 +13,19 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.security;
 
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.text.ParseException;
 import java.util.*;
 
 /**
- * Used by the ACLFileParser to push all authorizations it finds.
- * ACLAuthorizator uses it in read mode to check it topics matches the ACLs.
+ * Used by the ACLFileParser to push all authorizations it finds. ACLAuthorizator uses it in read
+ * mode to check it topics matches the ACLs.
  *
  * Not thread safe.
  *
@@ -53,11 +53,12 @@ class AuthorizationsCollector implements IAuthorizator {
     void parse(String line) throws ParseException {
         Authorization acl = parseAuthLine(line);
         if (acl == null) {
-            //skip it's a user
+            // skip it's a user
             return;
         }
         if (m_parsingUsersSpecificSection) {
-            //TODO in java 8 switch to m_userAuthorizations.putIfAbsent(m_currentUser, new ArrayList());
+            // TODO in java 8 switch to m_userAuthorizations.putIfAbsent(m_currentUser, new
+            // ArrayList());
             if (!m_userAuthorizations.containsKey(m_currentUser)) {
                 m_userAuthorizations.put(m_currentUser, new ArrayList<Authorization>());
             }
@@ -93,10 +94,10 @@ class AuthorizationsCollector implements IAuthorizator {
 
     private Authorization createAuthorization(String line, String[] tokens) throws ParseException {
         if (tokens.length > 2) {
-            //if the tokenized lines has 3 token the second must be the permission
+            // if the tokenized lines has 3 token the second must be the permission
             try {
                 Authorization.Permission permission = Authorization.Permission.valueOf(tokens[1].toUpperCase());
-                //bring topic with all original spacing
+                // bring topic with all original spacing
                 String topic = line.substring(line.indexOf(tokens[2]));
 
                 return new Authorization(topic, permission);
@@ -119,7 +120,7 @@ class AuthorizationsCollector implements IAuthorizator {
     }
 
     private boolean canDoOperation(String topic, Authorization.Permission permission, String username, String client) {
-        if (matchACL(m_globalAuthorizations, topic, permission))  {
+        if (matchACL(m_globalAuthorizations, topic, permission)) {
             return true;
         }
 
@@ -137,7 +138,7 @@ class AuthorizationsCollector implements IAuthorizator {
         if (isNotEmpty(username)) {
             if (m_userAuthorizations.containsKey(username)) {
                 List<Authorization> auths = m_userAuthorizations.get(username);
-                if (matchACL(auths, topic, permission))  {
+                if (matchACL(auths, topic, permission)) {
                     return true;
                 }
             }

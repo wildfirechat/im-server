@@ -13,17 +13,18 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageBuilder {
 
     public static class PublishBuilder {
+
         private String topic = null;
         private boolean retained = false;
         private MqttQoS qos;
@@ -138,19 +139,28 @@ public class MessageBuilder {
         }
 
         public MqttConnectMessage build() {
-            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
-            MqttConnectVariableHeader mqttConnectVariableHeader =
-                    new MqttConnectVariableHeader(
-                            version.protocolName(),
-                            version.protocolLevel(),
-                            hasUser,
-                            hasPassword,
-                            false,
-                            willQos.value(),
-                            willFlag,
-                            cleanSession,
-                            keepAliveSecs);
-            MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, willTopic, willMessage, username, password);
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                    MqttMessageType.CONNECT,
+                    false,
+                    MqttQoS.AT_MOST_ONCE,
+                    false,
+                    0);
+            MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
+                    version.protocolName(),
+                    version.protocolLevel(),
+                    hasUser,
+                    hasPassword,
+                    false,
+                    willQos.value(),
+                    willFlag,
+                    cleanSession,
+                    keepAliveSecs);
+            MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(
+                    clientId,
+                    willTopic,
+                    willMessage,
+                    username,
+                    password);
             return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
         }
     }
@@ -171,7 +181,12 @@ public class MessageBuilder {
         }
 
         public MqttSubscribeMessage build() {
-            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.SUBSCRIBE, false, MqttQoS.AT_LEAST_ONCE, false, 0);
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                    MqttMessageType.SUBSCRIBE,
+                    false,
+                    MqttQoS.AT_LEAST_ONCE,
+                    false,
+                    0);
             MqttMessageIdVariableHeader mqttVariableHeader = MqttMessageIdVariableHeader.from(messageId);
             MqttSubscribePayload mqttSubscribePayload = new MqttSubscribePayload(subscriptions);
             return new MqttSubscribeMessage(mqttFixedHeader, mqttVariableHeader, mqttSubscribePayload);
@@ -194,8 +209,12 @@ public class MessageBuilder {
         }
 
         public MqttUnsubscribeMessage build() {
-            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.UNSUBSCRIBE, false,
-                    MqttQoS.AT_LEAST_ONCE, false, 0);
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                    MqttMessageType.UNSUBSCRIBE,
+                    false,
+                    MqttQoS.AT_LEAST_ONCE,
+                    false,
+                    0);
             MqttMessageIdVariableHeader mqttVariableHeader = MqttMessageIdVariableHeader.from(messageId);
             MqttUnsubscribePayload mqttSubscribePayload = new MqttUnsubscribePayload(topicFilters);
             return new MqttUnsubscribeMessage(mqttFixedHeader, mqttVariableHeader, mqttSubscribePayload);

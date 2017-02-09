@@ -1,3 +1,4 @@
+
 package io.moquette.interception.messages;
 
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -7,6 +8,7 @@ import io.netty.handler.codec.mqtt.MqttQoS;
  * @author Wagner Macedo
  */
 public class InterceptSubscribeMessage implements InterceptMessage {
+
     private final Subscription subscription;
     private final String username;
 
@@ -27,7 +29,7 @@ public class InterceptSubscribeMessage implements InterceptMessage {
         return subscription.getTopicFilter();
     }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 }

@@ -13,12 +13,12 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttQoS;
-
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collection;
@@ -29,13 +29,14 @@ import java.util.Collection;
 public interface IMessagesStore {
 
     class StoredMessage implements Serializable {
+
         private static final long serialVersionUID = 1755296138639817304L;
         final MqttQoS m_qos;
         final byte[] m_payload;
         final String m_topic;
         private boolean m_retained;
         private String m_clientID;
-        //Optional attribute, available only fo QoS 1 and 2
+        // Optional attribute, available only fo QoS 1 and 2
         private Integer m_msgID;
         private MessageGUID m_guid;
 
@@ -95,41 +96,42 @@ public interface IMessagesStore {
 
         @Override
         public String toString() {
-            return "PublishEvent{" +
-                    "m_msgID=" + m_msgID +
-                    ", clientID='" + m_clientID + '\'' +
-                    ", m_retain=" + m_retained +
-                    ", m_qos=" + m_qos +
-                    ", m_topic='" + m_topic + '\'' +
-                    '}';
+            return "PublishEvent{" + "m_msgID=" + m_msgID + ", clientID='" + m_clientID + '\'' + ", m_retain="
+                    + m_retained + ", m_qos=" + m_qos + ", m_topic='" + m_topic + '\'' + '}';
         }
     }
 
     /**
      * Used to initialize all persistent store structures
-     * */
+     */
     void initStore();
 
     /**
-     * Persist the message. 
-     * If the message is empty then the topic is cleaned, else it's stored.
-     * @param topic for the retained.
-     * @param guid of the message to mark as retained.
+     * Persist the message. If the message is empty then the topic is cleaned, else it's stored.
+     *
+     * @param topic
+     *            for the retained.
+     * @param guid
+     *            of the message to mark as retained.
      */
     void storeRetained(String topic, MessageGUID guid);
 
     /**
      * Return a list of retained messages that satisfy the condition.
-     * @param condition the condition to match during the search.
+     *
+     * @param condition
+     *            the condition to match during the search.
      * @return the collection of matching messages.
      */
     Collection<StoredMessage> searchMatching(IMatchingCondition condition);
 
     /**
      * Persist the message.
-     * @param storedMessage the message to store for future usage.
+     *
+     * @param storedMessage
+     *            the message to store for future usage.
      * @return the unique id in the storage (guid).
-     * */
+     */
     MessageGUID storePublishForFuture(StoredMessage storedMessage);
 
     void dropMessagesInSession(String clientID);

@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
@@ -29,30 +30,37 @@ import io.moquette.interception.messages.InterceptUnsubscribeMessage;
  * Created by andrea on 08/12/15.
  */
 public abstract class AbstractInterceptHandler implements InterceptHandler {
-	
-	@Override
-	public Class<?>[] getInterceptedMessageTypes() {
-		return InterceptHandler.ALL_MESSAGE_TYPES;
-	}
-	
-    @Override
-    public void onConnect(InterceptConnectMessage msg) {}
 
     @Override
-    public void onDisconnect(InterceptDisconnectMessage msg) {}
+    public Class<?>[] getInterceptedMessageTypes() {
+        return InterceptHandler.ALL_MESSAGE_TYPES;
+    }
 
     @Override
-    public void onConnectionLost(InterceptConnectionLostMessage msg) {}
+    public void onConnect(InterceptConnectMessage msg) {
+    }
 
     @Override
-    public void onPublish(InterceptPublishMessage msg) {}
+    public void onDisconnect(InterceptDisconnectMessage msg) {
+    }
 
     @Override
-    public void onSubscribe(InterceptSubscribeMessage msg) {}
+    public void onConnectionLost(InterceptConnectionLostMessage msg) {
+    }
 
     @Override
-    public void onUnsubscribe(InterceptUnsubscribeMessage msg) {}
-    
+    public void onPublish(InterceptPublishMessage msg) {
+    }
+
     @Override
-	public void onMessageAcknowledged(InterceptAcknowledgedMessage msg) {}
+    public void onSubscribe(InterceptSubscribeMessage msg) {
+    }
+
+    @Override
+    public void onUnsubscribe(InterceptUnsubscribeMessage msg) {
+    }
+
+    @Override
+    public void onMessageAcknowledged(InterceptAcknowledgedMessage msg) {
+    }
 }

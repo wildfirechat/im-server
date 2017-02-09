@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
@@ -23,12 +24,10 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 /**
  * This interface is to be used internally by the broker components.
  * <p>
- * An interface is used instead of a class to allow more flexibility in changing
- * an implementation.
+ * An interface is used instead of a class to allow more flexibility in changing an implementation.
  * <p>
- * Interceptor implementations forward notifications to a <code>InterceptHandler</code>,
- * that is normally a field. So, the implementations should act as a proxy to a custom
- * intercept handler.
+ * Interceptor implementations forward notifications to a <code>InterceptHandler</code>, that is
+ * normally a field. So, the implementations should act as a proxy to a custom intercept handler.
  *
  * @see InterceptHandler
  * @author Wagner Macedo

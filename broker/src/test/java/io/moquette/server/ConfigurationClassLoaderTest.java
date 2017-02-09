@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.BrokerConstants;
@@ -22,33 +23,31 @@ import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.junit.After;
 import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-
 import static org.junit.Assert.*;
 
 /**
  *
- * @author luca <luca.capra@create-net.org> 
+ * @author luca <luca.capra@create-net.org>
  */
 public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizator {
+
     Server m_server;
     IConfig m_config;
-    
+
     protected void startServer(Properties props) throws IOException {
         m_server = new Server();
         m_config = new MemoryConfig(props);
         m_server.startServer(m_config);
     }
 
-
     @After
     public void tearDown() throws Exception {
         m_server.stopServer();
     }
-    
+
     @Test
     public void loadAuthenticator() throws Exception {
         Properties props = new Properties(IntegrationUtils.prepareTestProperties());
@@ -56,7 +55,7 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
         startServer(props);
         assertTrue(true);
     }
-    
+
     @Test
     public void loadAuthorizator() throws Exception {
         Properties props = new Properties(IntegrationUtils.prepareTestProperties());
@@ -79,5 +78,5 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     public boolean canRead(String topic, String user, String client) {
         return true;
     }
-    
+
 }

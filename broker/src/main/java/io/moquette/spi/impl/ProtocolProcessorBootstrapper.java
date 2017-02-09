@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
@@ -35,7 +36,6 @@ import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -54,13 +54,13 @@ public class ProtocolProcessorBootstrapper {
     private SubscriptionsStore subscriptions;
 
     private MapDBPersistentStore m_mapStorage;
-    
+
     private ISessionsStore m_sessionsStore;
 
     private BrokerInterceptor m_interceptor;
 
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
-    
+
     private ConnectionDescriptorStore connectionDescriptors;
 
     public ProtocolProcessorBootstrapper() {
@@ -68,19 +68,25 @@ public class ProtocolProcessorBootstrapper {
 
     /**
      * Initialize the processing part of the broker.
-     * @param props the properties carrier where some props like port end host could be loaded.
-     *              For the full list check of configurable properties check moquette.conf file.
-     * @param embeddedObservers a list of callbacks to be notified of certain events inside the broker.
-     *                          Could be empty list of null.
-     * @param authenticator an implementation of the authenticator to be used, if null load that specified in config
-     *                      and fallback on the default one (permit all).
-     * @param authorizator an implementation of the authorizator to be used, if null load that specified in config
-     *                      and fallback on the default one (permit all).
-     * @param server the serber to init.
+     *
+     * @param props
+     *            the properties carrier where some props like port end host could be loaded. For
+     *            the full list check of configurable properties check moquette.conf file.
+     * @param embeddedObservers
+     *            a list of callbacks to be notified of certain events inside the broker. Could be
+     *            empty list of null.
+     * @param authenticator
+     *            an implementation of the authenticator to be used, if null load that specified in
+     *            config and fallback on the default one (permit all).
+     * @param authorizator
+     *            an implementation of the authorizator to be used, if null load that specified in
+     *            config and fallback on the default one (permit all).
+     * @param server
+     *            the serber to init.
      * @return the processor created for the broker.
-     * */
+     */
     public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
-                                  IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
+            IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
         subscriptions = new SubscriptionsStore();
 
         LOG.info("Initializing messages and sessions stores...");
@@ -94,10 +100,10 @@ public class ProtocolProcessorBootstrapper {
         List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (interceptorClassName != null && !interceptorClassName.isEmpty()) {
-                InterceptHandler handler = loadClass(interceptorClassName, InterceptHandler.class, Server.class, server);
-                if (handler != null) {
-                    observers.add(handler);
-                }
+            InterceptHandler handler = loadClass(interceptorClassName, InterceptHandler.class, Server.class, server);
+            if (handler != null) {
+                observers.add(handler);
+            }
         }
         m_interceptor = new BrokerInterceptor(props, observers);
 
@@ -136,82 +142,121 @@ public class ProtocolProcessorBootstrapper {
                     LOG.info("Parsing ACL file. Path = {}.", aclFilePath);
                     authorizator = ACLFileParser.parse(resourceLoader.loadResource(aclFilePath));
                 } catch (ParseException pex) {
-                    LOG.error("Unable to parse ACL file. Path = {}, cause = {}, errorMessage = {}.", aclFilePath,
-							pex.getCause(), pex.getMessage());
+                    LOG.error(
+                            "Unable to parse ACL file. Path = {}, cause = {}, errorMessage = {}.",
+                            aclFilePath,
+                            pex.getCause(),
+                            pex.getMessage());
                 }
             } else {
                 authorizator = new PermitAllAuthorizator();
             }
             LOG.info("An {} authorizator instance will be used.", authorizator.getClass().getName());
         }
-        
+
         LOG.info("Initializing connection descriptor store...");
         connectionDescriptors = new ConnectionDescriptorStore(m_sessionsStore);
 
         LOG.info("Initializing MQTT protocol processor...");
-        boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        boolean allowZeroByteClientId = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
-        m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
+        boolean allowAnonymous = Boolean
+                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
+        boolean allowZeroByteClientId = Boolean
+                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
+        m_processor.init(
+                connectionDescriptors,
+                subscriptions,
+                messagesStore,
+                m_sessionsStore,
+                authenticator,
+                allowAnonymous,
+                allowZeroByteClientId,
+                authorizator,
+                m_interceptor,
+                props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
-    
-	@SuppressWarnings("unchecked")
-	private <T, U> T loadClass(String className, Class<T> iface, Class<U> constructorArgClass, U props) {
-		T instance = null;
-		try {
-			LOG.info("Loading class. ClassName = {}, interfaceName = {}.", className, iface.getName());
-			Class<?> clazz = Class.forName(className);
 
-			// check if method getInstance exists
-			Method method = clazz.getMethod("getInstance", new Class[] {});
-			try {
-				LOG.info("Invoking getInstance() method. ClassName = {}, interfaceName = {}.", className,
-						iface.getName());
-				instance = (T) method.invoke(null, new Object[] {});
-			} catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
-				LOG.error(
-						"Unable to invoke getInstance() method. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-						className, iface.getName(), ex.getCause(), ex.getMessage());
-				return null;
-			}
-		} catch (NoSuchMethodException nsmex) {
-			try {
-				// check if constructor with constructor arg class parameter
-				// exists
-				LOG.info("Invoking constructor with {} argument. ClassName = {}, interfaceName = {}.",
-						constructorArgClass.getName(), className, iface.getName());
-				instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface)
-						.getConstructor(constructorArgClass).newInstance(props);
-			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-				LOG.warn(
-						"Unable to invoke constructor with {} argument. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-						constructorArgClass.getName(), className, iface.getName(), ex.getCause(), ex.getMessage());
-				return null;
-			} catch (NoSuchMethodException | InvocationTargetException e) {
-				try {
-					LOG.info("Invoking default constructor. ClassName = {}, interfaceName = {}.", className,
-							iface.getName());
-					// fallback to default constructor
-					instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface).newInstance();
-				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-					LOG.error(
-							"Unable to invoke default constructor. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-							className, iface.getName(), ex.getCause(), ex.getMessage());
-					return null;
-				}
-			}
-		} catch (ClassNotFoundException ex) {
-			LOG.error("The class does not exist. ClassName = {}, interfaceName = {}.", className, iface.getName());
-			return null;
-		} catch (SecurityException ex) {
-			LOG.error(
-					"Unable to load class due to a security violation. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-					className, iface.getName(), ex.getCause(), ex.getMessage());
-			return null;
-		}
+    @SuppressWarnings("unchecked")
+    private <T, U> T loadClass(String className, Class<T> iface, Class<U> constructorArgClass, U props) {
+        T instance = null;
+        try {
+            LOG.info("Loading class. ClassName = {}, interfaceName = {}.", className, iface.getName());
+            Class<?> clazz = Class.forName(className);
 
-		return instance;
-	}
+            // check if method getInstance exists
+            Method method = clazz.getMethod("getInstance", new Class[]{});
+            try {
+                LOG.info(
+                        "Invoking getInstance() method. ClassName = {}, interfaceName = {}.",
+                        className,
+                        iface.getName());
+                instance = (T) method.invoke(null, new Object[]{});
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
+                LOG.error(
+                        "Unable to invoke getInstance() method. "
+                        + "ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+                        className,
+                        iface.getName(),
+                        ex.getCause(),
+                        ex.getMessage());
+                return null;
+            }
+        } catch (NoSuchMethodException nsmex) {
+            try {
+                // check if constructor with constructor arg class parameter
+                // exists
+                LOG.info(
+                        "Invoking constructor with {} argument. ClassName = {}, interfaceName = {}.",
+                        constructorArgClass.getName(),
+                        className,
+                        iface.getName());
+                instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface)
+                        .getConstructor(constructorArgClass).newInstance(props);
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                LOG.warn(
+                        "Unable to invoke constructor with {} argument. "
+                        + "ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+                        constructorArgClass.getName(),
+                        className,
+                        iface.getName(),
+                        ex.getCause(),
+                        ex.getMessage());
+                return null;
+            } catch (NoSuchMethodException | InvocationTargetException e) {
+                try {
+                    LOG.info(
+                            "Invoking default constructor. ClassName = {}, interfaceName = {}.",
+                            className,
+                            iface.getName());
+                    // fallback to default constructor
+                    instance = this.getClass().getClassLoader().loadClass(className).asSubclass(iface).newInstance();
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                    LOG.error(
+                            "Unable to invoke default constructor. "
+                            + "ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+                            className,
+                            iface.getName(),
+                            ex.getCause(),
+                            ex.getMessage());
+                    return null;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            LOG.error("The class does not exist. ClassName = {}, interfaceName = {}.", className, iface.getName());
+            return null;
+        } catch (SecurityException ex) {
+            LOG.error(
+                    "Unable to load class due to a security violation. "
+                    + "ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
+                    className,
+                    iface.getName(),
+                    ex.getCause(),
+                    ex.getMessage());
+            return null;
+        }
+
+        return instance;
+    }
 
     public List<Subscription> getSubscriptions() {
         return m_sessionsStore.getSubscriptions();

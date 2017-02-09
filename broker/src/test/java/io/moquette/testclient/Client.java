@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.testclient;
 
 import io.moquette.BrokerConstants;
@@ -25,22 +26,22 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Class used just to send and receive MQTT messages without any protocol login 
- * in action, just use the encoder/decoder part.
- * 
+ * Class used just to send and receive MQTT messages without any protocol login in action, just use
+ * the encoder/decoder part.
+ *
  * @author andrea
  */
 public class Client {
-    
+
     public interface ICallback {
+
         void call(MqttMessage msg);
     }
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
     final ClientNettyMQTTHandler handler = new ClientNettyMQTTHandler();
     EventLoopGroup workerGroup;
@@ -49,11 +50,11 @@ public class Client {
     private ICallback callback;
     private String clientId;
     private MqttMessage receivedMsg;
-    
+
     public Client(String host) {
         this(host, BrokerConstants.PORT);
     }
-    
+
     public Client(String host, int port) {
         handler.setClient(this);
         workerGroup = new NioEventLoopGroup();
@@ -63,6 +64,7 @@ public class Client {
             b.channel(NioSocketChannel.class);
             b.option(ChannelOption.SO_KEEPALIVE, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
+
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
@@ -71,10 +73,10 @@ public class Client {
                     pipeline.addLast("handler", handler);
                 }
             });
-            
+
             // Start the client.
             m_channel = b.connect(host, port).sync().channel();
-        } catch (Exception ex) {    
+        } catch (Exception ex) {
             LOG.error("Error received in client setup", ex);
             workerGroup.shutdownGracefully();
         }
@@ -86,44 +88,49 @@ public class Client {
     }
 
     public void connect(String willTestamentTopic, String willTestamentMsg) {
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
-        MqttConnectVariableHeader mqttConnectVariableHeader =
-                new MqttConnectVariableHeader(
-                        MqttVersion.MQTT_3_1.protocolName(),
-                        MqttVersion.MQTT_3_1.protocolLevel(),
-                        false,
-                        false,
-                        false,
-                        MqttQoS.AT_MOST_ONCE.value(),
-                        true,
-                        true,
-                        2);
-        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(this.clientId, willTestamentTopic, willTestamentMsg,
-                null, null);
-        MqttConnectMessage connectMessage = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader,
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                MqttMessageType.CONNECT,
+                false,
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                0);
+        MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
+                MqttVersion.MQTT_3_1.protocolName(),
+                MqttVersion.MQTT_3_1.protocolLevel(),
+                false,
+                false,
+                false,
+                MqttQoS.AT_MOST_ONCE.value(),
+                true,
+                true,
+                2);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(
+                this.clientId,
+                willTestamentTopic,
+                willTestamentMsg,
+                null,
+                null);
+        MqttConnectMessage connectMessage = new MqttConnectMessage(
+                mqttFixedHeader,
+                mqttConnectVariableHeader,
                 mqttConnectPayload);
 
-
-        /*ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 3);
-        connectMessage.setClientID(this.clientId);
-        connectMessage.setKeepAlive(2); //secs
-        connectMessage.setWillFlag(true);
-        connectMessage.setWillMessage(willTestamentMsg.getBytes());
-        connectMessage.setWillTopic(willTestamentTopic);
-        connectMessage.setWillQos(MqttQoS.AT_MOST_ONCE.byteValue());*/
+        /*
+         * ConnectMessage connectMessage = new ConnectMessage();
+         * connectMessage.setProtocolVersion((byte) 3); connectMessage.setClientID(this.clientId);
+         * connectMessage.setKeepAlive(2); //secs connectMessage.setWillFlag(true);
+         * connectMessage.setWillMessage(willTestamentMsg.getBytes());
+         * connectMessage.setWillTopic(willTestamentTopic);
+         * connectMessage.setWillQos(MqttQoS.AT_MOST_ONCE.byteValue());
+         */
 
         doConnect(connectMessage);
     }
 
     public void connect() {
-        MqttConnectMessage connectMessage = MessageBuilder.connect()
-                .protocolVersion(MqttVersion.MQTT_3_1_1)
-                .clientId("")
-                .keepAlive(2) //secs
-                .willFlag(false)
-                .willQoS(MqttQoS.AT_MOST_ONCE)
-                .build();
+        MqttConnectMessage connectMessage = MessageBuilder.connect().protocolVersion(MqttVersion.MQTT_3_1_1)
+                .clientId("").keepAlive(2) // secs
+                .willFlag(false).willQoS(MqttQoS.AT_MOST_ONCE).build();
 
         doConnect(connectMessage);
     }
@@ -154,7 +161,7 @@ public class Client {
     public void setCallback(ICallback callback) {
         this.callback = callback;
     }
-    
+
     public void sendMessage(MqttMessage msg) {
         m_channel.writeAndFlush(msg);
     }
@@ -169,11 +176,11 @@ public class Client {
             this.callback.call(msg);
         }
     }
-    
+
     void setConnectionLost(boolean status) {
         m_connectionLost = status;
     }
-    
+
     public boolean isConnectionLost() {
         return m_connectionLost;
     }

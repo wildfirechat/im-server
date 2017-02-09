@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.security;
 
 import io.moquette.spi.security.IAuthorizator;
@@ -21,6 +22,7 @@ import io.moquette.spi.security.IAuthorizator;
  * @author andrea
  */
 public class PermitAllAuthorizator implements IAuthorizator {
+
     @Override
     public boolean canWrite(String topic, String user, String client) {
         return true;

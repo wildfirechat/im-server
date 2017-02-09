@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.BrokerConstants;
@@ -20,20 +21,18 @@ import io.moquette.server.config.IConfig;
 import io.moquette.spi.security.ISslContextCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.*;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 
 /**
- * Moquette server implementation to load SSL certificate from local filesystem path
- * configured in config file.
+ * Moquette server implementation to load SSL certificate from local filesystem path configured in
+ * config file.
  *
  * Created by andrea on 13/12/15.
  */
@@ -49,34 +48,34 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 
     @Override
     public SSLContext initSSLContext() {
-    	LOG.info("Checking SSL configuration properties...");   	
+        LOG.info("Checking SSL configuration properties...");
         final String jksPath = props.getProperty(BrokerConstants.JKS_PATH_PROPERTY_NAME);
         LOG.info("Initializing SSL context. KeystorePath = {}.", jksPath);
         if (jksPath == null || jksPath.isEmpty()) {
-            //key_store_password or key_manager_password are empty
+            // key_store_password or key_manager_password are empty
             LOG.warn("The keystore path is null or empty. The SSL context won't be initialized.");
             return null;
         }
 
-        //if we have the port also the jks then keyStorePassword and keyManagerPassword
-        //has to be defined
+        // if we have the port also the jks then keyStorePassword and keyManagerPassword
+        // has to be defined
         final String keyStorePassword = props.getProperty(BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME);
         final String keyManagerPassword = props.getProperty(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME);
         if (keyStorePassword == null || keyStorePassword.isEmpty()) {
-            //key_store_password or key_manager_password are empty
+            // key_store_password or key_manager_password are empty
             LOG.warn("The keystore password is null or empty. The SSL context won't be initialized.");
             return null;
         }
         if (keyManagerPassword == null || keyManagerPassword.isEmpty()) {
-            //key_manager_password or key_manager_password are empty
+            // key_manager_password or key_manager_password are empty
             LOG.warn("The key manager password is null or empty. The SSL context won't be initialized.");
             return null;
         }
 
-		// if client authentification is enabled a trustmanager needs to be
-		// added to the ServerContext
-		String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
-		boolean needsClientAuth = Boolean.valueOf(sNeedsClientAuth);
+        // if client authentification is enabled a trustmanager needs to be
+        // added to the ServerContext
+        String sNeedsClientAuth = props.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
+        boolean needsClientAuth = Boolean.valueOf(sNeedsClientAuth);
 
         try {
             LOG.info("Loading keystore. KeystorePath = {}.", jksPath);
@@ -87,25 +86,30 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
             LOG.info("Initializing key manager...");
             final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, keyManagerPassword.toCharArray());
-			TrustManager[] trustManagers = null;
-			if (needsClientAuth) {
-				LOG.warn(
-						"Client authentication is enabled. The keystore will be used as a truststore. KeystorePath = {}.",
-						jksPath);
-				// use keystore as truststore, as server needs to trust certificates signed by the server certificates
-				TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-				tmf.init(ks);
-				trustManagers = tmf.getTrustManagers();
-			}
-			// init sslContext
-			LOG.info("Initializing SSL context...");
-			serverContext.init(kmf.getKeyManagers(), trustManagers, null);
-			LOG.info("The SSL context has been initialized successfully.");
-			
+            TrustManager[] trustManagers = null;
+            if (needsClientAuth) {
+                LOG.warn(
+                        "Client authentication is enabled. "
+                        + "The keystore will be used as a truststore. KeystorePath = {}.",
+                        jksPath);
+                // use keystore as truststore, as server needs to trust certificates signed by the
+                // server certificates
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(ks);
+                trustManagers = tmf.getTrustManagers();
+            }
+            // init sslContext
+            LOG.info("Initializing SSL context...");
+            serverContext.init(kmf.getKeyManagers(), trustManagers, null);
+            LOG.info("The SSL context has been initialized successfully.");
+
             return serverContext;
         } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
                 | KeyManagementException | IOException ex) {
-            LOG.error("Unable to initialize SSL context. Cause = {}, errorMessage = {}.", ex.getCause(), ex.getMessage());
+            LOG.error(
+                    "Unable to initialize SSL context. Cause = {}, errorMessage = {}.",
+                    ex.getCause(),
+                    ex.getMessage());
             return null;
         }
     }

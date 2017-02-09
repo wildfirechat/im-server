@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.server.config.IConfig;
@@ -26,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Properties;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
@@ -37,6 +37,7 @@ import static org.junit.Assert.*;
  * @author andrea
  */
 public class ServerLowlevelMessagesIntegrationTests {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerLowlevelMessagesIntegrationTests.class);
     static MqttClientPersistence s_dataStore;
     Server m_server;
@@ -66,7 +67,7 @@ public class ServerLowlevelMessagesIntegrationTests {
     public void tearDown() throws Exception {
         m_client.close();
         LOG.debug("After raw client close");
-        Thread.sleep(300); //to let the close event pass before server stop event
+        Thread.sleep(300); // to let the close event pass before server stop event
         m_server.stopServer();
         LOG.debug("After asked server to stop");
         IntegrationUtils.cleanPersistenceFile(m_config);
@@ -74,62 +75,67 @@ public class ServerLowlevelMessagesIntegrationTests {
 
     @Test
     public void elapseKeepAliveTime() throws InterruptedException {
-        int keepAlive = 2; //secs
+        int keepAlive = 2; // secs
 
         MqttConnectMessage connectMessage = createConnectMessage("FAKECLNT", keepAlive);
 
-        /*ConnectMessage connectMessage = new ConnectMessage();
-        connectMessage.setProtocolVersion((byte) 3);
-        connectMessage.setClientID("FAKECLNT");
-        connectMessage.setKeepAlive(keepAlive);*/
+        /*
+         * ConnectMessage connectMessage = new ConnectMessage();
+         * connectMessage.setProtocolVersion((byte) 3); connectMessage.setClientID("FAKECLNT");
+         * connectMessage.setKeepAlive(keepAlive);
+         */
         m_client.sendMessage(connectMessage);
-        
-        //wait 2 times the keepAlive
+
+        // wait 2 times the keepAlive
         Thread.sleep(keepAlive * 2 * 1000);
-        
+
         assertTrue(m_client.isConnectionLost());
     }
 
     private static MqttConnectMessage createConnectMessage(String clientID, int keepAlive) {
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE, false, 0);
-        MqttConnectVariableHeader mqttConnectVariableHeader =
-                new MqttConnectVariableHeader(
-                        MqttVersion.MQTT_3_1.protocolName(),
-                        MqttVersion.MQTT_3_1.protocolLevel(),
-                        false,
-                        false,
-                        false,
-                        1,
-                        false,
-                        true,
-                        keepAlive);
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                MqttMessageType.CONNECT,
+                false,
+                MqttQoS.AT_MOST_ONCE,
+                false,
+                0);
+        MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
+                MqttVersion.MQTT_3_1.protocolName(),
+                MqttVersion.MQTT_3_1.protocolLevel(),
+                false,
+                false,
+                false,
+                1,
+                false,
+                true,
+                keepAlive);
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, null, null, null, null);
         return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
     }
-    
+
     @Test
     public void testWillMessageIsWiredOnClientKeepAliveExpiry() throws Exception {
         LOG.info("*** testWillMessageIsWiredOnClientKeepAliveExpiry ***");
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";
-        
+
         m_willSubscriber.connect();
         m_willSubscriber.subscribe(willTestamentTopic, 0);
-        
+
         m_client.clientId("FAKECLNT").connect(willTestamentTopic, willTestamentMsg);
         long connectTime = System.currentTimeMillis();
 
-        //but after the 2 KEEP ALIVE timeout expires it gets fired,
-        //NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
+        // but after the 2 KEEP ALIVE timeout expires it gets fired,
+        // NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
         org.eclipse.paho.client.mqttv3.MqttMessage msg = m_messageCollector.waitMessage(5);
         assertNotNull("the will message should be fired after keep alive!", msg);
-        //the will message hasn't to be received before the elapsing of Keep Alive timeout
-        assertTrue(System.currentTimeMillis() - connectTime  > 3000);
-        
+        // the will message hasn't to be received before the elapsing of Keep Alive timeout
+        assertTrue(System.currentTimeMillis() - connectTime > 3000);
+
         assertEquals(willTestamentMsg, new String(msg.getPayload()));
         m_willSubscriber.disconnect();
     }
-    
+
     @Test
     public void testRejectConnectWithEmptyClientID() throws InterruptedException {
         LOG.info("*** testRejectConnectWithEmptyClientID ***");
@@ -151,10 +157,10 @@ public class ServerLowlevelMessagesIntegrationTests {
         m_willSubscriber.subscribe(willTestamentTopic, 0);
         m_client.clientId("FAKECLNT").connect(willTestamentTopic, willTestamentMsg);
 
-        //kill will publisher
+        // kill will publisher
         m_client.close();
 
-        //Verify will testament is published
+        // Verify will testament is published
         org.eclipse.paho.client.mqttv3.MqttMessage receivedTestament = m_messageCollector.waitMessage(1);
         assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
         m_willSubscriber.disconnect();

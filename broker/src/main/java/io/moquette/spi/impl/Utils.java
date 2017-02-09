@@ -1,9 +1,9 @@
+
 package io.moquette.spi.impl;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader;
-
 import java.util.Map;
 
 /**

@@ -22,7 +22,7 @@
 
   <!--
   <module name="SuppressionFilter">
-    <property name="file" value="/io/netty/suppressions.xml" />
+    <property name="file" value="checkstyle-suppressions.xml" />
   </module>
   <module name="io.netty.build.checkstyle.SuppressionFilter">
     <property name="pattern" value="((LocalTime|WorldClock)Protocol|LinkedTransferQueue|Version|jzlib/.*|chmv8/.*|com/sun/nio/sctp/.*)\.java" />
@@ -93,7 +93,9 @@
     </module>
     <module name="LeftCurly"/>
     <module name="RightCurly"/>
+    <!--
     <module name="NeedBraces"/>
+    -->
     <module name="AvoidNestedBlocks">
       <property name="allowInSwitchCase" value="true"/>
     </module>
@@ -118,9 +120,11 @@
     <module name="ExplicitInitialization"/>
     <module name="DefaultComesLast"/>
     <module name="UnnecessaryParentheses"/>
+    <!--
     <module name="AvoidStarImport">
       <property name="allowStaticMemberImports" value="true"/>
     </module>
+    -->
     <module name="RedundantImport"/>
     <!-- Commented out due to false positives.
     <module name="UnusedImports">

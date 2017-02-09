@@ -1,15 +1,14 @@
+
 package io.moquette.spi.impl.security;
 
 import org.apache.commons.codec.binary.Hex;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -25,7 +24,6 @@ public class DBAuthenticatorTest {
     public static final String SHA_256 = "SHA-256";
     private Connection connection;
 
-
     @Before
     public void setup() throws ClassNotFoundException, SQLException, NoSuchAlgorithmException {
         Class.forName(ORG_H2_DRIVER);
@@ -33,52 +31,62 @@ public class DBAuthenticatorTest {
         Statement statement = this.connection.createStatement();
         try {
             statement.execute("DROP TABLE ACCOUNT");
-        } catch(SQLException sqle) {
-            LOG.info("Table not found, not dropping",sqle);
+        } catch (SQLException sqle) {
+            LOG.info("Table not found, not dropping", sqle);
         }
         MessageDigest digest = MessageDigest.getInstance(SHA_256);
         String hash = new String(Hex.encodeHex(digest.digest("password".getBytes(StandardCharsets.UTF_8))));
         try {
-            if (statement.execute("CREATE TABLE ACCOUNT ( LOGIN VARCHAR(64), PASSWORD VARCHAR(256))")){
+            if (statement.execute("CREATE TABLE ACCOUNT ( LOGIN VARCHAR(64), PASSWORD VARCHAR(256))")) {
                 throw new SQLException("can't create USER table");
             }
-            if (statement.execute("INSERT INTO ACCOUNT ( LOGIN , PASSWORD ) VALUES ('dbuser', '"+hash+"')")){
+            if (statement.execute("INSERT INTO ACCOUNT ( LOGIN , PASSWORD ) VALUES ('dbuser', '" + hash + "')")) {
                 throw new SQLException("can't insert in USER table");
             }
-        } catch(SQLException sqle) {
-            LOG.error("Table not created, not inserted",sqle);
+        } catch (SQLException sqle) {
+            LOG.error("Table not created, not inserted", sqle);
             return;
         }
         LOG.info("Table User created");
         statement.close();
-
     }
 
     @Test
     public void Db_verifyValid() {
-        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertTrue(dbAuthenticator.checkValid(null, "dbuser","password".getBytes()));
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(
+                ORG_H2_DRIVER,
+                JDBC_H2_MEM_TEST,
+                "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
+                SHA_256);
+        assertTrue(dbAuthenticator.checkValid(null, "dbuser", "password".getBytes()));
     }
 
     @Test
-    public void Db_verifyInvalidLogin(){
-        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertFalse(dbAuthenticator.checkValid(null, "dbuser2","password".getBytes()));
+    public void Db_verifyInvalidLogin() {
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(
+                ORG_H2_DRIVER,
+                JDBC_H2_MEM_TEST,
+                "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
+                SHA_256);
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser2", "password".getBytes()));
     }
 
     @Test
-    public void Db_verifyInvalidPassword(){
-        final DBAuthenticator dbAuthenticator = new DBAuthenticator(ORG_H2_DRIVER, JDBC_H2_MEM_TEST, "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?", SHA_256);
-        assertFalse(dbAuthenticator.checkValid(null, "dbuser","wrongPassword".getBytes()));
+    public void Db_verifyInvalidPassword() {
+        final DBAuthenticator dbAuthenticator = new DBAuthenticator(
+                ORG_H2_DRIVER,
+                JDBC_H2_MEM_TEST,
+                "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
+                SHA_256);
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser", "wrongPassword".getBytes()));
     }
-
 
     @After
-    public void teardown(){
+    public void teardown() {
         try {
             this.connection.close();
         } catch (SQLException e) {
-            LOG.error("can't close connection",e);
+            LOG.error("can't close connection", e);
         }
     }
 }

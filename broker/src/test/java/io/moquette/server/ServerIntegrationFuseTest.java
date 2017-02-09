@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server;
 
 import io.moquette.server.config.IConfig;
@@ -23,11 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.*;
 
 /**
@@ -35,6 +34,7 @@ import static org.junit.Assert.*;
  * @author andrea
  */
 public class ServerIntegrationFuseTest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationPahoTest.class);
 
     Server m_server;
@@ -42,7 +42,7 @@ public class ServerIntegrationFuseTest {
     BlockingConnection m_subscriber;
     BlockingConnection m_publisher;
     IConfig m_config;
-    
+
     protected void startServer() throws IOException {
         m_server = new Server();
         final Properties configProps = IntegrationUtils.prepareTestProperties();
@@ -63,7 +63,7 @@ public class ServerIntegrationFuseTest {
         if (m_subscriber != null) {
             m_subscriber.disconnect();
         }
-        
+
         if (m_publisher != null) {
             m_publisher.disconnect();
         }
@@ -75,31 +75,31 @@ public class ServerIntegrationFuseTest {
     @Test
     public void checkWillTestamentIsPublishedOnConnectionKill_noRetain() throws Exception {
         LOG.info("checkWillTestamentIsPublishedOnConnectionKill_noRetain");
-        
+
         String willTestamentTopic = "/will/test";
         String willTestamentMsg = "Bye bye";
-        
+
         MQTT mqtt = new MQTT();
-        mqtt.setHost("localhost", 1883); 
+        mqtt.setHost("localhost", 1883);
         mqtt.setClientId("WillTestamentPublisher");
         mqtt.setWillRetain(false);
         mqtt.setWillMessage(willTestamentMsg);
         mqtt.setWillTopic(willTestamentTopic);
         m_publisher = mqtt.blockingConnection();
         m_publisher.connect();
-        
-        m_mqtt.setHost("localhost", 1883); 
+
+        m_mqtt.setHost("localhost", 1883);
         m_mqtt.setCleanSession(false);
         m_mqtt.setClientId("Subscriber");
         m_subscriber = m_mqtt.blockingConnection();
         m_subscriber.connect();
         Topic[] topics = new Topic[]{new Topic(willTestamentTopic, QoS.AT_MOST_ONCE)};
         m_subscriber.subscribe(topics);
-        
-        //Exercise, kill the publisher connection
+
+        // Exercise, kill the publisher connection
         m_publisher.kill();
-        
-        //Verify, that the testament is fired
+
+        // Verify, that the testament is fired
         Message msg = m_subscriber.receive(500, TimeUnit.MILLISECONDS);
         assertNotNull("We should get notified with 'Will' message", msg);
         msg.ack();

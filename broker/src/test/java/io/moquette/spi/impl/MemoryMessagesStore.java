@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl;
 
 import io.moquette.spi.IMessagesStore;
@@ -20,9 +21,7 @@ import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.MessageGUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
-
 import static io.moquette.spi.impl.Utils.defaultGet;
 
 /**
@@ -72,8 +71,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
         m_persistentMessageStore.put(guid, storedMessage);
-        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) defaultGet(m_messageToGuids,
-                storedMessage.getClientID(), new HashMap<Integer, MessageGUID>());
+        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) defaultGet(
+                m_messageToGuids,
+                storedMessage.getClientID(),
+                new HashMap<Integer, MessageGUID>());
         guids.put(storedMessage.getMessageID(), guid);
         return guid;
     }

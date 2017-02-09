@@ -13,9 +13,11 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.server.netty.metrics;
 
 public class BytesMetrics {
+
     private long m_readBytes = 0;
     private long m_wroteBytes = 0;
 

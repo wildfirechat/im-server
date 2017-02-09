@@ -13,6 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ClientSession;
@@ -22,11 +23,9 @@ import io.moquette.spi.impl.MemoryStorageService;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 
 /**
@@ -141,11 +140,10 @@ public class SubscriptionsStoreTest {
         store.add(anySub.asClientTopicCouple());
         store.add(financeAnySub.asClientTopicCouple());
 
-        //Verify
+        // Verify
         assertThat(store.matches("finance/stock")).containsExactlyInAnyOrder(financeAnySub, anySub);
         assertThat(store.matches("finance/stock/ibm")).containsExactlyInAnyOrder(financeAnySub, anySub);
     }
-
 
     @Test
     public void testMatchingDeepMulti_two_layer() {
@@ -153,7 +151,7 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(financeAnySub);
         store.add(financeAnySub.asClientTopicCouple());
 
-        //Verify
+        // Verify
         assertThat(store.matches("finance/stock/ibm")).containsExactly(financeAnySub);
     }
 
@@ -176,10 +174,9 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(manySub);
         store.add(manySub.asClientTopicCouple());
 
-        //verify
+        // verify
         assertThat(store.matches("/finance")).contains(manySub);
     }
-
 
     @Test
     public void testMatchSlashSingle() {
@@ -190,11 +187,10 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(anySub);
         store.add(anySub.asClientTopicCouple());
 
-        //Verify
+        // Verify
         assertThat(store.matches("/finance")).containsOnly(slashPlusSub);
         assertThat(store.matches("/finance")).doesNotContain(anySub);
     }
-
 
     @Test
     public void testMatchManyDeepSingle() {
@@ -206,7 +202,7 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(slashPlusDeepSub);
         store.add(slashPlusDeepSub.asClientTopicCouple());
 
-        //Verify
+        // Verify
         assertThat(store.matches("/finance/stock/ibm")).containsExactlyInAnyOrder(slashPlusSub, slashPlusDeepSub);
     }
 
@@ -221,7 +217,7 @@ public class SubscriptionsStoreTest {
 
     @Test
     public void testMatchSimpleMulti_zeroLevel() {
-        //check  MULTI in case of zero level match
+        // check MULTI in case of zero level match
         Subscription sub = new Subscription("FAKE_CLI_ID_1", "finance/#", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(sub);
         store.add(sub.asClientTopicCouple());
@@ -275,7 +271,6 @@ public class SubscriptionsStoreTest {
         assertThat(store.matches(topic)).isEmpty();
     }
 
-
     @Test
     public void testRemoveClientSubscriptions_existingClientID() {
         String cliendID = "FAKE_CLID_1";
@@ -283,10 +278,10 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(sub);
         store.add(sub.asClientTopicCouple());
 
-        //Exercise
+        // Exercise
         store.removeForClient(cliendID);
 
-        //Verify
+        // Verify
         assertThat(store.size()).isZero();
     }
 
@@ -297,10 +292,10 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(s);
         store.add(s.asClientTopicCouple());
 
-        //Exercise
+        // Exercise
         store.removeForClient("FAKE_CLID_2");
 
-        //Verify
+        // Verify
         assertThat(store.size()).isEqualTo(1);
     }
 
@@ -313,7 +308,7 @@ public class SubscriptionsStoreTest {
         sessionsStore.addNewSubscription(specificSub);
         store.add(specificSub.asClientTopicCouple());
 
-        //Verify
+        // Verify
         assertThat(store.matches("a/b").size()).isEqualTo(1);
     }
 
@@ -330,7 +325,6 @@ public class SubscriptionsStoreTest {
         assertThat(SubscriptionsStore.matchTopics("finance/stock", "finance/#")).isTrue();
         assertThat(SubscriptionsStore.matchTopics("finance/stock/ibm", "finance/#")).isTrue();
     }
-
 
     @Test
     public void testMatchTopics_single() {
@@ -376,28 +370,28 @@ public class SubscriptionsStoreTest {
         memStore.initStore();
         ISessionsStore sessionsStore = memStore.sessionsStore();
         aStore.init(sessionsStore);
-        //subscribe a not active clientID1 to /topic
+        // subscribe a not active clientID1 to /topic
         sessionsStore.createNewSession("FAKE_CLI_ID_1", true);
         Subscription slashSub = new Subscription("FAKE_CLI_ID_1", "/topic", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(slashSub);
         aStore.add(slashSub.asClientTopicCouple());
 
-        //subscribe an active clientID2 to /topic
+        // subscribe an active clientID2 to /topic
         Subscription slashSub2 = new Subscription("FAKE_CLI_ID_2", "/topic", MqttQoS.AT_MOST_ONCE);
         sessionsStore.addNewSubscription(slashSub2);
         aStore.add(new ClientTopicCouple("FAKE_CLI_ID_2", "/topic"));
 
-        //Exercise
+        // Exercise
         aStore.removeSubscription("/topic", slashSub2.getClientId());
 
-        //Verify
+        // Verify
         Subscription remainedSubscription = aStore.matches("/topic").get(0);
         assertThat(remainedSubscription.getClientId()).isEqualTo(slashSub.getClientId());
     }
 
     /*
-    Test for Issue #49
-    * */
+     * Test for Issue #49
+     */
     @Test
     public void duplicatedSubscriptionsWithDifferentQos() {
         ClientSession session2 = sessionsStore.createNewSession("client2", true);
@@ -415,7 +409,7 @@ public class SubscriptionsStoreTest {
 
         System.out.println(store.dumpTree());
 
-        //Verify
+        // Verify
         List<Subscription> subscriptions = store.matches("client/test/b");
         assertThat(subscriptions).contains(client1SubQoS2);
         assertThat(subscriptions).contains(client2Sub);
@@ -423,7 +417,7 @@ public class SubscriptionsStoreTest {
         Subscription client1Sub = subscriptions.get(subscriptions.indexOf(client1SubQoS0));
         assertThat(client1SubQoS0.getRequestedQos()).isNotEqualTo(client1Sub.getRequestedQos());
 
-        //client1SubQoS2 should override client1SubQoS0
+        // client1SubQoS2 should override client1SubQoS0
         assertThat(client1Sub.getRequestedQos()).isEqualTo(client1SubQoS2.getRequestedQos());
     }
 
@@ -432,7 +426,7 @@ public class SubscriptionsStoreTest {
         TreeNode oldRoot = new TreeNode();
         final SubscriptionsStore.NodeCouple resp = store.recreatePath("/finance", oldRoot);
 
-        //Verify
+        // Verify
         assertThat(resp.root).isNotNull();
         assertThat(resp.root.m_token).isNull();
         assertThat(resp.root.m_children).hasSize(1);
@@ -445,7 +439,7 @@ public class SubscriptionsStoreTest {
         final SubscriptionsStore.NodeCouple respFinance = store.recreatePath("/finance", oldRoot);
         final SubscriptionsStore.NodeCouple respPlus = store.recreatePath("/+", respFinance.root);
 
-        //Verify
+        // Verify
         assertThat(respPlus.root).isNotNull();
         assertThat(respPlus.root.m_token).isNull();
         assertThat(respPlus.root.m_children.size()).isEqualTo(1);
