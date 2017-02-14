@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 
 /**
  * Store used to handle the persistence of the subscriptions tree.
@@ -31,10 +32,10 @@ public interface ISessionsStore {
 
     class ClientTopicCouple {
 
-        public final String topicFilter;
+        public final Topic topicFilter;
         public final String clientID;
 
-        public ClientTopicCouple(String clientID, String topicFilter) {
+        public ClientTopicCouple(String clientID, Topic topicFilter) {
             this.clientID = clientID;
             this.topicFilter = topicFilter;
         }
@@ -87,7 +88,7 @@ public interface ISessionsStore {
      * @param clientID
      *            the session client.
      */
-    void removeSubscription(String topic, String clientID);
+    void removeSubscription(Topic topic, String clientID);
 
     /**
      * Remove all the subscriptions of the session

@@ -19,11 +19,11 @@ package io.moquette.server;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.junit.After;
 import org.junit.Test;
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import static org.junit.Assert.*;
@@ -70,12 +70,12 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     }
 
     @Override
-    public boolean canWrite(String topic, String user, String client) {
+    public boolean canWrite(Topic topic, String user, String client) {
         return true;
     }
 
     @Override
-    public boolean canRead(String topic, String user, String client) {
+    public boolean canRead(Topic topic, String user, String client) {
         return true;
     }
 

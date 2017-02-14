@@ -17,6 +17,7 @@
 package io.moquette.spi.impl.security;
 
 import static io.moquette.spi.impl.security.Authorization.Permission.READWRITE;
+import io.moquette.spi.impl.subscriptions.Topic;
 
 /**
  * Carries the read/write authorization to topics for the users.
@@ -25,7 +26,7 @@ import static io.moquette.spi.impl.security.Authorization.Permission.READWRITE;
  */
 public class Authorization {
 
-    protected final String topic;
+    protected final Topic topic;
     protected final Permission permission;
 
     /**
@@ -35,11 +36,11 @@ public class Authorization {
         READ, WRITE, READWRITE
     }
 
-    Authorization(String topic) {
+    Authorization(Topic topic) {
         this(topic, Permission.READWRITE);
     }
 
-    Authorization(String topic, Permission permission) {
+    Authorization(Topic topic, Permission permission) {
         this.topic = topic;
         this.permission = permission;
     }

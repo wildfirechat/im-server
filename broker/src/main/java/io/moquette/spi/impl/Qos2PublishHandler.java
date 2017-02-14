@@ -9,6 +9,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
@@ -45,7 +46,7 @@ class Qos2PublishHandler extends QosPublishHandler {
     }
 
     void receivedPublishQos2(Channel channel, MqttPublishMessage msg) {
-        final String topic = msg.variableHeader().topicName();
+        final Topic topic = new Topic(msg.variableHeader().topicName());
         // check if the topic can be wrote
         if (checkWriteOnTopic(topic, channel)) {
             return;
@@ -102,7 +103,7 @@ class Qos2PublishHandler extends QosPublishHandler {
         LOG.info("Processing PUBREL message. MqttClientId = {}, messageId = {}.", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
-        final String topic = evt.getTopic();
+        final Topic topic = new Topic(evt.getTopic());
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
         if (LOG.isDebugEnabled()) {

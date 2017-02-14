@@ -26,6 +26,7 @@ import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.buffer.ByteBuf;
@@ -610,7 +611,7 @@ public class ProtocolProcessor {
      */
     public void internalPublish(MqttPublishMessage msg, final String clientId) {
         final MqttQoS qos = msg.fixedHeader().qosLevel();
-        final String topic = msg.variableHeader().topicName();
+        final Topic topic = new Topic(msg.variableHeader().topicName());
         LOG.info("Sending PUBLISH message. Topic = {}, qos = {}.", topic, qos);
 
         MessageGUID guid = null;
@@ -656,7 +657,7 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
         tobeStored.setClientID(clientID);
         tobeStored.setMessageID(messageId);
-        String topic = tobeStored.getTopic();
+        Topic topic = new Topic(tobeStored.getTopic());
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
         LOG.info("Publishing will message. CId = {}, messageId = {}, topic = {}.", clientID, messageId, topic);
@@ -836,8 +837,9 @@ public class ProtocolProcessor {
         LOG.info("Processing UNSUBSCRIBE message. CId = {}, topics = {}.", clientID, topics);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        for (String topic : topics) {
-            boolean validTopic = SubscriptionsStore.validate(topic);
+        for (String t : topics) {
+            Topic topic = new Topic(t);
+            boolean validTopic = topic.isValid();
             if (!validTopic) {
                 // close the connection, not valid topicFilter is a protocol violation
                 channel.close();
@@ -853,7 +855,7 @@ public class ProtocolProcessor {
             subscriptions.removeSubscription(topic, clientID);
             clientSession.unsubscribeFrom(topic);
             String username = NettyUtils.userName(channel);
-            m_interceptor.notifyTopicUnsubscribed(topic, clientID, username);
+            m_interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, username);
         }
 
         // ack the client
@@ -926,7 +928,9 @@ public class ProtocolProcessor {
             if (req.qualityOfService() == FAILURE) {
                 continue;
             }
-            Subscription newSubscription = new Subscription(clientID, req.topicName(), req.qualityOfService());
+            Subscription newSubscription =
+                    new Subscription(clientID, new Topic(req.topicName()), req.qualityOfService());
+
             clientSession.subscribe(newSubscription);
             newSubscriptions.add(newSubscription);
         }
@@ -948,7 +952,8 @@ public class ProtocolProcessor {
 
         final int messageId = messageId(msg);
         for (MqttTopicSubscription req : msg.payload().topicSubscriptions()) {
-            if (!m_authorizator.canRead(req.topicName(), username, clientSession.clientID)) {
+            Topic topic = new Topic(req.topicName());
+            if (!m_authorizator.canRead(topic, username, clientSession.clientID)) {
                 // send SUBACK with 0x80, the user hasn't credentials to read the topic
                 LOG.error(
                         "The client does not have read permissions on the topic. "
@@ -956,18 +961,18 @@ public class ProtocolProcessor {
                         clientID,
                         username,
                         messageId,
-                        req.topicName());
-                ackTopics.add(new MqttTopicSubscription(req.topicName(), FAILURE));
+                        topic);
+                ackTopics.add(new MqttTopicSubscription(topic.toString(), FAILURE));
             } else {
                 MqttQoS qos;
-                if (SubscriptionsStore.validate(req.topicName())) {
+                if (topic.isValid()) {
                     LOG.info(
                             "The client will be subscribed to the topic. "
                             + "CId = {}, username = {}, messageId = {}, topic = {}.",
                             clientID,
                             username,
                             messageId,
-                            req.topicName());
+                            topic);
                     qos = req.qualityOfService();
                 } else {
                     LOG.error(
@@ -975,10 +980,10 @@ public class ProtocolProcessor {
                             clientID,
                             username,
                             messageId,
-                            req.topicName());
+                            topic);
                     qos = FAILURE;
                 }
-                ackTopics.add(new MqttTopicSubscription(req.topicName(), qos));
+                ackTopics.add(new MqttTopicSubscription(topic.toString(), qos));
             }
         }
         return ackTopics;
@@ -1009,8 +1014,8 @@ public class ProtocolProcessor {
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
 
             @Override
-            public boolean match(String key) {
-                return SubscriptionsStore.matchTopics(key, newSubscription.getTopicFilter());
+            public boolean match(Topic key) {
+                return key.match(newSubscription.getTopicFilter());
             }
         });
 

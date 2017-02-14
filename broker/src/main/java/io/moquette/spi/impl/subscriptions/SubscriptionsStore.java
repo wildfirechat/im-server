@@ -20,7 +20,6 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,27 +39,6 @@ public class SubscriptionsStore {
         public NodeCouple(TreeNode root, TreeNode createdNode) {
             this.root = root;
             this.createdNode = createdNode;
-        }
-    }
-
-    /**
-     * Check if the topic filter of the subscription is well formed
-     *
-     * @param topicFilter
-     *            the filter to validate
-     * @return true if it's correct.
-     */
-    public static boolean validate(String topicFilter) {
-        try {
-            parseTopic(topicFilter);
-            return true;
-        } catch (ParseException pex) {
-            LOG.warn(
-                    "The topic filter is malformed. TopicFilter = {}, cause = {}, errorMessage = {}.",
-                    topicFilter,
-                    pex.getCause(),
-                    pex.getMessage());
-            return false;
         }
     }
 
@@ -150,24 +128,11 @@ public class SubscriptionsStore {
         LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
     }
 
-    protected NodeCouple recreatePath(String topic, final TreeNode oldRoot) {
-        List<Token> tokens;
-        try {
-            tokens = parseTopic(topic);
-        } catch (ParseException ex) {
-            // TODO handle the parse exception
-            LOG.error(
-                    "The topic is malformed. Topic = {}, cause = {}, errorMessage = {}.",
-                    topic,
-                    ex.getCause(),
-                    ex.getMessage());
-            throw new IllegalArgumentException(ex.getMessage());
-        }
-
+    protected NodeCouple recreatePath(Topic topic, final TreeNode oldRoot) {
         final TreeNode newRoot = oldRoot.copy();
         TreeNode parent = newRoot;
         TreeNode current = newRoot;
-        for (Token token : tokens) {
+        for (Token token : topic.getTokens()) {
             TreeNode matchingChildren;
 
             // check if a children with the same token already exists
@@ -188,7 +153,7 @@ public class SubscriptionsStore {
         return new NodeCouple(newRoot, current);
     }
 
-    public void removeSubscription(String topic, String clientID) {
+    public void removeSubscription(Topic topic, String clientID) {
         /*
          * The topic filters have already been validated at the ProtocolProcessor. We can assume
          * they are valid.
@@ -230,21 +195,8 @@ public class SubscriptionsStore {
      *            to use fo searching matching subscriptions.
      * @return the list of matching subscriptions, or empty if not matching.
      */
-    public List<Subscription> matches(String topic) {
-        List<Token> tokens;
-        try {
-            tokens = parseTopic(topic);
-        } catch (ParseException ex) {
-            // TODO handle the parse exception
-            LOG.warn(
-                    "The topic is malformed. Topic = {}, cause = {}, errorMessage = {}.",
-                    topic,
-                    ex.getCause(),
-                    ex.getMessage());
-            return Collections.emptyList();
-        }
-
-        Queue<Token> tokenQueue = new LinkedBlockingDeque<>(tokens);
+    public List<Subscription> matches(Topic topic) {
+        Queue<Token> tokenQueue = new LinkedBlockingDeque<>(topic.getTokens());
         List<ClientTopicCouple> matchingSubs = new ArrayList<>();
         subscriptions.get().matches(tokenQueue, matchingSubs);
 
@@ -287,102 +239,5 @@ public class SubscriptionsStore {
         for (TreeNode child : node.m_children) {
             bfsVisit(child, visitor, ++deep);
         }
-    }
-
-    /**
-     * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
-     *
-     * @param msgTopic
-     *            the topic to match from the message
-     * @param subscriptionTopic
-     *            the topic filter of the subscription
-     * @return true if the two topics match.
-     */
-    // TODO reimplement with iterators or with queues
-    public static boolean matchTopics(String msgTopic, String subscriptionTopic) {
-        try {
-            List<Token> msgTokens = SubscriptionsStore.parseTopic(msgTopic);
-            List<Token> subscriptionTokens = SubscriptionsStore.parseTopic(subscriptionTopic);
-            int i = 0;
-            for (; i < subscriptionTokens.size(); i++) {
-                Token subToken = subscriptionTokens.get(i);
-                if (subToken != Token.MULTI && subToken != Token.SINGLE) {
-                    if (i >= msgTokens.size()) {
-                        return false;
-                    }
-                    Token msgToken = msgTokens.get(i);
-                    if (!msgToken.equals(subToken)) {
-                        return false;
-                    }
-                } else {
-                    if (subToken == Token.MULTI) {
-                        return true;
-                    }
-                    if (subToken == Token.SINGLE) {
-                        // skip a step forward
-                    }
-                }
-            }
-            // if last token was a SINGLE then treat it as an empty
-            // if (subToken == Token.SINGLE && (i - msgTokens.size() == 1)) {
-            // i--;
-            // }
-            return i == msgTokens.size();
-        } catch (ParseException ex) {
-            LOG.error(
-                    "The message topic, the subscription topic or both are malformed. "
-                    + "MsgTopic = {}, subscriptionTopic = {}, cause = {}, errorMessage = {}.",
-                    msgTopic,
-                    subscriptionTopic,
-                    ex.getCause(),
-                    ex.getMessage());
-            throw new IllegalStateException(ex.getMessage());
-        }
-    }
-
-    protected static List<Token> parseTopic(String topic) throws ParseException {
-        List<Token> res = new ArrayList<>();
-        String[] splitted = topic.split("/");
-
-        if (splitted.length == 0) {
-            res.add(Token.EMPTY);
-        }
-
-        if (topic.endsWith("/")) {
-            // Add a fictious space
-            String[] newSplitted = new String[splitted.length + 1];
-            System.arraycopy(splitted, 0, newSplitted, 0, splitted.length);
-            newSplitted[splitted.length] = "";
-            splitted = newSplitted;
-        }
-
-        for (int i = 0; i < splitted.length; i++) {
-            String s = splitted[i];
-            if (s.isEmpty()) {
-                // if (i != 0) {
-                // throw new ParseException("Bad format of topic, expetec topic name between
-                // separators", i);
-                // }
-                res.add(Token.EMPTY);
-            } else if (s.equals("#")) {
-                // check that multi is the last symbol
-                if (i != splitted.length - 1) {
-                    throw new ParseException(
-                            "Bad format of topic, the multi symbol (#) has to be the last one after a separator",
-                            i);
-                }
-                res.add(Token.MULTI);
-            } else if (s.contains("#")) {
-                throw new ParseException("Bad format of topic, invalid subtopic name: " + s, i);
-            } else if (s.equals("+")) {
-                res.add(Token.SINGLE);
-            } else if (s.contains("+")) {
-                throw new ParseException("Bad format of topic, invalid subtopic name: " + s, i);
-            } else {
-                res.add(new Token(s));
-            }
-        }
-
-        return res;
     }
 }

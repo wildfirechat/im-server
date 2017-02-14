@@ -4,6 +4,7 @@ package io.moquette.spi;
 import io.moquette.spi.impl.MemoryStorageService;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,17 +33,17 @@ public class ClientSessionTest {
     @Test
     public void overridingSubscriptions() {
         // Subscribe on /topic with QOSType.MOST_ONE
-        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", AT_MOST_ONCE);
+        Subscription oldSubscription = new Subscription(session1.clientID, new Topic("/topic"), AT_MOST_ONCE);
         session1.subscribe(oldSubscription);
         store.add(oldSubscription.asClientTopicCouple());
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overrindingSubscription = new Subscription(session1.clientID, "/topic", EXACTLY_ONCE);
+        Subscription overrindingSubscription = new Subscription(session1.clientID, new Topic("/topic"), EXACTLY_ONCE);
         session1.subscribe(overrindingSubscription);
         store.add(overrindingSubscription.asClientTopicCouple());
 
         // Verify
-        List<Subscription> subscriptions = store.matches("/topic");
+        List<Subscription> subscriptions = store.matches(new Topic("/topic"));
         assertEquals(1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
         assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());

@@ -24,6 +24,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -330,7 +331,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor.processSubscribe(m_session, subscribeMsg);
         Subscription expectedSubscription = new Subscription(
                 ProtocolProcessorTest.FAKE_CLIENT_ID,
-                ProtocolProcessorTest.FAKE_TOPIC,
+                new Topic(ProtocolProcessorTest.FAKE_TOPIC),
                 MqttQoS.AT_MOST_ONCE);
         assertTrue(subscriptions.contains(expectedSubscription));
         assertEqualsSubAck(m_session.readOutbound());

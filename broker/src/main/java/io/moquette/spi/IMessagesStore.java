@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -114,7 +115,7 @@ public interface IMessagesStore {
      * @param guid
      *            of the message to mark as retained.
      */
-    void storeRetained(String topic, MessageGUID guid);
+    void storeRetained(Topic topic, MessageGUID guid);
 
     /**
      * Return a list of retained messages that satisfy the condition.
@@ -138,7 +139,7 @@ public interface IMessagesStore {
 
     StoredMessage getMessageByGuid(MessageGUID guid);
 
-    void cleanRetained(String topic);
+    void cleanRetained(Topic topic);
 
     int getPendingPublishMessages(String clientID);
 }

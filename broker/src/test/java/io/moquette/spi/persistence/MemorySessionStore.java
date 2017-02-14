@@ -24,6 +24,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
-    private Map<String, Map<String, Subscription>> m_persistentSubscriptions = new HashMap<>();
+    private Map<String, Map<Topic, Subscription>> m_persistentSubscriptions = new HashMap<>();
 
     private Map<String, MapDBPersistentStore.PersistentSession> m_persistentSessions = new HashMap<>();
 
@@ -60,12 +61,12 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void removeSubscription(String topic, String clientID) {
+    public void removeSubscription(Topic topic, String clientID) {
         LOG.debug("removeSubscription topic filter: {} for clientID: {}", topic, clientID);
         if (!m_persistentSubscriptions.containsKey(clientID)) {
             return;
         }
-        Map<String, Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
+        Map<Topic, Subscription> clientSubscriptions = m_persistentSubscriptions.get(clientID);
         clientSubscriptions.remove(topic);
     }
 
@@ -78,7 +79,7 @@ public class MemorySessionStore implements ISessionsStore {
     public void addNewSubscription(Subscription newSubscription) {
         final String clientID = newSubscription.getClientId();
         if (!m_persistentSubscriptions.containsKey(clientID)) {
-            m_persistentSubscriptions.put(clientID, new HashMap<String, Subscription>());
+            m_persistentSubscriptions.put(clientID, new HashMap<Topic, Subscription>());
         }
 
         m_persistentSubscriptions.get(clientID).put(newSubscription.getTopicFilter(), newSubscription);
@@ -102,7 +103,7 @@ public class MemorySessionStore implements ISessionsStore {
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
-        m_persistentSubscriptions.put(clientID, new HashMap<String, Subscription>());
+        m_persistentSubscriptions.put(clientID, new HashMap<Topic, Subscription>());
         m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
@@ -134,7 +135,7 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public List<ClientTopicCouple> listAllSubscriptions() {
         List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
-        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+        for (Map.Entry<String, Map<Topic, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             for (Subscription sub : entry.getValue().values()) {
                 allSubscriptions.add(sub.asClientTopicCouple());
             }
@@ -144,7 +145,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
-        Map<String, Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
+        Map<Topic, Subscription> subscriptions = m_persistentSubscriptions.get(couple.clientID);
         if (subscriptions == null || subscriptions.isEmpty()) {
             return null;
         }
@@ -154,7 +155,7 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public List<Subscription> getSubscriptions() {
         List<Subscription> subscriptions = new ArrayList<>();
-        for (Map.Entry<String, Map<String, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
+        for (Map.Entry<String, Map<Topic, Subscription>> entry : m_persistentSubscriptions.entrySet()) {
             subscriptions.addAll(entry.getValue().values());
         }
         return subscriptions;

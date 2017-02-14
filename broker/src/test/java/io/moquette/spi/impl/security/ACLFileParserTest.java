@@ -17,6 +17,7 @@
 package io.moquette.spi.impl.security;
 
 import org.junit.Test;
+import io.moquette.spi.impl.subscriptions.Topic;
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.ParseException;
@@ -57,8 +58,8 @@ public class ACLFileParserTest {
         AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
 
         // Verify
-        assertTrue(authorizations.canRead("/weather/italy/anemometer", "", ""));
-        assertTrue(authorizations.canWrite("/weather/italy/anemometer", "", ""));
+        assertTrue(authorizations.canRead(new Topic("/weather/italy/anemometer"), "", ""));
+        assertTrue(authorizations.canWrite(new Topic("/weather/italy/anemometer"), "", ""));
     }
 
 }
