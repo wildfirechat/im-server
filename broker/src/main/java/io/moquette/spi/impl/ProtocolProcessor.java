@@ -100,9 +100,9 @@ public class ProtocolProcessor {
         final String clientID;
         final long packetId;
 
-        RunningSubscription(String clientID, long packeId) {
+        RunningSubscription(String clientID, long packetId) {
             this.clientID = clientID;
-            this.packetId = packeId;
+            this.packetId = packetId;
         }
 
         @Override
