@@ -16,6 +16,7 @@
 
 package io.moquette.spi.impl.security;
 
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 
 /**
@@ -24,12 +25,12 @@ import io.moquette.spi.security.IAuthorizator;
 public class DenyAllAuthorizator implements IAuthorizator {
 
     @Override
-    public boolean canWrite(String topic, String user, String client) {
+    public boolean canWrite(Topic topic, String user, String client) {
         return true;
     }
 
     @Override
-    public boolean canRead(String topic, String user, String client) {
+    public boolean canRead(Topic topic, String user, String client) {
         return true;
     }
 }

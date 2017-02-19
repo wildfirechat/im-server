@@ -147,7 +147,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
                     new MqttSubscription(
                             subscription.getRequestedQos().toString(),
                             subscription.getClientId(),
-                            subscription.getTopicFilter(),
+                            subscription.getTopicFilter().toString(),
                             subscription.isActive()));
         }
         result.setActiveSubscriptions(mqttSubscriptions);

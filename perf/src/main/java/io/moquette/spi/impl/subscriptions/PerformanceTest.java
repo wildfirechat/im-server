@@ -34,10 +34,11 @@ public class PerformanceTest {
 
         ThreadMXBean b = ManagementFactory.getThreadMXBean();
 
-        String[] topics = new String[n];
+        Topic[] topics = new Topic[n];
         for (int i = 0; i < n; i++) {
-            topics[i] = (i % users) + "/" + ((i / users) % devices) + "/" + ((i / (users * devices)) % values) + "/"
-                    + ((i / (users * devices * values)) % subs);
+            topics[i] = new Topic(
+                    (i % users) + "/" + ((i / users) % devices) + "/" + ((i / (users * devices)) % values) + "/"
+                            + ((i / (users * devices * values)) % subs));
 
             Subscription sub = new Subscription("CLI_ID_" + (i % users), topics[i], MqttQoS.AT_MOST_ONCE);
             aSessionsStore.addNewSubscription(sub);

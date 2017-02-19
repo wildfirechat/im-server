@@ -19,6 +19,7 @@ package io.moquette.spi.persistence;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.MessageGUID;
+import io.moquette.spi.impl.subscriptions.Topic;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ class MapDBMessagesStore implements IMessagesStore {
     private DB m_db;
 
     // maps clientID -> guid
-    private ConcurrentMap<String, MessageGUID> m_retainedStore;
+    private ConcurrentMap<Topic, MessageGUID> m_retainedStore;
     // maps guid to message, it's message store
     private ConcurrentMap<MessageGUID, IMessagesStore.StoredMessage> m_persistentMessageStore;
 
@@ -53,7 +54,7 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void storeRetained(String topic, MessageGUID guid) {
+    public void storeRetained(Topic topic, MessageGUID guid) {
         LOG.debug("Storing retained messages. Topic = {}, guid = {}.", topic, guid);
         m_retainedStore.put(topic, guid);
     }
@@ -62,7 +63,7 @@ class MapDBMessagesStore implements IMessagesStore {
     public Collection<StoredMessage> searchMatching(IMatchingCondition condition) {
         LOG.debug("Scanning retained messages...");
         List<StoredMessage> results = new ArrayList<>();
-        for (Map.Entry<String, MessageGUID> entry : m_retainedStore.entrySet()) {
+        for (Map.Entry<Topic, MessageGUID> entry : m_retainedStore.entrySet()) {
             final MessageGUID guid = entry.getValue();
             StoredMessage storedMsg = m_persistentMessageStore.get(guid);
             if (condition.match(entry.getKey())) {
@@ -127,7 +128,7 @@ class MapDBMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void cleanRetained(String topic) {
+    public void cleanRetained(Topic topic) {
         LOG.debug("Cleaning retained messages. Topic = {}.", topic);
         m_retainedStore.remove(topic);
     }

@@ -19,6 +19,7 @@ package io.moquette.spi.impl;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.MessageGUID;
+import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -31,7 +32,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemoryMessagesStore.class);
 
-    private Map<String, MessageGUID> m_retainedStore = new HashMap<>();
+    private Map<Topic, MessageGUID> m_retainedStore = new HashMap<>();
     private Map<MessageGUID, StoredMessage> m_persistentMessageStore = new HashMap<>();
     private Map<String, Map<Integer, MessageGUID>> m_messageToGuids;
 
@@ -44,7 +45,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void storeRetained(String topic, MessageGUID guid) {
+    public void storeRetained(Topic topic, MessageGUID guid) {
         m_retainedStore.put(topic, guid);
     }
 
@@ -54,7 +55,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         List<StoredMessage> results = new ArrayList<>();
 
-        for (Map.Entry<String, MessageGUID> entry : m_retainedStore.entrySet()) {
+        for (Map.Entry<Topic, MessageGUID> entry : m_retainedStore.entrySet()) {
             final MessageGUID guid = entry.getValue();
             StoredMessage storedMsg = m_persistentMessageStore.get(guid);
             if (condition.match(entry.getKey())) {
@@ -96,7 +97,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void cleanRetained(String topic) {
+    public void cleanRetained(Topic topic) {
         m_retainedStore.remove(topic);
     }
 

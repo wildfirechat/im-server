@@ -22,6 +22,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.mapdb.DB;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
-    public void removeSubscription(String topicFilter, String clientID) {
+    public void removeSubscription(Topic topicFilter, String clientID) {
         LOG.info("Removing subscription. CId= {}, topics = {}.", clientID, topicFilter);
         if (!m_db.exists("subscriptions_" + clientID)) {
             return;
@@ -115,8 +116,8 @@ class MapDBSessionsStore implements ISessionsStore {
         LOG.info("Retrieving existing subscriptions...");
         final List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
         for (String clientID : m_persistentSessions.keySet()) {
-            ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
-            for (String topicFilter : clientSubscriptions.keySet()) {
+            ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
+            for (Topic topicFilter : clientSubscriptions.keySet()) {
                 allSubscriptions.add(new ClientTopicCouple(clientID, topicFilter));
             }
         }
@@ -128,7 +129,7 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
-        ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + couple.clientID);
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + couple.clientID);
         LOG.info("Retrieving subscriptions. CId= {}, subscriptions = {}.", couple.clientID, clientSubscriptions);
         return clientSubscriptions.get(couple.topicFilter);
     }
@@ -138,7 +139,7 @@ class MapDBSessionsStore implements ISessionsStore {
         LOG.info("Retrieving existing subscriptions...");
         List<Subscription> subscriptions = new ArrayList<>();
         for (String clientID : m_persistentSessions.keySet()) {
-            ConcurrentMap<String, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
+            ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
             subscriptions.addAll(clientSubscriptions.values());
         }
         LOG.debug("The existing subscriptions have been retrieved. Result = {}.", subscriptions);

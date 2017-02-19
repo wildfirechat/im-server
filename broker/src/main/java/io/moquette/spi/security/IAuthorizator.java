@@ -16,6 +16,8 @@
 
 package io.moquette.spi.security;
 
+import io.moquette.spi.impl.subscriptions.Topic;
+
 /**
  * ACL checker.
  *
@@ -37,7 +39,7 @@ public interface IAuthorizator {
      *            the client
      * @return true if the user from client can publish data on topic.
      */
-    boolean canWrite(String topic, String user, String client);
+    boolean canWrite(Topic topic, String user, String client);
 
-    boolean canRead(String topic, String user, String client);
+    boolean canRead(Topic topic, String user, String client);
 }

@@ -18,7 +18,7 @@ package io.moquette.spi;
 
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.HashSet;
@@ -89,7 +89,7 @@ public class ClientSession {
                 newSubscription.getClientId(),
                 newSubscription.getTopicFilter(),
                 newSubscription.getRequestedQos());
-        boolean validTopic = SubscriptionsStore.validate(newSubscription.getTopicFilter());
+        boolean validTopic = newSubscription.getTopicFilter().isValid();
         if (!validTopic) {
             LOG.warn(
                     "The topic filter is not valid. MqttClientId = {}, topics = {}.",
@@ -118,7 +118,7 @@ public class ClientSession {
         return true;
     }
 
-    public void unsubscribeFrom(String topicFilter) {
+    public void unsubscribeFrom(Topic topicFilter) {
         LOG.info("Removing subscription. MqttClientID = {}, topics = {}.", clientID, topicFilter);
         m_sessionsStore.removeSubscription(topicFilter, clientID);
         Set<Subscription> subscriptionsToRemove = new HashSet<>();

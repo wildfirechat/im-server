@@ -26,6 +26,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISessionsStore.ClientTopicCouple;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.After;
 import org.junit.Before;
@@ -72,11 +73,14 @@ public class MapDBPersistentStoreTest {
         ClientSession session1 = m_sessionsStore.createNewSession("SESSION_ID_1", true);
 
         // Subscribe on /topic with QOSType.MOST_ONE
-        Subscription oldSubscription = new Subscription(session1.clientID, "/topic", MqttQoS.AT_MOST_ONCE);
+        Subscription oldSubscription = new Subscription(session1.clientID, new Topic("/topic"), MqttQoS.AT_MOST_ONCE);
         session1.subscribe(oldSubscription);
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overridingSubscription = new Subscription(session1.clientID, "/topic", MqttQoS.EXACTLY_ONCE);
+        Subscription overridingSubscription = new Subscription(
+                session1.clientID,
+                new Topic("/topic"),
+                MqttQoS.EXACTLY_ONCE);
         session1.subscribe(overridingSubscription);
 
         // Verify

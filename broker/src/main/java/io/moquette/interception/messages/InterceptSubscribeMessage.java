@@ -26,7 +26,7 @@ public class InterceptSubscribeMessage implements InterceptMessage {
     }
 
     public String getTopicFilter() {
-        return subscription.getTopicFilter();
+        return subscription.getTopicFilter().toString();
     }
 
     public String getUsername() {

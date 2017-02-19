@@ -7,6 +7,7 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttFixedHeader;
@@ -43,7 +44,7 @@ class Qos1PublishHandler extends QosPublishHandler {
 
     void receivedPublishQos1(Channel channel, MqttPublishMessage msg) {
         // verify if topic can be write
-        final String topic = msg.variableHeader().topicName();
+        final Topic topic = new Topic(msg.variableHeader().topicName());
         if (checkWriteOnTopic(topic, channel)) {
             return;
         }

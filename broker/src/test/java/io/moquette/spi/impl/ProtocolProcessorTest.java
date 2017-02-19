@@ -26,6 +26,7 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
@@ -110,14 +111,14 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testPublishToItself() throws InterruptedException {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
 
             @Override
-            public List<Subscription> matches(String topic) {
-                if (topic.equals(FAKE_TOPIC)) {
+            public List<Subscription> matches(Topic topic) {
+                if (topic.toString().equals(FAKE_TOPIC)) {
                     return Collections.singletonList(subscription);
                 } else {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
@@ -155,15 +156,18 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testPublishToMultipleSubscribers() throws InterruptedException {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
-        final Subscription subscriptionClient2 = new Subscription(FAKE_CLIENT_ID2, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
+        final Subscription subscriptionClient2 = new Subscription(
+                FAKE_CLIENT_ID2,
+                new Topic(FAKE_TOPIC),
+                MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
 
             @Override
-            public List<Subscription> matches(String topic) {
-                if (topic.equals(FAKE_TOPIC)) {
+            public List<Subscription> matches(Topic topic) {
+                if (topic.toString().equals(FAKE_TOPIC)) {
                     return Arrays.asList(subscription, subscriptionClient2);
                 } else {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
@@ -227,7 +231,10 @@ public class ProtocolProcessorTest {
 
         // Verify
         assertTrue(m_channel.readOutbound() instanceof MqttSubAckMessage);
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
+        Subscription expectedSubscription = new Subscription(
+                FAKE_CLIENT_ID,
+                new Topic(FAKE_TOPIC),
+                MqttQoS.AT_MOST_ONCE);
         assertTrue(subscriptions.contains(expectedSubscription));
     }
 
@@ -237,7 +244,9 @@ public class ProtocolProcessorTest {
         NettyUtils.userName(m_channel, fakeUserName);
 
         IAuthorizator mockAuthorizator = mock(IAuthorizator.class);
-        when(mockAuthorizator.canRead(eq(FAKE_TOPIC), eq(fakeUserName), eq(FAKE_CLIENT_ID))).thenReturn(false);
+        when(mockAuthorizator.canRead(eq(new Topic(FAKE_TOPIC)), eq(fakeUserName), eq(FAKE_CLIENT_ID)))
+            .thenReturn(false);
+
         m_processor.init(
                 subscriptions,
                 m_messagesStore,
@@ -281,7 +290,11 @@ public class ProtocolProcessorTest {
 
         // Verify
         assertEquals(1, subscriptions.size());
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
+        Subscription expectedSubscription = new Subscription(
+                FAKE_CLIENT_ID,
+                new Topic(FAKE_TOPIC),
+                MqttQoS.AT_MOST_ONCE);
+
         assertTrue(subscriptions.contains(expectedSubscription));
     }
 
@@ -321,14 +334,17 @@ public class ProtocolProcessorTest {
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
         // simulate a connect that register a clientID to an IoSession
-        final Subscription subscription = new Subscription(FAKE_PUBLISHER_ID, FAKE_TOPIC, MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(
+                FAKE_PUBLISHER_ID,
+                new Topic(FAKE_TOPIC),
+                MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {
 
             @Override
-            public List<Subscription> matches(String topic) {
-                if (topic.equals(FAKE_TOPIC)) {
+            public List<Subscription> matches(Topic topic) {
+                if (topic.toString().equals(FAKE_TOPIC)) {
                     return Collections.singletonList(subscription);
                 } else {
                     throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
@@ -377,7 +393,7 @@ public class ProtocolProcessorTest {
     public void testRepublishAndConsumePersistedMessages_onReconnect() {
         SubscriptionsStore subs = mock(SubscriptionsStore.class);
         List<Subscription> emptySubs = Collections.emptyList();
-        when(subs.matches(anyString())).thenReturn(emptySubs);
+        when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
         StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(), MqttQoS.EXACTLY_ONCE, "/topic");
         retainedMessage.setRetained(true);
@@ -410,9 +426,9 @@ public class ProtocolProcessorTest {
         m_sessionStore.createNewSession("Subscriber", false);
 
         SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
-        Subscription inactiveSub = new Subscription("Subscriber", "/topic", MqttQoS.AT_LEAST_ONCE);
+        Subscription inactiveSub = new Subscription("Subscriber", new Topic("/topic"), MqttQoS.AT_LEAST_ONCE);
         List<Subscription> inactiveSubscriptions = Collections.singletonList(inactiveSub);
-        when(mockedSubscriptions.matches(eq("/topic"))).thenReturn(inactiveSubscriptions);
+        when(mockedSubscriptions.matches(eq(new Topic("/topic")))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
         m_processor.init(
                 mockedSubscriptions,
@@ -452,8 +468,8 @@ public class ProtocolProcessorTest {
 
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
 
-            public boolean match(String key) {
-                return SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
+            public boolean match(Topic key) {
+                return key.match(new Topic(FAKE_TOPIC));
             }
         });
         assertFalse(messages.isEmpty());
@@ -467,8 +483,8 @@ public class ProtocolProcessorTest {
         // Verify
         messages = m_messagesStore.searchMatching(new IMatchingCondition() {
 
-            public boolean match(String key) {
-                return SubscriptionsStore.matchTopics(key, FAKE_TOPIC);
+            public boolean match(Topic key) {
+                return key.match(new Topic(FAKE_TOPIC));
             }
         });
         assertTrue(messages.isEmpty());
@@ -476,10 +492,10 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testLowerTheQosToTheRequestedBySubscription() {
-        Subscription subQos1 = new Subscription("Sub A", "a/b", MqttQoS.AT_LEAST_ONCE);
+        Subscription subQos1 = new Subscription("Sub A", new Topic("a/b"), MqttQoS.AT_LEAST_ONCE);
         assertEquals(MqttQoS.AT_LEAST_ONCE, lowerQosToTheSubscriptionDesired(subQos1, MqttQoS.EXACTLY_ONCE));
 
-        Subscription subQos2 = new Subscription("Sub B", "a/+", MqttQoS.EXACTLY_ONCE);
+        Subscription subQos2 = new Subscription("Sub B", new Topic("a/+"), MqttQoS.EXACTLY_ONCE);
         assertEquals(MqttQoS.EXACTLY_ONCE, lowerQosToTheSubscriptionDesired(subQos2, MqttQoS.EXACTLY_ONCE));
     }
 }

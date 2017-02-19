@@ -16,9 +16,11 @@
 
 package io.moquette.spi;
 
+import io.moquette.spi.impl.subscriptions.Topic;
+
 /**
  */
 public interface IMatchingCondition {
 
-    boolean match(String key);
+    boolean match(Topic key);
 }

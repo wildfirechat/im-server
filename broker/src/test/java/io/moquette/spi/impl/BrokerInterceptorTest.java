@@ -20,6 +20,7 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.*;
 import io.moquette.server.netty.MessageBuilder;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -133,7 +134,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyTopicSubscribed() throws Exception {
-        interceptor.notifyTopicSubscribed(new Subscription("cli1", "o2", MqttQoS.AT_MOST_ONCE), "cli1234");
+        interceptor.notifyTopicSubscribed(new Subscription("cli1", new Topic("o2"), MqttQoS.AT_MOST_ONCE), "cli1234");
         interval();
         assertEquals(70, n.get());
     }
@@ -153,7 +154,7 @@ public class BrokerInterceptorTest {
         interceptor.addInterceptHandler(interceptHandlerMock1);
         interceptor.addInterceptHandler(interceptHandlerMock2);
 
-        Subscription subscription = new Subscription("cli1", "o2", MqttQoS.AT_MOST_ONCE);
+        Subscription subscription = new Subscription("cli1", new Topic("o2"), MqttQoS.AT_MOST_ONCE);
         interceptor.notifyTopicSubscribed(subscription, "cli1234");
         interval();
 

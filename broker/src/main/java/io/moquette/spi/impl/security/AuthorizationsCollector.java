@@ -16,7 +16,7 @@
 
 package io.moquette.spi.impl.security;
 
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,37 +98,37 @@ class AuthorizationsCollector implements IAuthorizator {
             try {
                 Authorization.Permission permission = Authorization.Permission.valueOf(tokens[1].toUpperCase());
                 // bring topic with all original spacing
-                String topic = line.substring(line.indexOf(tokens[2]));
+                Topic topic = new Topic(line.substring(line.indexOf(tokens[2])));
 
                 return new Authorization(topic, permission);
             } catch (IllegalArgumentException iaex) {
                 throw new ParseException("invalid permission token", 1);
             }
         }
-        String topic = tokens[1];
+        Topic topic = new Topic(tokens[1]);
         return new Authorization(topic);
     }
 
     @Override
-    public boolean canWrite(String topic, String user, String client) {
+    public boolean canWrite(Topic topic, String user, String client) {
         return canDoOperation(topic, Authorization.Permission.WRITE, user, client);
     }
 
     @Override
-    public boolean canRead(String topic, String user, String client) {
+    public boolean canRead(Topic topic, String user, String client) {
         return canDoOperation(topic, Authorization.Permission.READ, user, client);
     }
 
-    private boolean canDoOperation(String topic, Authorization.Permission permission, String username, String client) {
+    private boolean canDoOperation(Topic topic, Authorization.Permission permission, String username, String client) {
         if (matchACL(m_globalAuthorizations, topic, permission)) {
             return true;
         }
 
         if (isNotEmpty(client) || isNotEmpty(username)) {
             for (Authorization auth : m_patternAuthorizations) {
-                String substitutedTopic = auth.topic.replace("%c", client).replace("%u", username);
+                Topic substitutedTopic = new Topic(auth.topic.toString().replace("%c", client).replace("%u", username));
                 if (auth.grant(permission)) {
-                    if (SubscriptionsStore.matchTopics(topic, substitutedTopic)) {
+                    if (topic.match(substitutedTopic)) {
                         return true;
                     }
                 }
@@ -146,10 +146,10 @@ class AuthorizationsCollector implements IAuthorizator {
         return false;
     }
 
-    private boolean matchACL(List<Authorization> auths, String topic, Authorization.Permission permission) {
+    private boolean matchACL(List<Authorization> auths, Topic topic, Authorization.Permission permission) {
         for (Authorization auth : auths) {
             if (auth.grant(permission)) {
-                if (SubscriptionsStore.matchTopics(topic, auth.topic)) {
+                if (topic.match(auth.topic)) {
                     return true;
                 }
             }
