@@ -40,11 +40,6 @@ public class Topic implements Serializable {
         this.topic = topic;
     }
 
-    @Override
-    public String toString() {
-        return topic;
-    }
-
     public List<Token> getTokens() {
         if (tokens == null) {
             try {
@@ -115,8 +110,6 @@ public class Topic implements Serializable {
     /**
      * Verify if the 2 topics matching respecting the rules of MQTT Appendix A
      *
-     * @param msgTopic
-     *            the topic to match from the message
      * @param subscriptionTopic
      *            the topic filter of the subscription
      * @return true if the two topics match.
@@ -150,6 +143,11 @@ public class Topic implements Serializable {
         // i--;
         // }
         return i == msgTokens.size();
+    }
+
+    @Override
+    public String toString() {
+        return topic;
     }
 
     @Override

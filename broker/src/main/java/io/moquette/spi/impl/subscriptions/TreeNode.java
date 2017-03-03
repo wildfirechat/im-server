@@ -24,8 +24,9 @@ class TreeNode {
 
     Token m_token;
     List<TreeNode> m_children = new ArrayList<>();
-    // TODO move to set of ClientIDthe set of clientIDs that has subscriptions to this topic
     Set<ClientTopicCouple> m_subscriptions = new HashSet<>();
+
+    private int subtreeSubscriptions = 0;
 
     TreeNode() {
     }
@@ -40,10 +41,12 @@ class TreeNode {
 
     void addSubscription(ClientTopicCouple s) {
         m_subscriptions.add(s);
+        this.subtreeSubscriptions++;
     }
 
     void addChild(TreeNode child) {
         m_children.add(child);
+        this.subtreeSubscriptions += child.subtreeSubscriptions;
     }
 
     /**
@@ -54,6 +57,7 @@ class TreeNode {
         copy.m_children = new ArrayList<>(m_children);
         copy.m_subscriptions = new HashSet<>(m_subscriptions);
         copy.m_token = m_token;
+        copy.subtreeSubscriptions = this.subtreeSubscriptions;
         return copy;
     }
 
@@ -73,6 +77,7 @@ class TreeNode {
     void updateChild(TreeNode oldChild, TreeNode newChild) {
         m_children.remove(oldChild);
         m_children.add(newChild);
+        this.subtreeSubscriptions += newChild.subtreeSubscriptions - oldChild.subtreeSubscriptions;
     }
 
     Collection<ClientTopicCouple> subscriptions() {
@@ -81,6 +86,7 @@ class TreeNode {
 
     public void remove(ClientTopicCouple clientTopicCouple) {
         m_subscriptions.remove(clientTopicCouple);
+        this.subtreeSubscriptions--;
     }
 
     // TODO smell a query method that return the result modifing the parameter (matchingSubs)
@@ -120,11 +126,7 @@ class TreeNode {
      * Return the number of registered subscriptions
      */
     int size() {
-        int res = m_subscriptions.size();
-        for (TreeNode child : m_children) {
-            res += child.size();
-        }
-        return res;
+        return this.subtreeSubscriptions;
     }
 
     /**
@@ -133,6 +135,27 @@ class TreeNode {
     TreeNode removeClientSubscriptions(String clientID) {
         // collect what to delete and then delete to avoid ConcurrentModification
         TreeNode newSubRoot = this.copy();
+        remoteSubscriptions(clientID, newSubRoot);
+        removeSubscriptionFromChildren(clientID, newSubRoot);
+        return newSubRoot;
+    }
+
+    private void removeSubscriptionFromChildren(String clientID, TreeNode newSubRoot) {
+        int newSubtreeSubscriptions = 0;
+        //go deep
+        List<TreeNode> newChildren = new ArrayList<>(newSubRoot.m_children.size());
+        for (TreeNode child : newSubRoot.m_children) {
+            final TreeNode purgedSubtree = child.removeClientSubscriptions(clientID);
+            if (purgedSubtree.size() != 0) {
+                newSubtreeSubscriptions += purgedSubtree.size();
+                newChildren.add(purgedSubtree);
+            }
+        }
+        newSubRoot.m_children = newChildren;
+        newSubRoot.subtreeSubscriptions += newSubtreeSubscriptions;
+    }
+
+    private void remoteSubscriptions(String clientID, TreeNode newSubRoot) {
         List<ClientTopicCouple> subsToRemove = new ArrayList<>();
         for (ClientTopicCouple s : newSubRoot.m_subscriptions) {
             if (s.clientID.equals(clientID)) {
@@ -143,13 +166,15 @@ class TreeNode {
         for (ClientTopicCouple s : subsToRemove) {
             newSubRoot.m_subscriptions.remove(s);
         }
+        newSubRoot.subtreeSubscriptions = newSubRoot.m_subscriptions.size();
+    }
 
-        // go deep
-        List<TreeNode> newChildren = new ArrayList<>(newSubRoot.m_children.size());
-        for (TreeNode child : newSubRoot.m_children) {
-            newChildren.add(child.removeClientSubscriptions(clientID));
+    int recalculateSubscriptionsSize() {
+        int res = m_subscriptions.size();
+        for (TreeNode child : m_children) {
+            res += child.recalculateSubscriptionsSize();
         }
-        newSubRoot.m_children = newChildren;
-        return newSubRoot;
+        this.subtreeSubscriptions = res;
+        return res;
     }
 }

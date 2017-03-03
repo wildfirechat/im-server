@@ -122,9 +122,10 @@ public class SubscriptionsStore {
         do {
             oldRoot = subscriptions.get();
             couple = recreatePath(newSubscription.topicFilter, oldRoot);
-            couple.createdNode.addSubscription(newSubscription); // createdNode could be null?
-            // spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while (!subscriptions.compareAndSet(oldRoot, couple.root));
+            couple.createdNode.addSubscription(newSubscription); //createdNode could be null?
+            couple.root.recalculateSubscriptionsSize();
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
         LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
     }
 
@@ -165,8 +166,9 @@ public class SubscriptionsStore {
             couple = recreatePath(topic, oldRoot);
 
             couple.createdNode.remove(new ClientTopicCouple(clientID, topic));
-            // spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while (!subscriptions.compareAndSet(oldRoot, couple.root));
+            couple.root.recalculateSubscriptionsSize();
+            //spin lock repeating till we can, swap root, if can't swap just re-do the operation
+        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
     }
 
     /**

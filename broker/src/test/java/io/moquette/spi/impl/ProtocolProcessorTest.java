@@ -284,8 +284,9 @@ public class ProtocolProcessorTest {
         assertEquals(0, subscriptions.size());
 
         m_processor.processSubscribe(m_channel, msg);
-
-        // Exercise
+        assertEquals(1, subscriptions.size());
+                
+        //Exercise
         m_processor.processSubscribe(m_channel, msg);
 
         // Verify
