@@ -1,13 +1,12 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.parser.commons.Constants;
-import io.moquette.parser.netty.MQTTDecoder;
-import io.moquette.parser.netty.MQTTEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.mqtt.MqttDecoder;
+import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -87,10 +86,10 @@ public class ProtocolDecodingServer {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         try {
-                            pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, Constants.DEFAULT_CONNECT_TIMEOUT));
+                            pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, 2));
                             pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimeoutHandler());
-                            pipeline.addLast("decoder", new MQTTDecoder());
-                            pipeline.addLast("encoder", new MQTTEncoder());
+                            pipeline.addLast("decoder", new MqttDecoder());
+                            pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                             pipeline.addLast("handler", new LoopMQTTHandler(state));
                         } catch (Throwable th) {
                             LOG.error("Severe error during pipeline creation", th);

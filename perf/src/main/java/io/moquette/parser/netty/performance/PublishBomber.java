@@ -1,20 +1,17 @@
 package io.moquette.parser.netty.performance;
 
 
-import io.moquette.parser.netty.MQTTDecoder;
-import io.moquette.parser.netty.MQTTEncoder;
-import io.moquette.parser.proto.messages.AbstractMessage;
-import io.moquette.parser.proto.messages.PublishMessage;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.mqtt.*;
 import org.eclipse.jetty.toolchain.perf.PlatformTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 class PublishBomber {
 
@@ -34,8 +31,8 @@ class PublishBomber {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast("decoder", new MQTTDecoder());
-                    pipeline.addLast("encoder", new MQTTEncoder());
+                    pipeline.addLast("decoder", new MqttDecoder());
+                    pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 }
             });
 
@@ -47,7 +44,7 @@ class PublishBomber {
         }
     }
 
-    private void sendMessage(AbstractMessage msg) {
+    private void sendMessage(MqttMessage msg) {
         try {
             channel.writeAndFlush(msg).await();
         } catch (InterruptedException e) {
@@ -67,13 +64,14 @@ class PublishBomber {
         PlatformTimer timer = PlatformTimer.detect();
         for (int i=0; i < numToSend; i++) {
             long nanos = System.nanoTime();
-
-            PublishMessage pubMessage = new PublishMessage();
-            pubMessage.setQos(AbstractMessage.QOSType.MOST_ONE);
-            pubMessage.setTopicName("/topic");
             byte[] rawContent = ("Hello world!!-" + nanos).getBytes();
-            ByteBuffer payload = (ByteBuffer) ByteBuffer.allocate(rawContent.length).put(rawContent).flip();
-            pubMessage.setPayload(payload);
+            ByteBuf payload = Unpooled.copiedBuffer(rawContent);
+
+            MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE,
+                    false, 0);
+            MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader("/topic", 0);
+            MqttPublishMessage pubMessage = new MqttPublishMessage(fixedHeader, varHeader, payload);
+
             sendMessage(pubMessage);
             timer.sleep(pauseMicroseconds);
         }

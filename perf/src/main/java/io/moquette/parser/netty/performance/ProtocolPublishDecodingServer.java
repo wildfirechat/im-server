@@ -1,7 +1,5 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.parser.netty.MQTTDecoder;
-import io.moquette.parser.netty.MQTTEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -39,8 +37,8 @@ public class ProtocolPublishDecodingServer {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         try {
-                            pipeline.addLast("decoder", new MQTTDecoder());
-                            pipeline.addLast("encoder", new MQTTEncoder());
+                            pipeline.addLast("decoder", new MqttDecoder());
+                            pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                             pipeline.addLast("handler", new PublishReceiverHandler());
 //                            pipeline.addLast("decoder", new MqttDecoder());
 //                            pipeline.addLast("encoder", MqttEncoder.INSTANCE);

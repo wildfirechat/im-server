@@ -1,19 +1,16 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.parser.proto.Utils;
-import io.moquette.parser.proto.messages.*;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.AttributeKey;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.HdrHistogram.Histogram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-
-import static io.moquette.parser.proto.messages.AbstractMessage.*;
+import static io.moquette.parser.netty.performance.NettyPublishReceiverHandler.payload2Str;
 
 @ChannelHandler.Sharable
 class PublishReceiverHandler extends ChannelInboundHandlerAdapter {
@@ -26,42 +23,34 @@ class PublishReceiverHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        AbstractMessage msg = (AbstractMessage) message;
+        MqttMessage msg = (MqttMessage) message;
+        MqttMessageType messageType = msg.fixedHeader().messageType();
 
         try {
-            switch (msg.getMessageType()) {
+            switch (messageType) {
                 case PUBLISH:
-                    LOG.info("Received a message of type {}", Utils.msgType2String(msg.getMessageType()));
-                    handlePublish((PublishMessage) msg);
+                    LOG.info("Received a message of type {}", messageType);
+                    handlePublish((MqttPublishMessage) msg);
                     return;
                 default:
-                    LOG.info("Received a message of type {}", Utils.msgType2String(msg.getMessageType()));
+                    LOG.info("Received a message of type {}", messageType);
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
         }
     }
 
-    private void handlePublish(PublishMessage msg) {
+    private void handlePublish(MqttPublishMessage msg) {
         long start = System.nanoTime();
-        LOG.debug("push forward message the topic {}", msg.getTopicName());
-        LOG.debug("content <{}>", payload2Str(msg.getPayload()));
-        String decodedPayload = payload2Str(msg.getPayload());
+        LOG.debug("push forward message the topic {}", msg.variableHeader().topicName());
+        LOG.debug("content <{}>", payload2Str(msg.payload()));
+        String decodedPayload = payload2Str(msg.payload());
         long sentTime = Long.parseLong(decodedPayload.split("-")[1]);
         forthNetworkTime.recordValue(start - sentTime);
 
         long stop = System.nanoTime();
-        LOG.info("Request processed in {} ns, matching {}", stop - start, payload2Str(msg.getPayload()));
+        LOG.info("Request processed in {} ns, matching {}", stop - start, payload2Str(msg.payload()));
     }
-
-    static String payload2Str(ByteBuffer content) {
-        byte[] b = new byte[content.remaining()];
-        content.mark();
-        content.get(b);
-        content.reset();
-        return new String(b);
-    }
-
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {

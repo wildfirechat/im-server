@@ -1,23 +1,21 @@
 package io.moquette.parser.netty.performance;
 
-import io.moquette.parser.proto.messages.*;
-import static io.moquette.parser.proto.messages.AbstractMessage.*;
-
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.moquette.parser.proto.Utils;
+import io.netty.handler.codec.mqtt.*;
 import io.netty.util.AttributeKey;
 import org.HdrHistogram.Histogram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
+import static io.moquette.parser.netty.performance.NettyPublishReceiverHandler.payload2Str;
+import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
-/**
- * Created by andrea on 6/2/15.
- */
 @ChannelHandler.Sharable
 class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
@@ -32,27 +30,26 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        AbstractMessage msg = (AbstractMessage) message;
+        MqttMessage msg = (MqttMessage) message;
+        MqttMessageType messageType = msg.fixedHeader().messageType();
         String clientID = clientID(ctx.channel());
 
         try {
-            switch (msg.getMessageType()) {
+            switch (messageType) {
                 case CONNECT:
-                    ConnectMessage connect = (ConnectMessage) message;
-                    clientID = connect.getClientID();
-                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
+                    MqttConnectMessage connect = (MqttConnectMessage) message;
                     handleConnect(ctx, connect);
                     return;
                 case SUBSCRIBE:
-                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
-                    handleSubscribe(ctx, (SubscribeMessage) msg);
+                    LOG.info("Received a message of type {} from <{}>", messageType, clientID);
+                    handleSubscribe(ctx, (MqttSubscribeMessage) msg);
                     return;
                 case PUBLISH:
-                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
-                    handlePublish(ctx, (PublishMessage) msg);
+                    LOG.info("Received a message of type {} from <{}>", messageType, clientID);
+                    handlePublish(ctx, (MqttPublishMessage) msg);
                     return;
                 case DISCONNECT:
-                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
+                    LOG.info("Received a message of type {} from <{}>", messageType, clientID);
                     ctx.close();
 //                case PUBACK:
 //                    NettyChannel channel;
@@ -66,36 +63,36 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 //                    m_messaging.handleProtocolMessage(channel, msg);
                     break;
                 case PINGREQ:
-                    PingRespMessage pingResp = new PingRespMessage();
+                    MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGRESP, false, AT_MOST_ONCE, false, 0);
+                    MqttMessage pingResp = new MqttMessage(pingHeader);
                     ctx.writeAndFlush(pingResp);
                     break;
                 default:
-                    LOG.info("Received a message of type {} from <{}>", Utils.msgType2String(msg.getMessageType()), clientID);
+                    LOG.info("Received a message of type {} from <{}>", messageType, clientID);
             }
         } catch (Exception ex) {
             LOG.error("Bad error in processing the message", ex);
         }
     }
 
-    private void handlePublish(ChannelHandlerContext ctx, PublishMessage msg) {
+    private void handlePublish(ChannelHandlerContext ctx, MqttPublishMessage msg) {
         if (!m_state.isForwardable()) {
             LOG.info("Subscriber not yet connected, LoopHandler instance is {}", this);
             return;
         }
 
         long start = System.nanoTime();
-        LOG.debug("push forward message the topic {}", msg.getTopicName());
-        LOG.debug("content <{}>", payload2Str(msg.getPayload()));
-        String decodedPayload = payload2Str(msg.getPayload());
+        LOG.debug("push forward message the topic {}", msg.variableHeader().topicName());
+        LOG.debug("content <{}>", payload2Str(msg.payload()));
+        String decodedPayload = payload2Str(msg.payload());
         long sentTime = Long.parseLong(decodedPayload.split("-")[1]);
         forthNetworkTime.recordValue(start - sentTime);
 
         //publish always at Qos0, to don't handle PUBACK or the complete Qos2 workflow
-        PublishMessage pubMessage = new PublishMessage();
-        pubMessage.setRetainFlag(false);
-        pubMessage.setTopicName(msg.getTopicName());
-        pubMessage.setQos(QOSType.MOST_ONE);
-        pubMessage.setPayload(msg.getPayload());
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE,
+                false, 0);
+        MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(msg.variableHeader().topicName(), 0);
+        MqttPublishMessage pubMessage = new MqttPublishMessage(fixedHeader, varHeader, msg.payload());
 
         m_state.getSubscriberCh().writeAndFlush(pubMessage);
         /*Channel subscriberCh = m_state.getSubscriberCh();
@@ -106,28 +103,24 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         }*/
         long stop = System.nanoTime();
         processingTime.recordValue(stop - start);
-        LOG.info("Request processed in {} ns, matching {}", stop - start, payload2Str(msg.getPayload()));
+        LOG.info("Request processed in {} ns, matching {}", stop - start, payload2Str(msg.payload()));
     }
 
-    private void handleSubscribe(ChannelHandlerContext ctx, SubscribeMessage msg) {
+    private void handleSubscribe(ChannelHandlerContext ctx, MqttSubscribeMessage msg) {
         m_state.setForwardable(true);
         LOG.debug(" new value of flag {}, LoopHandler instance is {}", m_state.isForwardable(), this);
-        SubAckMessage ackMessage = new SubAckMessage();
-        ackMessage.setMessageID(msg.getMessageID());
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.SUBACK, false, AT_LEAST_ONCE, false, 0);
+        MqttSubAckPayload payload = new MqttSubAckPayload(AT_MOST_ONCE.value());
+        MqttSubAckMessage ackMessage = new MqttSubAckMessage(fixedHeader, from(msg.variableHeader().messageId()), payload);
         ctx.writeAndFlush(ackMessage);
-        LOG.debug("subscribed client to {}", msg.subscriptions());
+        LOG.debug("subscribed client to {}", msg.payload().topicSubscriptions());
     }
 
-    static String payload2Str(ByteBuffer content) {
-        byte[] b = new byte[content.remaining()];
-        content.mark();
-        content.get(b);
-        content.reset();
-        return new String(b);
-    }
+    private void handleConnect(ChannelHandlerContext ctx, MqttConnectMessage msg) {
+        MqttConnectPayload payload = msg.payload();
+        String clientID = payload.clientIdentifier();
+        LOG.info("Received a message of type {} from <{}>", MqttMessageType.CONNECT, clientID);
 
-    private void handleConnect(ChannelHandlerContext ctx, ConnectMessage msg) {
-        String clientID = msg.getClientID();
         clientID(ctx.channel(), clientID);
         if (clientID.toLowerCase().startsWith("sub")) {
             m_state.setSubscriberCh(ctx.channel());
@@ -135,14 +128,21 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
             m_state.setPublisherCh(ctx.channel());
         } else {
             //we don't admit other names
-            ConnAckMessage koResp = new ConnAckMessage();
-            koResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE,
+                    false, 0);
+            MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(
+                    MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED, false);
+            MqttConnAckMessage koResp = new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader);
             ctx.writeAndFlush(koResp);
             ctx.close();
+            return;
         }
 
-        ConnAckMessage okResp = new ConnAckMessage();
-        okResp.setReturnCode(ConnAckMessage.CONNECTION_ACCEPTED);
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE,
+                false, 0);
+        MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(
+                MqttConnectReturnCode.CONNECTION_ACCEPTED, false);
+        MqttConnAckMessage okResp = new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader);
         ctx.writeAndFlush(okResp);
     }
 
