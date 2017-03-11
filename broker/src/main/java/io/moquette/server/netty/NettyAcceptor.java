@@ -184,7 +184,7 @@ public class NettyAcceptor implements ServerAcceptor {
 
             @Override
             void init(ChannelPipeline pipeline) {
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 // pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
@@ -224,7 +224,7 @@ public class NettyAcceptor implements ServerAcceptor {
                         new WebSocketServerProtocolHandler("/mqtt", MQTT_SUBPROTOCOL_CSV_LIST));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MqttDecoder());
@@ -261,7 +261,7 @@ public class NettyAcceptor implements ServerAcceptor {
             @Override
             void init(ChannelPipeline pipeline) throws Exception {
                 pipeline.addLast("ssl", createSslHandler(sslContext, needsClientAuth));
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 // pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
@@ -304,7 +304,7 @@ public class NettyAcceptor implements ServerAcceptor {
                         new WebSocketServerProtocolHandler("/mqtt", MQTT_SUBPROTOCOL_CSV_LIST));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
-                pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, nettyChannelTimeoutSeconds));
+                pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
                 pipeline.addLast("decoder", new MqttDecoder());
