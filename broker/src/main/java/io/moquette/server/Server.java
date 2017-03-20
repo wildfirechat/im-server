@@ -329,4 +329,7 @@ public class Server {
         return m_processorBootstrapper.getConnectionDescriptors();
     }
 
+    public ProtocolProcessor getProcessor() {
+        return m_processor;
+    }
 }

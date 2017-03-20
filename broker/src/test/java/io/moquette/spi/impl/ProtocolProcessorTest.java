@@ -84,7 +84,6 @@ public class ProtocolProcessorTest {
         // sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService();
-        memStorage.initStore();
         m_messagesStore = memStorage.messagesStore();
         m_sessionStore = memStorage.sessionsStore();
         // m_messagesStore.initStore();
@@ -128,7 +127,6 @@ public class ProtocolProcessorTest {
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService();
-        storageService.initStore();
         subs.init(storageService.sessionsStore());
         m_processor.init(
                 subs,
@@ -177,7 +175,6 @@ public class ProtocolProcessorTest {
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService();
-        storageService.initStore();
         subs.init(storageService.sessionsStore());
         m_processor.init(
                 subs,
@@ -353,7 +350,6 @@ public class ProtocolProcessorTest {
             }
         };
         MemoryStorageService storageService = new MemoryStorageService();
-        storageService.initStore();
         subs.init(storageService.sessionsStore());
 
         // simulate a connect that register a clientID to an IoSession

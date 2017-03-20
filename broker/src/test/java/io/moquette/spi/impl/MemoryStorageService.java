@@ -18,28 +18,32 @@ package io.moquette.spi.impl;
 
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.MessageGUID;
+import io.moquette.spi.IStore;
 import io.moquette.spi.persistence.MemorySessionStore;
-import java.util.HashMap;
-import java.util.Map;
 
-public class MemoryStorageService {
+public class MemoryStorageService implements IStore {
 
     private MemorySessionStore m_sessionsStore;
     private MemoryMessagesStore m_messagesStore;
 
-    public void initStore() {
-        Map<String, Map<Integer, MessageGUID>> messageToGuids = new HashMap<>();
-        m_messagesStore = new MemoryMessagesStore(messageToGuids);
-        m_sessionsStore = new MemorySessionStore(m_messagesStore, messageToGuids);
+    public MemoryStorageService() {
+        m_messagesStore = new MemoryMessagesStore();
+        m_sessionsStore = new MemorySessionStore(m_messagesStore);
+        m_messagesStore.initStore();
+        m_sessionsStore.initStore();
     }
 
+    @Override
     public IMessagesStore messagesStore() {
         return m_messagesStore;
     }
 
+    @Override
     public ISessionsStore sessionsStore() {
         return m_sessionsStore;
     }
 
+    @Override
+    public void close() {
+    }
 }

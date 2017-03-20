@@ -17,6 +17,7 @@
 package io.moquette.spi.persistence;
 
 import io.moquette.spi.ClientSession;
+import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
@@ -50,9 +51,9 @@ class MapDBSessionsStore implements ISessionsStore {
     private ConcurrentMap<String, Map<Integer, MessageGUID>> m_secondPhaseStore;
 
     private final DB m_db;
-    private final MapDBMessagesStore m_messagesStore;
+    private final IMessagesStore m_messagesStore;
 
-    MapDBSessionsStore(DB db, MapDBMessagesStore messagesStore) {
+    MapDBSessionsStore(DB db, IMessagesStore messagesStore) {
         m_db = db;
         m_messagesStore = messagesStore;
     }
@@ -294,19 +295,6 @@ class MapDBSessionsStore implements ISessionsStore {
         MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
-    }
-
-    @Override
-    public MessageGUID mapToGuid(String clientID, int messageID) {
-        LOG.debug("Mapping message ID to GUID CId={}, messageId={}", clientID, messageID);
-        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(messageId2GuidsMapName(clientID));
-        MessageGUID result = messageIdToGuid.get(messageID);
-        LOG.debug("Message ID has been mapped to a GUID CId={}, messageId={}, guid={}", clientID, messageID, result);
-        return result;
-    }
-
-    static String messageId2GuidsMapName(String clientID) {
-        return "guidsMapping_" + clientID;
     }
 
     @Override

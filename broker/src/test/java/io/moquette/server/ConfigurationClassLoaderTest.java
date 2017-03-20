@@ -20,6 +20,9 @@ import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.spi.impl.MemoryMessagesStore;
+import io.moquette.spi.impl.MemoryStorageService;
+import io.moquette.spi.persistence.MemorySessionStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.junit.After;
@@ -62,6 +65,16 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
         props.setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, getClass().getName());
         startServer(props);
         assertTrue(true);
+    }
+
+    @Test
+    public void loadStorage() throws Exception {
+        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
+        props.setProperty(BrokerConstants.STORAGE_CLASS_NAME, MemoryStorageService.class.getName());
+
+        startServer(props);
+        assertTrue(m_server.getProcessor().getMessagesStore() instanceof MemoryMessagesStore);
+        assertTrue(m_server.getProcessor().getSessionsStore() instanceof MemorySessionStore);
     }
 
     @Override

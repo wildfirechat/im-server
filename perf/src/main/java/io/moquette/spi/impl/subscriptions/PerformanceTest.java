@@ -20,7 +20,6 @@ public class PerformanceTest {
     public static void main(String[] args) throws IOException, InterruptedException {
         SubscriptionsStore store = new SubscriptionsStore();
         MemoryStorageService memStore = new MemoryStorageService();
-        memStore.initStore();
         ISessionsStore aSessionsStore = memStore.sessionsStore();
         store.init(aSessionsStore);
 

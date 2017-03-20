@@ -22,7 +22,6 @@ public class ClientSessionTest {
     public void setUp() {
         store = new SubscriptionsStore();
         MemoryStorageService storageService = new MemoryStorageService();
-        storageService.initStore();
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);
 

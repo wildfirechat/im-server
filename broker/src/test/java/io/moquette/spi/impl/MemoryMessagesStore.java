@@ -34,10 +34,9 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private Map<Topic, MessageGUID> m_retainedStore = new HashMap<>();
     private Map<MessageGUID, StoredMessage> m_persistentMessageStore = new HashMap<>();
-    private Map<String, Map<Integer, MessageGUID>> m_messageToGuids;
+    private Map<String, Map<Integer, MessageGUID>> m_messageToGuids = new HashMap<>();
 
-    MemoryMessagesStore(Map<String, Map<Integer, MessageGUID>> messageToGuids) {
-        m_messageToGuids = messageToGuids;
+    MemoryMessagesStore() {
     }
 
     @Override
@@ -108,5 +107,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             return 0;
         else
             return messageToGuids.size();
+    }
+
+    @Override
+    public MessageGUID mapToGuid(String clientID, int messageID) {
+        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) Utils
+                .defaultGet(m_messageToGuids, clientID, new HashMap<Integer, MessageGUID>());
+        return guids.get(messageID);
     }
 }
