@@ -28,7 +28,7 @@ public class ProtocolDecodingServer {
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
                 IdleState e = ((IdleStateEvent) evt).state();
-                if (e == IdleState.ALL_IDLE) {
+                if (e == IdleState.READER_IDLE) {
                     //fire a channelInactive to trigger publish of Will
                     ctx.fireChannelInactive();
                     ctx.close();
@@ -86,7 +86,7 @@ public class ProtocolDecodingServer {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         try {
-                            pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, 2));
+                            pipeline.addFirst("idleStateHandler", new IdleStateHandler(2, 0, 0));
                             pipeline.addAfter("idleStateHandler", "idleEventHandler", new MoquetteIdleTimeoutHandler());
                             pipeline.addLast("decoder", new MqttDecoder());
                             pipeline.addLast("encoder", MqttEncoder.INSTANCE);

@@ -33,7 +33,7 @@ class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleState e = ((IdleStateEvent) evt).state();
-            if (e == IdleState.ALL_IDLE) {
+            if (e == IdleState.READER_IDLE) {
                 LOG.info("Firing channel inactive event. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
                 // fire a channelInactive to trigger publish of Will
                 ctx.fireChannelInactive();

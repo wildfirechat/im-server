@@ -446,7 +446,7 @@ public class ProtocolProcessor {
         if (pipeline.names().contains("idleStateHandler")) {
             pipeline.remove("idleStateHandler");
         }
-        pipeline.addFirst("idleStateHandler", new IdleStateHandler(0, 0, idleTime));
+        pipeline.addFirst("idleStateHandler", new IdleStateHandler(idleTime, 0, 0));
     }
 
     /**
