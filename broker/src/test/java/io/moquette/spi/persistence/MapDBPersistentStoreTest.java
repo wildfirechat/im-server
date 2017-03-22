@@ -16,6 +16,8 @@
 
 package io.moquette.spi.persistence;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import io.moquette.BrokerConstants;
 import io.moquette.server.IntegrationUtils;
 import io.moquette.server.config.IConfig;
@@ -47,13 +49,17 @@ public class MapDBPersistentStoreTest {
     ISessionsStore m_sessionsStore;
     IMessagesStore m_messagesStore;
 
+    private ScheduledExecutorService scheduler;
+
     @Before
     public void setUp() throws Exception {
+        scheduler = Executors.newScheduledThreadPool(1);
+
         IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
         Properties props = new Properties();
         props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
         IConfig conf = new MemoryConfig(props);
-        m_storageService = new MapDBPersistentStore(conf);
+        m_storageService = new MapDBPersistentStore(conf, scheduler);
         m_storageService.initStore();
         m_messagesStore = m_storageService.messagesStore();
         m_sessionsStore = m_storageService.sessionsStore();
@@ -65,6 +71,7 @@ public class MapDBPersistentStoreTest {
             m_storageService.close();
         }
 
+        scheduler.shutdown();
         IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
     }
 

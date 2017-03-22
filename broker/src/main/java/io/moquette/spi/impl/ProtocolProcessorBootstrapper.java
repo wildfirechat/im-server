@@ -98,22 +98,24 @@ public class ProtocolProcessorBootstrapper {
             messagesStore = store.messagesStore();
             m_sessionsStore = store.sessionsStore();
             storeShutdown = new Runnable() {
-				@Override
-				public void run() {
-					store.close();
-				}
-			};
+
+                @Override
+                public void run() {
+                    store.close();
+                }
+            };
         } else {
-            final MapDBPersistentStore m_mapStorage = new MapDBPersistentStore(props);
+            final MapDBPersistentStore m_mapStorage = new MapDBPersistentStore(props, server.getScheduler());
             m_mapStorage.initStore();
             messagesStore = m_mapStorage.messagesStore();
             m_sessionsStore = m_mapStorage.sessionsStore();
             storeShutdown = new Runnable() {
-				@Override
-				public void run() {
-					m_mapStorage.close();
-				}
-			};
+
+                @Override
+                public void run() {
+                    m_mapStorage.close();
+                }
+            };
         }
 
         LOG.info("Configuring message interceptors...");
@@ -282,7 +284,7 @@ public class ProtocolProcessorBootstrapper {
     public ISessionsStore getSessionsStore() {
         return m_sessionsStore;
     }
-    
+
     public List<Subscription> getSubscriptions() {
         return m_sessionsStore.getSubscriptions();
     }

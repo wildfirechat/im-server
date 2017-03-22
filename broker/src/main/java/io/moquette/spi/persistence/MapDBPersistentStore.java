@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import static io.moquette.BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME;
@@ -58,13 +57,14 @@ public class MapDBPersistentStore implements IStore {
     private final String m_storePath;
     private final int m_autosaveInterval; // in seconds
 
-    protected final ScheduledExecutorService m_scheduler = Executors.newScheduledThreadPool(1);
+    protected final ScheduledExecutorService m_scheduler;
     private IMessagesStore m_messageStore;
     private ISessionsStore m_sessionsStore;
 
-    public MapDBPersistentStore(IConfig props) {
+    public MapDBPersistentStore(IConfig props, ScheduledExecutorService scheduler) {
         this.m_storePath = props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, "");
         this.m_autosaveInterval = Integer.parseInt(props.getProperty(AUTOSAVE_INTERVAL_PROPERTY_NAME, "30"));
+        this.m_scheduler = scheduler;
     }
 
     /**

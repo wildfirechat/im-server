@@ -45,6 +45,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 
 /**
@@ -67,6 +70,8 @@ public class Server {
     private HazelcastInstance hazelcastInstance;
 
     private ProtocolProcessorBootstrapper m_processorBootstrapper;
+
+    private ScheduledExecutorService scheduler;
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -172,6 +177,8 @@ public class Server {
         }
         LOG.info("Starting Moquette Server. MQTT message interceptors = {}.", getInterceptorIds(handlers));
 
+        scheduler = Executors.newScheduledThreadPool(1);
+
         final String handlerProp = System.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (handlerProp != null) {
             config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp);
@@ -270,6 +277,9 @@ public class Server {
                 LOG.warn("The embedded Hazelcast instance is already shut down.");
             }
         }
+
+        scheduler.shutdown();
+
         LOG.info("The Moquette server has been stopped.");
     }
 
@@ -331,5 +341,9 @@ public class Server {
 
     public ProtocolProcessor getProcessor() {
         return m_processor;
+    }
+    
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
     }
 }
