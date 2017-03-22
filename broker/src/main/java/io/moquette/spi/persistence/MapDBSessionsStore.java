@@ -212,7 +212,7 @@ class MapDBSessionsStore implements ISessionsStore {
         }
 
         int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
-        int nextPacketId = (maxId + 1) % 0xFFFF;
+        int nextPacketId = (maxId % 0xFFFF) + 1;
         inFlightForClient.add(nextPacketId);
         if (LOG.isDebugEnabled()) {
             LOG.debug("The next packet ID has been generated. CId= {}, result = {}.", clientID, nextPacketId);
