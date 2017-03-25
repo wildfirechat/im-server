@@ -69,7 +69,6 @@ public class ServerIntegrationFuseTest {
         }
 
         m_server.stopServer();
-        IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
     @Test

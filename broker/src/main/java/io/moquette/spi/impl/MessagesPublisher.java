@@ -80,12 +80,8 @@ class MessagesPublisher {
                 this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
-                    LOG.debug(
-                            "Storing pending PUBLISH inactive message. MessageId={}, CId={}, topicFilter={}, qos={}",
-                            pubMsg.getMessageID(),
-                            sub.getClientId(),
-                            sub.getTopicFilter(),
-                            qos);
+                    LOG.debug("Storing pending PUBLISH inactive message. MessageId={}, CId={}, topicFilter={}, qos={}",
+                        pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos);
                     // store the message in targetSession queue to deliver
                     targetSession.enqueue(pubMsg);
                 }

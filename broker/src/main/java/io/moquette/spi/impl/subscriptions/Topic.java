@@ -47,7 +47,7 @@ public class Topic implements Serializable {
                 valid = true;
             } catch (ParseException e) {
                 valid = false;
-                LOG.error(e.toString(), e);
+                LOG.error("Error parsing the topic: {}, message: {}", topic, e.getMessage());
             }
         }
 

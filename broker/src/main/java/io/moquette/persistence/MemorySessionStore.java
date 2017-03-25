@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.persistence;
+package io.moquette.persistence;
 
 import io.moquette.server.Constants;
 import io.moquette.spi.ClientSession;
@@ -25,7 +25,6 @@ import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -42,7 +41,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     private Map<String, Map<Topic, Subscription>> m_persistentSubscriptions = new HashMap<>();
 
-    private Map<String, MapDBPersistentStore.PersistentSession> m_persistentSessions = new HashMap<>();
+    private Map<String, PersistentSession> m_persistentSessions = new HashMap<>();
 
     // maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_inflightStore = new HashMap<>();
@@ -102,7 +101,7 @@ public class MemorySessionStore implements ISessionsStore {
         }
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashMap<Topic, Subscription>());
-        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
+        m_persistentSessions.put(clientID, new PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
@@ -112,7 +111,7 @@ public class MemorySessionStore implements ISessionsStore {
             return null;
         }
 
-        MapDBPersistentStore.PersistentSession storedSession = m_persistentSessions.get(clientID);
+        PersistentSession storedSession = m_persistentSessions.get(clientID);
         return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
     }
 
@@ -127,7 +126,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void updateCleanStatus(String clientID, boolean cleanSession) {
-        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
+        m_persistentSessions.put(clientID, new PersistentSession(cleanSession));
     }
 
     @Override
@@ -191,7 +190,7 @@ public class MemorySessionStore implements ISessionsStore {
             m.put(nextPacketId, null);
             return nextPacketId;
         }
-        int maxId = Collections.max(m.keySet());
+        int maxId = m.keySet().isEmpty() ? 0 :Collections.max(m.keySet());
         int nextPacketId = (maxId + 1) % 0xFFFF;
         m.put(nextPacketId, null);
         return nextPacketId;
@@ -199,7 +198,10 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public BlockingQueue<StoredMessage> queue(String clientID) {
-        return Utils.defaultGet(queues, clientID, new ArrayBlockingQueue<StoredMessage>(Constants.MAX_MESSAGE_QUEUE));
+        final ArrayBlockingQueue<StoredMessage> emptyQueue = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
+        BlockingQueue<StoredMessage> messagesQueue = Utils.defaultGet(queues, clientID, emptyQueue);
+        queues.put(clientID, messagesQueue);
+        return messagesQueue;
     }
 
     @Override
@@ -218,16 +220,16 @@ public class MemorySessionStore implements ISessionsStore {
         MessageGUID guid = m.remove(messageID);
 
         LOG.info("Moving to second phase store");
-        Map<Integer, MessageGUID> messageIDs = Utils
-                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
         messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
 
     @Override
     public MessageGUID secondPhaseAcknowledged(String clientID, int messageID) {
-        Map<Integer, MessageGUID> messageIDs = Utils
-                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
         MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
@@ -235,7 +237,9 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public StoredMessage getInflightMessage(String clientID, int messageID) {
-        return null;
+        Map<Integer, MessageGUID> inflightMessages = m_inflightStore.get(clientID);
+        MessageGUID guid = inflightMessages.get(messageID);
+        return m_messagesStore.getMessageByGuid(guid);
     }
 
     @Override

@@ -1,7 +1,7 @@
 
 package io.moquette.spi;
 
-import io.moquette.spi.impl.MemoryStorageService;
+import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.impl.subscriptions.Topic;

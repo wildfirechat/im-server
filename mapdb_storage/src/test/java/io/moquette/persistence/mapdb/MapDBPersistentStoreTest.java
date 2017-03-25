@@ -14,12 +14,12 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.persistence;
+package io.moquette.persistence.mapdb;
 
+import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import io.moquette.BrokerConstants;
-import io.moquette.server.IntegrationUtils;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.ClientSession;
@@ -36,6 +36,8 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static org.junit.Assert.*;
 
 /**
@@ -55,7 +57,7 @@ public class MapDBPersistentStoreTest {
     public void setUp() throws Exception {
         scheduler = Executors.newScheduledThreadPool(1);
 
-        IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
         Properties props = new Properties();
         props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
         IConfig conf = new MemoryConfig(props);
@@ -72,7 +74,17 @@ public class MapDBPersistentStoreTest {
         }
 
         scheduler.shutdown();
-        IntegrationUtils.cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+    }
+
+    public static void cleanPersistenceFile(String fileName) {
+        File dbFile = new File(fileName);
+        if (dbFile.exists()) {
+            dbFile.delete();
+            new File(fileName + ".p").delete();
+            new File(fileName + ".t").delete();
+        }
+        assertFalse(dbFile.exists());
     }
 
     @Test

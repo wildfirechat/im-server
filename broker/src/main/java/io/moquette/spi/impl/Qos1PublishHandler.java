@@ -57,37 +57,26 @@ class Qos1PublishHandler extends QosPublishHandler {
         toStoreMsg.setClientID(clientID);
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(
-                    "Sending publish message to subscribers. "
-                    + "MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
-                    clientID,
-                    topic,
-                    messageID,
-                    DebugUtils.payload2Str(toStoreMsg.getMessage()),
-                    subscriptions.dumpTree());
+            LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
+                subscriptions.dumpTree());
         } else {
-            LOG.info(
-                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.",
-                    clientID,
-                    topic,
-                    messageID);
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
+                messageID);
         }
 
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
         this.publisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
 
-        // send PUBACK
-        // TODO Don't send PUBREC for Hz publish notification, if (msg.isLocal()) {
         sendPubAck(clientID, messageID);
-        // }
 
         if (msg.fixedHeader().isRetain()) {
             if (!msg.payload().isReadable()) {
                 m_messagesStore.cleanRetained(topic);
             } else {
                 // before wasn't stored
-                MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-                m_messagesStore.storeRetained(topic, guid);
+                //MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+                m_messagesStore.storeRetained(topic, toStoreMsg.getGuid());
             }
         }
 
@@ -102,17 +91,13 @@ class Qos1PublishHandler extends QosPublishHandler {
 
         try {
             if (connectionDescriptors == null) {
-                throw new RuntimeException(
-                        "Internal bad error, found connectionDescriptors to null while it should be initialized, "
-                        + "somewhere it's overwritten!!");
+                throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should " +
+                    "be initialized, somewhere it's overwritten!!");
             }
             LOG.debug("clientIDs are {}", connectionDescriptors);
             if (!connectionDescriptors.isConnected(clientId)) {
-                throw new RuntimeException(
-                        String.format(
-                                "Can't find a ConnectionDescriptor for client %s in cache %s",
-                                clientId,
-                                connectionDescriptors));
+                throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s",
+                    clientId,connectionDescriptors));
             }
             connectionDescriptors.sendMessage(pubAckMessage, messageID, clientId);
         } catch (Throwable t) {

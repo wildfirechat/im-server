@@ -4,8 +4,9 @@ package io.moquette.spi.impl.subscriptions;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+
+import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.MemoryStorageService;
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 public class PerformanceTest {

@@ -16,6 +16,7 @@
 
 package io.moquette.spi.impl;
 
+import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.MessageBuilder;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;

@@ -14,8 +14,9 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.persistence;
+package io.moquette.persistence.mapdb;
 
+import io.moquette.persistence.PersistentSession;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -24,7 +25,6 @@ import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,47 +68,38 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void addNewSubscription(Subscription newSubscription) {
-        LOG.info(
-                "Adding new subscription. CId= {}, topics = {}.",
-                newSubscription.getClientId(),
-                newSubscription.getTopicFilter());
+        LOG.info("Adding new subscription. ClientId={}, topics={}", newSubscription.getClientId(),
+            newSubscription.getTopicFilter());
         final String clientID = newSubscription.getClientId();
         m_db.getHashMap("subscriptions_" + clientID).put(newSubscription.getTopicFilter(), newSubscription);
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(
-                    "The subscription has been added. CId= {}, topics = {}, clientSubscriptions = {}.",
-                    newSubscription.getClientId(),
-                    newSubscription.getTopicFilter(),
-                    m_db.getHashMap("subscriptions_" + clientID));
+            LOG.trace("Subscription has been added. ClientId={}, topics={}, clientSubscriptions={}",
+                newSubscription.getClientId(), newSubscription.getTopicFilter(),
+                m_db.getHashMap("subscriptions_" + clientID));
         }
     }
 
     @Override
     public void removeSubscription(Topic topicFilter, String clientID) {
-        LOG.info("Removing subscription. CId= {}, topics = {}.", clientID, topicFilter);
+        LOG.info("Removing subscription. ClientId={}, topics={}", clientID, topicFilter);
         if (!m_db.exists("subscriptions_" + clientID)) {
             return;
         }
         m_db.getHashMap("subscriptions_" + clientID).remove(topicFilter);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                    "The subscription has been removed. CId= {}, topics = {}, clientSubscriptions = {}.",
-                    clientID,
-                    topicFilter,
-                    m_db.getHashMap("subscriptions_" + clientID));
+            LOG.debug("Subscription has been removed. ClientId={}, topics={}, clientSubscriptions={}", clientID,
+                topicFilter, m_db.getHashMap("subscriptions_" + clientID));
         }
     }
 
     @Override
     public void wipeSubscriptions(String clientID) {
-        LOG.info("Wiping subscriptions. CId= {}.", clientID);
+        LOG.info("Wiping subscriptions. ClientId={}", clientID);
         m_db.delete("subscriptions_" + clientID);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                    "The subscriptions have been removed. CId= {}, clientSubscriptions = {}.",
-                    clientID,
-                    m_db.getHashMap("subscriptions_" + clientID));
+            LOG.debug("Subscriptions have been removed. ClientId={}, clientSubscriptions={}", clientID,
+                m_db.getHashMap("subscriptions_" + clientID));
         }
     }
 
@@ -123,7 +114,7 @@ class MapDBSessionsStore implements ISessionsStore {
             }
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("The existing subscriptions have been retrieved. Result = {}.", allSubscriptions);
+            LOG.trace("The existing subscriptions have been retrieved. Result={}", allSubscriptions);
         }
         return allSubscriptions;
     }
@@ -131,7 +122,7 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public Subscription getSubscription(ClientTopicCouple couple) {
         ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + couple.clientID);
-        LOG.info("Retrieving subscriptions. CId= {}, subscriptions = {}.", couple.clientID, clientSubscriptions);
+        LOG.info("Retrieving subscriptions. ClientId={}, subscriptions={}", couple.clientID, clientSubscriptions);
         return clientSubscriptions.get(couple.topicFilter);
     }
 
@@ -143,7 +134,7 @@ class MapDBSessionsStore implements ISessionsStore {
             ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + clientID);
             subscriptions.addAll(clientSubscriptions.values());
         }
-        LOG.debug("The existing subscriptions have been retrieved. Result = {}.", subscriptions);
+        LOG.debug("The existing subscriptions have been retrieved. Result={}", subscriptions);
         return subscriptions;
     }
 
@@ -155,22 +146,20 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public ClientSession createNewSession(String clientID, boolean cleanSession) {
         if (m_persistentSessions.containsKey(clientID)) {
-            LOG.error(
-                    "Unable to create a new session: the client ID is already in use. CId= {}, cleanSession = {}.",
-                    clientID,
-                    cleanSession);
+            LOG.error("Unable to create a new session: the client ID is already in use. ClientId={}, cleanSession={}",
+                clientID, cleanSession);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
-        LOG.info("Creating new session. CId= {}, cleanSession = {}.", clientID, cleanSession);
+        LOG.info("Creating new session. ClientId={}, cleanSession={}", clientID, cleanSession);
         m_persistentSessions.putIfAbsent(clientID, new PersistentSession(cleanSession));
         return new ClientSession(clientID, m_messagesStore, this, cleanSession);
     }
 
     @Override
     public ClientSession sessionForClient(String clientID) {
-        LOG.info("Retrieving session. CId= {}.", clientID);
+        LOG.info("Retrieving session. ClientId={}", clientID);
         if (!m_persistentSessions.containsKey(clientID)) {
-            LOG.warn("The session does not exist. CId= {}.", clientID);
+            LOG.warn("The session does not exist. ClientId={}", clientID);
             return null;
         }
 
@@ -189,8 +178,8 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void updateCleanStatus(String clientID, boolean cleanSession) {
-        LOG.info("Updating cleanSession flag. CId= {}, cleanSession = {}.", clientID, cleanSession);
-        m_persistentSessions.put(clientID, new MapDBPersistentStore.PersistentSession(cleanSession));
+        LOG.info("Updating cleanSession flag. ClientId={}, cleanSession={}", clientID, cleanSession);
+        m_persistentSessions.put(clientID, new PersistentSession(cleanSession));
     }
 
     /**
@@ -199,7 +188,7 @@ class MapDBSessionsStore implements ISessionsStore {
     @Override
     public int nextPacketID(String clientID) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Generating next packet ID. CId= {}.", clientID);
+            LOG.debug("Generating next packet ID. ClientId={}", clientID);
         }
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
         if (inFlightForClient == null) {
@@ -215,17 +204,17 @@ class MapDBSessionsStore implements ISessionsStore {
         int nextPacketId = (maxId % 0xFFFF) + 1;
         inFlightForClient.add(nextPacketId);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("The next packet ID has been generated. CId= {}, result = {}.", clientID, nextPacketId);
+            LOG.debug("The next packet ID has been generated. ClientId={}, result={}", clientID, nextPacketId);
         }
         return nextPacketId;
     }
 
     @Override
     public void inFlightAck(String clientID, int messageID) {
-        LOG.debug("Acknowledging inflight message. CId= {}, messageId = {}.", clientID, messageID);
+        LOG.debug("Acknowledging inflight message. ClientId={}, messageId={}", clientID, messageID);
         Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
-            LOG.warn("Unable to retrieve inflight message record. CId= {}, messageId = {}.", clientID, messageID);
+            LOG.warn("Unable to retrieve inflight message record. ClientId={}, messageId={}", clientID, messageID);
             return;
         }
         m.remove(messageID);
@@ -239,7 +228,7 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public void inFlight(String clientID, int messageID, MessageGUID guid) {
-        LOG.debug("Storing inflight message. CId= {}, messageId = {}, guid = {}.", clientID, messageID, guid);
+        LOG.debug("Storing inflight message. ClientId={}, messageId={}, guid={}", clientID, messageID, guid);
         ConcurrentMap<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
             m = new ConcurrentHashMap<>();
@@ -251,24 +240,24 @@ class MapDBSessionsStore implements ISessionsStore {
 
     @Override
     public BlockingQueue<StoredMessage> queue(String clientID) {
-        LOG.info("Queuing pending message. CId= {}, guid = {}.", clientID);
+        LOG.info("Queuing pending message. ClientId={}, guid={}", clientID);
         return this.m_db.getQueue(clientID);
     }
 
     @Override
     public void dropQueue(String clientID) {
-        LOG.info("Removing pending messages. CId= {}.", clientID);
+        LOG.info("Removing pending messages. ClientId={}", clientID);
         this.m_db.delete(clientID);
     }
 
     @Override
     public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Moving inflight message to 2nd phase ack state. CId= {}, messageID = {}.", clientID, messageID);
+            LOG.debug("Moving inflight message to 2nd phase ack state. ClientId={}, messageID={}", clientID, messageID);
         }
         Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
         if (m == null) {
-            LOG.warn("Unable to retrieve inflight message record. CId= {}, messageId = {}.", clientID, messageID);
+            LOG.warn("Unable to retrieve inflight message record. ClientId={}, messageId={}", clientID, messageID);
             return;
         }
         MessageGUID guid = m.remove(messageID);
@@ -279,8 +268,8 @@ class MapDBSessionsStore implements ISessionsStore {
             inFlightForClient.remove(messageID);
         }
 
-        Map<Integer, MessageGUID> messageIDs = Utils
-                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
         messageIDs.put(messageID, guid);
         m_secondPhaseStore.put(clientID, messageIDs);
     }
@@ -290,8 +279,8 @@ class MapDBSessionsStore implements ISessionsStore {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Processing second phase ACK CId={}, messageId={}", clientID, messageID);
         }
-        Map<Integer, MessageGUID> messageIDs = Utils
-                .defaultGet(m_secondPhaseStore, clientID, new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
         MessageGUID guid = messageIDs.remove(messageID);
         m_secondPhaseStore.put(clientID, messageIDs);
         return guid;
@@ -307,7 +296,7 @@ class MapDBSessionsStore implements ISessionsStore {
         }
         MessageGUID guid = clientEntries.get(messageID);
         if (guid == null) {
-            LOG.warn("The message ID does not have an associated GUID. CId= {}, messageId = {}.", clientID, messageID);
+            LOG.warn("The message ID does not have an associated GUID. ClientId={}, messageId={}", clientID, messageID);
             return null;
         }
         return m_messagesStore.getMessageByGuid(guid);

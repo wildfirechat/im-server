@@ -47,20 +47,12 @@ class Qos0PublishHandler extends QosPublishHandler {
         final int messageID = msg.variableHeader().messageId();
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(
-                    "Sending publish message to subscribers. "
-                    + "MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
-                    clientID,
-                    topic,
-                    messageID,
-                    DebugUtils.payload2Str(toStoreMsg.getMessage()),
-                    subscriptions.dumpTree());
+            LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
+                subscriptions.dumpTree());
         } else {
-            LOG.info(
-                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.",
-                    clientID,
-                    topic,
-                    messageID);
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
+                messageID);
         }
 
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);

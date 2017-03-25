@@ -24,12 +24,8 @@ class PersistentQueueMessageSender {
         final int messageId = pubMessage.variableHeader().messageId();
         final String topicName = pubMessage.variableHeader().topicName();
         if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                    "Sending PUBLISH message. MessageId={}, CId={}, topic={}, qos={}, payload={}",
-                    messageId,
-                    clientId,
-                    topicName,
-                    DebugUtils.payload2Str(pubMessage.payload()));
+            LOG.debug("Sending PUBLISH message. MessageId={}, CId={}, topic={}, qos={}, payload={}", messageId, 
+                clientId, topicName, DebugUtils.payload2Str(pubMessage.payload()));
         } else {
             LOG.info("Sending PUBLISH message. MessageId={}, CId={}, topic={}", messageId, clientId, topicName);
         }
@@ -38,24 +34,12 @@ class PersistentQueueMessageSender {
 
         MqttQoS qos = pubMessage.fixedHeader().qosLevel();
         if (!messageDelivered && qos != AT_MOST_ONCE && !clientsession.isCleanSession()) {
-            LOG.warn(
-                    "The PUBLISH message could not be delivered. It will be stored. "
-                    + "MessageId = {}, CId={}, topic = {}, qos = {}, cleanSession = {}.",
-                    messageId,
-                    clientId,
-                    topicName,
-                    qos,
-                    false);
+            LOG.warn("PUBLISH message could not be delivered. It will be stored. MessageId={}, CId={}, topic={}, qos={}, " +
+                "cleanSession={}", messageId, clientId, topicName, qos, false);
             clientsession.enqueue(asStoredMessage(pubMessage));
         } else {
-            LOG.warn(
-                    "The PUBLISH message could not be delivered. It will be discarded. "
-                    + "MessageId = {}, CId={}, topic = {}, qos = {}, cleanSession = {}.",
-                    messageId,
-                    clientId,
-                    topicName,
-                    qos,
-                    true);
+            LOG.warn("PUBLISH message could not be delivered. It will be discarded. MessageId={}, CId={}, topic={}, " +
+                "qos={}, cleanSession={}", messageId, clientId, topicName, qos, true);
         }
     }
 }

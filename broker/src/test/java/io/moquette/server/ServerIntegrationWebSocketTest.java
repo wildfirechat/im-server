@@ -65,7 +65,6 @@ public class ServerIntegrationWebSocketTest {
         client.stop();
 
         m_server.stopServer();
-        IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
     @Test

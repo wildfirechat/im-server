@@ -55,7 +55,7 @@ public class IntegrationUtils {
         return testProperties;
     }
 
-    public static void cleanPersistenceFile(IConfig config) {
+    /*public static void cleanPersistenceFile(IConfig config) {
         String fileName = config.getProperty(PERSISTENT_STORE_PROPERTY_NAME);
         cleanPersistenceFile(fileName);
     }
@@ -68,5 +68,5 @@ public class IntegrationUtils {
             new File(fileName + ".t").delete();
         }
         assertFalse(dbFile.exists());
-    }
+    }*/
 }

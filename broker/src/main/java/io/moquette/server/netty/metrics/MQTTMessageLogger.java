@@ -54,11 +54,8 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 break;
             case SUBSCRIBE:
                 MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
-                LOG.info(
-                        "{} SUBSCRIBE <{}> to topics {}",
-                        direction,
-                        clientID,
-                        subscribe.payload().topicSubscriptions());
+                LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID,
+                    subscribe.payload().topicSubscriptions());
                 break;
             case UNSUBSCRIBE:
                 MqttUnsubscribeMessage unsubscribe = (MqttUnsubscribeMessage) msg;

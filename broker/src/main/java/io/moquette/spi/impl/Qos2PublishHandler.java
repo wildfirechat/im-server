@@ -58,27 +58,19 @@ class Qos2PublishHandler extends QosPublishHandler {
         toStoreMsg.setClientID(clientID);
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(
-                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}, "
-                            + "payload = {}, subscriptionTree = {}.",
-                    clientID,
-                    topic,
-                    messageID,
-                    DebugUtils.payload2Str(toStoreMsg.getMessage()),
-                    subscriptions.dumpTree());
+            LOG.trace( "Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
+                subscriptions.dumpTree());
         } else {
-            LOG.info(
-                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.",
-                    clientID,
-                    topic,
-                    messageID);
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
+                messageID);
         }
 
         // QoS2
         MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         // TODO Don't send PUBREC for Hz publish notification, if (msg.isLocal()) {
         sendPubRec(clientID, messageID);
-        // }
+
         // Next the client will send us a pub rel
         // NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
 
@@ -100,27 +92,19 @@ class Qos2PublishHandler extends QosPublishHandler {
     void processPubRel(Channel channel, MqttMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = messageId(msg);
-        LOG.info("Processing PUBREL message. MqttClientId = {}, messageId = {}.", clientID, messageID);
+        LOG.info("Processing PUBREL message. ClientId={}, messageId={}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
         final Topic topic = new Topic(evt.getTopic());
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                    "Sending publish message to subscribers. "
-                    + "MqttClientId = {}, topic = {}, messageId = {}, payload = {}, subscriptionTree = {}.",
-                    clientID,
-                    topic,
-                    messageID,
-                    DebugUtils.payload2Str(evt.getMessage()),
-                    subscriptions.dumpTree());
+            LOG.debug("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(evt.getMessage()),
+                subscriptions.dumpTree());
         } else {
-            LOG.info(
-                    "Sending publish message to subscribers. MqttClientId = {}, topic = {}, messageId = {}.",
-                    clientID,
-                    topic,
-                    messageID);
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
+                messageID);
         }
         this.publisher.publish2Subscribers(evt, topicMatchingSubscriptions);
 
@@ -136,14 +120,14 @@ class Qos2PublishHandler extends QosPublishHandler {
     }
 
     private void sendPubRec(String clientID, int messageID) {
-        LOG.debug("Sending PUBREC message. MqttClientId = {}, messageId = {}.", clientID, messageID);
+        LOG.debug("Sending PUBREC message. ClientId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBREC, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubRecMessage = new MqttMessage(fixedHeader, from(messageID));
         connectionDescriptors.sendMessage(pubRecMessage, messageID, clientID);
     }
 
     private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("Sending PUBCOMP message. MqttClientId = {}, messageId = {}.", clientID, messageID);
+        LOG.debug("Sending PUBCOMP message. ClientId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBCOMP, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubCompMessage = new MqttMessage(fixedHeader, from(messageID));
         connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);

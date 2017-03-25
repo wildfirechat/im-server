@@ -16,6 +16,7 @@ broker/runner
 /bundle/runner/
 /osgi_test/target/
 /perf/target/
+/mapdb_storage/target/
 *~
 *log*
 .DS_Store
@@ -40,3 +41,5 @@ broker/*moquette_store.*
 embedding_moquette/target/
 broker/nb-configuration.xml
 broker/nbactions-Server.xml
+
+maven-metadata.xml

@@ -74,7 +74,7 @@ public class ClientSession {
      * @return the list of messages to be delivered for client related to the session.
      */
     public BlockingQueue<IMessagesStore.StoredMessage> queue() {
-        LOG.info("Retrieving stored messages. MqttClientId = {}.", clientID);
+        LOG.info("Retrieving enqueued messages. ClientId={}", clientID);
         return this.m_sessionsStore.queue(clientID);
     }
 
@@ -85,14 +85,14 @@ public class ClientSession {
 
     public boolean subscribe(Subscription newSubscription) {
         LOG.info(
-                "Adding new subscription. MqttClientId = {}, topics = {}, qos = {}.",
+                "Adding new subscription. ClientId={}, topics={}, qos={}",
                 newSubscription.getClientId(),
                 newSubscription.getTopicFilter(),
                 newSubscription.getRequestedQos());
         boolean validTopic = newSubscription.getTopicFilter().isValid();
         if (!validTopic) {
             LOG.warn(
-                    "The topic filter is not valid. MqttClientId = {}, topics = {}.",
+                    "The topic filter is not valid. ClientId={}, topics={}",
                     newSubscription.getClientId(),
                     newSubscription.getTopicFilter());
             // send SUBACK with 0x80 for this topic filter
@@ -103,13 +103,9 @@ public class ClientSession {
         // update the selected subscriptions if not present or if has a greater qos
         if (existingSub == null || existingSub.getRequestedQos().value() < newSubscription.getRequestedQos().value()) {
             if (existingSub != null) {
-                LOG.info(
-                        "The subscription already existed with a lower QoS value. It will be updated. "
-                        + "MqttClientId = {}, topics = {}, existingQos = {}, newQos = {}.",
-                        newSubscription.getClientId(),
-                        newSubscription.getTopicFilter(),
-                        existingSub.getRequestedQos(),
-                        newSubscription.getRequestedQos());
+                LOG.info("Subscription already existed with a lower QoS value. It will be updated. ClientId={}, " +
+                    "topics={}, existingQos={}, newQos={}", newSubscription.getClientId(),
+                    newSubscription.getTopicFilter(), existingSub.getRequestedQos(), newSubscription.getRequestedQos());
                 subscriptions.remove(newSubscription);
             }
             subscriptions.add(newSubscription);
@@ -119,7 +115,7 @@ public class ClientSession {
     }
 
     public void unsubscribeFrom(Topic topicFilter) {
-        LOG.info("Removing subscription. MqttClientID = {}, topics = {}.", clientID, topicFilter);
+        LOG.info("Removing subscription. ClientID={}, topics={}", clientID, topicFilter);
         m_sessionsStore.removeSubscription(topicFilter, clientID);
         Set<Subscription> subscriptionsToRemove = new HashSet<>();
         for (Subscription sub : this.subscriptions) {
@@ -132,18 +128,18 @@ public class ClientSession {
 
     public void disconnect() {
         if (this.cleanSession) {
-            LOG.info("The client has disconnected. Removing its subscriptions. MqttClientId = {}.", clientID);
+            LOG.info("Client disconnected. Removing its subscriptions. ClientId={}", clientID);
             // cleanup topic subscriptions
             cleanSession();
         }
     }
 
     public void cleanSession() {
-        LOG.info("Wiping existing subscriptions. MqttClientId = {}.", this.clientID);
+        LOG.info("Wiping existing subscriptions. ClientId={}", this.clientID);
         m_sessionsStore.wipeSubscriptions(this.clientID);
 
         // remove also the messages stored of type QoS1/2
-        LOG.info("Removing stored messages with QoS 1 and 2. MqttClientId = {}.", this.clientID);
+        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", this.clientID);
         messagesStore.dropMessagesInSession(this.clientID);
     }
 

@@ -57,9 +57,6 @@ public class ServerIntegrationPahoTest {
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
-        IntegrationUtils.cleanPersistenceFile(dbPath);
-
         startServer();
 
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
@@ -84,7 +81,6 @@ public class ServerIntegrationPahoTest {
 
     private void stopServer() {
         m_server.stopServer();
-        IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
     @Test
@@ -176,6 +172,7 @@ public class ServerIntegrationPahoTest {
         m_client.disconnect();
     }
 
+    @Ignore("This test hasn't any meaning using in memory storage service")
     @Test
     public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws Exception {
         LOG.info("*** testCleanSession_maintainClientSubscriptions_withServerRestart ***");

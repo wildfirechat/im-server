@@ -67,9 +67,6 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
-        IntegrationUtils.cleanPersistenceFile(dbPath);
-
         final Properties configProps = addHazelCastConf(
                 IntegrationUtils.prepareTestClusterProperties(1883),
                 1883,

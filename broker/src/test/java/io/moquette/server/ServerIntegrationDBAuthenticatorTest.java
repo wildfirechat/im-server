@@ -53,7 +53,6 @@ public class ServerIntegrationDBAuthenticatorTest {
 
     private void stopServer() {
         m_server.stopServer();
-        IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
     private Properties addDBAuthenticatorConf(Properties properties) {
@@ -67,9 +66,6 @@ public class ServerIntegrationDBAuthenticatorTest {
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
-        IntegrationUtils.cleanPersistenceFile(dbPath);
-
         startServer();
 
         m_client = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);

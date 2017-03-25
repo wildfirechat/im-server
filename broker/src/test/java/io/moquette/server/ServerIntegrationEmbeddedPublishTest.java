@@ -62,9 +62,6 @@ public class ServerIntegrationEmbeddedPublishTest {
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
-        IntegrationUtils.cleanPersistenceFile(dbPath);
-
         startServer();
 
         m_subscriber = new MqttClient("tcp://localhost:1883", "TestClient", s_dataStore);
@@ -79,7 +76,6 @@ public class ServerIntegrationEmbeddedPublishTest {
         }
 
         m_server.stopServer();
-        IntegrationUtils.cleanPersistenceFile(m_config);
     }
 
     private void subscribeToWithQos(String topic, int qos) throws Exception {

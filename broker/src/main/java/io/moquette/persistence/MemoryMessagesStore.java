@@ -14,11 +14,12 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.impl;
+package io.moquette.persistence;
 
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.MessageGUID;
+import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,11 +72,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
         m_persistentMessageStore.put(guid, storedMessage);
-        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) defaultGet(
-                m_messageToGuids,
-                storedMessage.getClientID(),
-                new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> guids = defaultGet(m_messageToGuids, storedMessage.getClientID(), emptyGuids);
         guids.put(storedMessage.getMessageID(), guid);
+        m_messageToGuids.put(storedMessage.getClientID(), guids);
         return guid;
     }
 
@@ -85,7 +85,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {
             return;
         }
-        for (MessageGUID guid : messageGUIDMap.values()) {
+        //remove all guids from retained
+        Collection<MessageGUID> messagesToRemove = new HashSet<>(messageGUIDMap.values());
+        messagesToRemove.removeAll(m_retainedStore.values());
+
+        for (MessageGUID guid : messagesToRemove) {
             m_persistentMessageStore.remove(guid);
         }
     }
@@ -111,8 +115,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public MessageGUID mapToGuid(String clientID, int messageID) {
-        HashMap<Integer, MessageGUID> guids = (HashMap<Integer, MessageGUID>) Utils
-                .defaultGet(m_messageToGuids, clientID, new HashMap<Integer, MessageGUID>());
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> guids = Utils.defaultGet(m_messageToGuids, clientID, emptyGuids);
         return guids.get(messageID);
     }
 }

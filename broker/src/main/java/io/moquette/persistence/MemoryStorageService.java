@@ -14,12 +14,11 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.impl;
+package io.moquette.persistence;
 
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.IStore;
-import io.moquette.spi.persistence.MemorySessionStore;
 
 public class MemoryStorageService implements IStore {
 

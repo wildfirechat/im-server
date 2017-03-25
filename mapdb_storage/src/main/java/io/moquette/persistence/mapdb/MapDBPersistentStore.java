@@ -14,8 +14,9 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package io.moquette.spi.persistence;
+package io.moquette.persistence.mapdb;
 
+import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
@@ -29,27 +30,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import static io.moquette.BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 
 /**
  * MapDB main persistence implementation
  */
 public class MapDBPersistentStore implements IStore {
-
-    /**
-     * This is a DTO used to persist minimal status (clean session and activation status) of a
-     * session.
-     */
-    public static class PersistentSession implements Serializable {
-
-        private static final long serialVersionUID = 5052054783220481854L;
-        public final boolean cleanSession;
-
-        public PersistentSession(boolean cleanSession) {
-            this.cleanSession = cleanSession;
-        }
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(MapDBPersistentStore.class);
 
@@ -62,8 +47,8 @@ public class MapDBPersistentStore implements IStore {
     private ISessionsStore m_sessionsStore;
 
     public MapDBPersistentStore(IConfig props, ScheduledExecutorService scheduler) {
-        this.m_storePath = props.getProperty(PERSISTENT_STORE_PROPERTY_NAME, "");
-        this.m_autosaveInterval = Integer.parseInt(props.getProperty(AUTOSAVE_INTERVAL_PROPERTY_NAME, "30"));
+        this.m_storePath = props.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, "");
+        this.m_autosaveInterval = Integer.parseInt(props.getProperty(BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME, "30"));
         this.m_scheduler = scheduler;
     }
 
@@ -135,6 +120,9 @@ public class MapDBPersistentStore implements IStore {
         LOG.info("Closing MapDB store...");
         this.m_db.close();
         LOG.info("Stopping MapDB commit tasks...");
+
+        //TODO th scheduler must be stopped by the owning (the instance of Server)
+        //invalidate the added task
         this.m_scheduler.shutdown();
         try {
             m_scheduler.awaitTermination(10L, TimeUnit.SECONDS);
