@@ -33,12 +33,12 @@ public class IntegrationUtils {
 
     static String localMapDBPath() {
         String currentDir = System.getProperty("user.dir");
-        return currentDir + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+        return currentDir + File.separator + "target" + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     }
 
     static String localClusterMapDBPath(int port) {
         String currentDir = System.getProperty("user.dir");
-        return currentDir + File.separator + port + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+        return currentDir + File.separator + "target" + File.separator + port + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
     }
 
     public static Properties prepareTestProperties() {
