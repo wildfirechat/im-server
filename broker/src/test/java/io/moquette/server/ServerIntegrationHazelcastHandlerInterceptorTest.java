@@ -1,7 +1,6 @@
 
 package io.moquette.server;
 
-import io.moquette.BrokerConstants;
 import io.moquette.interception.HazelcastInterceptHandler;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
@@ -10,14 +9,20 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import static io.moquette.BrokerConstants.*;
 import static org.junit.Assert.assertEquals;
 
 public class ServerIntegrationHazelcastHandlerInterceptorTest {
@@ -44,7 +49,7 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
 
     protected Server startServer(int port, IConfig m_config) throws IOException {
         Server m_server = new Server();
-        m_config.setProperty(BrokerConstants.PORT_PROPERTY_NAME, Integer.toString(port));
+        m_config.setProperty(PORT_PROPERTY_NAME, Integer.toString(port));
         m_server.startServer(m_config);
         return m_server;
     }
@@ -54,11 +59,9 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
     }
 
     private Properties addHazelCastConf(Properties properties, int port, String hazelcastConfigurationFile) {
-        properties.put(BrokerConstants.PORT_PROPERTY_NAME, port);
-        properties.put(
-                BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME,
-                HazelcastInterceptHandler.class.getCanonicalName());
-        properties.put(BrokerConstants.HAZELCAST_CONFIGURATION, hazelcastConfigurationFile);
+        properties.put(PORT_PROPERTY_NAME, port);
+        properties.put(INTERCEPT_HANDLER_PROPERTY_NAME, HazelcastInterceptHandler.class.getCanonicalName());
+        properties.put(HAZELCAST_CONFIGURATION, hazelcastConfigurationFile);
         return properties;
     }
 
