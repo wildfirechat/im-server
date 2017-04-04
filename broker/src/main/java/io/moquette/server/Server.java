@@ -95,7 +95,7 @@ public class Server {
      */
     public void startServer() throws IOException {
         File defaultConfigurationFile = defaultConfigFile();
-        LOG.info("Starting Moquette server. Configuration file path = {}.", defaultConfigurationFile.getAbsolutePath());
+        LOG.info("Starting Moquette server. Configuration file path={}", defaultConfigurationFile.getAbsolutePath());
         IResourceLoader filesystemLoader = new FileResourceLoader(defaultConfigurationFile);
         final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
@@ -115,7 +115,7 @@ public class Server {
      *             in case of any IO Error.
      */
     public void startServer(File configFile) throws IOException {
-        LOG.info("Starting Moquette server. Configuration file path = {}.", configFile.getAbsolutePath());
+        LOG.info("Starting Moquette server. Configuration file path={}", configFile.getAbsolutePath());
         IResourceLoader filesystemLoader = new FileResourceLoader(configFile);
         final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
@@ -136,7 +136,7 @@ public class Server {
      *             in case of any IO Error.
      */
     public void startServer(Properties configProps) throws IOException {
-        LOG.info("Starting Moquette server using properties object...");
+        LOG.info("Starting Moquette server using properties object");
         final IConfig config = new MemoryConfig(configProps);
         startServer(config);
     }
@@ -166,7 +166,7 @@ public class Server {
      *             in case of any IO Error.
      */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
-        LOG.info("Starting moquette server using IConfig instance and intercept handlers...");
+        LOG.info("Starting moquette server using IConfig instance and intercept handlers");
         startServer(config, handlers, null, null, null);
     }
 
@@ -175,7 +175,7 @@ public class Server {
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
-        LOG.info("Starting Moquette Server. MQTT message interceptors = {}.", getInterceptorIds(handlers));
+        LOG.info("Starting Moquette Server. MQTT message interceptors={}", getInterceptorIds(handlers));
 
         scheduler = Executors.newScheduledThreadPool(1);
 
@@ -184,30 +184,28 @@ public class Server {
             config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp);
         }
         configureCluster(config);
-        LOG.info(
-                "Configuring Using persistent store file. Path = {}.",
-                config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
+        final String persistencePath = config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME);
+        LOG.info("Configuring Using persistent store file, path={}", persistencePath);
         m_processorBootstrapper = new ProtocolProcessorBootstrapper();
-        LOG.info("Initializing MQTT protocol processor...");
-        final ProtocolProcessor processor = m_processorBootstrapper
-                .init(config, handlers, authenticator, authorizator, this);
-
+        final ProtocolProcessor processor = m_processorBootstrapper.init(config, handlers, authenticator, authorizator,
+            this);
+        LOG.info("Initialized MQTT protocol processor");
         if (sslCtxCreator == null) {
-            LOG.warn("Using default SSL context creator...");
+            LOG.warn("Using default SSL context creator");
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
         }
 
-        LOG.info("Binding server to the configured ports...");
+        LOG.info("Binding server to the configured ports");
         m_acceptor = new NettyAcceptor();
         m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
 
-        LOG.info("The Moquette server has been initialized successfully.");
+        LOG.info("Moquette server has been initialized successfully");
         m_initialized = true;
     }
 
     private void configureCluster(IConfig config) throws FileNotFoundException {
-        LOG.info("Configuring embedded Hazelcast instance...");
+        LOG.info("Configuring embedded Hazelcast instance");
         String interceptHandlerClassname = config.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (interceptHandlerClassname == null || !HZ_INTERCEPT_HANDLER.equals(interceptHandlerClassname)) {
             LOG.info("There are no Hazelcast intercept handlers. The server won't start a Hazelcast instance.");
@@ -219,17 +217,17 @@ public class Server {
             Config hzconfig = isHzConfigOnClasspath
                     ? new ClasspathXmlConfig(hzConfigPath)
                     : new FileSystemXmlConfig(hzConfigPath);
-            LOG.info("Starting Hazelcast instance. ConfigurationFile = {}.", hzconfig);
+            LOG.info("Starting Hazelcast instance. ConfigurationFile={}", hzconfig);
             hazelcastInstance = Hazelcast.newHazelcastInstance(hzconfig);
         } else {
-            LOG.info("Starting Hazelcast instance with default configuration.");
+            LOG.info("Starting Hazelcast instance with default configuration");
             hazelcastInstance = Hazelcast.newHazelcastInstance();
         }
         listenOnHazelCastMsg();
     }
 
     private void listenOnHazelCastMsg() {
-        LOG.info("Subscribing to Hazelcast topic. TopicName = {}.", "moquette");
+        LOG.info("Subscribing to Hazelcast topic. TopicName={}", "moquette");
         HazelcastInstance hz = getHazelcastInstance();
         ITopic<HazelcastMsg> topic = hz.getTopic("moquette");
         topic.addMessageListener(new HazelcastListener(this));
@@ -253,34 +251,32 @@ public class Server {
     public void internalPublish(MqttPublishMessage msg, final String clientId) {
         final int messageID = msg.variableHeader().messageId();
         if (!m_initialized) {
-            LOG.error(
-                    "The server is not started. The message cannot be published. MqttClientId = {}, messageId = {}",
-                    clientId,
-                    messageID);
+            LOG.error("Moquette is not started, internal message cannot be published. CId={}, messageId={}", clientId,
+                messageID);
             throw new IllegalStateException("Can't publish on a server is not yet started");
         }
-        LOG.debug("Publishing message. MqttClientId = {}, messageId = {}", clientId, messageID);
+        LOG.debug("Publishing message. CId={}, messageId={}", clientId, messageID);
         m_processor.internalPublish(msg, clientId);
     }
 
     public void stopServer() {
-        LOG.info("Unbinding server from the configured ports...");
+        LOG.info("Unbinding server from the configured ports");
         m_acceptor.close();
-        LOG.info("Stopping MQTT protocol processor...");
+        LOG.trace("Stopping MQTT protocol processor");
         m_processorBootstrapper.shutdown();
         m_initialized = false;
         if (hazelcastInstance != null) {
-            LOG.info("Stopping embedded Hazelcast instance...");
+            LOG.trace("Stopping embedded Hazelcast instance");
             try {
                 hazelcastInstance.shutdown();
             } catch (HazelcastInstanceNotActiveException e) {
-                LOG.warn("The embedded Hazelcast instance is already shut down.");
+                LOG.warn("embedded Hazelcast instance is already shut down.");
             }
         }
 
         scheduler.shutdown();
 
-        LOG.info("The Moquette server has been stopped.");
+        LOG.info("Moquette server has been stopped.");
     }
 
     /**
@@ -304,12 +300,11 @@ public class Server {
      */
     public void addInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
-            LOG.error(
-                    "The server is not started. The MQTT message interceptor cannot be added. InterceptorId = {}.",
-                    interceptHandler.getID());
+            LOG.error("Moquette is not started, MQTT message interceptor cannot be added. InterceptorId={}",
+                interceptHandler.getID());
             throw new IllegalStateException("Can't register interceptors on a server that is not yet started");
         }
-        LOG.info("Adding MQTT message interceptor. InterceptorId = {}.", interceptHandler.getID());
+        LOG.info("Adding MQTT message interceptor. InterceptorId={}", interceptHandler.getID());
         m_processor.addInterceptHandler(interceptHandler);
     }
 
@@ -321,12 +316,11 @@ public class Server {
      */
     public void removeInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
-            LOG.error(
-                    "The server is not started. The MQTT message interceptor cannot be removed. InterceptorId = {}.",
-                    interceptHandler.getID());
+            LOG.error("Moquette is not started, MQTT message interceptor cannot be removed. InterceptorId={}",
+                interceptHandler.getID());
             throw new IllegalStateException("Can't deregister interceptors from a server that is not yet started");
         }
-        LOG.info("Removing MQTT message interceptor. InterceptorId = {}.", interceptHandler.getID());
+        LOG.info("Removing MQTT message interceptor. InterceptorId={}", interceptHandler.getID());
         m_processor.removeInterceptHandler(interceptHandler);
     }
 

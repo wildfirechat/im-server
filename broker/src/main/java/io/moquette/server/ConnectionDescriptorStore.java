@@ -43,16 +43,10 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
             ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
             if (descriptor == null) {
                 if (messageID != null) {
-                    LOG.error(
-                            "Client has just disconnected. The {} message could not be sent. CId=<{}>, messageId={}",
-                            messageType,
-                            clientID,
-                            messageID);
+                    LOG.error("Client has just disconnected. {} message could not be sent. CId=<{}>, messageId={}",
+                        messageType, clientID, messageID);
                 } else {
-                    LOG.error(
-                            "Client has just disconnected. The {} could not be sent. CId=<{}>",
-                            messageType,
-                            clientID);
+                    LOG.error("Client has just disconnected. {} could not be sent. CId=<{}>", messageType, clientID);
                 }
                 /*
                  * If the client has just disconnected, its connection descriptor will be null. We
@@ -103,11 +97,8 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
     public boolean closeConnection(String clientID, boolean closeImmediately) {
         ConnectionDescriptor descriptor = connectionDescriptors.get(clientID);
         if (descriptor == null) {
-            LOG.error(
-                    "The connection descriptor doesn't exist. "
-                    + "The MQTT connection cannot be closed. CId=<{}>, closeImmediately = {}.",
-                    clientID,
-                    closeImmediately);
+            LOG.error("Connection descriptor doesn't exist. MQTT connection cannot be closed. CId=<{}>, " +
+                "closeImmediately={}", clientID, closeImmediately);
             return false;
         }
         if (closeImmediately) {
@@ -123,7 +114,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         LOG.info("Retrieving status of session. CId=<{}>", clientID);
         ClientSession session = sessionsStore.sessionForClient(clientID);
         if (session == null) {
-            LOG.error("The given MQTT client ID doesn't have an associated session. CId=<{}>", clientID);
+            LOG.error("MQTT client ID doesn't have an associated session. CId=<{}>", clientID);
             return null;
         }
         return buildMqttSession(session);
@@ -143,12 +134,8 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
         MqttSession result = new MqttSession();
         Collection<MqttSubscription> mqttSubscriptions = new ArrayList<>();
         for (Subscription subscription : session.getSubscriptions()) {
-            mqttSubscriptions.add(
-                    new MqttSubscription(
-                            subscription.getRequestedQos().toString(),
-                            subscription.getClientId(),
-                            subscription.getTopicFilter().toString(),
-                            subscription.isActive()));
+            mqttSubscriptions.add(new MqttSubscription(subscription.getRequestedQos().toString(),
+                subscription.getClientId(), subscription.getTopicFilter().toString(), subscription.isActive()));
         }
         result.setActiveSubscriptions(mqttSubscriptions);
         result.setCleanSession(session.isCleanSession());
@@ -157,19 +144,14 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
             result.setConnectionEstablished(true);
             BytesMetrics bytesMetrics = descriptor.getBytesMetrics();
             MessageMetrics messageMetrics = descriptor.getMessageMetrics();
-            result.setConnectionMetrics(
-                    new MqttConnectionMetrics(
-                            bytesMetrics.readBytes(),
-                            bytesMetrics.wroteBytes(),
-                            messageMetrics.messagesRead(),
-                            messageMetrics.messagesWrote()));
+            result.setConnectionMetrics(new MqttConnectionMetrics(bytesMetrics.readBytes(), bytesMetrics.wroteBytes(),
+                messageMetrics.messagesRead(), messageMetrics.messagesWrote()));
         } else {
             result.setConnectionEstablished(false);
         }
         result.setPendingPublishMessagesNo(session.getPendingPublishMessagesNo());
         result.setSecondPhaseAckPendingMessages(session.getSecondPhaseAckPendingMessages());
         result.setInflightMessages(session.getInflightMessagesNo());
-        LOG.info("The status of the session has been retrieved successfully. CId=<{}>", session.clientID);
         return result;
     }
 

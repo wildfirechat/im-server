@@ -63,25 +63,20 @@ class MessagesPublisher {
             // refCnt = 0
             ByteBuf message = origMessage.retainedDuplicate();
             if (targetIsActive) {
-                LOG.debug(
-                        "Sending PUBLISH message to active subscriber. MessageId={}, CId={}, topicFilter={}, qos={}",
-                        pubMsg.getMessageID(),
-                        sub.getClientId(),
-                        sub.getTopicFilter(),
-                        qos);
+                LOG.debug("Sending PUBLISH message to active subscriber. CId={}, topicFilter={}, qos={}",
+                    sub.getClientId(), sub.getTopicFilter(), qos);
                 MqttPublishMessage publishMsg = notRetainedPublish(topic, qos, message);
                 if (qos != MqttQoS.AT_MOST_ONCE) {
                     // QoS 1 or 2
-                    int messageId = targetSession.nextPacketId();
-                    targetSession.inFlightAckWaiting(guid, messageId);
+                    int messageId = targetSession.inFlightAckWaiting(guid);
                     // set the PacketIdentifier only for QoS > 0
                     publishMsg = notRetainedPublishWithMessageId(topic, qos, message, messageId);
                 }
                 this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
                 if (!targetSession.isCleanSession()) {
-                    LOG.debug("Storing pending PUBLISH inactive message. MessageId={}, CId={}, topicFilter={}, qos={}",
-                        pubMsg.getMessageID(), sub.getClientId(), sub.getTopicFilter(), qos);
+                    LOG.debug("Storing pending PUBLISH inactive message. CId={}, topicFilter={}, qos={}",
+                        sub.getClientId(), sub.getTopicFilter(), qos);
                     // store the message in targetSession queue to deliver
                     targetSession.enqueue(pubMsg);
                 }

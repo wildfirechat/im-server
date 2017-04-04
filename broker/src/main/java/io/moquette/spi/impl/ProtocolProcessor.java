@@ -474,7 +474,7 @@ public class ProtocolProcessor {
         targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
+        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
     }
 
     public static IMessagesStore.StoredMessage asStoredMessage(MqttPublishMessage msg) {
@@ -485,7 +485,6 @@ public class ProtocolProcessor {
         IMessagesStore.StoredMessage stored = new IMessagesStore.StoredMessage(payloadContent,
                 msg.fixedHeader().qosLevel(), msg.variableHeader().topicName());
         stored.setRetained(msg.fixedHeader().isRetain());
-        stored.setMessageID(msg.variableHeader().messageId());
         return stored;
     }
 
@@ -540,7 +539,6 @@ public class ProtocolProcessor {
         } else {
             toStoreMsg.setClientID(clientId);
         }
-        toStoreMsg.setMessageID(1);
         if (qos == EXACTLY_ONCE) { // QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
@@ -568,18 +566,12 @@ public class ProtocolProcessor {
     private void forwardPublishWill(WillMessage will, String clientID) {
         // it has just to publish the message downstream to the subscribers
         // NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
-        Integer messageId = null;
-        if (will.getQos() != AT_MOST_ONCE) {
-            messageId = m_sessionsStore.nextPacketID(clientID);
-        }
-
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
         tobeStored.setClientID(clientID);
-        tobeStored.setMessageID(messageId);
         Topic topic = new Topic(tobeStored.getTopic());
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
-        LOG.info("Publishing will message. CId={}, messageId={}, topic={}", clientID, messageId, topic);
+        LOG.info("Publishing will message. CId={}, topic={}", clientID, topic);
         this.messagesPublisher.publish2Subscribers(tobeStored, topicMatchingSubscriptions);
     }
 
@@ -626,7 +618,7 @@ public class ProtocolProcessor {
         StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username));
+        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
     }
 
     public void processDisconnect(Channel channel) throws InterruptedException {
@@ -759,8 +751,7 @@ public class ProtocolProcessor {
             if (!validTopic) {
                 // close the connection, not valid topicFilter is a protocol violation
                 channel.close();
-                LOG.error( "Topic filter is not valid. CId={}, topics={}, badTopicFilter={}", clientID, topics,
-                    topic);
+                LOG.error("Topic filter is not valid. CId={}, topics={}, badTopicFilter={}", clientID, topics, topic);
                 return;
             }
 

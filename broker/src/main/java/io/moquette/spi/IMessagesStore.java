@@ -37,8 +37,6 @@ public interface IMessagesStore {
         final String m_topic;
         private boolean m_retained;
         private String m_clientID;
-        // Optional attribute, available only fo QoS 1 and 2
-        private Integer m_msgID;
         private MessageGUID m_guid;
 
         public StoredMessage(byte[] message, MqttQoS qos, String topic) {
@@ -75,14 +73,6 @@ public interface IMessagesStore {
             this.m_clientID = m_clientID;
         }
 
-        public void setMessageID(Integer messageID) {
-            this.m_msgID = messageID;
-        }
-
-        public Integer getMessageID() {
-            return m_msgID;
-        }
-
         public ByteBuf getMessage() {
             return Unpooled.copiedBuffer(m_payload);
         }
@@ -97,7 +87,7 @@ public interface IMessagesStore {
 
         @Override
         public String toString() {
-            return "PublishEvent{" + "m_msgID=" + m_msgID + ", clientID='" + m_clientID + '\'' + ", m_retain="
+            return "PublishEvent{clientID='" + m_clientID + '\'' + ", m_retain="
                     + m_retained + ", m_qos=" + m_qos + ", m_topic='" + m_topic + '\'' + '}';
         }
     }
@@ -135,13 +125,9 @@ public interface IMessagesStore {
      */
     MessageGUID storePublishForFuture(StoredMessage storedMessage);
 
-    void dropMessagesInSession(String clientID);
+    void dropInFlightMessagesInSession(Collection<MessageGUID> pendingAckMessages);
 
     StoredMessage getMessageByGuid(MessageGUID guid);
 
     void cleanRetained(Topic topic);
-
-    int getPendingPublishMessages(String clientID);
-
-    MessageGUID mapToGuid(String clientID, int messageID);
 }

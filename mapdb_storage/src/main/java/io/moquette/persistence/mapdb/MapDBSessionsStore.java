@@ -28,6 +28,7 @@ import io.moquette.spi.impl.subscriptions.Topic;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -311,8 +312,23 @@ class MapDBSessionsStore implements ISessionsStore {
     }
 
     @Override
+    public StoredMessage inboundInflight(String clientID, int messageID) {
+        LOG.debug("Mapping inbound message ID to GUID CId={}, messageId={}", clientID, messageID);
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(inboundMessageId2GuidsMapName(clientID));
+        final MessageGUID guid = messageIdToGuid.get(messageID);
+        LOG.debug("Inbound message ID has been mapped CId={}, messageId={}, guid={}", clientID, messageID, guid);
+        return m_messagesStore.getMessageByGuid(guid);
+    }
+
+    @Override
+    public void markAsInboundInflight(String clientID, int messageID, MessageGUID guid) {
+        ConcurrentMap<Integer, MessageGUID> messageIdToGuid = m_db.getHashMap(inboundMessageId2GuidsMapName(clientID));
+        messageIdToGuid.put(messageID, guid);
+    }
+
+    @Override
     public int getPendingPublishMessagesNo(String clientID) {
-        return m_messagesStore.getPendingPublishMessages(clientID);
+        return queue(clientID).size();
     }
 
     @Override
@@ -321,5 +337,23 @@ class MapDBSessionsStore implements ISessionsStore {
             return 0;
         else
             return m_secondPhaseStore.get(clientID).size();
+    }
+
+    @Override
+    public Collection<MessageGUID> pendingAck(String clientID) {
+        ConcurrentMap<Integer, MessageGUID> messageGUIDMap = m_db.getHashMap(messageId2GuidsMapName(clientID));
+        if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(messageGUIDMap.values());
+    }
+
+    static String messageId2GuidsMapName(String clientID) {
+        return "guidsMapping_" + clientID;
+    }
+
+    static String inboundMessageId2GuidsMapName(String clientID) {
+        return "inboundInflightGuidsMapping_" + clientID;
     }
 }

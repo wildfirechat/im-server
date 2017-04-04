@@ -1,4 +1,6 @@
 Version 0.10:
+    Separated in memory and MapDB storage implementations
+    Cleanly separated inflight part (inbound and outbound)
     
 
 Version 0.9:

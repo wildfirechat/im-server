@@ -8,11 +8,13 @@ public class InterceptAcknowledgedMessage implements InterceptMessage {
     final private StoredMessage msg;
     private final String username;
     private final String topic;
+    private final int packetID;
 
-    public InterceptAcknowledgedMessage(final StoredMessage msg, final String topic, final String username) {
+    public InterceptAcknowledgedMessage(StoredMessage msg, String topic, String username, int packetID) {
         this.msg = msg;
         this.username = username;
         this.topic = topic;
+        this.packetID = packetID;
     }
 
     public StoredMessage getMsg() {
@@ -25,5 +27,9 @@ public class InterceptAcknowledgedMessage implements InterceptMessage {
 
     public String getTopic() {
         return topic;
+    }
+
+    public int getPacketID() {
+        return packetID;
     }
 }

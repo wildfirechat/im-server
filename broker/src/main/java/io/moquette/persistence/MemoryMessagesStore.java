@@ -35,7 +35,6 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private Map<Topic, MessageGUID> m_retainedStore = new HashMap<>();
     private Map<MessageGUID, StoredMessage> m_persistentMessageStore = new HashMap<>();
-    private Map<String, Map<Integer, MessageGUID>> m_messageToGuids = new HashMap<>();
 
     MemoryMessagesStore() {
     }
@@ -72,21 +71,13 @@ public class MemoryMessagesStore implements IMessagesStore {
         MessageGUID guid = new MessageGUID(UUID.randomUUID().toString());
         storedMessage.setGuid(guid);
         m_persistentMessageStore.put(guid, storedMessage);
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> guids = defaultGet(m_messageToGuids, storedMessage.getClientID(), emptyGuids);
-        guids.put(storedMessage.getMessageID(), guid);
-        m_messageToGuids.put(storedMessage.getClientID(), guids);
         return guid;
     }
 
     @Override
-    public void dropMessagesInSession(String clientID) {
-        Map<Integer, MessageGUID> messageGUIDMap = m_messageToGuids.get(clientID);
-        if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {
-            return;
-        }
+    public void dropInFlightMessagesInSession(Collection<MessageGUID> pendingAckMessages) {
         //remove all guids from retained
-        Collection<MessageGUID> messagesToRemove = new HashSet<>(messageGUIDMap.values());
+        Collection<MessageGUID> messagesToRemove = new HashSet<>(pendingAckMessages);
         messagesToRemove.removeAll(m_retainedStore.values());
 
         for (MessageGUID guid : messagesToRemove) {
@@ -102,21 +93,5 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public void cleanRetained(Topic topic) {
         m_retainedStore.remove(topic);
-    }
-
-    @Override
-    public int getPendingPublishMessages(String clientID) {
-        Map<Integer, MessageGUID> messageToGuids = m_messageToGuids.get(clientID);
-        if (messageToGuids == null)
-            return 0;
-        else
-            return messageToGuids.size();
-    }
-
-    @Override
-    public MessageGUID mapToGuid(String clientID, int messageID) {
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> guids = Utils.defaultGet(m_messageToGuids, clientID, emptyGuids);
-        return guids.get(messageID);
     }
 }

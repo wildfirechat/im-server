@@ -25,17 +25,16 @@ class InternalRepublisher {
     void publishRetained(ClientSession targetSession, Collection<IMessagesStore.StoredMessage> messages) {
         for (IMessagesStore.StoredMessage storedMsg : messages) {
             // fire as retained the message
-            Integer packetID = storedMsg.getQos() == MqttQoS.AT_MOST_ONCE ? null : targetSession.nextPacketId();
-            if (packetID != null) {
-                LOG.debug("Adding message to inflight zone. ClientId={}, packetId={}, messageId={}, topic={}",
-                    targetSession.clientID, packetID, storedMsg.getMessageID(), storedMsg.getTopic());
-                targetSession.inFlightAckWaiting(storedMsg.getGuid(), packetID);
-            }
             MqttPublishMessage publishMsg = retainedPublish(storedMsg);
-            // set the PacketIdentifier only for QoS > 0
-            if (publishMsg.fixedHeader().qosLevel() != MqttQoS.AT_MOST_ONCE) {
+            if (storedMsg.getQos() != MqttQoS.AT_MOST_ONCE) {
+                LOG.debug("Adding message to inflight zone. ClientId={}, topic={}", targetSession.clientID,
+                    storedMsg.getTopic());
+                int packetID = targetSession.inFlightAckWaiting(storedMsg.getGuid());
+
+                // set the PacketIdentifier only for QoS > 0
                 publishMsg = retainedPublish(storedMsg, packetID);
             }
+
             this.messageSender.sendPublish(targetSession, publishMsg);
         }
     }
@@ -46,13 +45,13 @@ class InternalRepublisher {
 
         for (IMessagesStore.StoredMessage pubEvt : storedPublishes) {
             // put in flight zone
-            LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}, messageId={}, topic={}",
-                clientSession.clientID, pubEvt.getGuid(), pubEvt.getMessageID(), pubEvt.getTopic());
-            clientSession.inFlightAckWaiting(pubEvt.getGuid(), pubEvt.getMessageID());
+            LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}, topic={}", clientSession.clientID,
+                pubEvt.getGuid(), pubEvt.getTopic());
+            int messageId = clientSession.inFlightAckWaiting(pubEvt.getGuid());
             MqttPublishMessage publishMsg = notRetainedPublish(pubEvt);
             // set the PacketIdentifier only for QoS > 0
             if (publishMsg.fixedHeader().qosLevel() != MqttQoS.AT_MOST_ONCE) {
-                publishMsg = notRetainedPublish(pubEvt, pubEvt.getMessageID());
+                publishMsg = notRetainedPublish(pubEvt, messageId);
             }
             this.messageSender.sendPublish(clientSession, publishMsg);
         }

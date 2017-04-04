@@ -31,6 +31,8 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import static io.moquette.spi.impl.Utils.defaultGet;
+
 /**
  *
  * @author andrea
@@ -45,11 +47,14 @@ public class MemorySessionStore implements ISessionsStore {
 
     // maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_inflightStore = new HashMap<>();
-    // private Map<String, Set<Integer>> m_inflightIDs = new HashMap<>();
     // maps clientID->BlockingQueue
     private Map<String, BlockingQueue<StoredMessage>> queues = new HashMap<>();
     // maps clientID->[MessageId -> guid]
     private Map<String, Map<Integer, MessageGUID>> m_secondPhaseStore = new HashMap<>();
+
+    private Map<String, Map<Integer, MessageGUID>> outboundFlightMessageToGuid = new HashMap<>();
+
+    private Map<String, Map<Integer, MessageGUID>> inboundFlightMessageToGuid = new HashMap<>();
 
     private final IMessagesStore m_messagesStore;
 
@@ -176,6 +181,11 @@ public class MemorySessionStore implements ISessionsStore {
         }
         m.put(messageID, guid);
         this.m_inflightStore.put(clientID, m);
+
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> guids = defaultGet(outboundFlightMessageToGuid, clientID, emptyGuids);
+        guids.put(messageID, guid);
+        outboundFlightMessageToGuid.put(clientID, guids);
     }
 
     /**
@@ -252,8 +262,24 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public StoredMessage inboundInflight(String clientID, int messageID) {
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> guids = Utils.defaultGet(inboundFlightMessageToGuid, clientID, emptyGuids);
+        final MessageGUID guid = guids.get(messageID);
+        return m_messagesStore.getMessageByGuid(guid);
+    }
+
+    @Override
+    public void markAsInboundInflight(String clientID, int messageID, MessageGUID guid) {
+        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
+        Map<Integer, MessageGUID> guids = Utils.defaultGet(inboundFlightMessageToGuid, clientID, emptyGuids);
+        guids.put(messageID, guid);
+        inboundFlightMessageToGuid.put(clientID, guids);
+    }
+
+    @Override
     public int getPendingPublishMessagesNo(String clientID) {
-        return m_messagesStore.getPendingPublishMessages(clientID);
+        return queues.get(clientID).size();
     }
 
     @Override
@@ -265,4 +291,13 @@ public class MemorySessionStore implements ISessionsStore {
             return pendingAcks.size();
     }
 
+    @Override
+    public Collection<MessageGUID> pendingAck(String clientID) {
+        Map<Integer, MessageGUID> messageGUIDMap = outboundFlightMessageToGuid.get(clientID);
+        if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(messageGUIDMap.values());
+    }
 }

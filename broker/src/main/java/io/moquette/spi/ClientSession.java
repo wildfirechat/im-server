@@ -43,6 +43,39 @@ import java.util.concurrent.BlockingQueue;
  */
 public class ClientSession {
 
+    class OutboundFlightZone {
+
+        /**
+         * Save the binding messageID, clientID - guid
+
+         * @param messageID the packet ID used in transmission
+         * @param guid the guid of the message being in flight.
+         */
+        void waitingAck(int messageID, MessageGUID guid) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
+            }
+            m_sessionsStore.inFlight(ClientSession.this.clientID, messageID, guid);
+        }
+
+        void acknowledged(int messageID) {
+            if (LOG.isTraceEnabled())
+                LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", ClientSession.this.clientID, messageID);
+            m_sessionsStore.inFlightAck(ClientSession.this.clientID, messageID);
+        }
+    }
+
+    class InboundFlightZone {
+
+        public IMessagesStore.StoredMessage lookup(int messageID) {
+            return m_sessionsStore.inboundInflight(clientID, messageID);
+        }
+
+        public void waitingRel(int messageID, MessageGUID guid) {
+            m_sessionsStore.markAsInboundInflight(clientID, messageID, guid);
+        }
+    }
+
     private final static Logger LOG = LoggerFactory.getLogger(ClientSession.class);
 
     public final String clientID;
@@ -57,6 +90,8 @@ public class ClientSession {
 
     // private BlockingQueue<AbstractMessage> m_queueToPublish = new
     // ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
+    private final OutboundFlightZone outboundFlightZone;
+    private final InboundFlightZone inboundFlightZone;
 
     public ClientSession(String clientID, IMessagesStore messagesStore, ISessionsStore sessionsStore,
             boolean cleanSession) {
@@ -64,6 +99,8 @@ public class ClientSession {
         this.messagesStore = messagesStore;
         this.m_sessionsStore = sessionsStore;
         this.cleanSession = cleanSession;
+        this.outboundFlightZone = new OutboundFlightZone();
+        this.inboundFlightZone = new InboundFlightZone();
     }
 
     /**
@@ -84,17 +121,12 @@ public class ClientSession {
     }
 
     public boolean subscribe(Subscription newSubscription) {
-        LOG.info(
-                "Adding new subscription. ClientId={}, topics={}, qos={}",
-                newSubscription.getClientId(),
-                newSubscription.getTopicFilter(),
-                newSubscription.getRequestedQos());
+        LOG.info("Adding new subscription. ClientId={}, topics={}, qos={}", newSubscription.getClientId(),
+            newSubscription.getTopicFilter(), newSubscription.getRequestedQos());
         boolean validTopic = newSubscription.getTopicFilter().isValid();
         if (!validTopic) {
-            LOG.warn(
-                    "The topic filter is not valid. ClientId={}, topics={}",
-                    newSubscription.getClientId(),
-                    newSubscription.getTopicFilter());
+            LOG.warn("The topic filter is not valid. ClientId={}, topics={}", newSubscription.getClientId(),
+                newSubscription.getTopicFilter());
             // send SUBACK with 0x80 for this topic filter
             return false;
         }
@@ -140,7 +172,10 @@ public class ClientSession {
 
         // remove also the messages stored of type QoS1/2
         LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", this.clientID);
-        messagesStore.dropMessagesInSession(this.clientID);
+        messagesStore.dropInFlightMessagesInSession(m_sessionsStore.pendingAck(this.clientID));
+
+        //remove also the enqueued messages
+        this.m_sessionsStore.dropQueue(this.clientID);
     }
 
     public boolean isCleanSession() {
@@ -157,15 +192,19 @@ public class ClientSession {
     }
 
     public void inFlightAcknowledged(int messageID) {
-        if (LOG.isTraceEnabled())
-            LOG.trace("Acknowledging inflight, clientID <{}> messageID {}", this.clientID, messageID);
-        m_sessionsStore.inFlightAck(this.clientID, messageID);
+        outboundFlightZone.acknowledged(messageID);
     }
 
-    public void inFlightAckWaiting(MessageGUID guid, int messageID) {
-        if (LOG.isTraceEnabled())
-            LOG.trace("Adding to inflight {}, guid <{}>", messageID, guid);
-        m_sessionsStore.inFlight(this.clientID, messageID, guid);
+    /**
+     * Mark the message identified by guid as publish in flight.
+     *
+     * @return the packetID for the message in flight.
+     * */
+    public int inFlightAckWaiting(MessageGUID guid) {
+        LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}", clientID, guid);
+        int messageId = ClientSession.this.nextPacketId();
+        outboundFlightZone.waitingAck(messageId, guid);
+        return messageId;
     }
 
     public IMessagesStore.StoredMessage secondPhaseAcknowledged(int messageID) {
@@ -183,9 +222,12 @@ public class ClientSession {
         this.m_sessionsStore.queue(this.clientID).add(message);
     }
 
-    public IMessagesStore.StoredMessage storedMessage(int messageID) {
-        final MessageGUID guid = messagesStore.mapToGuid(clientID, messageID);
-        return messagesStore.getMessageByGuid(guid);
+    public IMessagesStore.StoredMessage inboundInflight(int messageID) {
+        return inboundFlightZone.lookup(messageID);
+    }
+
+    public void markAsInboundInflight(int messageID, MessageGUID guid) {
+        inboundFlightZone.waitingRel(messageID, guid);
     }
 
     public void moveInFlightToSecondPhaseAckWaiting(int messageID) {

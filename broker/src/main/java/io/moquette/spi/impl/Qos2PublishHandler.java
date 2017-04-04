@@ -16,6 +16,8 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
+
+import static io.moquette.spi.impl.DebugUtils.payload2Str;
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.moquette.spi.impl.Utils.messageId;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
@@ -23,7 +25,7 @@ import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 class Qos2PublishHandler extends QosPublishHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Qos1PublishHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Qos2PublishHandler.class);
 
     private final SubscriptionsStore subscriptions;
     private final IMessagesStore m_messagesStore;
@@ -57,18 +59,16 @@ class Qos2PublishHandler extends QosPublishHandler {
         String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
+        LOG.info("Sending publish message to subscribers CId={}, topic={}, messageId={}", clientID, topic, messageID);
         if (LOG.isTraceEnabled()) {
-            LOG.trace( "Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
-                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(toStoreMsg.getMessage()),
-                subscriptions.dumpTree());
-        } else {
-            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
-                messageID);
+            LOG.trace("payload={}, subs Tree={}", payload2Str(toStoreMsg.getMessage()), subscriptions.dumpTree());
         }
 
         // QoS2
         MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-        // TODO Don't send PUBREC for Hz publish notification, if (msg.isLocal()) {
+        ClientSession sourceSession = m_sessionsStore.sessionForClient(clientID);
+        sourceSession.markAsInboundInflight(messageID, guid);
+
         sendPubRec(clientID, messageID);
 
         // Next the client will send us a pub rel
@@ -92,18 +92,22 @@ class Qos2PublishHandler extends QosPublishHandler {
     void processPubRel(Channel channel, MqttMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = messageId(msg);
-        LOG.info("Processing PUBREL message. ClientId={}, messageId={}", clientID, messageID);
+        LOG.info("Processing PUBREL message. CId={}, messageId={}", clientID, messageID);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        IMessagesStore.StoredMessage evt = targetSession.storedMessage(messageID);
+        IMessagesStore.StoredMessage evt = targetSession.inboundInflight(messageID);
+        if (evt == null) {
+            LOG.warn("Can't find inbound inflight message for CId={}, messageId={}", clientID, messageID);
+            throw new IllegalArgumentException("Can't find inbound inflight message");
+        }
         final Topic topic = new Topic(evt.getTopic());
         List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
-                "subscriptionTree={}", clientID, topic, messageID, DebugUtils.payload2Str(evt.getMessage()),
+            LOG.debug("Sending publish message to subscribers. CId={}, topic={}, messageId={}, payload={}, " +
+                "subscriptionTree={}", clientID, topic, messageID, payload2Str(evt.getMessage()),
                 subscriptions.dumpTree());
         } else {
-            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", clientID, topic,
+            LOG.info("Sending publish message to subscribers. CId={}, topic={}, messageId={}", clientID, topic,
                 messageID);
         }
         this.publisher.publish2Subscribers(evt, topicMatchingSubscriptions);
@@ -120,14 +124,14 @@ class Qos2PublishHandler extends QosPublishHandler {
     }
 
     private void sendPubRec(String clientID, int messageID) {
-        LOG.debug("Sending PUBREC message. ClientId={}, messageId={}", clientID, messageID);
+        LOG.debug("Sending PUBREC message. CId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBREC, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubRecMessage = new MqttMessage(fixedHeader, from(messageID));
         connectionDescriptors.sendMessage(pubRecMessage, messageID, clientID);
     }
 
     private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("Sending PUBCOMP message. ClientId={}, messageId={}", clientID, messageID);
+        LOG.debug("Sending PUBCOMP message. CId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBCOMP, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubCompMessage = new MqttMessage(fixedHeader, from(messageID));
         connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);

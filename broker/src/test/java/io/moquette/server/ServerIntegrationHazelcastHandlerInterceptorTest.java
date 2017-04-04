@@ -9,10 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,14 +111,22 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
         MqttMessage messageQos0 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS0", messageQos0.toString());
         assertEquals(0, messageQos0.getQos());
+    }
 
+    @Test
+    public void checkPublishPassThroughCluster_Qos1() throws Exception {
+        LOG.info("*** checkPublishPassThroughCluster_Qos1 ***");
         m_listener.subscribe("/topic", 1);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(), 1, false);
         MqttMessage messageQos1 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS1", messageQos1.toString());
         assertEquals(1, messageQos1.getQos());
+    }
 
+    @Test
+    public void checkPublishPassThroughCluster_Qos2() throws Exception {
+        LOG.info("*** checkPublishPassThroughCluster_Qos2 ***");
         m_listener.subscribe("/topic", 2);
 
         m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);

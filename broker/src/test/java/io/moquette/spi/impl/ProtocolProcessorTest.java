@@ -364,7 +364,6 @@ public class ProtocolProcessorTest {
 
         StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(), MqttQoS.EXACTLY_ONCE, "/topic");
         retainedMessage.setRetained(true);
-        retainedMessage.setMessageID(120);
         retainedMessage.setClientID(FAKE_PUBLISHER_ID);
         m_messagesStore.storePublishForFuture(retainedMessage);
 
