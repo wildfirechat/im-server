@@ -19,9 +19,6 @@ package io.moquette.spi.impl.security;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 
-/**
- * @author andrea
- */
 public class DenyAllAuthorizator implements IAuthorizator {
 
     @Override

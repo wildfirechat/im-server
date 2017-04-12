@@ -30,10 +30,6 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-/**
- *
- * @author andrea
- */
 public class ServerRestartIntegrationTest {
 
     static MqttClientPersistence s_dataStore;
@@ -63,7 +59,6 @@ public class ServerRestartIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
         startServer();
 
         m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_dataStore);

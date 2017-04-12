@@ -1,6 +1,21 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.parser.netty.performance;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,7 +39,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
     Histogram processingTime = new Histogram(5);
     Histogram forthNetworkTime = new Histogram(5);
 
-    public LoopMQTTHandler(ProtocolDecodingServer.SharedState state) {
+    LoopMQTTHandler(ProtocolDecodingServer.SharedState state) {
         this.m_state = state;
     }
 
@@ -63,7 +78,12 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 //                    m_messaging.handleProtocolMessage(channel, msg);
                     break;
                 case PINGREQ:
-                    MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGRESP, false, AT_MOST_ONCE, false, 0);
+                    MqttFixedHeader pingHeader = new MqttFixedHeader(
+                            MqttMessageType.PINGRESP,
+                            false,
+                            AT_MOST_ONCE,
+                            false,
+                            0);
                     MqttMessage pingResp = new MqttMessage(pingHeader);
                     ctx.writeAndFlush(pingResp);
                     break;
@@ -111,7 +131,10 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         LOG.debug(" new value of flag {}, LoopHandler instance is {}", m_state.isForwardable(), this);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.SUBACK, false, AT_LEAST_ONCE, false, 0);
         MqttSubAckPayload payload = new MqttSubAckPayload(AT_MOST_ONCE.value());
-        MqttSubAckMessage ackMessage = new MqttSubAckMessage(fixedHeader, from(msg.variableHeader().messageId()), payload);
+        MqttSubAckMessage ackMessage = new MqttSubAckMessage(
+                fixedHeader,
+                from(msg.variableHeader().messageId()),
+                payload);
         ctx.writeAndFlush(ackMessage);
         LOG.debug("subscribed client to {}", msg.payload().topicSubscriptions());
     }

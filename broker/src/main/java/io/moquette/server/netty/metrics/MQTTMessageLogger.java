@@ -26,10 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static io.moquette.spi.impl.Utils.messageId;
 
-/**
- *
- * @author andrea
- */
 @Sharable
 public class MQTTMessageLogger extends ChannelDuplexHandler {
 
@@ -79,6 +75,9 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 break;
             case PUBACK:
                 LOG.info("{} PUBACK <{}> packetID <{}>", direction, clientID, messageId(msg));
+                break;
+            default:
+                LOG.error("Unkonwn MessageType:{}", messageType);
                 break;
         }
     }

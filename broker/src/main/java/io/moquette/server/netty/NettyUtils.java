@@ -24,10 +24,8 @@ import io.netty.util.AttributeKey;
 
 /**
  * Some Netty's channels utilities.
- *
- * @author andrea
  */
-public class NettyUtils {
+public final class NettyUtils {
 
     public static final String ATTR_USERNAME = "username";
     public static final String ATTR_SESSION_STOLEN = "sessionStolen";
@@ -69,5 +67,8 @@ public class NettyUtils {
 
     public static String userName(Channel channel) {
         return (String) channel.attr(NettyUtils.ATTR_KEY_USERNAME).get();
+    }
+
+    private NettyUtils() {
     }
 }

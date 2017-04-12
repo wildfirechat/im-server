@@ -32,9 +32,6 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-/**
- * @author Wagner Macedo
- */
 public class BrokerInterceptorTest {
 
     // value to check for changes after every notification

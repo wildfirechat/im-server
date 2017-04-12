@@ -20,8 +20,6 @@ import io.moquette.BrokerConstants;
 
 /**
  * Base interface for all configuration implementations (filesystem, memory or classpath)
- *
- * @author andrea
  */
 public abstract class IConfig {
 

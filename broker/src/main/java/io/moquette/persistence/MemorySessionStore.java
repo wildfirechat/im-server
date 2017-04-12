@@ -33,10 +33,6 @@ import java.util.concurrent.BlockingQueue;
 
 import static io.moquette.spi.impl.Utils.defaultGet;
 
-/**
- *
- * @author andrea
- */
 public class MemorySessionStore implements ISessionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
@@ -74,7 +70,6 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void initStore() {
-
     }
 
     @Override

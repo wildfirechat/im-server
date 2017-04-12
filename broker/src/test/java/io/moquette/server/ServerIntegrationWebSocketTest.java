@@ -34,8 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Integration test to check the function of Moquette with a WebSocket channel.
- *
- * @author andrea
  */
 public class ServerIntegrationWebSocketTest {
 

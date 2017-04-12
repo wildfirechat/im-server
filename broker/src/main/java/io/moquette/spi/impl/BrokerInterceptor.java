@@ -37,8 +37,6 @@ import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 
 /**
  * An interceptor that execute the interception tasks asynchronously.
- *
- * @author Wagner Macedo
  */
 final class BrokerInterceptor implements Interceptor {
 
@@ -63,14 +61,14 @@ final class BrokerInterceptor implements Interceptor {
      *
      * @param handlers
      */
-    public BrokerInterceptor(List<InterceptHandler> handlers) {
+    BrokerInterceptor(List<InterceptHandler> handlers) {
         this(1, handlers);
     }
 
     /**
      * Configures a broker interceptor using the pool size specified in the IConfig argument.
      */
-    public BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
+    BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
         this(Integer.parseInt(props.getProperty(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, "1")), handlers);
     }
 
@@ -201,7 +199,7 @@ final class BrokerInterceptor implements Interceptor {
     @Override
     public void addInterceptHandler(InterceptHandler interceptHandler) {
         Class<?>[] interceptedMessageTypes = getInterceptedMessageTypes(interceptHandler);
-        LOG.info( "Adding MQTT message interceptor. InterceptorId={}, handledMessageTypes={}",
+        LOG.info("Adding MQTT message interceptor. InterceptorId={}, handledMessageTypes={}",
             interceptHandler.getID(), interceptedMessageTypes);
         for (Class<?> interceptMessageType : interceptedMessageTypes) {
             this.handlers.get(interceptMessageType).add(interceptHandler);

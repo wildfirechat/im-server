@@ -20,17 +20,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
-import io.netty.util.AttributeMap;
 import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 
-/**
- *
- * @author andrea
- */
-public class Utils {
+public final class Utils {
 
     public static final int MAX_LENGTH_LIMIT = 268435455;
 
@@ -188,7 +181,7 @@ public class Utils {
             flags |= 0x01;
         }
 
-        flags |= ((message.fixedHeader().qosLevel().value() & 0x03) << 1);
+        flags |= (message.fixedHeader().qosLevel().value() & 0x03) << 1;
         return flags;
     }
 
@@ -203,4 +196,7 @@ public class Utils {
     // }
     // return protocolVersion == VERSION_3_1_1;
     // }
+
+    private Utils() {
+    }
 }

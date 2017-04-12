@@ -22,9 +22,6 @@ import java.io.Serializable;
 
 /**
  * Maintain the information about which Topic a certain ClientID is subscribed and at which QoS
- *
- *
- * @author andrea
  */
 public final class Subscription implements Serializable {
 

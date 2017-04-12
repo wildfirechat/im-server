@@ -54,40 +54,55 @@ import org.slf4j.LoggerFactory;
  *
  * <pre>
  * # generate server certificate chain (valid for 10000 days)
- * keytool -genkeypair -alias signedtestserver -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv -validity 10000
- * keytool -genkeypair -alias signedtestserver_sub -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv
+ * keytool -genkeypair -alias signedtestserver -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 \
+ * -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv -validity 10000
+ * keytool -genkeypair -alias signedtestserver_sub -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 \
+ * -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv
  *
  * # sign server subcertificate with server certificate (valid for 10000 days)
- * keytool -certreq -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv | \
- * keytool -gencert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv -validity 10000 | \
- * keytool -importcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv
+ * keytool -certreq -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv | \
+ * keytool -gencert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv -validity 10000 | \
+ * keytool -importcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv
  *
  * # generate client keypair
- * keytool -genkeypair -alias signedtestclient -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd
+ * keytool -genkeypair -alias signedtestclient -dname cn=moquette.eclipse.org -keyalg RSA -keysize 2048 \
+ * -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd
  *
  * # create signed client certificate with server subcertificate and import to client keystore (valid for 10000 days)
  * keytool -certreq -alias signedtestclient -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd | \
- * keytool -gencert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv -validity 10000 | \
- * keytool -importcert -alias signedtestclient -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd -noprompt
+ * keytool -gencert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv -validity 10000 | \
+ * keytool -importcert -alias signedtestclient -keystore signedclientkeystore.jks -keypass passw0rd \
+ * -storepass passw0rd -noprompt
  *
  * # import server certificates into signed truststore
- * keytool -exportcert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv | \
- * keytool -importcert -trustcacerts -noprompt -alias signedtestserver -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd
- * keytool -exportcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv | \
- * keytool -importcert -trustcacerts -noprompt -alias signedtestserver_sub -keystore signedclientkeystore.jks -keypass passw0rd -storepass passw0rd
+ * keytool -exportcert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv | \
+ * keytool -importcert -trustcacerts -noprompt -alias signedtestserver -keystore signedclientkeystore.jks \
+ * -keypass passw0rd -storepass passw0rd
+ * keytool -exportcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv | \
+ * keytool -importcert -trustcacerts -noprompt -alias signedtestserver_sub -keystore signedclientkeystore.jks \
+ * -keypass passw0rd -storepass passw0rd
  *
  * # create unsigned client certificate (valid for 10000 days)
- * keytool -genkeypair -alias unsignedtestclient -dname cn=moquette.eclipse.org -validity 10000 -keyalg RSA -keysize 2048 -keystore unsignedclientkeystore.jks -keypass passw0rd -storepass passw0rd
+ * keytool -genkeypair -alias unsignedtestclient -dname cn=moquette.eclipse.org -validity 10000 -keyalg RSA \
+ * -keysize 2048 -keystore unsignedclientkeystore.jks -keypass passw0rd -storepass passw0rd
  *
  * # import server certificates into unsigned truststore
- * keytool -exportcert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv | \
- * keytool -importcert -trustcacerts -noprompt -alias signedtestserver -keystore unsignedclientkeystore.jks -keypass passw0rd -storepass passw0rd
- * keytool -exportcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv -storepass passw0rdsrv | \
- * keytool -importcert -trustcacerts -noprompt -alias signedtestserver_sub -keystore unsignedclientkeystore.jks -keypass passw0rd -storepass passw0rd
+ * keytool -exportcert -alias signedtestserver -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv | \
+ * keytool -importcert -trustcacerts -noprompt -alias signedtestserver -keystore unsignedclientkeystore.jks \
+ * -keypass passw0rd -storepass passw0rd
+ * keytool -exportcert -alias signedtestserver_sub -keystore signedserverkeystore.jks -keypass passw0rdsrv \
+ * -storepass passw0rdsrv | \
+ * keytool -importcert -trustcacerts -noprompt -alias signedtestserver_sub -keystore unsignedclientkeystore.jks \
+ * -keypass passw0rd -storepass passw0rd
  * </pre>
  * </p>
- *
- * @author andrea / konradm
  */
 public class ServerIntegrationSSLClientAuthTest {
 

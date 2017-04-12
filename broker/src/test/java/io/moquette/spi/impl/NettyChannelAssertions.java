@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Some useful assertions used by Netty's EmbeddedChannel in tests.
  */
-class NettyChannelAssertions {
+final class NettyChannelAssertions {
 
     static void assertEqualsConnAck(MqttConnectReturnCode expectedCode, Object connAck) {
         assertEqualsConnAck(null, expectedCode, connAck);
@@ -54,4 +54,6 @@ class NettyChannelAssertions {
         // assertEquals(expectedCode, connAckMsg.getReturnCode());
     }
 
+    private NettyChannelAssertions() {
+    }
 }

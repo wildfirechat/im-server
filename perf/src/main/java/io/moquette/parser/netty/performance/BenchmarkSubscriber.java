@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.parser.netty.performance;
 
 import org.HdrHistogram.Histogram;
@@ -23,7 +39,6 @@ class BenchmarkSubscriber {
             //println "Received a publish on topic ${topic}"
             if (topic.startsWith("/exit")) {
                 LOG.info("SUB: ok Exit!");
-                exit = true;
                 LOG.debug("Before disconnect");
 //                client.disconnect(1000) //wait max 1 sec
                 //client.disconnectForcibly()
@@ -31,11 +46,11 @@ class BenchmarkSubscriber {
                 LOG.debug("After disconnect");
                 long stopTime = System.currentTimeMillis();
                 long spentTime = stopTime - startTime;
-                LOG.info( "SUB: {} received", topic);
-                LOG.info( "SUB: subscriber disconnected, received {} messages in {} ms", numReceived, spentTime);
+                LOG.info("SUB: {} received", topic);
+                LOG.info("SUB: subscriber disconnected, received {} messages in {} ms", numReceived, spentTime);
                 double msgPerSec = (numReceived / spentTime) * 1000;
-                LOG.info( "SUB: Speed: {} msg/sec", msgPerSec);
-                LOG.info( "SUB: Latency diagram [microsecs]");
+                LOG.info("SUB: Speed: {} msg/sec", msgPerSec);
+                LOG.info("SUB: Latency diagram [microsecs]");
                 histogram.outputPercentileDistribution(System.out, 1000.0); //nanos/1000
                 m_latch.countDown();
             } else {
@@ -50,7 +65,6 @@ class BenchmarkSubscriber {
 //            print '.'
 //        }
             }
-
         }
 
         public void connectionLost(Throwable cause) {
@@ -65,22 +79,19 @@ class BenchmarkSubscriber {
         }
 
         public void deliveryComplete(IMqttDeliveryToken token) {
-
         }
-
     }
 
-    private int numReceived = 0;
+    private int numReceived;
     private long startTime = System.currentTimeMillis();
-    private boolean exit = false;
     private CountDownLatch m_latch = new CountDownLatch(1);
-    private boolean alreadyStarted = false;
+    private boolean alreadyStarted;
     private Histogram histogram = new Histogram(5);
 
     private final IMqttAsyncClient client;
     private final String dialog_id;
 
-    public BenchmarkSubscriber(MqttAsyncClient client, String dialog_id) {
+    BenchmarkSubscriber(MqttAsyncClient client, String dialog_id) {
         this.client = client;
         this.dialog_id = dialog_id;
     }
@@ -92,7 +103,7 @@ class BenchmarkSubscriber {
         this.client.connect(connectOptions, null, new IMqttActionListener() {
 
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                LOG.error( "SUB: connect fail", exception);
+                LOG.error("SUB: connect fail", exception);
                 System.exit(2);
             }
 
@@ -136,7 +147,6 @@ class BenchmarkSubscriber {
             }
         });
     }
-
 
     public void waitFinish() throws InterruptedException, MqttException {
         this.m_latch.await();

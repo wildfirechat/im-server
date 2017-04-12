@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 
 package io.moquette.connections;
 
@@ -5,9 +20,6 @@ import java.util.Collection;
 
 /**
  * This interface will be used by an external codebase to retrieve and close physical connections.
- *
- * @author lbarrios
- *
  */
 public interface IConnectionsManager {
 
@@ -16,7 +28,7 @@ public interface IConnectionsManager {
      *
      * @return
      */
-    public int getActiveConnectionsNo();
+    int getActiveConnectionsNo();
 
     /**
      * Determines wether a MQTT client is connected to the broker.
@@ -24,14 +36,14 @@ public interface IConnectionsManager {
      * @param clientID
      * @return
      */
-    public boolean isConnected(String clientID);
+    boolean isConnected(String clientID);
 
     /**
      * Returns the identifiers of the MQTT clients that are connected to the broker.
      *
      * @return
      */
-    public Collection<String> getConnectedClientIds();
+    Collection<String> getConnectedClientIds();
 
     /**
      * Closes a physical connection.
@@ -41,7 +53,7 @@ public interface IConnectionsManager {
      *            If false, the connection will be flushed before it is closed.
      * @return
      */
-    public boolean closeConnection(String clientID, boolean closeImmediately);
+    boolean closeConnection(String clientID, boolean closeImmediately);
 
     /**
      * Returns the state of the session of a given client.
@@ -49,12 +61,12 @@ public interface IConnectionsManager {
      * @param clientID
      * @return
      */
-    public MqttSession getSessionStatus(String clientID);
+    MqttSession getSessionStatus(String clientID);
 
     /**
      * Returns the state of all the sessions
      *
      * @return
      */
-    public Collection<MqttSession> getSessions();
+    Collection<MqttSession> getSessions();
 }

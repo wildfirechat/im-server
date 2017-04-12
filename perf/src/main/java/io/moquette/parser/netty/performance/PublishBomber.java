@@ -1,5 +1,20 @@
-package io.moquette.parser.netty.performance;
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 
+package io.moquette.parser.netty.performance;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -52,9 +67,8 @@ class PublishBomber {
         }
     }
 
-
     public void publishLoop(int messagesPerSecond, int numToSend) {
-        long pauseMicroseconds = (int)((1.0 / messagesPerSecond) * 1000 * 1000);
+        long pauseMicroseconds = (int) ((1.0 / messagesPerSecond) * 1000 * 1000);
         LOG.warn("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
 
         LOG.info("PUB: publishing..");
@@ -62,7 +76,7 @@ class PublishBomber {
 
         //initialize the timer
         PlatformTimer timer = PlatformTimer.detect();
-        for (int i=0; i < numToSend; i++) {
+        for (int i = 0; i < numToSend; i++) {
             long nanos = System.nanoTime();
             byte[] rawContent = ("Hello world!!-" + nanos).getBytes();
             ByteBuf payload = Unpooled.copiedBuffer(rawContent);

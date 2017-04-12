@@ -28,8 +28,6 @@ import io.netty.handler.codec.mqtt.MqttMessage;
  * Almost every method receives a subclass of {@link MqttMessage}, except <code>onDisconnect</code>
  * that receives the client id string and <code>onSubscribe</code> and <code>onUnsubscribe</code>
  * that receive a {@link Subscription} object.
- *
- * @author Wagner Macedo
  */
 public interface InterceptHandler {
 

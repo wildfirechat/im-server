@@ -52,8 +52,6 @@ import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 
 /**
  * Launch a configured version of the server.
- *
- * @author andrea
  */
 public class Server {
 
@@ -336,7 +334,7 @@ public class Server {
     public ProtocolProcessor getProcessor() {
         return m_processor;
     }
-    
+
     public ScheduledExecutorService getScheduler() {
         return scheduler;
     }

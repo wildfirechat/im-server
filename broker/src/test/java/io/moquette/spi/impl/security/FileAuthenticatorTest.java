@@ -21,10 +21,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- *
- * @author andrea
- */
+@SuppressWarnings("deprecation")
 public class FileAuthenticatorTest {
 
     @Test

@@ -25,10 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
-/**
- *
- * @author andrea
- */
 @Sharable
 public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
@@ -82,6 +78,9 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                             0);
                     MqttMessage pingResp = new MqttMessage(pingHeader);
                     ctx.writeAndFlush(pingResp);
+                    break;
+                default:
+                    LOG.error("Unkonwn MessageType:{}", messageType);
                     break;
             }
         } catch (Throwable ex) {

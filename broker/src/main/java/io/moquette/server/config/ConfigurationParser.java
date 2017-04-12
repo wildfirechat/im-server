@@ -32,8 +32,6 @@ import java.util.Properties;
  *
  * A line that at the very first has # is a comment Each line has key value format, where the
  * separator used it the space.
- *
- * @author andrea
  */
 class ConfigurationParser {
 

@@ -21,8 +21,6 @@ import java.util.Properties;
 
 /**
  * Configuration backed by memory.
- *
- * @author andrea
  */
 public class MemoryConfig extends IConfig {
 

@@ -18,10 +18,7 @@ package io.moquette;
 
 import java.io.File;
 
-/**
- * Created by andrea on 08/12/15.
- */
-public class BrokerConstants {
+public final class BrokerConstants {
 
     public static final String INTERCEPT_HANDLER_PROPERTY_NAME = "intercept.handler";
     public static final String BROKER_INTERCEPTOR_THREAD_POOL_SIZE = "intercept.thread_pool.size";
@@ -60,4 +57,7 @@ public class BrokerConstants {
     public static final String NETTY_SO_KEEPALIVE_PROPERTY_NAME = "netty.so_keepalive";
     public static final String NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME = "netty.channel_timeout.seconds";
     public static final String STORAGE_CLASS_NAME = "storage_class";
+
+    private BrokerConstants() {
+    }
 }

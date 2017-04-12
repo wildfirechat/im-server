@@ -17,15 +17,13 @@
 package io.moquette.spi.impl;
 
 import io.netty.buffer.ByteBuf;
-import java.nio.ByteBuffer;
 
-/**
- *
- * @author andrea
- */
-class DebugUtils {
+final class DebugUtils {
 
     static String payload2Str(ByteBuf content) {
-        return new String(content.copy  ().array());
+        return new String(content.copy().array());
+    }
+
+    private DebugUtils() {
     }
 }

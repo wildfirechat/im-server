@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.parser.netty.performance;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -47,7 +63,7 @@ public class ProtocolDecodingServer {
     static final class SharedState {
         private volatile Channel subscriberCh;
         private volatile Channel publisherCh;
-        private volatile boolean forwardPublish = false;
+        private volatile boolean forwardPublish;
 
         public boolean isForwardable() {
             return forwardPublish;
@@ -67,6 +83,10 @@ public class ProtocolDecodingServer {
 
         public void setPublisherCh(Channel publisherCh) {
             this.publisherCh = publisherCh;
+        }
+
+        public Channel getPublisherCh() {
+            return publisherCh;
         }
     }
 
@@ -111,7 +131,6 @@ public class ProtocolDecodingServer {
         }
     }
 
-
     public void stop() {
         if (m_workerGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
@@ -149,9 +168,10 @@ public class ProtocolDecodingServer {
 
         String tmpDir = System.getProperty("java.io.tmpdir");
         MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-        MqttAsyncClient pub = new MqttAsyncClient("tcp://" + host +":1883", "PublisherClient"+dialog_id, dataStore);
+        MqttAsyncClient pub = new MqttAsyncClient("tcp://" + host + ":1883", "PublisherClient" + dialog_id, dataStore);
         MqttDefaultFilePersistence dataStoreSub = new MqttDefaultFilePersistence(tmpDir);
-        MqttAsyncClient sub = new MqttAsyncClient("tcp://" + host +":1883", "SubscriberClient"+dialog_id, dataStoreSub);
+        MqttAsyncClient sub = new MqttAsyncClient("tcp://" + host + ":1883", "SubscriberClient" + dialog_id,
+                dataStoreSub);
 
         BenchmarkSubscriber suscriberBench = new BenchmarkSubscriber(sub, dialog_id);
         suscriberBench.connect();

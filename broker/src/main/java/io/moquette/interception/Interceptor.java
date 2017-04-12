@@ -30,7 +30,6 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
  * normally a field. So, the implementations should act as a proxy to a custom intercept handler.
  *
  * @see InterceptHandler
- * @author Wagner Macedo
  */
 public interface Interceptor {
 
@@ -40,11 +39,11 @@ public interface Interceptor {
 
     void notifyClientConnectionLost(String clientID, String username);
 
-    void notifyTopicPublished(MqttPublishMessage msg, String clientID, final String username);
+    void notifyTopicPublished(MqttPublishMessage msg, String clientID, String username);
 
-    void notifyTopicSubscribed(Subscription sub, final String username);
+    void notifyTopicSubscribed(Subscription sub, String username);
 
-    void notifyTopicUnsubscribed(String topic, String clientID, final String username);
+    void notifyTopicUnsubscribed(String topic, String clientID, String username);
 
     void notifyMessageAcknowledged(InterceptAcknowledgedMessage msg);
 

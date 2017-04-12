@@ -18,8 +18,8 @@ package io.moquette.server.netty.metrics;
 
 public class BytesMetrics {
 
-    private long m_readBytes = 0;
-    private long m_wroteBytes = 0;
+    private long m_readBytes;
+    private long m_wroteBytes;
 
     void incrementRead(long numBytes) {
         m_readBytes += numBytes;

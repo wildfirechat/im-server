@@ -21,8 +21,6 @@ import io.moquette.spi.impl.subscriptions.Topic;
 
 /**
  * Carries the read/write authorization to topics for the users.
- *
- * @author andrea
  */
 public class Authorization {
 

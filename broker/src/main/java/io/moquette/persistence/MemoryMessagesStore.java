@@ -19,16 +19,11 @@ package io.moquette.persistence;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.MessageGUID;
-import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
-import static io.moquette.spi.impl.Utils.defaultGet;
 
-/**
- * @author andrea
- */
 public class MemoryMessagesStore implements IMessagesStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemoryMessagesStore.class);

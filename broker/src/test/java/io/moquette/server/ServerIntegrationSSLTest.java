@@ -49,8 +49,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Check that Moquette could also handle SSL.
- *
- * @author andrea
  */
 public class ServerIntegrationSSLTest {
 

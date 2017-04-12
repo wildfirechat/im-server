@@ -26,7 +26,7 @@ class TreeNode {
     List<TreeNode> m_children = new ArrayList<>();
     Set<ClientTopicCouple> m_subscriptions = new HashSet<>();
 
-    private int subtreeSubscriptions = 0;
+    private int subtreeSubscriptions;
 
     TreeNode() {
     }

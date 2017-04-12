@@ -26,8 +26,6 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * Store used to handle the persistence of the subscriptions tree.
- *
- * @author andrea
  */
 public interface ISessionsStore {
 
@@ -66,7 +64,6 @@ public interface ISessionsStore {
         public String toString() {
             return "ClientTopicCouple{" + "topicFilter='" + topicFilter + '\'' + ", clientID='" + clientID + '\'' + '}';
         }
-
     }
 
     void initStore();

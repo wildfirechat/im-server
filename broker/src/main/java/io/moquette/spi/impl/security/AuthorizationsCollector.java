@@ -18,8 +18,6 @@ package io.moquette.spi.impl.security;
 
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.util.*;
 
@@ -28,18 +26,14 @@ import java.util.*;
  * mode to check it topics matches the ACLs.
  *
  * Not thread safe.
- *
- * @author andrea
  */
 class AuthorizationsCollector implements IAuthorizator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationsCollector.class);
 
     private List<Authorization> m_globalAuthorizations = new ArrayList<>();
     private List<Authorization> m_patternAuthorizations = new ArrayList<>();
     private Map<String, List<Authorization>> m_userAuthorizations = new HashMap<>();
-    private boolean m_parsingUsersSpecificSection = false;
-    private boolean m_parsingPatternSpecificSection = false;
+    private boolean m_parsingUsersSpecificSection;
+    private boolean m_parsingPatternSpecificSection;
     private String m_currentUser = "";
 
     static final AuthorizationsCollector emptyImmutableCollector() {

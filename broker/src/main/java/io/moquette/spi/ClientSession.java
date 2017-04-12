@@ -38,8 +38,6 @@ import java.util.concurrent.BlockingQueue;
  *     completely acknowledged.</li>
  *     <li>Optionally, QoS 0 messages pending transmission to the Client.</li>
  * </ul>
- *
- * @author andrea
  */
 public class ClientSession {
 
@@ -76,7 +74,7 @@ public class ClientSession {
         }
     }
 
-    private final static Logger LOG = LoggerFactory.getLogger(ClientSession.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientSession.class);
 
     public final String clientID;
 

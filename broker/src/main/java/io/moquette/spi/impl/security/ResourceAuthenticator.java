@@ -42,19 +42,16 @@ import java.util.Map;
  *
  * NB -n is important because echo append a newline by default at the of string. -n avoid this
  * behaviour.
- *
- * @author andrea
  */
 public class ResourceAuthenticator implements IAuthenticator {
 
     protected static final Logger LOG = LoggerFactory.getLogger(ResourceAuthenticator.class);
 
     private Map<String, String> m_identities = new HashMap<>();
-    private MessageDigest m_digest;
 
     public ResourceAuthenticator(IResourceLoader resourceLoader, String resourceName) {
         try {
-            this.m_digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException nsaex) {
             LOG.error("Can't find SHA-256 for password encoding", nsaex);
             throw new RuntimeException(nsaex);

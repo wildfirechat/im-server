@@ -44,8 +44,6 @@ import java.util.List;
 
 /**
  * It's main responsibility is bootstrap the ProtocolProcessor.
- *
- * @author andrea
  */
 public class ProtocolProcessorBootstrapper {
 
@@ -56,7 +54,7 @@ public class ProtocolProcessorBootstrapper {
 
     private ISessionsStore m_sessionsStore;
 
-    private Runnable storeShutdown = null;
+    private Runnable storeShutdown;
 
     private BrokerInterceptor m_interceptor;
 
@@ -155,7 +153,7 @@ public class ProtocolProcessorBootstrapper {
                     LOG.info("Parsing ACL file. Path = {}", aclFilePath);
                     authorizator = ACLFileParser.parse(resourceLoader.loadResource(aclFilePath));
                 } catch (ParseException pex) {
-                    LOG.error("Unable to parse ACL file. path="+ aclFilePath, pex);
+                    LOG.error("Unable to parse ACL file. path=" + aclFilePath, pex);
                 }
             } else {
                 authorizator = new PermitAllAuthorizator();
@@ -167,8 +165,10 @@ public class ProtocolProcessorBootstrapper {
         connectionDescriptors = new ConnectionDescriptorStore(m_sessionsStore);
 
         LOG.info("Initializing MQTT protocol processor...");
-        boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        boolean allowZeroByteClientId = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
+        boolean allowAnonymous = Boolean
+                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
+        boolean allowZeroByteClientId = Boolean
+                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
         m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator,
                 allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor,
                 props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
@@ -185,11 +185,19 @@ public class ProtocolProcessorBootstrapper {
             // check if method getInstance exists
             Method method = clazz.getMethod("getInstance", new Class[]{});
             try {
-                LOG.info("Invoking getInstance() method. ClassName = {}, interfaceName = {}.", className, intrface.getName());
+                LOG.info(
+                        "Invoking getInstance() method. ClassName = {}, interfaceName = {}.",
+                        className,
+                        intrface.getName());
                 instance = (T) method.invoke(null, new Object[]{});
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
-                LOG.error("Unable to invoke getInstance() method. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-                        className, intrface.getName(), ex.getCause(), ex.getMessage());
+                LOG.error(
+                        "Unable to invoke getInstance() method. ClassName = {}, interfaceName = {}, cause = {}, "
+                        + "errorMessage = {}.",
+                        className,
+                        intrface.getName(),
+                        ex.getCause(),
+                        ex.getMessage());
                 return null;
             }
         } catch (NoSuchMethodException nsmex) {
@@ -204,17 +212,31 @@ public class ProtocolProcessorBootstrapper {
                     .getConstructor(constructorArgClass)
                     .newInstance(props);
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.warn("Unable to invoke constructor with {} argument. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-                        constructorArgClass.getName(), className, intrface.getName(), ex.getCause(), ex.getMessage());
+                LOG.warn(
+                        "Unable to invoke constructor with {} argument. ClassName = {}, interfaceName = {}, cause = {}"
+                                + ", errorMessage = {}.",
+                        constructorArgClass.getName(),
+                        className,
+                        intrface.getName(),
+                        ex.getCause(),
+                        ex.getMessage());
                 return null;
             } catch (NoSuchMethodException | InvocationTargetException e) {
                 try {
-                    LOG.info("Invoking default constructor. ClassName = {}, interfaceName = {}.", className, intrface.getName());
+                    LOG.info(
+                            "Invoking default constructor. ClassName = {}, interfaceName = {}.",
+                            className,
+                            intrface.getName());
                     // fallback to default constructor
                     instance = this.getClass().getClassLoader().loadClass(className).asSubclass(intrface).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                    LOG.error("Unable to invoke default constructor. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-                            className, intrface.getName(), ex.getCause(), ex.getMessage());
+                    LOG.error(
+                            "Unable to invoke default constructor. ClassName = {}, interfaceName = {}, cause = {}, "
+                            + "errorMessage = {}.",
+                            className,
+                            intrface.getName(),
+                            ex.getCause(),
+                            ex.getMessage());
                     return null;
                 }
             }
@@ -222,8 +244,13 @@ public class ProtocolProcessorBootstrapper {
             LOG.error("The class does not exist. ClassName = {}, interfaceName = {}.", className, intrface.getName());
             return null;
         } catch (SecurityException ex) {
-            LOG.error("Unable to load class due to a security violation. ClassName = {}, interfaceName = {}, cause = {}, errorMessage = {}.",
-                    className, intrface.getName(), ex.getCause(), ex.getMessage());
+            LOG.error(
+                    "Unable to load class due to a security violation. ClassName = {}, interfaceName = {}, cause = {}, "
+                    + "errorMessage = {}.",
+                    className,
+                    intrface.getName(),
+                    ex.getCause(),
+                    ex.getMessage());
             return null;
         }
 

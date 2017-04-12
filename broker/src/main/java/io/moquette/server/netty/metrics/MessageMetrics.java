@@ -18,8 +18,8 @@ package io.moquette.server.netty.metrics;
 
 public class MessageMetrics {
 
-    private long m_messagesRead = 0;
-    private long m_messageWrote = 0;
+    private long m_messagesRead;
+    private long m_messageWrote;
 
     void incrementRead(long numMessages) {
         m_messagesRead += numMessages;
