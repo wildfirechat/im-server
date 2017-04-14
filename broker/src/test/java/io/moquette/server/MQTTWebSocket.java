@@ -30,16 +30,10 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author andrea
- */
 @WebSocket
 public class MQTTWebSocket {
 
     private static final Logger LOG = LoggerFactory.getLogger(MQTTWebSocket.class);
-
-    private Session session;
 
     private final CountDownLatch connectSentLatch;
 
@@ -50,14 +44,12 @@ public class MQTTWebSocket {
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
-        this.session = null;
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) throws IOException {
         System.out.printf("Got connect: %s%n", session);
         LOG.info("Got connect: %s%n", session);
-        this.session = session;
 
         // Trivial MQTT Connect message
         // assertEquals(12, out.readByte()); //remaining length

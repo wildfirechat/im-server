@@ -33,8 +33,6 @@ import java.security.cert.CertificateException;
 /**
  * Moquette server implementation to load SSL certificate from local filesystem path configured in
  * config file.
- *
- * Created by andrea on 13/12/15.
  */
 class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 
@@ -42,7 +40,7 @@ class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 
     private IConfig props;
 
-    public DefaultMoquetteSslContextCreator(IConfig props) {
+    DefaultMoquetteSslContextCreator(IConfig props) {
         this.props = props;
     }
 

@@ -32,10 +32,6 @@ import java.util.Properties;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author andrea
- */
 public class ServerLowlevelMessagesIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerLowlevelMessagesIntegrationTests.class);

@@ -24,10 +24,8 @@ import java.text.ParseException;
 /**
  * Parses the acl configuration file. If a line starts with # it's comment. Blank lines are skipped.
  * The format is "topic [read|write|readwrite] {topic name}"
- *
- * @author andrea
  */
-public class ACLFileParser {
+public final class ACLFileParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(ACLFileParser.class);
 
@@ -109,5 +107,8 @@ public class ACLFileParser {
             throw new ParseException("Failed to read", 1);
         }
         return collector;
+    }
+
+    private ACLFileParser() {
     }
 }

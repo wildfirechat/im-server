@@ -27,10 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
-/**
- *
- * @author andrea
- */
 public class SubscriptionsStoreTest {
 
     private SubscriptionsStore store;

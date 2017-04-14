@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 
 package io.moquette.testclient;
 
@@ -21,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * This class is used to have a fluent interface to interact with a server. Inspired by
  * org.kaazing.robot
  */
-public class RawClient {
+public final class RawClient {
 
     @ChannelHandler.Sharable
     class RawMessageHandler extends ChannelInboundHandlerAdapter {
@@ -52,7 +67,7 @@ public class RawClient {
     EventLoopGroup workerGroup;
     Channel m_channel;
 
-    private boolean connected = false;
+    private boolean connected;
     private ByteBuf heapBuffer;
     private CountDownLatch disconnectLatch;
     private final Semaphore readableBytesSem;

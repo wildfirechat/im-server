@@ -22,9 +22,6 @@ import io.moquette.spi.impl.subscriptions.Topic;
 import java.text.ParseException;
 import static org.junit.Assert.*;
 
-/**
- * @author andrea
- */
 public class AuthorizationsCollectorTest {
 
     private static final Authorization RW_ANEMOMETER = new Authorization(new Topic("/weather/italy/anemometer"));

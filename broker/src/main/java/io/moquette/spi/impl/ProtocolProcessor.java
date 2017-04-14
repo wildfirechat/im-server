@@ -56,8 +56,6 @@ import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
  * execution.
  *
  * Used by the front facing class ProtocolProcessorBootstrapper.
- *
- * @author andrea
  */
 public class ProtocolProcessor {
 
@@ -68,7 +66,7 @@ public class ProtocolProcessor {
         private final boolean retained;
         private final MqttQoS qos;
 
-        public WillMessage(String topic, ByteBuffer payload, boolean retained, MqttQoS qos) {
+        WillMessage(String topic, ByteBuffer payload, boolean retained, MqttQoS qos) {
             this.topic = topic;
             this.payload = payload;
             this.retained = retained;
@@ -474,7 +472,8 @@ public class ProtocolProcessor {
         targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
+        m_interceptor
+                .notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
     }
 
     public static IMessagesStore.StoredMessage asStoredMessage(MqttPublishMessage msg) {
@@ -511,6 +510,7 @@ public class ProtocolProcessor {
                 this.qos2PublishHandler.receivedPublishQos2(channel, msg);
                 break;
             default:
+                LOG.error("Unkonwn QoS-Type:{}", qos);
                 break;
         }
     }
@@ -618,7 +618,8 @@ public class ProtocolProcessor {
         StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
-        m_interceptor.notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
+        m_interceptor
+                .notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
     }
 
     public void processDisconnect(Channel channel) throws InterruptedException {
@@ -921,7 +922,7 @@ public class ProtocolProcessor {
             } else {
                 // recreate a publish from stored publish in queue
                 boolean retained = m_messagesStore.getMessageByGuid(msg.getGuid()) != null;
-                MqttPublishMessage pubMsg = createPublishForQos( msg.getTopic(), msg.getQos(), msg.getMessage(),
+                MqttPublishMessage pubMsg = createPublishForQos(msg.getTopic(), msg.getQos(), msg.getMessage(),
                         retained, 0);
                 channel.write(pubMsg);
             }
@@ -936,11 +937,11 @@ public class ProtocolProcessor {
     public void removeInterceptHandler(InterceptHandler interceptHandler) {
         this.m_interceptor.removeInterceptHandler(interceptHandler);
     }
-    
+
     public IMessagesStore getMessagesStore() {
         return m_messagesStore;
     }
-    
+
     public ISessionsStore getSessionsStore() {
         return m_sessionsStore;
     }

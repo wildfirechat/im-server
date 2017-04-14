@@ -21,15 +21,15 @@ import io.netty.handler.codec.mqtt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageBuilder {
+public final class MessageBuilder {
 
     public static class PublishBuilder {
 
-        private String topic = null;
-        private boolean retained = false;
+        private String topic;
+        private boolean retained;
         private MqttQoS qos;
         private byte[] payload;
-        private int messageId = 0;
+        private int messageId;
 
         public PublishBuilder topicName(String topic) {
             this.topic = topic;
@@ -67,16 +67,16 @@ public class MessageBuilder {
 
         private MqttVersion version = MqttVersion.MQTT_3_1_1;
         private String clientId;
-        private boolean cleanSession = false;
-        private boolean hasUser = false;
-        private boolean hasPassword = false;
+        private boolean cleanSession;
+        private boolean hasUser;
+        private boolean hasPassword;
         private int keepAliveSecs;
-        private boolean willFlag = false;
+        private boolean willFlag;
         private MqttQoS willQos = MqttQoS.AT_MOST_ONCE;
-        private String willTopic = null;
-        private String willMessage = null;
-        private String username = null;
-        private String password = null;
+        private String willTopic;
+        private String willMessage;
+        private String username;
+        private String password;
 
         public ConnectBuilder protocolVersion(MqttVersion version) {
             this.version = version;
@@ -196,7 +196,7 @@ public class MessageBuilder {
     public static class UnsubscribeBuilder {
 
         private List<String> topicFilters = new ArrayList<>();
-        private int messageId = 0;
+        private int messageId;
 
         public UnsubscribeBuilder addTopicFilter(String topic) {
             topicFilters.add(topic);
@@ -235,5 +235,8 @@ public class MessageBuilder {
 
     public static UnsubscribeBuilder unsubscribe() {
         return new UnsubscribeBuilder();
+    }
+
+    private MessageBuilder() {
     }
 }

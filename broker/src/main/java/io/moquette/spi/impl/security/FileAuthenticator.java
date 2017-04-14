@@ -31,7 +31,6 @@ import io.moquette.server.config.FileResourceLoader;
  * NB -n is important because echo append a newline by default at the of string. -n avoid this
  * behaviour.
  *
- * @author andrea
  * @deprecated user {@link ResourceAuthenticator} instead
  */
 public class FileAuthenticator extends ResourceAuthenticator {

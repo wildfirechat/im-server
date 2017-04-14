@@ -16,7 +16,6 @@
 
 package io.moquette.server.config;
 
-import io.moquette.BrokerConstants;
 import org.junit.Before;
 import org.junit.Test;
 import java.io.Reader;
@@ -24,13 +23,8 @@ import java.io.StringReader;
 import java.text.ParseException;
 import java.util.Properties;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- *
- * @author andrea
- */
 public class ConfigurationParserTest {
 
     ConfigurationParser m_parser;
@@ -95,14 +89,5 @@ public class ConfigurationParserTest {
         assertEquals("1234", props.getProperty("port"));
         assertEquals("localhost", props.getProperty("host"));
         assertEquals("multi word string property", props.getProperty("fake"));
-    }
-
-    /**
-     * Helper method to verify default options.
-     */
-    private void verifyDefaults(Properties props) {
-        assertEquals(BrokerConstants.PORT, Integer.parseInt(props.getProperty(BrokerConstants.PORT_PROPERTY_NAME)));
-        assertEquals(BrokerConstants.HOST, props.getProperty(BrokerConstants.HOST_PROPERTY_NAME));
-        assertNull(props.getProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME));
     }
 }

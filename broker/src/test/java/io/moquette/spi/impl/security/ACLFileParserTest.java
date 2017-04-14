@@ -23,9 +23,6 @@ import java.io.StringReader;
 import java.text.ParseException;
 import static org.junit.Assert.*;
 
-/**
- * @author andrea
- */
 public class ACLFileParserTest {
 
     @Test

@@ -15,34 +15,36 @@
  */
 package io.moquette.testembedded;
 
-    import io.moquette.interception.AbstractInterceptHandler;
-    import io.moquette.interception.InterceptHandler;
-    import io.moquette.interception.messages.InterceptPublishMessage;
-    import io.moquette.server.Server;
-    import io.moquette.server.config.ClasspathResourceLoader;
-    import io.moquette.server.config.IConfig;
-    import io.moquette.server.config.IResourceLoader;
-    import io.moquette.server.config.ResourceLoaderConfig;
-    import io.moquette.server.netty.MessageBuilder;
-    import io.netty.handler.codec.mqtt.MqttPublishMessage;
-    import io.netty.handler.codec.mqtt.MqttQoS;
+import io.moquette.interception.AbstractInterceptHandler;
+import io.moquette.interception.InterceptHandler;
+import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.server.Server;
+import io.moquette.server.config.ClasspathResourceLoader;
+import io.moquette.server.config.IConfig;
+import io.moquette.server.config.IResourceLoader;
+import io.moquette.server.config.ResourceLoaderConfig;
+import io.moquette.server.netty.MessageBuilder;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
 
-    import java.io.IOException;
-    import java.util.List;
+import java.io.IOException;
+import java.util.List;
 
-    import static java.util.Arrays.asList;
+import static java.util.Arrays.asList;
 
-    public class EmbeddedLauncher {
+final class EmbeddedLauncher {
+
     static class PublisherListener extends AbstractInterceptHandler {
-    	
-    	@Override
-    	public String getID() {
-    		return "EmbeddedLauncherPublishListener";
-    	}
+
+        @Override
+        public String getID() {
+            return "EmbeddedLauncherPublishListener";
+        }
 
         @Override
         public void onPublish(InterceptPublishMessage msg) {
-            System.out.println("Received on topic: " + msg.getTopicName() + " content: " + new String(msg.getPayload().array()));
+            System.out.println(
+                    "Received on topic: " + msg.getTopicName() + " content: " + new String(msg.getPayload().array()));
         }
     }
 
@@ -77,5 +79,8 @@ package io.moquette.testembedded;
                 .build();
         mqttBroker.internalPublish(message, "INTRLPUB");
         System.out.println("After self publish");
+    }
+
+    private EmbeddedLauncher() {
     }
 }

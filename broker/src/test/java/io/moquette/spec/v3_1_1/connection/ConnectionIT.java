@@ -28,11 +28,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- *
- * @author pkhanal
- *
- */
 public class ConnectionIT {
 
     Server m_server;

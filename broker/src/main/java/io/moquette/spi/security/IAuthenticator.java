@@ -18,8 +18,6 @@ package io.moquette.spi.security;
 
 /**
  * username and password checker
- *
- * @author andrea
  */
 public interface IAuthenticator {
 

@@ -22,8 +22,6 @@ import io.moquette.spi.security.IAuthenticator;
 
 /**
  * Test utility to implements authenticator instance.
- *
- * @author andrea
  */
 class MockAuthenticator implements IAuthenticator {
 

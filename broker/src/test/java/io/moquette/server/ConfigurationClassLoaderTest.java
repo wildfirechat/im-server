@@ -31,10 +31,6 @@ import java.io.IOException;
 import java.util.Properties;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author luca <luca.capra@create-net.org>
- */
 public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizator {
 
     Server m_server;

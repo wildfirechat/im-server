@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ISessionsStore;
@@ -5,9 +21,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by andrea on 03/03/17.
- */
 public class TreeNodeTest {
 
     @Test
@@ -54,7 +67,8 @@ public class TreeNodeTest {
 
         TreeNode updatedRoot = root.removeClientSubscriptions("Client1");
 
-        assertFalse("Remove a subscription shouldn't remove intermediate empty nodes", updatedRoot.m_children.isEmpty());
+        assertFalse("Remove a subscription shouldn't remove intermediate empty nodes",
+                updatedRoot.m_children.isEmpty());
     }
 
 }

@@ -26,7 +26,7 @@ import java.util.concurrent.*;
  */
 public class MessageCollector implements MqttCallback {
 
-    private class ReceivedMessage {
+    private final class ReceivedMessage {
 
         private final MqttMessage message;
         private final String topic;
@@ -38,7 +38,7 @@ public class MessageCollector implements MqttCallback {
     }
 
     private BlockingQueue<ReceivedMessage> m_messages = new LinkedBlockingQueue<>();
-    private boolean m_connectionLost = false;
+    private boolean m_connectionLost;
 
     /**
      * Return the message from the queue if not empty, else return null with wait period.

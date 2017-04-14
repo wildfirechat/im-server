@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * ISessionsStore implementation backed by MapDB.
- *
- * @author andrea
  */
 class MapDBSessionsStore implements ISessionsStore {
 

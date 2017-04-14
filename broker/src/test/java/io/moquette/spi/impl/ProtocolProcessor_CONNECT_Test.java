@@ -43,10 +43,6 @@ import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- *
- * @author andrea
- */
 public class ProtocolProcessor_CONNECT_Test {
 
     EmbeddedChannel m_session;

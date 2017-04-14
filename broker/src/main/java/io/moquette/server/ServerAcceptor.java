@@ -21,10 +21,6 @@ import io.moquette.server.config.IConfig;
 import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.security.ISslContextCreator;
 
-/**
- *
- * @author andrea
- */
 public interface ServerAcceptor {
 
     void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator) throws IOException;

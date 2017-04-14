@@ -24,10 +24,6 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author andrea
- */
 @ChannelHandler.Sharable
 class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 

@@ -50,10 +50,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import static io.moquette.BrokerConstants.*;
 
-/**
- *
- * @author andrea
- */
 public class NettyAcceptor implements ServerAcceptor {
 
     private static final String MQTT_SUBPROTOCOL_CSV_LIST = "mqtt, mqttv3.1, mqttv3.1.1";

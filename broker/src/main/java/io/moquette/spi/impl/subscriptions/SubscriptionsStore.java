@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Represents a tree of topics subscriptions.
- *
- * @author andrea
  */
 public class SubscriptionsStore {
 
@@ -125,7 +123,7 @@ public class SubscriptionsStore {
             couple.createdNode.addSubscription(newSubscription); //createdNode could be null?
             couple.root.recalculateSubscriptionsSize();
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
+        } while (!subscriptions.compareAndSet(oldRoot, couple.root));
         LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
     }
 
@@ -168,7 +166,7 @@ public class SubscriptionsStore {
             couple.createdNode.remove(new ClientTopicCouple(clientID, topic));
             couple.root.recalculateSubscriptionsSize();
             //spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while(!subscriptions.compareAndSet(oldRoot, couple.root));
+        } while (!subscriptions.compareAndSet(oldRoot, couple.root));
     }
 
     /**

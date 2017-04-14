@@ -40,10 +40,6 @@ import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDe
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/**
- *
- * @author andrea
- */
 public class ProtocolProcessorTest {
 
     static final String FAKE_CLIENT_ID = "FAKE_123";
@@ -263,7 +259,7 @@ public class ProtocolProcessorTest {
 
         m_processor.processSubscribe(m_channel, msg);
         assertEquals(1, subscriptions.size());
-                
+
         //Exercise
         m_processor.processSubscribe(m_channel, msg);
 
@@ -311,7 +307,8 @@ public class ProtocolProcessorTest {
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
         // simulate a connect that register a clientID to an IoSession
-        final Subscription subscription = new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription =
+                new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsStore subs = new SubscriptionsStore() {

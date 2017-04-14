@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
  * the encoder/decoder part.
- *
- * @author andrea
  */
 public class Client {
 
@@ -46,7 +44,7 @@ public class Client {
     final ClientNettyMQTTHandler handler = new ClientNettyMQTTHandler();
     EventLoopGroup workerGroup;
     Channel m_channel;
-    private boolean m_connectionLost = false;
+    private boolean m_connectionLost;
     private ICallback callback;
     private String clientId;
     private MqttMessage receivedMsg;
