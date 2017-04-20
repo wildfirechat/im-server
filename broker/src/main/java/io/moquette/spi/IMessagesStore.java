@@ -49,10 +49,6 @@ public interface IMessagesStore {
             return m_qos;
         }
 
-        public ByteBuffer getPayload() {
-            return (ByteBuffer) ByteBuffer.allocate(m_payload.length).put(m_payload).flip();
-        }
-
         public String getTopic() {
             return m_topic;
         }
@@ -73,7 +69,7 @@ public interface IMessagesStore {
             this.m_clientID = m_clientID;
         }
 
-        public ByteBuf getMessage() {
+        public ByteBuf getPayload() {
             return Unpooled.copiedBuffer(m_payload);
         }
 

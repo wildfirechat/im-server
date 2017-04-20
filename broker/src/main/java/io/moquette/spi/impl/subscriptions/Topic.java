@@ -167,4 +167,11 @@ public class Topic implements Serializable {
     public int hashCode() {
         return topic.hashCode();
     }
+
+    /**
+     * Factory method
+     * */
+    public static Topic asTopic(String s) {
+        return new Topic(s);
+    }
 }

@@ -27,7 +27,7 @@ abstract class QosPublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(QosPublishHandler.class);
 
-    private final IAuthorizator m_authorizator;
+    protected final IAuthorizator m_authorizator;
 
     protected QosPublishHandler(IAuthorizator m_authorizator) {
         this.m_authorizator = m_authorizator;
@@ -37,10 +37,7 @@ abstract class QosPublishHandler {
         String clientID = NettyUtils.clientID(channel);
         String username = NettyUtils.userName(channel);
         if (!m_authorizator.canWrite(topic, username, clientID)) {
-            LOG.error(
-                    "The MQTT client is not authorized to publish on topic. MqttClientId = {}, topic = {}.",
-                    clientID,
-                    topic);
+            LOG.error("MQTT client is not authorized to publish on topic. CId={}, topic={}", clientID, topic);
             return true;
         }
         return false;

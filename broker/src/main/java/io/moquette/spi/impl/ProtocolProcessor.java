@@ -216,16 +216,16 @@ public class ProtocolProcessor {
 
         LOG.info("Initializing messages publisher...");
         final PersistentQueueMessageSender messageSender = new PersistentQueueMessageSender(this.connectionDescriptors);
-        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, m_messagesStore,
-                messageSender);
+        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messageSender,
+            subscriptions);
 
         LOG.info("Initializing QoS publish handlers...");
-        this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, subscriptions, m_messagesStore, m_interceptor,
+        this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
                 this.messagesPublisher);
-        this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, subscriptions, m_messagesStore, m_interceptor,
-                this.connectionDescriptors, m_server_port, this.messagesPublisher);
+        this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
+                this.connectionDescriptors, this.messagesPublisher);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore, m_interceptor,
-                this.connectionDescriptors, m_sessionsStore, m_server_port, this.messagesPublisher);
+                this.connectionDescriptors, m_sessionsStore, this.messagesPublisher);
 
         LOG.info("Initializing internal republisher...");
         this.internalRepublisher = new InternalRepublisher(messageSender);
@@ -542,8 +542,7 @@ public class ProtocolProcessor {
         if (qos == EXACTLY_ONCE) { // QoS2
             guid = m_messagesStore.storePublishForFuture(toStoreMsg);
         }
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-        this.messagesPublisher.publish2Subscribers(toStoreMsg, topicMatchingSubscriptions);
+        this.messagesPublisher.publish2Subscribers(toStoreMsg, topic);
 
         if (!msg.fixedHeader().isRetain()) {
             return;
@@ -564,15 +563,13 @@ public class ProtocolProcessor {
      * Specialized version to publish will testament message.
      */
     private void forwardPublishWill(WillMessage will, String clientID) {
+        LOG.info("Publishing will message. CId={}, topic={}", clientID, will.getTopic());
         // it has just to publish the message downstream to the subscribers
         // NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
         tobeStored.setClientID(clientID);
         Topic topic = new Topic(tobeStored.getTopic());
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
-
-        LOG.info("Publishing will message. CId={}, topic={}", clientID, topic);
-        this.messagesPublisher.publish2Subscribers(tobeStored, topicMatchingSubscriptions);
+        this.messagesPublisher.publish2Subscribers(tobeStored, topic);
     }
 
     static MqttQoS lowerQosToTheSubscriptionDesired(Subscription sub, MqttQoS qos) {
@@ -922,7 +919,7 @@ public class ProtocolProcessor {
             } else {
                 // recreate a publish from stored publish in queue
                 boolean retained = m_messagesStore.getMessageByGuid(msg.getGuid()) != null;
-                MqttPublishMessage pubMsg = createPublishForQos(msg.getTopic(), msg.getQos(), msg.getMessage(),
+                MqttPublishMessage pubMsg = createPublishForQos( msg.getTopic(), msg.getQos(), msg.getPayload(),
                         retained, 0);
                 channel.write(pubMsg);
             }

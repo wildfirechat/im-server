@@ -49,10 +49,10 @@ class Qos2PublishHandler extends QosPublishHandler {
     private final ISessionsStore m_sessionsStore;
     private final MessagesPublisher publisher;
 
-    Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
-            IMessagesStore messagesStore, BrokerInterceptor interceptor,
-            ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore, String brokerPort,
-            MessagesPublisher messagesPublisher) {
+    public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
+                              IMessagesStore messagesStore, BrokerInterceptor interceptor,
+                              ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
+                              MessagesPublisher messagesPublisher) {
         super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
@@ -65,18 +65,20 @@ class Qos2PublishHandler extends QosPublishHandler {
     void receivedPublishQos2(Channel channel, MqttPublishMessage msg) {
         final Topic topic = new Topic(msg.variableHeader().topicName());
         // check if the topic can be wrote
-        if (checkWriteOnTopic(topic, channel)) {
+        String clientID = NettyUtils.clientID(channel);
+        String username = NettyUtils.userName(channel);
+        if (!m_authorizator.canWrite(topic, username, clientID)) {
+            LOG.error("MQTT client is not authorized to publish on topic. CId={}, topic={}", clientID, topic);
             return;
         }
         final int messageID = msg.variableHeader().messageId();
 
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
-        String clientID = NettyUtils.clientID(channel);
         toStoreMsg.setClientID(clientID);
 
         LOG.info("Sending publish message to subscribers CId={}, topic={}, messageId={}", clientID, topic, messageID);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("payload={}, subs Tree={}", payload2Str(toStoreMsg.getMessage()), subscriptions.dumpTree());
+            LOG.trace("payload={}, subs Tree={}", payload2Str(toStoreMsg.getPayload()), subscriptions.dumpTree());
         }
 
         // QoS2
@@ -96,7 +98,6 @@ class Qos2PublishHandler extends QosPublishHandler {
                 m_messagesStore.storeRetained(topic, guid);
             }
         }
-        String username = NettyUtils.userName(channel);
         m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
@@ -115,20 +116,11 @@ class Qos2PublishHandler extends QosPublishHandler {
             throw new IllegalArgumentException("Can't find inbound inflight message");
         }
         final Topic topic = new Topic(evt.getTopic());
-        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Sending publish message to subscribers. CId={}, topic={}, messageId={}, payload={}, " +
-                "subscriptionTree={}", clientID, topic, messageID, payload2Str(evt.getMessage()),
-                subscriptions.dumpTree());
-        } else {
-            LOG.info("Sending publish message to subscribers. CId={}, topic={}, messageId={}", clientID, topic,
-                messageID);
-        }
-        this.publisher.publish2Subscribers(evt, topicMatchingSubscriptions);
+        this.publisher.publish2Subscribers(evt, topic, messageID);
 
         if (evt.isRetained()) {
-            if (evt.getMessage().readableBytes() == 0) {
+            if (evt.getPayload().readableBytes() == 0) {
                 m_messagesStore.cleanRetained(topic);
             } else {
                 m_messagesStore.storeRetained(topic, evt.getGuid());

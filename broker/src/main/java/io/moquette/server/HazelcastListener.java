@@ -40,11 +40,8 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
         try {
             if (!msg.getPublishingMember().equals(server.getHazelcastInstance().getCluster().getLocalMember())) {
                 HazelcastMsg hzMsg = msg.getMessageObject();
-                LOG.info(
-                        "{} received from hazelcast for topic {} message: {}",
-                        hzMsg.getClientId(),
-                        hzMsg.getTopic(),
-                        hzMsg.getPayload());
+                LOG.info("{} received from hazelcast for topic {} message: {}", hzMsg.getClientId(), hzMsg.getTopic(),
+                    hzMsg.getPayload());
                 // TODO pass forward this information in somehow publishMessage.setLocal(false);
 
                 MqttQoS qos = MqttQoS.valueOf(hzMsg.getQos());

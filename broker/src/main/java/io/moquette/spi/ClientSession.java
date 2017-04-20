@@ -198,8 +198,15 @@ public class ClientSession {
      *
      * @return the packetID for the message in flight.
      * */
-    public int inFlightAckWaiting(MessageGUID guid) {
-        LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}", clientID, guid);
+    public int inFlightAckWaiting(IMessagesStore.StoredMessage msg) {
+        LOG.debug("Adding message ot inflight zone. ClientId={}", clientID);
+        MessageGUID guid = msg.getGuid();
+        if (guid == null) {
+            guid = messagesStore.storePublishForFuture(msg);
+            msg.setGuid(guid);
+            LOG.debug("Not yet assigned guid to message, updating guid={}", guid);
+        }
+
         int messageId = ClientSession.this.nextPacketId();
         outboundFlightZone.waitingAck(messageId, guid);
         return messageId;

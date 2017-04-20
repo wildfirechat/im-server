@@ -20,8 +20,9 @@ import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
@@ -34,15 +35,15 @@ class MessagesPublisher {
     private static final Logger LOG = LoggerFactory.getLogger(MessagesPublisher.class);
     private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
-    private final IMessagesStore m_messagesStore;
     private final PersistentQueueMessageSender messageSender;
+    private final SubscriptionsStore subscriptions;
 
-    MessagesPublisher(ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
-            IMessagesStore messagesStore, PersistentQueueMessageSender messageSender) {
+    public MessagesPublisher(ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
+                             PersistentQueueMessageSender messageSender, SubscriptionsStore subscriptions) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
-        this.m_messagesStore = messagesStore;
         this.messageSender = messageSender;
+        this.subscriptions = subscriptions;
     }
 
     static MqttPublishMessage notRetainedPublish(String topic, MqttQoS qos, ByteBuf message) {
@@ -56,36 +57,44 @@ class MessagesPublisher {
         return new MqttPublishMessage(fixedHeader, varHeader, message);
     }
 
-    void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, List<Subscription> topicMatchingSubscriptions) {
-        final String topic = pubMsg.getTopic();
-        final MqttQoS publishingQos = pubMsg.getQos();
-        final ByteBuf origMessage = pubMsg.getMessage();
-
-        // if QoS 1 or 2 store the message
-        // TODO perhaps this block is not needed.
-        MessageGUID guid = null;
-        if (publishingQos != MqttQoS.AT_MOST_ONCE) {
-            guid = m_messagesStore.storePublishForFuture(pubMsg);
+    void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, Topic topic, int messageID) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+                    "subscriptionTree={}", pubMsg.getClientID(), topic, messageID, DebugUtils.payload2Str(pubMsg.getPayload()),
+                subscriptions.dumpTree());
+        } else {
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
+                messageID);
         }
+        publish2Subscribers(pubMsg, topic);
+    }
+
+    void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, Topic topic) {
+        List<Subscription> topicMatchingSubscriptions = subscriptions.matches(topic);
+        final String topic1 = pubMsg.getTopic();
+        final MqttQoS publishingQos = pubMsg.getQos();
+        final ByteBuf origPayload = pubMsg.getPayload();
 
         for (final Subscription sub : topicMatchingSubscriptions) {
             MqttQoS qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
             ClientSession targetSession = m_sessionsStore.sessionForClient(sub.getClientId());
 
             boolean targetIsActive = this.connectionDescriptors.isConnected(sub.getClientId());
-
-            // we need to retain because duplicate only copy r/w indexes and don't retain() causing
-            // refCnt = 0
-            ByteBuf message = origMessage.retainedDuplicate();
+//TODO move all this logic into messageSender, which puts into the flightZone only the messages that pull out of the queue.
             if (targetIsActive) {
                 LOG.debug("Sending PUBLISH message to active subscriber. CId={}, topicFilter={}, qos={}",
                     sub.getClientId(), sub.getTopicFilter(), qos);
-                MqttPublishMessage publishMsg = notRetainedPublish(topic, qos, message);
+                // we need to retain because duplicate only copy r/w indexes and don't retain() causing
+                // refCnt = 0
+                ByteBuf payload = origPayload.retainedDuplicate();
+                MqttPublishMessage publishMsg;
                 if (qos != MqttQoS.AT_MOST_ONCE) {
                     // QoS 1 or 2
-                    int messageId = targetSession.inFlightAckWaiting(guid);
+                    int messageId = targetSession.inFlightAckWaiting(pubMsg);
                     // set the PacketIdentifier only for QoS > 0
-                    publishMsg = notRetainedPublishWithMessageId(topic, qos, message, messageId);
+                    publishMsg = notRetainedPublishWithMessageId(topic1, qos, payload, messageId);
+                } else {
+                    publishMsg = notRetainedPublish(topic1, qos, payload);
                 }
                 this.messageSender.sendPublish(targetSession, publishMsg);
             } else {
@@ -98,4 +107,5 @@ class MessagesPublisher {
             }
         }
     }
+
 }

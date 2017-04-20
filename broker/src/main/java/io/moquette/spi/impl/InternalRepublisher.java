@@ -44,7 +44,7 @@ class InternalRepublisher {
             if (storedMsg.getQos() != MqttQoS.AT_MOST_ONCE) {
                 LOG.debug("Adding message to inflight zone. ClientId={}, topic={}", targetSession.clientID,
                     storedMsg.getTopic());
-                int packetID = targetSession.inFlightAckWaiting(storedMsg.getGuid());
+                int packetID = targetSession.inFlightAckWaiting(storedMsg);
 
                 // set the PacketIdentifier only for QoS > 0
                 publishMsg = retainedPublish(storedMsg, packetID);
@@ -62,7 +62,7 @@ class InternalRepublisher {
             // put in flight zone
             LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}, topic={}", clientSession.clientID,
                 pubEvt.getGuid(), pubEvt.getTopic());
-            int messageId = clientSession.inFlightAckWaiting(pubEvt.getGuid());
+            int messageId = clientSession.inFlightAckWaiting(pubEvt);
             MqttPublishMessage publishMsg = notRetainedPublish(pubEvt);
             // set the PacketIdentifier only for QoS > 0
             if (publishMsg.fixedHeader().qosLevel() != MqttQoS.AT_MOST_ONCE) {
@@ -73,22 +73,22 @@ class InternalRepublisher {
     }
 
     private MqttPublishMessage notRetainedPublish(IMessagesStore.StoredMessage storedMessage, Integer messageID) {
-        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), false,
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getPayload(), false,
             messageID);
     }
 
     private MqttPublishMessage notRetainedPublish(IMessagesStore.StoredMessage storedMessage) {
-        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), false,
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getPayload(), false,
             0);
     }
 
     private MqttPublishMessage retainedPublish(IMessagesStore.StoredMessage storedMessage) {
-        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), true,
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getPayload(), true,
             0);
     }
 
     private MqttPublishMessage retainedPublish(IMessagesStore.StoredMessage storedMessage, Integer packetID) {
-        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getMessage(), true,
+        return createPublishForQos(storedMessage.getTopic(), storedMessage.getQos(), storedMessage.getPayload(), true,
             packetID);
     }
 
