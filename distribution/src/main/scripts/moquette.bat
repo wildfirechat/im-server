@@ -42,4 +42,46 @@ set JAVA_OPTS=
 set JAVA_OPTS_SCRIPT=-XX:+HeapDumpOnOutOfMemoryError -Djava.awt.headless=true
 set MOQUETTE_PATH=%MOQUETTE_HOME%
 set LOG_FILE=%MOQUETTE_HOME%\config\moquette-log.properties
+
+## Use the Hotspot garbage-first collector.
+set JAVA_OPTS=%JAVA_OPTS%  -XX:+UseG1GC
+
+## Have the JVM do less remembered set work during STW, instead
+## preferring concurrent GC. Reduces p99.9 latency.
+set JAVA_OPTS=%JAVA_OPTS%  -XX:G1RSetUpdatingPauseTimePercent=5
+
+## Main G1GC tunable: lowering the pause target will lower throughput and vise versa.
+## 200ms is the JVM default and lowest viable setting
+## 1000ms increases throughput. Keep it smaller than the timeouts.
+set JAVA_OPTS=%JAVA_OPTS%  -XX:MaxGCPauseMillis=500
+
+## Optional G1 Settings
+
+# Save CPU time on large (>= 16GB) heaps by delaying region scanning
+# until the heap is 70% full. The default in Hotspot 8u40 is 40%.
+#set JAVA_OPTS=%JAVA_OPTS%  -XX:InitiatingHeapOccupancyPercent=70
+
+# For systems with > 8 cores, the default ParallelGCThreads is 5/8 the number of logical cores.
+# Otherwise equal to the number of cores when 8 or less.
+# Machines with > 10 cores should try setting these to <= full cores.
+#set JAVA_OPTS=%JAVA_OPTS%  -XX:ParallelGCThreads=16
+
+# By default, ConcGCThreads is 1/4 of ParallelGCThreads.
+# Setting both to the same value can reduce STW durations.
+#set JAVA_OPTS=%JAVA_OPTS%  -XX:ConcGCThreads=16
+
+### GC logging options -- uncomment to enable
+
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDetails
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDateStamps
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintHeapAtGC
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintTenuringDistribution
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationStoppedTime
+set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintPromotionFailure
+#set JAVA_OPTS=%JAVA_OPTS% -XX:PrintFLSStatistics=1
+#set JAVA_OPTS=%JAVA_OPTS% -Xloggc:/var/log/moquette/gc.log
+set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
+set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
+set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=10M"
+
 %JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dmoquette.path=%MOQUETTE_PATH% -cp %MOQUETTE_HOME%\lib\* io.moquette.server.Server
