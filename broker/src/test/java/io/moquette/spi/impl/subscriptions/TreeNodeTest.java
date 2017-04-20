@@ -17,6 +17,8 @@
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISubscriptionsStore;
+import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -28,7 +30,7 @@ public class TreeNodeTest {
         TreeNode root = new TreeNode();
         TreeNode subNode1 = new TreeNode();
 
-        subNode1.addSubscription(new ISessionsStore.ClientTopicCouple("Client1", new Topic("/topic1")));
+        subNode1.addSubscription(new ClientTopicCouple("Client1", new Topic("/topic1")));
         root.addChild(subNode1);
 
         TreeNode updatedRoot = root.removeClientSubscriptions("Client1");
@@ -42,7 +44,7 @@ public class TreeNodeTest {
         TreeNode intermediateEmptyNode = new TreeNode();
         TreeNode subNode1 = new TreeNode();
 
-        subNode1.addSubscription(new ISessionsStore.ClientTopicCouple("Client1", new Topic("/sub/topic1")));
+        subNode1.addSubscription(new ClientTopicCouple("Client1", new Topic("/sub/topic1")));
         intermediateEmptyNode.addChild(subNode1);
         root.addChild(intermediateEmptyNode);
 
@@ -57,11 +59,11 @@ public class TreeNodeTest {
         TreeNode intermediateEmptyNode = new TreeNode();
 
         TreeNode subNode1 = new TreeNode();
-        subNode1.addSubscription(new ISessionsStore.ClientTopicCouple("Client1", new Topic("/sub/topic1")));
+        subNode1.addSubscription(new ClientTopicCouple("Client1", new Topic("/sub/topic1")));
         intermediateEmptyNode.addChild(subNode1);
 
         TreeNode subNode2 = new TreeNode();
-        subNode2.addSubscription(new ISessionsStore.ClientTopicCouple("Client2", new Topic("/sub/topic2")));
+        subNode2.addSubscription(new ClientTopicCouple("Client2", new Topic("/sub/topic2")));
         intermediateEmptyNode.addChild(subNode2);
         root.addChild(intermediateEmptyNode);
 

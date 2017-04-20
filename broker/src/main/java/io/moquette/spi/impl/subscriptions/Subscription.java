@@ -16,7 +16,7 @@
 
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ISessionsStore.ClientTopicCouple;
+import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import java.io.Serializable;
 

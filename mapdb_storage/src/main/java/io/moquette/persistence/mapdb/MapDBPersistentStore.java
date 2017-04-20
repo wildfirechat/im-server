@@ -52,11 +52,6 @@ public class MapDBPersistentStore implements IStore {
         this.m_scheduler = scheduler;
     }
 
-    /**
-     * Factory method to create message store backed by MapDB
-     *
-     * @return the message store instance.
-     */
     @Override
     public IMessagesStore messagesStore() {
         return m_messageStore;
@@ -67,36 +62,32 @@ public class MapDBPersistentStore implements IStore {
         return m_sessionsStore;
     }
 
+    @Override
     public void initStore() {
-        LOG.info("Initializing MapDB store...");
+        LOG.info("Initializing MapDB store");
         if (m_storePath == null || m_storePath.isEmpty()) {
-            LOG.warn("The MapDB store file path is empty. Using in-memory store.");
+            LOG.warn("MapDB store file path is empty, using in-memory store");
             m_db = DBMaker.newMemoryDB().make();
         } else {
             File tmpFile;
             try {
-                LOG.info("Using user-defined MapDB store file. Path = {}.", m_storePath);
+                LOG.info("Using user-defined MapDB store file. Path={}", m_storePath);
                 tmpFile = new File(m_storePath);
                 boolean fileNewlyCreated = tmpFile.createNewFile();
-                LOG.warn("Using {} MapDB store file. Path = {}.", fileNewlyCreated ? "fresh" : "existing", m_storePath);
+                LOG.warn("Using {} MapDB store file. Path={}", fileNewlyCreated ? "fresh" : "existing", m_storePath);
             } catch (IOException ex) {
-                LOG.error(
-                        "Unable to open MapDB store file. Path = {}, cause = {}, errorMessage = {}.",
-                        m_storePath,
-                        ex.getCause(),
-                        ex.getMessage());
-                throw new RuntimeException(
-                        "Can't create temp file for subscriptions storage [" + m_storePath + "]",
-                        ex);
+                LOG.error("Unable to open MapDB store file. Path={}, cause={}, errorMessage={}", m_storePath,
+                    ex.getCause(), ex.getMessage());
+                throw new RuntimeException("Can't create temp subscriptions file storage [" + m_storePath + "]", ex);
             }
             m_db = DBMaker.newFileDB(tmpFile).make();
         }
-        LOG.info("Scheduling MapDB commit task...");
+        LOG.info("Scheduling MapDB commit task");
         m_scheduler.scheduleWithFixedDelay(new Runnable() {
 
             @Override
             public void run() {
-                LOG.debug("Committing to MapDB...");
+                LOG.debug("Committing to MapDB");
                 m_db.commit();
             }
         }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
@@ -105,21 +96,21 @@ public class MapDBPersistentStore implements IStore {
         m_messageStore = new MapDBMessagesStore(m_db);
         m_messageStore.initStore();
 
-        m_sessionsStore = new MapDBSessionsStore(m_db, m_messageStore);
+        m_sessionsStore = new MapDBSessionsStore(m_db);
         m_sessionsStore.initStore();
     }
 
     @Override
     public void close() {
         if (this.m_db.isClosed()) {
-            LOG.warn("The MapDB store is already closed. Nothing will be done.");
+            LOG.warn("MapDB store is already closed. Nothing will be done");
             return;
         }
-        LOG.info("Performing last commit to MapDB...");
+        LOG.info("Performing last commit to MapDB");
         this.m_db.commit();
-        LOG.info("Closing MapDB store...");
+        LOG.info("Closing MapDB store");
         this.m_db.close();
-        LOG.info("Stopping MapDB commit tasks...");
+        LOG.info("Stopping MapDB commit tasks");
 
         //TODO th scheduler must be stopped by the owning (the instance of Server)
         //invalidate the added task
@@ -129,9 +120,9 @@ public class MapDBPersistentStore implements IStore {
         } catch (InterruptedException e) {
         }
         if (!m_scheduler.isTerminated()) {
-            LOG.warn("Forcing shutdown of MapDB commit tasks...");
+            LOG.warn("Forcing shutdown of MapDB commit tasks");
             m_scheduler.shutdown();
         }
-        LOG.info("The MapDB store has been closed successfully.");
+        LOG.info("MapDB store has been closed successfully");
     }
 }

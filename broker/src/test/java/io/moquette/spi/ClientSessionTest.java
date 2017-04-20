@@ -18,7 +18,7 @@ package io.moquette.spi;
 
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
 import org.junit.Before;
@@ -31,11 +31,11 @@ public class ClientSessionTest {
     ClientSession session1;
     ClientSession session2;
     ISessionsStore sessionsStore;
-    SubscriptionsStore store;
+    SubscriptionsDirectory store;
 
     @Before
     public void setUp() {
-        store = new SubscriptionsStore();
+        store = new SubscriptionsDirectory();
         MemoryStorageService storageService = new MemoryStorageService();
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);

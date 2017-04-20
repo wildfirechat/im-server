@@ -18,22 +18,20 @@ package io.moquette.persistence;
 
 import io.moquette.server.Constants;
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.MessageGUID;
+import io.moquette.spi.ISubscriptionsStore;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import static io.moquette.spi.impl.Utils.defaultGet;
-
-public class MemorySessionStore implements ISessionsStore {
+public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
@@ -41,21 +39,18 @@ public class MemorySessionStore implements ISessionsStore {
 
     private Map<String, PersistentSession> m_persistentSessions = new HashMap<>();
 
-    // maps clientID->[MessageId -> guid]
-    private Map<String, Map<Integer, MessageGUID>> m_inflightStore = new HashMap<>();
     // maps clientID->BlockingQueue
     private Map<String, BlockingQueue<StoredMessage>> queues = new HashMap<>();
-    // maps clientID->[MessageId -> guid]
-    private Map<String, Map<Integer, MessageGUID>> m_secondPhaseStore = new HashMap<>();
+    // maps clientID->[MessageId -> msg]
+    private Map<String, Map<Integer, StoredMessage>> m_secondPhaseStore = new HashMap<>();
 
-    private Map<String, Map<Integer, MessageGUID>> outboundFlightMessageToGuid = new HashMap<>();
+    // maps clientID->[MessageId -> msg]
+    private Map<String, Map<Integer, StoredMessage>> outboundFlightMessages = new HashMap<>();
 
-    private Map<String, Map<Integer, MessageGUID>> inboundFlightMessageToGuid = new HashMap<>();
+    // maps clientID->[MessageId -> msg]
+    private Map<String, Map<Integer, StoredMessage>> inboundFlightMessages = new HashMap<>();
 
-    private final IMessagesStore m_messagesStore;
-
-    public MemorySessionStore(IMessagesStore messagesStore) {
-        this.m_messagesStore = messagesStore;
+    public MemorySessionStore() {
     }
 
     @Override
@@ -70,6 +65,11 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void initStore() {
+    }
+
+    @Override
+    public ISubscriptionsStore subscriptionStore() {
+        return this;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class MemorySessionStore implements ISessionsStore {
         LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
         m_persistentSubscriptions.put(clientID, new HashMap<Topic, Subscription>());
         m_persistentSessions.put(clientID, new PersistentSession(cleanSession));
-        return new ClientSession(clientID, m_messagesStore, this, cleanSession);
+        return new ClientSession(clientID, this, this, cleanSession);
     }
 
     @Override
@@ -112,14 +112,14 @@ public class MemorySessionStore implements ISessionsStore {
         }
 
         PersistentSession storedSession = m_persistentSessions.get(clientID);
-        return new ClientSession(clientID, m_messagesStore, this, storedSession.cleanSession);
+        return new ClientSession(clientID, this, this, storedSession.cleanSession);
     }
 
     @Override
     public Collection<ClientSession> getAllSessions() {
         Collection<ClientSession> result = new ArrayList<>();
         for (Map.Entry<String, PersistentSession> entry : m_persistentSessions.entrySet()) {
-            result.add(new ClientSession(entry.getKey(), m_messagesStore, this, entry.getValue().cleanSession));
+            result.add(new ClientSession(entry.getKey(), this, this, entry.getValue().cleanSession));
         }
         return result;
     }
@@ -159,28 +159,25 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void inFlightAck(String clientID, int messageID) {
-        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
+    public StoredMessage inFlightAck(String clientID, int messageID) {
+        Map<Integer, StoredMessage> m = this.outboundFlightMessages.get(clientID);
         if (m == null) {
             LOG.error("Can't find the inFlight record for client <{}>", clientID);
-            return;
+            throw new RuntimeException("Can't find the inFlight record for client <" + clientID + ">");
         }
-        m.remove(messageID);
+        StoredMessage msg = m.remove(messageID);
+        this.outboundFlightMessages.put(clientID, m);
+        return msg;
     }
 
     @Override
-    public void inFlight(String clientID, int messageID, MessageGUID guid) {
-        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
-        if (m == null) {
-            m = new HashMap<>();
+    public void inFlight(String clientID, int messageID, StoredMessage msg) {
+        Map<Integer, StoredMessage> messages = outboundFlightMessages.get(clientID);
+        if (messages == null) {
+            messages = new HashMap<>();
         }
-        m.put(messageID, guid);
-        this.m_inflightStore.put(clientID, m);
-
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> guids = defaultGet(outboundFlightMessageToGuid, clientID, emptyGuids);
-        guids.put(messageID, guid);
-        outboundFlightMessageToGuid.put(clientID, guids);
+        messages.put(messageID, msg);
+        outboundFlightMessages.put(clientID, messages);
     }
 
     /**
@@ -188,7 +185,7 @@ public class MemorySessionStore implements ISessionsStore {
      */
     @Override
     public int nextPacketID(String clientID) {
-        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
+        Map<Integer, StoredMessage> m = this.outboundFlightMessages.get(clientID);
         if (m == null) {
             m = new HashMap<>();
             int nextPacketId = 1;
@@ -215,61 +212,73 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID) {
-        LOG.info("acknowledging inflight clientID <{}> messageID {}", clientID, messageID);
-        Map<Integer, MessageGUID> m = this.m_inflightStore.get(clientID);
+    public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID, StoredMessage msg) {
+        LOG.info("Moving msg inflight second phase store, clientID <{}> messageID {}", clientID, messageID);
+        Map<Integer, StoredMessage> m = this.m_secondPhaseStore.get(clientID);
         if (m == null) {
-            LOG.error("Can't find the inFlight record for client <{}>", clientID);
-            return;
+            m = new HashMap<>();
         }
-        MessageGUID guid = m.remove(messageID);
-
-        LOG.info("Moving to second phase store");
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
-        messageIDs.put(messageID, guid);
-        m_secondPhaseStore.put(clientID, messageIDs);
+        m.put(messageID, msg);
+        this.outboundFlightMessages.put(clientID, m);
     }
 
     @Override
-    public MessageGUID secondPhaseAcknowledged(String clientID, int messageID) {
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> messageIDs = Utils.defaultGet(m_secondPhaseStore, clientID, emptyGuids);
-        MessageGUID guid = messageIDs.remove(messageID);
-        m_secondPhaseStore.put(clientID, messageIDs);
-        return guid;
-    }
+    public StoredMessage secondPhaseAcknowledged(String clientID, int messageID) {
+        LOG.info("Acknowledged message in second phase, clientID <{}> messageID {}", clientID, messageID);
+        final Map<Integer, StoredMessage> m = this.m_secondPhaseStore.get(clientID);
+        if (m == null) {
+            String error = String.format("Can't find the inFlight record for client <%s> during the second phase " +
+                "acking of QoS2 pub", clientID);
+            LOG.error(error);
+            throw new RuntimeException(error);
+        }
 
-    @Override
-    public StoredMessage getInflightMessage(String clientID, int messageID) {
-        Map<Integer, MessageGUID> inflightMessages = m_inflightStore.get(clientID);
-        MessageGUID guid = inflightMessages.get(messageID);
-        return m_messagesStore.getMessageByGuid(guid);
+        StoredMessage msg = m.remove(messageID);
+        m_secondPhaseStore.put(clientID, m);
+        return msg;
     }
 
     @Override
     public int getInflightMessagesNo(String clientID) {
-        Map<Integer, MessageGUID> inflightMessages = m_inflightStore.get(clientID);
-        if (inflightMessages == null)
-            return 0;
-        else
-            return inflightMessages.size();
+        int totalInflight = 0;
+        Map<Integer, StoredMessage> inflightPerClient = this.inboundFlightMessages.get(clientID);
+        if (inflightPerClient != null) {
+            totalInflight += inflightPerClient.size();
+        }
+
+        Map<Integer, StoredMessage> secondPhaseInFlight = this.m_secondPhaseStore.get(clientID);
+        if (secondPhaseInFlight != null) {
+            totalInflight += secondPhaseInFlight.size();
+        }
+
+        Map<Integer, StoredMessage> outboundPerClient = outboundFlightMessages.get(clientID);
+        if (outboundPerClient != null) {
+            totalInflight += outboundPerClient.size();
+        }
+
+        return totalInflight;
     }
 
     @Override
     public StoredMessage inboundInflight(String clientID, int messageID) {
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> guids = Utils.defaultGet(inboundFlightMessageToGuid, clientID, emptyGuids);
-        final MessageGUID guid = guids.get(messageID);
-        return m_messagesStore.getMessageByGuid(guid);
+        Map<Integer, StoredMessage> inflightPerClient = this.inboundFlightMessages.get(clientID);
+        if (inflightPerClient == null) {
+            String error = String.format("Can't find inbound inflight zone for client <%s>", clientID);
+            LOG.error(error);
+            throw new RuntimeException(error);
+        }
+        return inflightPerClient.get(messageID);
     }
 
     @Override
-    public void markAsInboundInflight(String clientID, int messageID, MessageGUID guid) {
-        final HashMap<Integer, MessageGUID> emptyGuids = new HashMap<>();
-        Map<Integer, MessageGUID> guids = Utils.defaultGet(inboundFlightMessageToGuid, clientID, emptyGuids);
-        guids.put(messageID, guid);
-        inboundFlightMessageToGuid.put(clientID, guids);
+    public void markAsInboundInflight(String clientID, int messageID, StoredMessage msg) {
+        Map<Integer, StoredMessage> inflightPerClient = this.inboundFlightMessages.get(clientID);
+        if (inflightPerClient == null) {
+            inflightPerClient = new HashMap<>();
+        }
+
+        inflightPerClient.put(messageID, msg);
+        inboundFlightMessages.put(clientID, inflightPerClient);
     }
 
     @Override
@@ -279,7 +288,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public int getSecondPhaseAckPendingMessages(String clientID) {
-        Map<Integer, MessageGUID> pendingAcks = m_secondPhaseStore.get(clientID);
+        Map<Integer, StoredMessage> pendingAcks = m_secondPhaseStore.get(clientID);
         if (pendingAcks == null)
             return 0;
         else
@@ -287,12 +296,8 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public Collection<MessageGUID> pendingAck(String clientID) {
-        Map<Integer, MessageGUID> messageGUIDMap = outboundFlightMessageToGuid.get(clientID);
-        if (messageGUIDMap == null || messageGUIDMap.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return new ArrayList<>(messageGUIDMap.values());
+    public void dropInFlightMessagesInSession(String clientID) {
+        outboundFlightMessages.remove(clientID);
+        inboundFlightMessages.remove(clientID);
     }
 }

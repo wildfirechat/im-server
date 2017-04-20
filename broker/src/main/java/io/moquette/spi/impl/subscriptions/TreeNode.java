@@ -16,7 +16,7 @@
 
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ISessionsStore.ClientTopicCouple;
+import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 

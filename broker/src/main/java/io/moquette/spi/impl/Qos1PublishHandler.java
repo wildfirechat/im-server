@@ -19,9 +19,6 @@ package io.moquette.spi.impl;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.MessageGUID;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
@@ -31,7 +28,7 @@ import io.netty.handler.codec.mqtt.MqttPubAckMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.List;
+
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
@@ -79,11 +76,7 @@ class Qos1PublishHandler extends QosPublishHandler {
                 m_messagesStore.cleanRetained(topic);
             } else {
                 // before wasn't stored
-                MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-
-                //TODO Il messaggio non ha il guid settato
-//                m_messagesStore.storeRetained(topic, toStoreMsg.getGuid());
-                m_messagesStore.storeRetained(topic, guid);
+                m_messagesStore.storeRetained(topic, toStoreMsg);
             }
         }
 

@@ -94,16 +94,6 @@ public interface IMessagesStore {
     void initStore();
 
     /**
-     * Persist the message. If the message is empty then the topic is cleaned, else it's stored.
-     *
-     * @param topic
-     *            for the retained.
-     * @param guid
-     *            of the message to mark as retained.
-     */
-    void storeRetained(Topic topic, MessageGUID guid);
-
-    /**
      * Return a list of retained messages that satisfy the condition.
      *
      * @param condition
@@ -112,18 +102,7 @@ public interface IMessagesStore {
      */
     Collection<StoredMessage> searchMatching(IMatchingCondition condition);
 
-    /**
-     * Persist the message.
-     *
-     * @param storedMessage
-     *            the message to store for future usage.
-     * @return the unique id in the storage (guid).
-     */
-    MessageGUID storePublishForFuture(StoredMessage storedMessage);
-
-    void dropInFlightMessagesInSession(Collection<MessageGUID> pendingAckMessages);
-
-    StoredMessage getMessageByGuid(MessageGUID guid);
-
     void cleanRetained(Topic topic);
+
+    void storeRetained(Topic topic, StoredMessage storedMessage);
 }

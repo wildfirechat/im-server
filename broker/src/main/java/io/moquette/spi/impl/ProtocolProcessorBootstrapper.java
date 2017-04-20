@@ -25,17 +25,15 @@ import io.moquette.server.config.IResourceLoader;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.IStore;
-import io.moquette.spi.impl.security.ACLFileParser;
-import io.moquette.spi.impl.security.AcceptAllAuthenticator;
-import io.moquette.spi.impl.security.DenyAllAuthorizator;
-import io.moquette.spi.impl.security.PermitAllAuthorizator;
-import io.moquette.spi.impl.security.ResourceAuthenticator;
+import io.moquette.spi.ISubscriptionsStore;
+import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -50,16 +48,13 @@ public class ProtocolProcessorBootstrapper {
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessorBootstrapper.class);
     public static final String MAPDB_STORE_CLASS = "io.moquette.persistence.MemoryStorageService";
 
-    private SubscriptionsStore subscriptions;
-
     private ISessionsStore m_sessionsStore;
+
+    private ISubscriptionsStore subscriptionsStore;
 
     private Runnable storeShutdown;
 
-    private BrokerInterceptor m_interceptor;
-
     private final ProtocolProcessor m_processor = new ProtocolProcessor();
-
     private ConnectionDescriptorStore connectionDescriptors;
 
     public ProtocolProcessorBootstrapper() {
@@ -86,8 +81,6 @@ public class ProtocolProcessorBootstrapper {
      */
     public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
             IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
-        subscriptions = new SubscriptionsStore();
-
         IMessagesStore messagesStore;
         LOG.info("Initializing messages and sessions stores...");
         String storageClassName = props.getProperty(BrokerConstants.STORAGE_CLASS_NAME, MAPDB_STORE_CLASS);
@@ -98,6 +91,7 @@ public class ProtocolProcessorBootstrapper {
         final IStore store = loadClass(storageClassName, IStore.class, Server.class, server);
         messagesStore = store.messagesStore();
         m_sessionsStore = store.sessionsStore();
+        this.subscriptionsStore = m_sessionsStore.subscriptionStore();
         storeShutdown = new Runnable() {
 
             @Override
@@ -116,9 +110,10 @@ public class ProtocolProcessorBootstrapper {
                 observers.add(handler);
             }
         }
-        m_interceptor = new BrokerInterceptor(props, observers);
+        BrokerInterceptor interceptor = new BrokerInterceptor(props, observers);
 
         LOG.info("Initializing subscriptions store...");
+        SubscriptionsDirectory subscriptions = new SubscriptionsDirectory();
         subscriptions.init(m_sessionsStore);
 
         LOG.info("Configuring MQTT authenticator...");
@@ -170,7 +165,7 @@ public class ProtocolProcessorBootstrapper {
         boolean allowZeroByteClientId = Boolean
                 .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
         m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator,
-                allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor,
+                allowAnonymous, allowZeroByteClientId, authorizator, interceptor,
                 props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
@@ -262,7 +257,7 @@ public class ProtocolProcessorBootstrapper {
     }
 
     public List<Subscription> getSubscriptions() {
-        return m_sessionsStore.getSubscriptions();
+        return this.subscriptionsStore.getSubscriptions();
     }
 
     public void shutdown() {

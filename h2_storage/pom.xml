@@ -8,9 +8,9 @@
         <version>0.10-SNAPSHOT</version>
     </parent>
 
-    <artifactId>moquette-mapdb-storage</artifactId>
+    <artifactId>moquette-h2-storage</artifactId>
     <packaging>jar</packaging>
-    <name>Moquette - MapDB storage</name>
+    <name>Moquette - H2 storage</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,9 +31,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mapdb</groupId>
-            <artifactId>mapdb</artifactId>
-            <version>1.0.8</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2-mvstore</artifactId>
+            <version>1.4.192</version>
         </dependency>
 
         <!-- Test dependencies -->

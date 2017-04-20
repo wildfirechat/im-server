@@ -17,7 +17,8 @@
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISessionsStore.ClientTopicCouple;
+import io.moquette.spi.ISubscriptionsStore;
+import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Represents a tree of topics subscriptions.
  */
-public class SubscriptionsStore {
+public class SubscriptionsDirectory {
 
     public static class NodeCouple {
 
@@ -79,8 +80,9 @@ public class SubscriptionsStore {
     }
 
     private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode());
-    private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsDirectory.class);
     private volatile ISessionsStore m_sessionsStore;
+    private volatile ISubscriptionsStore subscriptionsStore;
 
     /**
      * Initialize the subscription tree with the list of subscriptions. Maintained for compatibility
@@ -92,21 +94,20 @@ public class SubscriptionsStore {
     public void init(ISessionsStore sessionsStore) {
         LOG.info("Initializing subscriptions store...");
         m_sessionsStore = sessionsStore;
-        List<ClientTopicCouple> subscriptions = sessionsStore.listAllSubscriptions();
+        this.subscriptionsStore = sessionsStore.subscriptionStore();
+        List<ClientTopicCouple> subscriptions = this.subscriptionsStore.listAllSubscriptions();
         // reload any subscriptions persisted
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}.", dumpTree());
+            LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}", dumpTree());
         }
 
         for (ClientTopicCouple clientTopic : subscriptions) {
-            LOG.info(
-                    "Re-subscribing client to topic. ClientId = {}, topicFilter = {}.",
-                    clientTopic.clientID,
-                    clientTopic.topicFilter);
+            LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", clientTopic.clientID,
+                clientTopic.topicFilter);
             add(clientTopic);
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("The stored subscriptions have been reloaded. SubscriptionTree = {}.", dumpTree());
+            LOG.trace("Stored subscriptions have been reloaded. SubscriptionTree = {}", dumpTree());
         }
     }
 
@@ -204,7 +205,7 @@ public class SubscriptionsStore {
         Map<String, Subscription> subsForClient = new HashMap<>();
         for (ClientTopicCouple matchingCouple : matchingSubs) {
             Subscription existingSub = subsForClient.get(matchingCouple.clientID);
-            Subscription sub = m_sessionsStore.getSubscription(matchingCouple);
+            Subscription sub = this.subscriptionsStore.getSubscription(matchingCouple);
             if (sub == null) {
                 // if the m_sessionStore hasn't the sub because the client disconnected
                 continue;

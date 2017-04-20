@@ -21,7 +21,7 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
@@ -36,10 +36,10 @@ class MessagesPublisher {
     private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final PersistentQueueMessageSender messageSender;
-    private final SubscriptionsStore subscriptions;
+    private final SubscriptionsDirectory subscriptions;
 
     public MessagesPublisher(ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
-                             PersistentQueueMessageSender messageSender, SubscriptionsStore subscriptions) {
+                             PersistentQueueMessageSender messageSender, SubscriptionsDirectory subscriptions) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.messageSender = messageSender;
@@ -59,11 +59,11 @@ class MessagesPublisher {
 
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, Topic topic, int messageID) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Sending publish message to subscribers. CId={}, topic={}, messageId={}, payload={}, " +
+            LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
                     "subscriptionTree={}", pubMsg.getClientID(), topic, messageID, DebugUtils.payload2Str(pubMsg.getPayload()),
                 subscriptions.dumpTree());
         } else {
-            LOG.info("Sending publish message to subscribers. CId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
                 messageID);
         }
         publish2Subscribers(pubMsg, topic);

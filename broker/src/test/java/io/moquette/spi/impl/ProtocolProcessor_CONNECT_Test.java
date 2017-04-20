@@ -24,7 +24,7 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
@@ -51,7 +51,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     IMessagesStore m_messagesStore;
     ISessionsStore m_sessionStore;
-    SubscriptionsStore subscriptions;
+    SubscriptionsDirectory subscriptions;
     MockAuthenticator m_mockAuthenticator;
 
     @Before
@@ -73,7 +73,7 @@ public class ProtocolProcessor_CONNECT_Test {
         users.put(ProtocolProcessorTest.TEST_USER, ProtocolProcessorTest.TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
-        subscriptions = new SubscriptionsStore();
+        subscriptions = new SubscriptionsDirectory();
         subscriptions.init(m_sessionStore);
         m_processor = new ProtocolProcessor();
         m_processor.init(

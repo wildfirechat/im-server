@@ -24,7 +24,7 @@ import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
@@ -130,7 +130,8 @@ public class ProtocolProcessor {
     protected ConnectionDescriptorStore connectionDescriptors;
     protected ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
-    private SubscriptionsStore subscriptions;
+    private SubscriptionsDirectory subscriptions;
+    private ISubscriptionsStore subscriptionStore;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
     private IAuthorizator m_authorizator;
@@ -141,7 +142,6 @@ public class ProtocolProcessor {
 
     private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
-    private String m_server_port;
 
     private Qos0PublishHandler qos0PublishHandler;
     private Qos1PublishHandler qos1PublishHandler;
@@ -155,23 +155,23 @@ public class ProtocolProcessor {
     ProtocolProcessor() {
     }
 
-    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
-            IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
-            BrokerInterceptor interceptor) {
+    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+                     IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
+                     BrokerInterceptor interceptor) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator,
             interceptor, null);
     }
 
-    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
-            IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-            IAuthorizator authorizator, BrokerInterceptor interceptor) {
+    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+                     IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
+                     IAuthorizator authorizator, BrokerInterceptor interceptor) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId,
             authorizator, interceptor, null);
     }
 
-    public void init(SubscriptionsStore subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
-            IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-            IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
+    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+                     IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
+                     IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         init(new ConnectionDescriptorStore(sessionsStore), subscriptions, storageService, sessionsStore, authenticator,
             allowAnonymous, allowZeroByteClientId, authorizator, interceptor, serverPort);
     }
@@ -194,7 +194,7 @@ public class ProtocolProcessor {
      * @param interceptor
      *            to notify events to an intercept handler
      */
-    void init(ConnectionDescriptorStore connectionDescriptors, SubscriptionsStore subscriptions,
+    void init(ConnectionDescriptorStore connectionDescriptors, SubscriptionsDirectory subscriptions,
             IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
             boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
             BrokerInterceptor interceptor, String serverPort) {
@@ -212,7 +212,7 @@ public class ProtocolProcessor {
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
-        m_server_port = serverPort;
+        subscriptionStore = sessionsStore.subscriptionStore();
 
         LOG.info("Initializing messages publisher...");
         final PersistentQueueMessageSender messageSender = new PersistentQueueMessageSender(this.connectionDescriptors);
@@ -468,12 +468,11 @@ public class ProtocolProcessor {
         LOG.trace("retrieving inflight for messageID <{}>", messageID);
 
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        StoredMessage inflightMsg = targetSession.getInflightMessage(messageID);
-        targetSession.inFlightAcknowledged(messageID);
+        StoredMessage inflightMsg = targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
-        m_interceptor
-                .notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
+        InterceptAcknowledgedMessage wrapped = new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID);
+        m_interceptor.notifyMessageAcknowledged(wrapped);
     }
 
     public static IMessagesStore.StoredMessage asStoredMessage(MqttPublishMessage msg) {
@@ -539,9 +538,9 @@ public class ProtocolProcessor {
         } else {
             toStoreMsg.setClientID(clientId);
         }
-        if (qos == EXACTLY_ONCE) { // QoS2
-            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-        }
+//        if (qos == EXACTLY_ONCE) { // QoS2
+//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+//        }
         this.messagesPublisher.publish2Subscribers(toStoreMsg, topic);
 
         if (!msg.fixedHeader().isRetain()) {
@@ -552,11 +551,11 @@ public class ProtocolProcessor {
             m_messagesStore.cleanRetained(topic);
             return;
         }
-        if (guid == null) {
-            // before wasn't stored
-            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-        }
-        m_messagesStore.storeRetained(topic, guid);
+//        if (guid == null) {
+//            // before wasn't stored
+//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+//        }
+        m_messagesStore.storeRetained(topic, toStoreMsg);
     }
 
     /**
@@ -597,7 +596,8 @@ public class ProtocolProcessor {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         // remove from the inflight and move to the QoS2 second phase queue
         int messageID = messageId(msg);
-        targetSession.moveInFlightToSecondPhaseAckWaiting(messageID);
+        StoredMessage ackedMsg = targetSession.inFlightAcknowledged(messageID);
+        targetSession.moveInFlightToSecondPhaseAckWaiting(messageID, ackedMsg);
         // once received a PUBREC reply with a PUBREL(messageID)
         LOG.debug("Processing PUBREC message. CId={}, messageId={}", clientID, messageID);
 
@@ -678,7 +678,7 @@ public class ProtocolProcessor {
 
         if (descriptor.cleanSession) {
             LOG.info("Removing saved subscriptions. CId={}", descriptor.clientID);
-            m_sessionsStore.wipeSubscriptions(clientID);
+            subscriptionStore.wipeSubscriptions(clientID);
             LOG.info("The saved subscriptions have been removed. CId={}", descriptor.clientID);
         }
         return true;
@@ -918,9 +918,8 @@ public class ProtocolProcessor {
                 emptyQueue = true;
             } else {
                 // recreate a publish from stored publish in queue
-                boolean retained = m_messagesStore.getMessageByGuid(msg.getGuid()) != null;
                 MqttPublishMessage pubMsg = createPublishForQos( msg.getTopic(), msg.getQos(), msg.getPayload(),
-                        retained, 0);
+                        msg.isRetained(), 0);
                 channel.write(pubMsg);
             }
         }

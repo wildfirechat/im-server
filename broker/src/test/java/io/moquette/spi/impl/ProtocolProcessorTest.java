@@ -26,7 +26,7 @@ import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -62,7 +62,7 @@ public class ProtocolProcessorTest {
 
     IMessagesStore m_messagesStore;
     ISessionsStore m_sessionStore;
-    SubscriptionsStore subscriptions;
+    SubscriptionsDirectory subscriptions;
     MockAuthenticator m_mockAuthenticator;
 
     @Before
@@ -92,7 +92,7 @@ public class ProtocolProcessorTest {
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
-        subscriptions = new SubscriptionsStore();
+        subscriptions = new SubscriptionsDirectory();
         subscriptions.init(memStorage.sessionsStore());
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
@@ -104,7 +104,7 @@ public class ProtocolProcessorTest {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsStore subs = new SubscriptionsStore() {
+        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -152,7 +152,7 @@ public class ProtocolProcessorTest {
                 MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsStore subs = new SubscriptionsStore() {
+        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -311,7 +311,7 @@ public class ProtocolProcessorTest {
                 new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsStore subs = new SubscriptionsStore() {
+        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -355,14 +355,14 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testRepublishAndConsumePersistedMessages_onReconnect() {
-        SubscriptionsStore subs = mock(SubscriptionsStore.class);
+        SubscriptionsDirectory subs = mock(SubscriptionsDirectory.class);
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
         StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(), MqttQoS.EXACTLY_ONCE, "/topic");
         retainedMessage.setRetained(true);
         retainedMessage.setClientID(FAKE_PUBLISHER_ID);
-        m_messagesStore.storePublishForFuture(retainedMessage);
+        m_messagesStore.storeRetained(new Topic("/topic"), retainedMessage);
 
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR);
@@ -382,7 +382,7 @@ public class ProtocolProcessorTest {
         // create an inactive session for Subscriber
         m_sessionStore.createNewSession("Subscriber", false);
 
-        SubscriptionsStore mockedSubscriptions = mock(SubscriptionsStore.class);
+        SubscriptionsDirectory mockedSubscriptions = mock(SubscriptionsDirectory.class);
         Subscription inactiveSub = new Subscription("Subscriber", new Topic("/topic"), MqttQoS.AT_LEAST_ONCE);
         List<Subscription> inactiveSubscriptions = Collections.singletonList(inactiveSub);
         when(mockedSubscriptions.matches(eq(new Topic("/topic")))).thenReturn(inactiveSubscriptions);

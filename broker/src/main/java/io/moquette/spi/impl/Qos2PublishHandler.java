@@ -21,16 +21,13 @@ import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.MessageGUID;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
+import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.List;
 
 import static io.moquette.spi.impl.DebugUtils.payload2Str;
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
@@ -42,14 +39,14 @@ class Qos2PublishHandler extends QosPublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos2PublishHandler.class);
 
-    private final SubscriptionsStore subscriptions;
+    private final SubscriptionsDirectory subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
     private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final MessagesPublisher publisher;
 
-    public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsStore subscriptions,
+    public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsDirectory subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
                               ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
                               MessagesPublisher messagesPublisher) {
@@ -81,23 +78,22 @@ class Qos2PublishHandler extends QosPublishHandler {
             LOG.trace("payload={}, subs Tree={}", payload2Str(toStoreMsg.getPayload()), subscriptions.dumpTree());
         }
 
-        // QoS2
-        MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-        ClientSession sourceSession = m_sessionsStore.sessionForClient(clientID);
-        sourceSession.markAsInboundInflight(messageID, guid);
+        m_sessionsStore.sessionForClient(clientID)
+            .markAsInboundInflight(messageID, toStoreMsg);
 
         sendPubRec(clientID, messageID);
 
         // Next the client will send us a pub rel
         // NB publish to subscribers for QoS 2 happen upon PUBREL from publisher
 
-        if (msg.fixedHeader().isRetain()) {
-            if (msg.payload().readableBytes() == 0) {
-                m_messagesStore.cleanRetained(topic);
-            } else {
-                m_messagesStore.storeRetained(topic, guid);
-            }
-        }
+//        if (msg.fixedHeader().isRetain()) {
+//            if (msg.payload().readableBytes() == 0) {
+//                m_messagesStore.cleanRetained(topic);
+//            } else {
+//                m_messagesStore.storeRetained(topic, toStoreMsg);
+//            }
+//        }
+        //TODO this should happen on PUB_REL, else we notify false positive
         m_interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
@@ -123,9 +119,12 @@ class Qos2PublishHandler extends QosPublishHandler {
             if (evt.getPayload().readableBytes() == 0) {
                 m_messagesStore.cleanRetained(topic);
             } else {
-                m_messagesStore.storeRetained(topic, evt.getGuid());
+                m_messagesStore.storeRetained(topic, evt);
             }
         }
+
+        //TODO here we should notify to the listeners
+        //m_interceptor.notifyTopicPublished(msg, clientID, username);
 
         sendPubComp(clientID, messageID);
     }

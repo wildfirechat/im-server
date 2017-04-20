@@ -27,7 +27,7 @@ public class MemoryStorageService implements IStore {
 
     public MemoryStorageService() {
         m_messagesStore = new MemoryMessagesStore();
-        m_sessionsStore = new MemorySessionStore(m_messagesStore);
+        m_sessionsStore = new MemorySessionStore();
         m_messagesStore.initStore();
         m_sessionsStore.initStore();
     }
@@ -40,6 +40,10 @@ public class MemoryStorageService implements IStore {
     @Override
     public ISessionsStore sessionsStore() {
         return m_sessionsStore;
+    }
+
+    @Override
+    public void initStore() {
     }
 
     @Override

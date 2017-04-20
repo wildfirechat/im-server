@@ -34,7 +34,7 @@ public final class PerformanceTest {
        cpufreq-set -g performance -u 800MHz -c 3
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        SubscriptionsStore store = new SubscriptionsStore();
+        SubscriptionsDirectory store = new SubscriptionsDirectory();
         MemoryStorageService memStore = new MemoryStorageService();
         ISessionsStore aSessionsStore = memStore.sessionsStore();
         store.init(aSessionsStore);
@@ -56,7 +56,7 @@ public final class PerformanceTest {
                             + ((i / (users * devices * values)) % subs));
 
             Subscription sub = new Subscription("CLI_ID_" + (i % users), topics[i], MqttQoS.AT_MOST_ONCE);
-            aSessionsStore.addNewSubscription(sub);
+            aSessionsStore.subscriptionStore().addNewSubscription(sub);
             store.add(sub.asClientTopicCouple());
         }
 

@@ -18,9 +18,21 @@ package io.moquette.spi;
 
 public interface IStore {
 
-    IMessagesStore messagesStore();
-
-    ISessionsStore sessionsStore();
+    void initStore();
 
     void close();
+
+    /**
+     * Factory method to instantiate the messages store.
+     *
+     * @return the create instance of IMessagesStore.
+     * */
+    IMessagesStore messagesStore();
+
+    /**
+     * Factory method to instantiate the session store.
+     *
+     * @return the create instance of ISessionsStore.
+     * */
+    ISessionsStore sessionsStore();
 }
