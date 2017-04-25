@@ -46,8 +46,10 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {
             case CONNECT:
-                LOG.info("{} CONNECT client <{}>", direction, clientID);
+            case DISCONNECT:
+                LOG.info("{} {} <{}>", direction, messageType, clientID);
                 break;
+
             case SUBSCRIBE:
                 MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
                 LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID,
@@ -61,20 +63,12 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 MqttPublishMessage publish = (MqttPublishMessage) msg;
                 LOG.info("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.variableHeader().topicName());
                 break;
+
             case PUBREC:
-                LOG.info("{} PUBREC <{}> packetID <{}>", direction, clientID, messageId(msg));
-                break;
             case PUBCOMP:
-                LOG.info("{} PUBCOMP <{}> packetID <{}>", direction, clientID, messageId(msg));
-                break;
             case PUBREL:
-                LOG.info("{} PUBREL <{}> packetID <{}>", direction, clientID, messageId(msg));
-                break;
-            case DISCONNECT:
-                LOG.info("{} DISCONNECT <{}>", direction, clientID);
-                break;
             case PUBACK:
-                LOG.info("{} PUBACK <{}> packetID <{}>", direction, clientID, messageId(msg));
+                LOG.info("{} {} <{}> packetID <{}>", direction, messageType, clientID, messageId(msg));
                 break;
 
             case CONNACK:
