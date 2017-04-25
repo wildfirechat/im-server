@@ -76,6 +76,15 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
             case PUBACK:
                 LOG.info("{} PUBACK <{}> packetID <{}>", direction, clientID, messageId(msg));
                 break;
+
+            case CONNACK:
+            case SUBACK:
+            case PINGREQ:
+            case PINGRESP:
+            case UNSUBACK:
+                LOG.debug("{} {} <{}> packetID <{}>", direction, messageType, clientID, messageId(msg));
+                break;
+
             default:
                 LOG.error("Unkonwn MessageType:{}", messageType);
                 break;
