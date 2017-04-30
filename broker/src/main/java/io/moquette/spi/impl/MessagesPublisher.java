@@ -59,11 +59,11 @@ class MessagesPublisher {
 
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, Topic topic, int messageID) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
+            LOG.trace("Sending publish message to subscribers. CId={}, topic={}, messageId={}, payload={}, " +
                     "subscriptionTree={}", pubMsg.getClientID(), topic, messageID, DebugUtils.payload2Str(pubMsg.getPayload()),
                 subscriptions.dumpTree());
         } else {
-            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
+            LOG.info("Sending publish message to subscribers. CId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
                 messageID);
         }
         publish2Subscribers(pubMsg, topic);

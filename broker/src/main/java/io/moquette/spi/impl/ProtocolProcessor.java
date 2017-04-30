@@ -510,7 +510,7 @@ public class ProtocolProcessor {
                 this.qos2PublishHandler.receivedPublishQos2(channel, msg);
                 break;
             default:
-                LOG.error("Unkonwn QoS-Type:{}", qos);
+                LOG.error("Unknown QoS-Type:{}", qos);
                 break;
         }
     }

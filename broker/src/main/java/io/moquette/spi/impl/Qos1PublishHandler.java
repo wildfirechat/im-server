@@ -19,6 +19,7 @@ package io.moquette.spi.impl;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
 import io.moquette.spi.impl.subscriptions.Topic;
@@ -78,8 +79,11 @@ class Qos1PublishHandler extends QosPublishHandler {
                 m_messagesStore.cleanRetained(topic);
             } else {
                 // before wasn't stored
-                //MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-                m_messagesStore.storeRetained(topic, toStoreMsg.getGuid());
+                MessageGUID guid = m_messagesStore.storePublishForFuture(toStoreMsg);
+
+                //TODO Il messaggio non ha il guid settato
+//                m_messagesStore.storeRetained(topic, toStoreMsg.getGuid());
+                m_messagesStore.storeRetained(topic, guid);
             }
         }
 
