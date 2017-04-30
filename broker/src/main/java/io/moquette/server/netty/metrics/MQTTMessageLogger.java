@@ -24,8 +24,15 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
 import static io.moquette.spi.impl.Utils.messageId;
 
+/**
+ *
+ * @author andrea
+ */
 @Sharable
 public class MQTTMessageLogger extends ChannelDuplexHandler {
 
@@ -46,10 +53,12 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {
             case CONNECT:
+            case CONNACK:
+            case PINGREQ:
+            case PINGRESP:
             case DISCONNECT:
                 LOG.info("{} {} <{}>", direction, messageType, clientID);
                 break;
-
             case SUBSCRIBE:
                 MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
                 LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID,
@@ -63,24 +72,18 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 MqttPublishMessage publish = (MqttPublishMessage) msg;
                 LOG.info("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.variableHeader().topicName());
                 break;
-
             case PUBREC:
             case PUBCOMP:
             case PUBREL:
             case PUBACK:
+            case UNSUBACK:
                 LOG.info("{} {} <{}> packetID <{}>", direction, messageType, clientID, messageId(msg));
                 break;
-
-            case CONNACK:
             case SUBACK:
-            case PINGREQ:
-            case PINGRESP:
-            case UNSUBACK:
-                LOG.debug("{} {} <{}> packetID <{}>", direction, messageType, clientID, messageId(msg));
-                break;
-
-            default:
-                LOG.error("Unkonwn MessageType:{}", messageType);
+                MqttSubAckMessage suback = (MqttSubAckMessage) msg;
+                final List<Integer> grantedQoSLevels = suback.payload().grantedQoSLevels();
+                LOG.info("{} SUBACK <{}> packetID <{}>, grantedQoses {}", direction, clientID, messageId(msg),
+                    grantedQoSLevels);
                 break;
         }
     }
