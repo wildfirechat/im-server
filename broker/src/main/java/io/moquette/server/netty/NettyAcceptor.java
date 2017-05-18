@@ -25,7 +25,10 @@ import io.moquette.spi.security.ISslContextCreator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -99,6 +102,8 @@ public class NettyAcceptor implements ServerAcceptor {
     private boolean nettySoKeepalive;
     private int nettyChannelTimeoutSeconds;
 
+    private Class<? extends ServerSocketChannel> channelClass;
+
     @Override
     public void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator)
             throws IOException {
@@ -114,8 +119,19 @@ public class NettyAcceptor implements ServerAcceptor {
         nettyChannelTimeoutSeconds = Integer
                 .parseInt(props.getProperty(BrokerConstants.NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME, "10"));
 
-        m_bossGroup = new NioEventLoopGroup();
-        m_workerGroup = new NioEventLoopGroup();
+        boolean epoll = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_EPOLL_PROPERTY_NAME, "false"));
+        if (epoll) {
+            LOG.info("Netty is using epoll.");
+            m_bossGroup = new EpollEventLoopGroup();
+            m_workerGroup = new EpollEventLoopGroup();
+            channelClass = EpollServerSocketChannel.class;
+        } else {
+            LOG.info("Netty is using nio.");
+            m_bossGroup = new NioEventLoopGroup();
+            m_workerGroup = new NioEventLoopGroup();
+            channelClass = NioServerSocketChannel.class;
+        }
+
         final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
 
         initializePlainTCPTransport(handler, props);
@@ -136,7 +152,7 @@ public class NettyAcceptor implements ServerAcceptor {
     private void initFactory(String host, int port, String protocol, final PipelineInitializer pipeliner) {
         LOG.info("Initializing server. Protocol={}", protocol);
         ServerBootstrap b = new ServerBootstrap();
-        b.group(m_bossGroup, m_workerGroup).channel(NioServerSocketChannel.class)
+        b.group(m_bossGroup, m_workerGroup).channel(channelClass)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
 
                     @Override

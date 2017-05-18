@@ -1,4 +1,5 @@
 Version 0.10:
+    Netty epoll system added
     Separated in memory and MapDB storage implementations
     Cleanly separated inflight part (inbound and outbound)
     
