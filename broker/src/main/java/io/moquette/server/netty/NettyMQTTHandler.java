@@ -86,6 +86,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         } catch (Throwable ex) {
             LOG.error("Exception was caught while processing MQTT message, " + ex.getCause(), ex);
             ctx.fireExceptionCaught(ex);
+            ctx.close();
         }
     }
 

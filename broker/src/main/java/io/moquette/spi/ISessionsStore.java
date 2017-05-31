@@ -131,5 +131,5 @@ public interface ISessionsStore {
      */
     int getSecondPhaseAckPendingMessages(String clientID);
 
-    void dropInFlightMessagesInSession(String clientID);
+    void cleanSession(String clientID);
 }

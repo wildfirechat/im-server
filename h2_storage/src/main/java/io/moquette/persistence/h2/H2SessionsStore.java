@@ -362,9 +362,19 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public void dropInFlightMessagesInSession(String clientID) {
+    public void cleanSession(String clientID) {
+        // remove also the messages stored of type QoS1/2
+        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", clientID);
+
         this.secondPhaseStore.remove(clientID);
         this.outboundFlightMessages.remove(clientID);
+        this.inFlightIds.remove(clientID);
+
+        LOG.info("Wiping existing subscriptions. ClientId={}", clientID);
+        wipeSubscriptions(clientID);
+
+        //remove also the enqueued messages
+        dropQueue(clientID);
     }
 
 }
