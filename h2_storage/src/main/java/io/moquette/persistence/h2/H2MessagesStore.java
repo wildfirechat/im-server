@@ -17,7 +17,6 @@ package io.moquette.persistence.h2;
 
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.h2.mvstore.Cursor;
@@ -25,7 +24,6 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.plugin2.message.Message;
 
 import java.util.*;
 
