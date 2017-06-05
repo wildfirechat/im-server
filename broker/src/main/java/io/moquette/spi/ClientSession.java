@@ -165,15 +165,7 @@ public class ClientSession {
     }
 
     public void cleanSession() {
-        LOG.info("Wiping existing subscriptions. ClientId={}", this.clientID);
-        subscriptionsStore.wipeSubscriptions(this.clientID);
-
-        // remove also the messages stored of type QoS1/2
-        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", this.clientID);
-        m_sessionsStore.dropInFlightMessagesInSession(this.clientID);
-
-        //remove also the enqueued messages
-        this.m_sessionsStore.dropQueue(this.clientID);
+        m_sessionsStore.cleanSession(this.clientID);
     }
 
     public boolean isCleanSession() {

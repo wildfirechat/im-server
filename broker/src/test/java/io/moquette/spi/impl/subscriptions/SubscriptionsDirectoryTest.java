@@ -47,6 +47,9 @@ public class SubscriptionsDirectoryTest {
         store.init(sessionsStore);
 
         this.subscriptionsStore = this.sessionsStore.subscriptionStore();
+
+        storageService.sessionsStore().createNewSession("FAKE_CLI_ID_1", false);
+        storageService.sessionsStore().createNewSession("FAKE_CLI_ID_2", false);
     }
 
     @Test
@@ -211,6 +214,7 @@ public class SubscriptionsDirectoryTest {
         store = new SubscriptionsDirectory();
         MemoryStorageService memStore = new MemoryStorageService();
         ISessionsStore aSessionsStore = memStore.sessionsStore();
+        aSessionsStore.createNewSession("FAKE_CLI_ID_1", false);
         store.init(aSessionsStore);
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, MqttQoS.AT_MOST_ONCE);
         aSessionsStore.subscriptionStore().addNewSubscription(sub);
