@@ -18,15 +18,18 @@ package io.moquette.spi.impl;
 
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.*;
-import io.moquette.server.netty.MessageBuilder;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import java.util.Arrays;
+
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
@@ -87,7 +90,7 @@ public class BrokerInterceptorTest {
     }
 
     private static final BrokerInterceptor interceptor = new BrokerInterceptor(
-            Arrays.<InterceptHandler>asList(new MockObserver()));
+        Collections.<InterceptHandler>singletonList(new MockObserver()));
 
     @BeforeClass
     public static void beforeAllTests() {
@@ -107,7 +110,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyClientConnected() throws Exception {
-        interceptor.notifyClientConnected(MessageBuilder.connect().build());
+        interceptor.notifyClientConnected(MqttMessageBuilders.connect().build());
         interval();
         assertEquals(40, n.get());
     }
@@ -122,7 +125,8 @@ public class BrokerInterceptorTest {
     @Test
     public void testNotifyTopicPublished() throws Exception {
         interceptor.notifyTopicPublished(
-                MessageBuilder.publish().qos(MqttQoS.AT_MOST_ONCE).payload("Hello".getBytes()).build(),
+                MqttMessageBuilders.publish().qos(MqttQoS.AT_MOST_ONCE)
+                    .payload(Unpooled.copiedBuffer("Hello".getBytes())).build(),
                 "cli1234",
                 "cli1234");
         interval();

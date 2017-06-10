@@ -17,7 +17,6 @@
 package io.moquette.spi.impl;
 
 import io.moquette.persistence.MemoryStorageService;
-import io.moquette.server.netty.MessageBuilder;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
@@ -27,16 +26,15 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.mqtt.MqttConnectMessage;
-import io.netty.handler.codec.mqtt.MqttQoS;
-import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
-import io.netty.handler.codec.mqtt.MqttVersion;
+import io.netty.handler.codec.mqtt.*;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsConnAck;
 import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsSubAck;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
@@ -46,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 public class ProtocolProcessor_CONNECT_Test {
 
     EmbeddedChannel m_session;
-    MessageBuilder.ConnectBuilder connMsg;
+    MqttMessageBuilders.ConnectBuilder connMsg;
     ProtocolProcessor m_processor;
 
     IMessagesStore m_messagesStore;
@@ -56,7 +54,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Before
     public void setUp() throws InterruptedException {
-        connMsg = MessageBuilder.connect().protocolVersion(MqttVersion.MQTT_3_1).cleanSession(true);
+        connMsg = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1).cleanSession(true);
 
         m_session = new EmbeddedChannel();
 
@@ -130,7 +128,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void validAuthentication() {
-        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser().hasPassword()
+        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .username(ProtocolProcessorTest.TEST_USER).password(ProtocolProcessorTest.TEST_PWD).build();
 
         // Exercise
@@ -143,7 +141,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void noPasswdAuthentication() {
-        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser()
+        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .username(ProtocolProcessorTest.TEST_USER).build();
 
         // Exercise
@@ -156,7 +154,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void invalidAuthentication() {
-        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser().hasPassword()
+        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .username(ProtocolProcessorTest.TEST_USER + "_fake").password(ProtocolProcessorTest.TEST_PWD).build();
 
         // Exercise
@@ -189,7 +187,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     @Test
     public void prohibitAnonymousClient_providingUsername() {
-        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser()
+        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .username(ProtocolProcessorTest.TEST_USER + "_fake").build();
         m_processor.init(
                 subscriptions,
@@ -248,7 +246,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         // second connect with clean session false
         m_session = new EmbeddedChannel();
-        MqttConnectMessage secondConnMsg = MessageBuilder.connect().clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
+        MqttConnectMessage secondConnMsg = MqttMessageBuilders.connect().clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .protocolVersion(MqttVersion.MQTT_3_1).build();
 
         m_processor.processConnect(m_session, secondConnMsg);
@@ -265,15 +263,16 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void connectWithSameClientIDBadCredentialsDoesntDropExistingClient() {
         // Connect a client1
-        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser().hasPassword()
+        MqttConnectMessage msg = connMsg.clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .username(ProtocolProcessorTest.TEST_USER).password(ProtocolProcessorTest.TEST_PWD).build();
         m_processor.processConnect(m_session, msg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         // create another connect same clientID but with bad credentials
-        MqttConnectMessage evilClientConnMsg = MessageBuilder.connect().protocolVersion(MqttVersion.MQTT_3_1)
-                .clientId(ProtocolProcessorTest.FAKE_CLIENT_ID).hasUser().username(ProtocolProcessorTest.EVIL_TEST_USER)
-                .hasPassword().password(ProtocolProcessorTest.EVIL_TEST_PWD).build();
+        MqttConnectMessage evilClientConnMsg = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1)
+                .clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
+                .username(ProtocolProcessorTest.EVIL_TEST_USER)
+                .password(ProtocolProcessorTest.EVIL_TEST_PWD).build();
 
         EmbeddedChannel evilSession = new EmbeddedChannel();
 
@@ -312,14 +311,14 @@ public class ProtocolProcessor_CONNECT_Test {
     @Test
     public void testMultipleReconnection() throws InterruptedException {
         // connect with clean a false and subscribe to a topic
-        MqttConnectMessage msg = MessageBuilder.connect().clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
+        MqttConnectMessage msg = MqttMessageBuilders.connect().clientId(ProtocolProcessorTest.FAKE_CLIENT_ID)
                 .protocolVersion(MqttVersion.MQTT_3_1_1).build();
         m_processor.processConnect(m_session, msg);
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
         assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
 
         // subscribe
-        MqttSubscribeMessage subscribeMsg = MessageBuilder.subscribe()
+        MqttSubscribeMessage subscribeMsg = MqttMessageBuilders.subscribe()
                 .addSubscription(MqttQoS.AT_MOST_ONCE, ProtocolProcessorTest.FAKE_TOPIC).messageId(10).build();
 
         NettyUtils.clientID(m_session, ProtocolProcessorTest.FAKE_CLIENT_ID);
@@ -361,7 +360,7 @@ public class ProtocolProcessor_CONNECT_Test {
                 ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
 
         // Connect message without clean session set to true but client id is still null
-        MqttConnectMessage msg = MessageBuilder.connect().clientId(null).protocolVersion(MqttVersion.MQTT_3_1_1)
+        MqttConnectMessage msg = MqttMessageBuilders.connect().clientId(null).protocolVersion(MqttVersion.MQTT_3_1_1)
                 .build();
 
         m_processor.processConnect(m_session, msg);

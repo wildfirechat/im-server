@@ -1,4 +1,4 @@
-    /*
+/*
  * Copyright (c) 2012-2017 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
@@ -23,14 +23,15 @@ import io.moquette.server.config.ClasspathResourceLoader;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.IResourceLoader;
 import io.moquette.server.config.ResourceLoaderConfig;
-import io.moquette.server.netty.MessageBuilder;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 
 final class EmbeddedLauncher {
 
@@ -53,7 +54,7 @@ final class EmbeddedLauncher {
         final IConfig classPathConfig = new ResourceLoaderConfig(classpathLoader);
 
         final Server mqttBroker = new Server();
-        List<? extends InterceptHandler> userHandlers = asList(new PublisherListener());
+        List<? extends InterceptHandler> userHandlers = Collections.singletonList(new PublisherListener());
         mqttBroker.startServer(classPathConfig, userHandlers);
 
         System.out.println("Broker started press [CTRL+C] to stop");
@@ -69,14 +70,15 @@ final class EmbeddedLauncher {
 
         Thread.sleep(20000);
         System.out.println("Before self publish");
-        MqttPublishMessage message = MessageBuilder.publish()
-                .topicName("/exit")
-                .retained(true)
+        MqttPublishMessage message = MqttMessageBuilders.publish()
+            .topicName("/exit")
+            .retained(true)
 //        qos(MqttQoS.AT_MOST_ONCE);
 //        qQos(MqttQoS.AT_LEAST_ONCE);
-                .qos(MqttQoS.EXACTLY_ONCE)
-                .payload("Hello World!!".getBytes())
-                .build();
+            .qos(MqttQoS.EXACTLY_ONCE)
+            .payload(Unpooled.copiedBuffer("Hello World!!".getBytes()))
+            .build();
+
         mqttBroker.internalPublish(message, "INTRLPUB");
         System.out.println("After self publish");
     }

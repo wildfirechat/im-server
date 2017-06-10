@@ -263,8 +263,8 @@ public class ProtocolProcessorBootstrapper {
     public void shutdown() {
         if (storeShutdown != null)
             storeShutdown.run();
-        if (m_interceptor != null)
-            m_interceptor.stop();
+//        if (m_interceptor != null)
+//            m_interceptor.stop();
     }
 
     public ConnectionDescriptorStore getConnectionDescriptors() {

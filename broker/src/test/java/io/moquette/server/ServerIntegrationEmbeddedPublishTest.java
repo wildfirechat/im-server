@@ -16,9 +16,10 @@
 
 package io.moquette.server;
 
-import io.moquette.server.netty.MessageBuilder;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.eclipse.paho.client.mqttv3.*;
@@ -84,8 +85,8 @@ public class ServerIntegrationEmbeddedPublishTest {
     }
 
     private void internalPublishToWithQosAndRetained(String topic, MqttQoS qos, boolean retained) {
-        MqttPublishMessage message = MessageBuilder.publish().topicName(topic).retained(retained).qos(qos)
-                .payload("Hello world MQTT!!".getBytes()).build();
+        MqttPublishMessage message = MqttMessageBuilders.publish().topicName(topic).retained(retained).qos(qos)
+                .payload(Unpooled.copiedBuffer("Hello world MQTT!!".getBytes())).build();
         m_server.internalPublish(message, "INTRPUBL");
     }
 

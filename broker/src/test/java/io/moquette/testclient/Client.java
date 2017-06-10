@@ -17,7 +17,6 @@
 package io.moquette.testclient;
 
 import io.moquette.BrokerConstants;
-import io.moquette.server.netty.MessageBuilder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -126,7 +125,7 @@ public class Client {
     }
 
     public void connect() {
-        MqttConnectMessage connectMessage = MessageBuilder.connect().protocolVersion(MqttVersion.MQTT_3_1_1)
+        MqttConnectMessage connectMessage = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1_1)
                 .clientId("").keepAlive(2) // secs
                 .willFlag(false).willQoS(MqttQoS.AT_MOST_ONCE).build();
 
