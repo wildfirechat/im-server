@@ -42,7 +42,7 @@ public class SubscriptionsDirectoryTest {
     @Before
     public void setUp() throws IOException {
         store = new SubscriptionsDirectory();
-        MemoryStorageService storageService = new MemoryStorageService();
+        MemoryStorageService storageService = new MemoryStorageService(null, null);
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);
 
@@ -212,7 +212,7 @@ public class SubscriptionsDirectoryTest {
         Topic subscription = new Topic(s);
         Topic topic = new Topic(t);
         store = new SubscriptionsDirectory();
-        MemoryStorageService memStore = new MemoryStorageService();
+        MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
         aSessionsStore.createNewSession("FAKE_CLI_ID_1", false);
         store.init(aSessionsStore);
@@ -226,7 +226,7 @@ public class SubscriptionsDirectoryTest {
         Topic subscription = new Topic(s);
         Topic topic = new Topic(t);
         store = new SubscriptionsDirectory();
-        MemoryStorageService memStore = new MemoryStorageService();
+        MemoryStorageService memStore = new MemoryStorageService(null, null);
         store.init(memStore.sessionsStore());
         Subscription sub = new Subscription("FAKE_CLI_ID_1", subscription, MqttQoS.AT_MOST_ONCE);
         this.subscriptionsStore.addNewSubscription(sub);
@@ -278,7 +278,7 @@ public class SubscriptionsDirectoryTest {
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
         SubscriptionsDirectory aStore = new SubscriptionsDirectory();
-        MemoryStorageService memStore = new MemoryStorageService();
+        MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore sessionsStore = memStore.sessionsStore();
         aStore.init(sessionsStore);
         // subscribe a not active clientID1 to /topic

@@ -60,7 +60,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
         // sleep to let the messaging batch processor to process the initEvent
         Thread.sleep(300);
-        MemoryStorageService memStorage = new MemoryStorageService();
+        MemoryStorageService memStorage = new MemoryStorageService(null, null);
         m_messagesStore = memStorage.messagesStore();
         m_sessionStore = memStorage.sessionsStore();
         // m_messagesStore.initStore();

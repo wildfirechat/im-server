@@ -16,16 +16,19 @@
 
 package io.moquette.persistence;
 
+import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.IStore;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 public class MemoryStorageService implements IStore {
 
     private MemorySessionStore m_sessionsStore;
     private MemoryMessagesStore m_messagesStore;
 
-    public MemoryStorageService() {
+    public MemoryStorageService(IConfig props, ScheduledExecutorService scheduler) {
         m_messagesStore = new MemoryMessagesStore();
         m_sessionsStore = new MemorySessionStore();
         m_messagesStore.initStore();

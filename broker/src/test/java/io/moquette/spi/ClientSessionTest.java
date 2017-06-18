@@ -36,7 +36,7 @@ public class ClientSessionTest {
     @Before
     public void setUp() {
         store = new SubscriptionsDirectory();
-        MemoryStorageService storageService = new MemoryStorageService();
+        MemoryStorageService storageService = new MemoryStorageService(null, null);
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);
 

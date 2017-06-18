@@ -34,11 +34,12 @@ import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * It's main responsibility is bootstrap the ProtocolProcessor.
@@ -46,7 +47,7 @@ import java.util.List;
 public class ProtocolProcessorBootstrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessorBootstrapper.class);
-    public static final String MAPDB_STORE_CLASS = "io.moquette.persistence.MemoryStorageService";
+    public static final String INMEMDB_STORE_CLASS = "io.moquette.persistence.MemoryStorageService";
 
     private ISessionsStore m_sessionsStore;
 
@@ -83,12 +84,16 @@ public class ProtocolProcessorBootstrapper {
             IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
         IMessagesStore messagesStore;
         LOG.info("Initializing messages and sessions stores...");
-        String storageClassName = props.getProperty(BrokerConstants.STORAGE_CLASS_NAME, MAPDB_STORE_CLASS);
+        String storageClassName = props.getProperty(BrokerConstants.STORAGE_CLASS_NAME, INMEMDB_STORE_CLASS);
         if (storageClassName == null || storageClassName.isEmpty()) {
             LOG.error("storage_class property not defined");
-            throw new IllegalArgumentException("Can't start a valid persistence layer");
+            throw new IllegalArgumentException("Can't find a valid persistence layer");
         }
-        final IStore store = loadClass(storageClassName, IStore.class, Server.class, server);
+        final IStore store = instantiateConfiguredStore(storageClassName, props, server.getScheduler());
+        if (store == null) {
+            throw new IllegalArgumentException("Can't start the persistence layer");
+        }
+        store.initStore();
         messagesStore = store.messagesStore();
         m_sessionsStore = store.sessionsStore();
         this.subscriptionsStore = m_sessionsStore.subscriptionStore();
@@ -170,83 +175,67 @@ public class ProtocolProcessorBootstrapper {
         return m_processor;
     }
 
+    private IStore instantiateConfiguredStore(String storageClassName, IConfig props,
+                                              ScheduledExecutorService scheduledExecutor) {
+        LOG.info("Loading storage class {}", storageClassName);
+        Class<? extends IStore> storageClass;
+        try {
+            storageClass = this.getClass().getClassLoader()
+                .loadClass(storageClassName)
+                .asSubclass(IStore.class);
+        } catch (ClassNotFoundException cnfex) {
+            LOG.error("Cannot find storage class " + storageClassName + " in classpath", cnfex);
+            return null;
+        }
+
+        final Constructor<? extends IStore> constructor;
+        try {
+            constructor = storageClass
+                .getConstructor(IConfig.class, ScheduledExecutorService.class);
+        } catch (NoSuchMethodException nsmex) {
+            LOG.error("Cannot find constructor with required params IConfig, ScheduledExecutorService ", nsmex);
+            return null;
+        }
+        try {
+            return constructor.newInstance(props, scheduledExecutor);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+            LOG.error("Cannot instantiate the " + storageClassName + " instance", ex);
+        }
+
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     private <T, U> T loadClass(String className, Class<T> intrface, Class<U> constructorArgClass, U props) {
         T instance = null;
         try {
-            LOG.info("Loading class. ClassName={}, interfaceName={}", className, intrface.getName());
-            Class<?> clazz = Class.forName(className);
-
-            // check if method getInstance exists
-            Method method = clazz.getMethod("getInstance", new Class[]{});
+            // check if constructor with constructor arg class parameter
+            // exists
+            LOG.info("Invoking constructor with {} argument. ClassName={}, interfaceName={}",
+                    constructorArgClass.getName(), className, intrface.getName());
+            instance = this.getClass().getClassLoader()
+                .loadClass(className)
+                .asSubclass(intrface)
+                .getConstructor(constructorArgClass)
+                .newInstance(props);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+            LOG.warn("Unable to invoke constructor with {} argument. ClassName={}, interfaceName={}, cause={}, errorMessage={}",
+                    constructorArgClass.getName(), className, intrface.getName(), ex.getCause(), ex.getMessage());
+            return null;
+        } catch (NoSuchMethodException | InvocationTargetException e) {
             try {
-                LOG.info(
-                        "Invoking getInstance() method. ClassName = {}, interfaceName = {}.",
-                        className,
-                        intrface.getName());
-                instance = (T) method.invoke(null, new Object[]{});
-            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
-                LOG.error(
-                        "Unable to invoke getInstance() method. ClassName = {}, interfaceName = {}, cause = {}, "
-                        + "errorMessage = {}.",
-                        className,
-                        intrface.getName(),
-                        ex.getCause(),
-                        ex.getMessage());
-                return null;
-            }
-        } catch (NoSuchMethodException nsmex) {
-            try {
-                // check if constructor with constructor arg class parameter
-                // exists
-                LOG.info("Invoking constructor with {} argument. ClassName = {}, interfaceName = {}.",
-                        constructorArgClass.getName(), className, intrface.getName());
+                LOG.info("Invoking default constructor. ClassName={}, interfaceName={}",
+                        className, intrface.getName());
+                // fallback to default constructor
                 instance = this.getClass().getClassLoader()
                     .loadClass(className)
                     .asSubclass(intrface)
-                    .getConstructor(constructorArgClass)
-                    .newInstance(props);
+                    .newInstance();
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.warn(
-                        "Unable to invoke constructor with {} argument. ClassName = {}, interfaceName = {}, cause = {}"
-                                + ", errorMessage = {}.",
-                        constructorArgClass.getName(),
-                        className,
-                        intrface.getName(),
-                        ex.getCause(),
-                        ex.getMessage());
+                LOG.error("Unable to invoke default constructor. ClassName={}, interfaceName={}, cause={}, errorMessage={}",
+                        className, intrface.getName(), ex.getCause(), ex.getMessage());
                 return null;
-            } catch (NoSuchMethodException | InvocationTargetException e) {
-                try {
-                    LOG.info(
-                            "Invoking default constructor. ClassName = {}, interfaceName = {}.",
-                            className,
-                            intrface.getName());
-                    // fallback to default constructor
-                    instance = this.getClass().getClassLoader().loadClass(className).asSubclass(intrface).newInstance();
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                    LOG.error(
-                            "Unable to invoke default constructor. ClassName = {}, interfaceName = {}, cause = {}, "
-                            + "errorMessage = {}.",
-                            className,
-                            intrface.getName(),
-                            ex.getCause(),
-                            ex.getMessage());
-                    return null;
-                }
             }
-        } catch (ClassNotFoundException ex) {
-            LOG.error("The class does not exist. ClassName = {}, interfaceName = {}.", className, intrface.getName());
-            return null;
-        } catch (SecurityException ex) {
-            LOG.error(
-                    "Unable to load class due to a security violation. ClassName = {}, interfaceName = {}, cause = {}, "
-                    + "errorMessage = {}.",
-                    className,
-                    intrface.getName(),
-                    ex.getCause(),
-                    ex.getMessage());
-            return null;
         }
 
         return instance;

@@ -35,7 +35,7 @@ public final class PerformanceTest {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         SubscriptionsDirectory store = new SubscriptionsDirectory();
-        MemoryStorageService memStore = new MemoryStorageService();
+        MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
         store.init(aSessionsStore);
 
