@@ -50,6 +50,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import static io.moquette.BrokerConstants.*;
 
@@ -95,6 +96,7 @@ public class NettyAcceptor implements ServerAcceptor {
     EventLoopGroup m_workerGroup;
     BytesMetricsCollector m_bytesMetricsCollector = new BytesMetricsCollector();
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
+    private Optional<? extends ChannelInboundHandler> metrics;
 
     private int nettySoBacklog;
     private boolean nettySoReuseaddr;
@@ -121,21 +123,30 @@ public class NettyAcceptor implements ServerAcceptor {
 
         boolean epoll = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_EPOLL_PROPERTY_NAME, "false"));
         if (epoll) {
-            LOG.info("Netty is using epoll.");
+            LOG.info("Netty is using Epoll");
             m_bossGroup = new EpollEventLoopGroup();
             m_workerGroup = new EpollEventLoopGroup();
             channelClass = EpollServerSocketChannel.class;
         } else {
-            LOG.info("Netty is using nio.");
+            LOG.info("Netty is using NIO");
             m_bossGroup = new NioEventLoopGroup();
             m_workerGroup = new NioEventLoopGroup();
             channelClass = NioServerSocketChannel.class;
         }
 
-        final NettyMQTTHandler handler = new NettyMQTTHandler(processor);
+        final NettyMQTTHandler mqttHandler = new NettyMQTTHandler(processor);
 
-        initializePlainTCPTransport(handler, props);
-        initializeWebSocketTransport(handler, props);
+        final boolean useFineMetrics = Boolean.parseBoolean(props.getProperty(METRICS_ENABLE_PROPERTY_NAME, "false"));
+        if (useFineMetrics) {
+            DropWizardMetricsHandler metricsHandler = new DropWizardMetricsHandler();
+            metricsHandler.init(props);
+            this.metrics = Optional.of(metricsHandler);
+        } else {
+            this.metrics = Optional.empty();
+        }
+
+        initializePlainTCPTransport(mqttHandler, props);
+        initializeWebSocketTransport(mqttHandler, props);
         String sslTcpPortProp = props.getProperty(BrokerConstants.SSL_PORT_PROPERTY_NAME);
         String wssPortProp = props.getProperty(BrokerConstants.WSS_PORT_PROPERTY_NAME);
         if (sslTcpPortProp != null || wssPortProp != null) {
@@ -144,8 +155,8 @@ public class NettyAcceptor implements ServerAcceptor {
                 LOG.error("Can't initialize SSLHandler layer! Exiting, check your configuration of jks");
                 return;
             }
-            initializeSSLTCPTransport(handler, props, sslContext);
-            initializeWSSTransport(handler, props, sslContext);
+            initializeSSLTCPTransport(mqttHandler, props, sslContext);
+            initializeWSSTransport(mqttHandler, props, sslContext);
         }
     }
 
@@ -179,7 +190,8 @@ public class NettyAcceptor implements ServerAcceptor {
         }
     }
 
-    private void initializePlainTCPTransport(final NettyMQTTHandler handler, IConfig props) throws IOException {
+    private void initializePlainTCPTransport(final NettyMQTTHandler handler,
+                                             IConfig props) throws IOException {
         LOG.info("Configuring TCP MQTT transport");
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
         String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
@@ -202,6 +214,9 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
                 pipeline.addLast("messageLogger", new MQTTMessageLogger());
+                if (metrics.isPresent()) {
+                    pipeline.addLast("wizardMetrics", metrics.get());
+                }
                 pipeline.addLast("handler", handler);
             }
         });
