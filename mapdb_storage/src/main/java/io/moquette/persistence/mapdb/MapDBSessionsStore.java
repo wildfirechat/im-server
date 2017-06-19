@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -235,20 +234,20 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public BlockingQueue<StoredMessage> queue(String clientID) {
-        LOG.info("Queuing pending message. ClientId={}, guid={}", clientID);
+    public Queue<StoredMessage> queue(String clientID) {
+        LOG.info("Queuing pending message. CId={}, guid={}", clientID);
         return this.m_db.getQueue(clientID);
     }
 
     @Override
     public void dropQueue(String clientID) {
-        LOG.info("Removing pending messages. ClientId={}", clientID);
+        LOG.info("Removing pending messages. CId={}", clientID);
         this.m_db.delete(clientID);
     }
 
     @Override
     public void moveInFlightToSecondPhaseAckWaiting(String clientID, int messageID, StoredMessage msg) {
-        LOG.debug("Moving inflight message to 2nd phase ack state. ClientId={}, messageID={}", clientID, messageID);
+        LOG.debug("Moving inflight message to 2nd phase ack state. CId={}, messageID={}", clientID, messageID);
         ConcurrentMap<Integer, StoredMessage> m = this.m_secondPhaseStore.get(clientID);
         if (m == null) {
             String error = String.format("Can't find the inFlight record for client <%s> during the second phase of " +

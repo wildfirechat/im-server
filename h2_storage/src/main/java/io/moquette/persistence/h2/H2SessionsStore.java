@@ -23,14 +23,12 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
-import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -219,7 +217,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         Set<Integer> inFlightForClient = this.inFlightIds.get(clientID);
         if (inFlightForClient == null) {
             int nextPacketId = 1;
-            inFlightForClient = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+            inFlightForClient = Collections.newSetFromMap(new ConcurrentHashMap<>());
             inFlightForClient.add(nextPacketId);
             this.inFlightIds.put(clientID, inFlightForClient);
             return nextPacketId;
@@ -232,53 +230,14 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         return nextPacketId;
     }
 
-
-    class H2BackedQueue<T> extends AbstractQueue<T> {
-
-        private final MVMap<T, ?> map;
-        private final Cursor<T, ?> cursor;
-
-        H2BackedQueue(MVMap<T, ?> map) {
-            this.cursor = map.cursor(null);
-            this.map = map;
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return cursor;
-        }
-
-        @Override
-        public int size() {
-            return map.size();
-        }
-
-        @Override
-        public boolean offer(T t) {
-            return false;
-        }
-
-        @Override
-        public T poll() {
-            return null;
-        }
-
-        @Override
-        public T peek() {
-            return null;
-        }
-    }
-
-    //TODO
     @Override
-    public BlockingQueue<StoredMessage> queue(String clientID) {
-        throw new RuntimeException("Not yet implemented");
+    public Queue<StoredMessage> queue(String clientID) {
+        return new H2PersistentQueue<>(this.mvStore, clientID);
     }
 
-    //TODO
     @Override
     public void dropQueue(String clientID) {
-        throw new RuntimeException("Not yet implemented");
+        H2PersistentQueue.dropQueue(this.mvStore, clientID);
     }
 
     @Override

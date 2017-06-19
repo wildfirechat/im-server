@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Model a Session like describe on page 25 of MQTT 3.1.1 specification:
@@ -108,8 +108,8 @@ public class ClientSession {
      *
      * @return the list of messages to be delivered for client related to the session.
      */
-    public BlockingQueue<IMessagesStore.StoredMessage> queue() {
-        LOG.info("Retrieving enqueued messages. ClientId={}", clientID);
+    public Queue<IMessagesStore.StoredMessage> queue() {
+        LOG.info("Retrieving enqueued messages. CId={}", clientID);
         return this.m_sessionsStore.queue(clientID);
     }
 

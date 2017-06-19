@@ -36,10 +36,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -452,9 +449,9 @@ public class ProtocolProcessor {
      */
     private void republishStoredInSession(ClientSession clientSession) {
         LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
-        BlockingQueue<StoredMessage> publishedEvents = clientSession.queue();
+        Queue<StoredMessage> publishedEvents = clientSession.queue();
         if (publishedEvents.isEmpty()) {
-            LOG.info("There are no stored publish events to ClientId={}", clientSession.clientID);
+            LOG.info("There are no stored publish events to CId={}", clientSession.clientID);
             return;
         }
 

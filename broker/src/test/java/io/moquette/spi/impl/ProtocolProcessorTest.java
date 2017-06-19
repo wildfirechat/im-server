@@ -372,7 +372,7 @@ public class ProtocolProcessorTest {
         m_processor.processConnect(m_channel, connectMessage);
 
         // Verify no messages are still stored
-        BlockingQueue<StoredMessage> messages = m_sessionStore.queue(FAKE_PUBLISHER_ID);
+        Queue<StoredMessage> messages = m_sessionStore.queue(FAKE_PUBLISHER_ID);
         assertTrue(messages.isEmpty());
     }
 

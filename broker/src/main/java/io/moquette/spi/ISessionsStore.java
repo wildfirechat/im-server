@@ -19,7 +19,7 @@ package io.moquette.spi;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 
 /**
  * Store used to handle the persistence of the subscriptions tree.
@@ -79,13 +79,13 @@ public interface ISessionsStore {
     int nextPacketID(String clientID);
 
     /**
-     * List the guids for retained messages for the session
+     * List the published retained messages for the session
      *
      * @param clientID
      *            the client ID owning the queue.
-     * @return the list of queue message UUIDs.
+     * @return the queue of messages.
      */
-    BlockingQueue<StoredMessage> queue(String clientID);
+    Queue<StoredMessage> queue(String clientID);
 
     void dropQueue(String clientID);
 

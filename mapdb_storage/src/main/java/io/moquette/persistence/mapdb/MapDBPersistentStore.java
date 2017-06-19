@@ -25,6 +25,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -108,7 +109,7 @@ public class MapDBPersistentStore implements IStore {
         this.m_db.close();
         LOG.info("Stopping MapDB commit tasks");
 
-        //TODO th scheduler must be stopped by the owning (the instance of Server)
+        //TODO the scheduler must be stopped by the owning (the instance of Server)
         //invalidate the added task
         this.m_scheduler.shutdown();
         try {

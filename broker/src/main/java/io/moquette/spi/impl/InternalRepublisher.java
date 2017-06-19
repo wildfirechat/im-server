@@ -22,10 +22,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
+
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 
 class InternalRepublisher {
 
@@ -54,11 +53,9 @@ class InternalRepublisher {
         }
     }
 
-    void publishStored(ClientSession clientSession, BlockingQueue<IMessagesStore.StoredMessage> publishedEvents) {
-        List<IMessagesStore.StoredMessage> storedPublishes = new ArrayList<>();
-        publishedEvents.drainTo(storedPublishes);
-
-        for (IMessagesStore.StoredMessage pubEvt : storedPublishes) {
+    void publishStored(ClientSession clientSession, Queue<IMessagesStore.StoredMessage> publishedEvents) {
+        IMessagesStore.StoredMessage pubEvt;
+        while ((pubEvt = publishedEvents.poll()) != null) {
             // put in flight zone
             LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}, topic={}", clientSession.clientID,
                 pubEvt.getGuid(), pubEvt.getTopic());
