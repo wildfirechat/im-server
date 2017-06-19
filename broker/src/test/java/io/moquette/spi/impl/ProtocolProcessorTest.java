@@ -19,7 +19,6 @@ package io.moquette.spi.impl;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
@@ -417,12 +416,8 @@ public class ProtocolProcessorTest {
                 .payload(Unpooled.copiedBuffer("Hello".getBytes())).retained(true).messageId(100).build();
         m_processor.processPublish(m_channel, msg);
 
-        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore.searchMatching(new IMatchingCondition() {
-
-            public boolean match(Topic key) {
-                return key.match(new Topic(FAKE_TOPIC));
-            }
-        });
+        Collection<IMessagesStore.StoredMessage> messages = m_messagesStore
+                .searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));
         assertFalse(messages.isEmpty());
 
         // Exercise
@@ -432,12 +427,7 @@ public class ProtocolProcessorTest {
         m_processor.processPublish(m_channel, cleanPubMsg);
 
         // Verify
-        messages = m_messagesStore.searchMatching(new IMatchingCondition() {
-
-            public boolean match(Topic key) {
-                return key.match(new Topic(FAKE_TOPIC));
-            }
-        });
+        messages = m_messagesStore.searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));
         assertTrue(messages.isEmpty());
     }
 

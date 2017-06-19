@@ -83,13 +83,9 @@ public class MapDBPersistentStore implements IStore {
             m_db = DBMaker.newFileDB(tmpFile).make();
         }
         LOG.info("Scheduling MapDB commit task");
-        m_scheduler.scheduleWithFixedDelay(new Runnable() {
-
-            @Override
-            public void run() {
+        m_scheduler.scheduleWithFixedDelay(() -> {
                 LOG.debug("Committing to MapDB");
                 m_db.commit();
-            }
         }, this.m_autosaveInterval, this.m_autosaveInterval, TimeUnit.SECONDS);
 
         // TODO check m_db is valid and

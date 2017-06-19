@@ -191,7 +191,7 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
         Set<Integer> inFlightForClient = this.m_inFlightIds.get(clientID);
         if (inFlightForClient == null) {
             int nextPacketId = 1;
-            inFlightForClient = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+            inFlightForClient = Collections.newSetFromMap(new ConcurrentHashMap<>());
             inFlightForClient.add(nextPacketId);
             this.m_inFlightIds.put(clientID, inFlightForClient);
             return nextPacketId;
