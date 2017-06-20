@@ -61,6 +61,10 @@ public final class BrokerConstants {
     public static final String METRICS_LIBRATO_EMAIL_PROPERTY_NAME = "metrics.librato.email";
     public static final String METRICS_LIBRATO_TOKEN_PROPERTY_NAME = "metrics.librato.token";
     public static final String METRICS_LIBRATO_SOURCE_PROPERTY_NAME = "metrics.librato.source";
+
+    public static final String BUGSNAG_ENABLE_PROPERTY_NAME = "use_bugsnag";
+    public static final String BUGSNAG_TOKEN_PROPERTY_NAME = "bugsnag.token";
+
     public static final String STORAGE_CLASS_NAME = "storage_class";
 
     private BrokerConstants() {

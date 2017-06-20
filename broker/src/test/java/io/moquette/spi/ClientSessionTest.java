@@ -20,10 +20,13 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
-import static io.netty.handler.codec.mqtt.MqttQoS.*;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.List;
+
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import static io.netty.handler.codec.mqtt.MqttQoS.EXACTLY_ONCE;
 import static org.junit.Assert.assertEquals;
 
 public class ClientSessionTest {

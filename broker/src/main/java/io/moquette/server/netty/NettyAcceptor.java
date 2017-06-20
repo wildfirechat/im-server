@@ -97,6 +97,7 @@ public class NettyAcceptor implements ServerAcceptor {
     BytesMetricsCollector m_bytesMetricsCollector = new BytesMetricsCollector();
     MessageMetricsCollector m_metricsCollector = new MessageMetricsCollector();
     private Optional<? extends ChannelInboundHandler> metrics;
+    private Optional<? extends ChannelInboundHandler> errorsCather;
 
     private int nettySoBacklog;
     private boolean nettySoReuseaddr;
@@ -145,6 +146,14 @@ public class NettyAcceptor implements ServerAcceptor {
             this.metrics = Optional.empty();
         }
 
+        final boolean useBugSnag = Boolean.parseBoolean(props.getProperty(BUGSNAG_ENABLE_PROPERTY_NAME, "false"));
+        if (useBugSnag) {
+            BugSnagErrorsHandler bugSnagHandler = new BugSnagErrorsHandler();
+            bugSnagHandler.init(props);
+            this.errorsCather = Optional.of(bugSnagHandler);
+        } else {
+            this.errorsCather = Optional.empty();
+        }
         initializePlainTCPTransport(mqttHandler, props);
         initializeWebSocketTransport(mqttHandler, props);
         String sslTcpPortProp = props.getProperty(BrokerConstants.SSL_PORT_PROPERTY_NAME);
