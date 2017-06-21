@@ -16,6 +16,9 @@ Moquette is also used into [Atomize Spin] (http://atomizesoftware.com/spin) a so
 Part of moquette are used into the [Vertx MQTT module] (https://github.com/giovibal/vertx-mqtt-broker-mod), into [MQTT spy](http://kamilfb.github.io/mqtt-spy/)
 and into [WSO2 Messge broker] (http://techexplosives-pamod.blogspot.it/2014/05/mqtt-transport-architecture-wso2-mb-3x.html).
 
+## Try the demo instance
+Point your MQTT client to _broker.moquette.io_
+
 ## 1 minute set up
 Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/distribution-0.8-bundle-tar.tar.gz) ,
 the un untar and start the broker listening on 1883 port and enjoy! 
