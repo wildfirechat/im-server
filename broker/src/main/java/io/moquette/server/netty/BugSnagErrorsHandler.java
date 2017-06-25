@@ -17,11 +17,13 @@ package io.moquette.server.netty;
 
 import com.bugsnag.Bugsnag;
 import io.moquette.server.config.IConfig;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import static io.moquette.BrokerConstants.BUGSNAG_TOKEN_PROPERTY_NAME;
 
+@Sharable
 public class BugSnagErrorsHandler extends ChannelInboundHandlerAdapter {
 
     private Bugsnag bugsnag;
