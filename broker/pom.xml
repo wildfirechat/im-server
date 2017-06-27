@@ -190,6 +190,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <systemPropertyVariables>
+                        <io.netty.leakDetectionLevel>PARANOID</io.netty.leakDetectionLevel>
+                    </systemPropertyVariables>
                     <includes>
                         <include>**/*Test.java</include>
                     </includes>

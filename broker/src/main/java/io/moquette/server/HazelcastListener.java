@@ -22,6 +22,7 @@ import io.moquette.interception.HazelcastMsg;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
 
     @Override
     public void onMessage(Message<HazelcastMsg> msg) {
+        ByteBuf payload = null;
         try {
             if (!msg.getPublishingMember().equals(server.getHazelcastInstance().getCluster().getLocalMember())) {
                 HazelcastMsg hzMsg = msg.getMessageObject();
@@ -47,12 +49,14 @@ public class HazelcastListener implements MessageListener<HazelcastMsg> {
                 MqttQoS qos = MqttQoS.valueOf(hzMsg.getQos());
                 MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, qos, false, 0);
                 MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(hzMsg.getTopic(), 0);
-                ByteBuf payload = Unpooled.wrappedBuffer(hzMsg.getPayload());
+                payload = Unpooled.wrappedBuffer(hzMsg.getPayload());
                 MqttPublishMessage publishMessage = new MqttPublishMessage(fixedHeader, varHeader, payload);
                 server.internalPublish(publishMessage, hzMsg.getClientId());
             }
         } catch (Exception ex) {
             LOG.error("error polling hazelcast msg queue", ex);
+        } finally {
+            ReferenceCountUtil.release(payload);
         }
     }
 }

@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.mqtt.*;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
@@ -87,6 +88,8 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
             LOG.error("Exception was caught while processing MQTT message, " + ex.getCause(), ex);
             ctx.fireExceptionCaught(ex);
             ctx.close();
+        } finally {
+            ReferenceCountUtil.release(msg);
         }
     }
 

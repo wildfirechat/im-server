@@ -24,6 +24,7 @@ import io.moquette.server.config.IConfig;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.HashMap;
@@ -118,13 +119,21 @@ final class BrokerInterceptor implements Interceptor {
 
     @Override
     public void notifyTopicPublished(final MqttPublishMessage msg, final String clientID, final String username) {
-        int messageId = msg.variableHeader().messageId();
-        String topic = msg.variableHeader().topicName();
-        for (final InterceptHandler handler : this.handlers.get(InterceptPublishMessage.class)) {
-            LOG.debug("Notifying MQTT PUBLISH message to interceptor. CId={}, messageId={}, topic={}, interceptorId={}",
-                clientID, messageId, topic, handler.getID());
-            executor.execute(() -> handler.onPublish(new InterceptPublishMessage(msg, clientID, username)));
-        }
+        msg.retain();
+
+        executor.execute(() -> {
+                try {
+                    int messageId = msg.variableHeader().messageId();
+                    String topic = msg.variableHeader().topicName();
+                    for (InterceptHandler handler : handlers.get(InterceptPublishMessage.class)) {
+                        LOG.debug("Notifying MQTT PUBLISH message to interceptor. CId={}, messageId={}, topic={}, "
+                                + "interceptorId={}", clientID, messageId, topic, handler.getID());
+                        handler.onPublish(new InterceptPublishMessage(msg, clientID, username));
+                    }
+                } finally {
+                    ReferenceCountUtil.release(msg);
+                }
+        });
     }
 
     @Override
