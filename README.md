@@ -20,10 +20,10 @@ and into [WSO2 Messge broker] (http://techexplosives-pamod.blogspot.it/2014/05/m
 Point your MQTT client to _broker.moquette.io_
 
 ## 1 minute set up
-Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/distribution-0.8-bundle-tar.tar.gz) ,
+Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/distribution-0.10-bundle-tar.tar.gz) ,
 the un untar and start the broker listening on 1883 port and enjoy! 
 ```
-tar zxf distribution-0.8-bundle-tar.tar.gz
+tar zxf distribution-0.10-bundle-tar.tar.gz
 cd bin
 ./moquette.sh
 ```
@@ -58,7 +58,7 @@ Include dependency in your project:
 <dependency>
       <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10</version>
 </dependency>
 ```
 
