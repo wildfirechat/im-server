@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <bintray.package>io.moquette.moquette-broker</bintray.package>
+        <bintray.package>io.moquette.moquette-h2-storage </bintray.package>
     </properties>
 
     <dependencies>
