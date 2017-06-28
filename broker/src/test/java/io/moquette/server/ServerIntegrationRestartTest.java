@@ -30,7 +30,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class ServerRestartIntegrationTest {
+public class ServerIntegrationRestartTest {
 
     static MqttClientPersistence s_dataStore;
     static MqttClientPersistence s_pubDataStore;

@@ -35,18 +35,19 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
 import static io.moquette.spi.impl.Utils.messageId;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
-import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 
 /**
  * Class responsible to handle the logic of MQTT protocol it's the director of the protocol
@@ -653,7 +654,7 @@ public class ProtocolProcessor {
         }
 
         if (!existingDescriptor.close()) {
-            LOG.info("The connection has been closed. CId={}", clientID);
+            LOG.info("Connection has been closed. CId={}", clientID);
             return;
         }
 
@@ -664,7 +665,7 @@ public class ProtocolProcessor {
             return;
         }
 
-        LOG.info("The DISCONNECT message has been processed. CId={}", clientID);
+        LOG.info("DISCONNECT message has been processed. CId={}", clientID);
     }
 
     private boolean removeSubscriptions(ConnectionDescriptor descriptor, String clientID) {

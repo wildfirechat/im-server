@@ -58,8 +58,6 @@ public class ProtocolProcessor_CONNECT_Test {
 
         m_session = new EmbeddedChannel();
 
-        // sleep to let the messaging batch processor to process the initEvent
-        Thread.sleep(300);
         MemoryStorageService memStorage = new MemoryStorageService(null, null);
         m_messagesStore = memStorage.messagesStore();
         m_sessionStore = memStorage.sessionsStore();
@@ -83,18 +81,6 @@ public class ProtocolProcessor_CONNECT_Test {
                 new PermitAllAuthorizator(),
                 ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR);
     }
-
-    // @Test
-    // public void testHandleConnect_BadProtocol() {
-    // connMsg.setProtocolVersion((byte) 0x02);
-    //
-    // //Exercise
-    // m_processor.processConnect(m_session, connMsg);
-    //
-    // //Verify
-    // assertEqualsConnAck(UNNACEPTABLE_PROTOCOL_VERSION, m_session.readOutbound());
-    // assertFalse("Connection should be closed by the broker.", m_session.isOpen());
-    // }
 
     @Test
     public void testConnect_badClientID() {

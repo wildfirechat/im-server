@@ -21,7 +21,6 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
@@ -32,14 +31,17 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
+
 import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class ProtocolProcessorTest {
+public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils {
 
     static final String FAKE_CLIENT_ID = "FAKE_123";
     static final String FAKE_CLIENT_ID2 = "FAKE_456";
@@ -55,52 +57,15 @@ public class ProtocolProcessorTest {
     static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
 
-    EmbeddedChannel m_channel;
-    MqttConnectMessage connMsg;
-    ProtocolProcessor m_processor;
-
-    IMessagesStore m_messagesStore;
-    ISessionsStore m_sessionStore;
-    SubscriptionsDirectory subscriptions;
-    MockAuthenticator m_mockAuthenticator;
 
     @Before
     public void setUp() throws InterruptedException {
-        /*
-         * connMsg = new ConnectMessage(); connMsg.setProtocolVersion((byte) 0x03);
-         *
-         * connMsg = MqttMessageBuilders.connect() .protocolVersion(MqttVersion.MQTT_3_1)
-         * .clientId(FAKE_CLIENT_ID) .cleanSession(true) .build();
-         */
-
-        m_channel = new EmbeddedChannel();
-        NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
-        NettyUtils.cleanSession(m_channel, false);
-
-        // sleep to let the messaging batch processor to process the initEvent
-        Thread.sleep(300);
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        m_messagesStore = memStorage.messagesStore();
-        m_sessionStore = memStorage.sessionsStore();
-        // m_messagesStore.initStore();
-
-        Set<String> clientIds = new HashSet<>();
-        clientIds.add(FAKE_CLIENT_ID);
-        clientIds.add(FAKE_CLIENT_ID2);
-        Map<String, String> users = new HashMap<>();
-        users.put(TEST_USER, TEST_PWD);
-        m_mockAuthenticator = new MockAuthenticator(clientIds, users);
-
-        subscriptions = new SubscriptionsDirectory();
-        subscriptions.init(memStorage.sessionsStore());
-        m_processor = new ProtocolProcessor();
-        m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+        initializeProcessorAndSubsystems();
     }
 
     @Test
     public void testPublishToItself() throws InterruptedException {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsDirectory subs = new SubscriptionsDirectory() {
@@ -118,37 +83,25 @@ public class ProtocolProcessorTest {
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService(null, null);
         subs.init(storageService.sessionsStore());
-        m_processor.init(
-                subs,
-                m_messagesStore,
-                m_sessionStore,
-                null,
-                true,
-                new PermitAllAuthorizator(),
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR);
-        MqttConnectMessage connectMessage = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1)
-                .clientId(FAKE_CLIENT_ID).cleanSession(true).build();
-        m_processor.processConnect(m_channel, connectMessage);
+
+        connect_v3_1();
 
         // Exercise
-        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(MqttQoS.AT_MOST_ONCE)
-                .retained(false).payload(Unpooled.copiedBuffer("Hello".getBytes())).build();
-
-        NettyUtils.userName(m_channel, "FakeCLI");
-        m_processor.processPublish(m_channel, msg);
+        publishToAs("FakeCLI", FAKE_TOPIC, AT_MOST_ONCE, false);
 
         // Verify
-        assertNotNull(m_channel.readOutbound());
-        // TODO check received message attributes
+        verifyPublishIsReceived();
     }
 
     @Test
     public void testPublishToMultipleSubscribers() throws InterruptedException {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
         final Subscription subscriptionClient2 = new Subscription(
                 FAKE_CLIENT_ID2,
                 new Topic(FAKE_TOPIC),
-                MqttQoS.AT_MOST_ONCE);
+                AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsDirectory subs = new SubscriptionsDirectory() {
@@ -183,7 +136,7 @@ public class ProtocolProcessorTest {
         assertConnAckAccepted(secondReceiverChannel);
 
         // Exercise
-        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(MqttQoS.AT_MOST_ONCE)
+        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(AT_MOST_ONCE)
                 .retained(false).payload(Unpooled.copiedBuffer("Hello".getBytes())).build();
         NettyUtils.userName(m_channel, "FakeCLI");
         m_processor.processPublish(m_channel, msg);
@@ -204,17 +157,10 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testSubscribe() {
-        MqttSubscribeMessage msg = MqttMessageBuilders.subscribe().addSubscription(MqttQoS.AT_MOST_ONCE, FAKE_TOPIC)
-                .messageId(10).build();
-        // Exercise
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
-        m_processor.processSubscribe(m_channel, msg);
+        connect();
 
-        // Verify
-        assertTrue(m_channel.readOutbound() instanceof MqttSubAckMessage);
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC),
-            MqttQoS.AT_MOST_ONCE);
-        assertTrue(subscriptions.contains(expectedSubscription));
+        // Exercise & verify
+        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
     }
 
     @Test
@@ -229,17 +175,11 @@ public class ProtocolProcessorTest {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, mockAuthorizator,
                 NO_OBSERVERS_INTERCEPTOR);
 
-        // Exercise
-        MqttSubscribeMessage msg = MqttMessageBuilders.subscribe().addSubscription(MqttQoS.AT_MOST_ONCE, FAKE_TOPIC)
-                .messageId(10).build();
+        connect();
 
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
-        m_processor.processSubscribe(m_channel, msg);
+        //Exercise
+        MqttSubAckMessage subAckMsg = subscribeWithoutVerify(FAKE_TOPIC, AT_MOST_ONCE);
 
-        // Verify
-        Object ackMsg = m_channel.readOutbound();
-        assertTrue(ackMsg instanceof MqttSubAckMessage);
-        MqttSubAckMessage subAckMsg = (MqttSubAckMessage) ackMsg;
         verifyFailureQos(subAckMsg);
     }
 
@@ -251,63 +191,41 @@ public class ProtocolProcessorTest {
 
     @Test
     public void testDoubleSubscribe() {
-        MqttSubscribeMessage msg = MqttMessageBuilders.subscribe().addSubscription(MqttQoS.AT_MOST_ONCE, FAKE_TOPIC)
-                .messageId(10).build();
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
+        connect();
         assertEquals(0, subscriptions.size());
-
-        m_processor.processSubscribe(m_channel, msg);
+        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
         assertEquals(1, subscriptions.size());
 
-        //Exercise
-        m_processor.processSubscribe(m_channel, msg);
-
-        // Verify
-        assertEquals(1, subscriptions.size());
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC),
-            MqttQoS.AT_MOST_ONCE);
-
-        assertTrue(subscriptions.contains(expectedSubscription));
+        //Exercise & verify
+        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
     }
 
     @Test
     public void testSubscribeWithBadFormattedTopic() {
-        MqttSubscribeMessage msg = MqttMessageBuilders.subscribe().addSubscription(MqttQoS.AT_MOST_ONCE, BAD_FORMATTED_TOPIC)
-                .messageId(10).build();
-
-        m_sessionStore.createNewSession(FAKE_CLIENT_ID, false);
+        connect();
         assertEquals(0, subscriptions.size());
 
-        // Exercise
-        m_processor.processSubscribe(m_channel, msg);
+        //Exercise
+        MqttSubAckMessage subAckMsg = subscribeWithoutVerify(BAD_FORMATTED_TOPIC, AT_MOST_ONCE);
 
-        // Verify
         assertEquals(0, subscriptions.size());
-        Object recvSubAckMessage = m_channel.readOutbound();
-        assertTrue(recvSubAckMessage instanceof MqttSubAckMessage);
-        verifyFailureQos((MqttSubAckMessage) recvSubAckMessage);
+        verifyFailureQos(subAckMsg);
     }
 
-    /*
-     * Check topicFilter is a valid MQTT topic filter (issue 68)
-     */
     @Test
     public void testUnsubscribeWithBadFormattedTopic() {
-        MqttUnsubscribeMessage msg = MqttMessageBuilders.unsubscribe().addTopicFilter(BAD_FORMATTED_TOPIC).messageId(1)
-                .build();
-
         // Exercise
-        m_processor.processUnsubscribe(m_channel, msg);
+        unsubscribe(BAD_FORMATTED_TOPIC);
 
         // Verify
-        assertFalse("If client unsubscribe with bad topic than channel must be closed", m_channel.isOpen());
+        assertFalse("If client unsubscribe with bad topic than channel must be closed, (issue 68)", m_channel.isOpen());
     }
 
     @Test
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
         // simulate a connect that register a clientID to an IoSession
         final Subscription subscription =
-                new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), MqttQoS.AT_MOST_ONCE);
+                new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         SubscriptionsDirectory subs = new SubscriptionsDirectory() {
@@ -327,29 +245,15 @@ public class ProtocolProcessorTest {
         // simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR);
-        MqttConnectMessage connectMessage = MqttMessageBuilders.connect().clientId(FAKE_PUBLISHER_ID)
-                .protocolVersion(MqttVersion.MQTT_3_1).cleanSession(true).build();
-
-        m_processor.processConnect(m_channel, connectMessage);
-        assertConnAckAccepted(m_channel);
-        MqttPublishMessage pubmsg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(MqttQoS.AT_MOST_ONCE)
-                .payload(Unpooled.copiedBuffer("Hello".getBytes())).retained(true).build();
-
-        NettyUtils.clientID(m_channel, FAKE_PUBLISHER_ID);
-        m_processor.processPublish(m_channel, pubmsg);
+        connect_v3_1_asClient(FAKE_PUBLISHER_ID);
+        publishToAs(FAKE_PUBLISHER_ID, FAKE_TOPIC, AT_MOST_ONCE, true);
         NettyUtils.cleanSession(m_channel, false);
 
         // Exercise
-        MqttSubscribeMessage msg = MqttMessageBuilders.subscribe().messageId(10).addSubscription(MqttQoS.AT_MOST_ONCE, "#")
-                .build();
-        m_processor.processSubscribe(m_channel, msg);
+        subscribeAndNotReadResponse("#", AT_MOST_ONCE);
 
         // Verify
-        // wait the latch
-        Object pubMessage = m_channel.readOutbound();
-        assertNotNull(pubMessage);
-        assertTrue(pubMessage instanceof MqttPublishMessage);
-        assertEquals(FAKE_TOPIC, ((MqttPublishMessage) pubMessage).variableHeader().topicName());
+        verifyPublishIsReceived();
     }
 
     @Test
@@ -366,10 +270,7 @@ public class ProtocolProcessorTest {
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR);
 
-        MqttConnectMessage connectMessage = MqttMessageBuilders.connect().clientId(FAKE_PUBLISHER_ID)
-                .protocolVersion(MqttVersion.MQTT_3_1).build();
-
-        m_processor.processConnect(m_channel, connectMessage);
+        connect_v3_1_asClient(FAKE_PUBLISHER_ID);
 
         // Verify no messages are still stored
         Queue<StoredMessage> messages = m_sessionStore.queue(FAKE_PUBLISHER_ID);
@@ -390,14 +291,10 @@ public class ProtocolProcessorTest {
                 NO_OBSERVERS_INTERCEPTOR);
 
         // Exercise
-        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName("/topic").qos(MqttQoS.AT_MOST_ONCE)
-                .payload(Unpooled.copiedBuffer("Hello".getBytes())).retained(true).build();
+        connectAsClient("Publisher");
+        publishToAs("Publisher", "/topic", AT_MOST_ONCE, true);
 
-        NettyUtils.clientID(m_channel, "Publisher");
-        m_processor.processPublish(m_channel, msg);
-
-        // Verify no message is received
-        assertNull(m_channel.readOutbound());
+        verifyNoPublishIsReceived();
     }
 
     /**
@@ -407,24 +304,18 @@ public class ProtocolProcessorTest {
     @Test
     public void testCleanRetainedStoreAfterAQoS0AndRetainedTrue() {
         // force a connect
-        connMsg = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1).clientId("Publisher")
-                .cleanSession(true).build();
-        m_processor.processConnect(m_channel, connMsg);
+        connect_v3_1_asClient("Publisher");
+
         // prepare and existing retained store
-        NettyUtils.clientID(m_channel, "Publisher");
-        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(MqttQoS.AT_LEAST_ONCE)
-                .payload(Unpooled.copiedBuffer("Hello".getBytes())).retained(true).messageId(100).build();
-        m_processor.processPublish(m_channel, msg);
+        publishToAs("Publisher", FAKE_TOPIC, AT_LEAST_ONCE, 100, true);
 
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore
                 .searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));
         assertFalse(messages.isEmpty());
 
         // Exercise
-        MqttPublishMessage cleanPubMsg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(MqttQoS.AT_MOST_ONCE)
-                .payload(Unpooled.copiedBuffer("Hello".getBytes())).retained(true).build();
-
-        m_processor.processPublish(m_channel, cleanPubMsg);
+        // send a message that clean the previous retained publish
+        publishToAs("Publisher", FAKE_TOPIC, AT_MOST_ONCE, true);
 
         // Verify
         messages = m_messagesStore.searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));

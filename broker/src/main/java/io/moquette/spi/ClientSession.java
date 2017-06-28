@@ -86,8 +86,6 @@ public class ClientSession {
     private final ISubscriptionsStore subscriptionsStore;
     private volatile boolean cleanSession;
 
-    // private BlockingQueue<AbstractMessage> m_queueToPublish = new
-    // ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
     private final OutboundFlightZone outboundFlightZone;
     private final InboundFlightZone inboundFlightZone;
 
@@ -115,15 +113,15 @@ public class ClientSession {
 
     @Override
     public String toString() {
-        return "ClientSession{clientID='" + clientID + '\'' + "}";
+        return "ClientSession{clientID='" + clientID + "'}";
     }
 
     public boolean subscribe(Subscription newSubscription) {
-        LOG.info("Adding new subscription. ClientId={}, topics={}, qos={}", newSubscription.getClientId(),
+        LOG.info("Adding new subscription. CId={}, topics={}, qos={}", newSubscription.getClientId(),
             newSubscription.getTopicFilter(), newSubscription.getRequestedQos());
         boolean validTopic = newSubscription.getTopicFilter().isValid();
         if (!validTopic) {
-            LOG.warn("The topic filter is not valid. ClientId={}, topics={}", newSubscription.getClientId(),
+            LOG.warn("The topic filter is not valid. CId={}, topics={}", newSubscription.getClientId(),
                 newSubscription.getTopicFilter());
             // send SUBACK with 0x80 for this topic filter
             return false;
@@ -133,7 +131,7 @@ public class ClientSession {
         // update the selected subscriptions if not present or if has a greater qos
         if (existingSub == null || existingSub.getRequestedQos().value() < newSubscription.getRequestedQos().value()) {
             if (existingSub != null) {
-                LOG.info("Subscription already existed with a lower QoS value. It will be updated. ClientId={}, " +
+                LOG.info("Subscription already existed with a lower QoS value. It will be updated. CId={}, " +
                     "topics={}, existingQos={}, newQos={}", newSubscription.getClientId(),
                     newSubscription.getTopicFilter(), existingSub.getRequestedQos(), newSubscription.getRequestedQos());
                 subscriptions.remove(newSubscription);
@@ -145,7 +143,7 @@ public class ClientSession {
     }
 
     public void unsubscribeFrom(Topic topicFilter) {
-        LOG.info("Removing subscription. ClientID={}, topics={}", clientID, topicFilter);
+        LOG.info("Removing subscription. CId={}, topics={}", clientID, topicFilter);
         subscriptionsStore.removeSubscription(topicFilter, clientID);
         Set<Subscription> subscriptionsToRemove = new HashSet<>();
         for (Subscription sub : this.subscriptions) {
@@ -158,7 +156,7 @@ public class ClientSession {
 
     public void disconnect() {
         if (this.cleanSession) {
-            LOG.info("Client disconnected. Removing its subscriptions. ClientId={}", clientID);
+            LOG.info("Client disconnected. Removing its subscriptions. CId={}", clientID);
             // cleanup topic subscriptions
             cleanSession();
         }
@@ -191,7 +189,7 @@ public class ClientSession {
      * @return the packetID for the message in flight.
      * */
     public int inFlightAckWaiting(IMessagesStore.StoredMessage msg) {
-        LOG.debug("Adding message ot inflight zone. ClientId={}", clientID);
+        LOG.debug("Adding message ot inflight zone. CId={}", clientID);
         int messageId = ClientSession.this.nextPacketId();
         outboundFlightZone.waitingAck(messageId, msg);
         return messageId;
@@ -224,6 +222,7 @@ public class ClientSession {
     }
 
     public Set<Subscription> getSubscriptions() {
+        //TODO WARN this doesn'load anything from DB
         return subscriptions;
     }
 
