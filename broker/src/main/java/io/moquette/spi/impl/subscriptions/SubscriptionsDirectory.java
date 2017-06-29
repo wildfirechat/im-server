@@ -218,10 +218,6 @@ public class SubscriptionsDirectory {
         return new ArrayList<>(subsForClient.values());
     }
 
-    public boolean contains(Subscription sub) {
-        return !matches(sub.topicFilter).isEmpty();
-    }
-
     public int size() {
         return subscriptions.get().size();
     }

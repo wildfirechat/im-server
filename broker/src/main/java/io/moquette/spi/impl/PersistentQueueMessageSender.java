@@ -38,23 +38,25 @@ class PersistentQueueMessageSender {
         String clientId = clientsession.clientID;
         final int messageId = pubMessage.variableHeader().messageId();
         final String topicName = pubMessage.variableHeader().topicName();
+        MqttQoS qos = pubMessage.fixedHeader().qosLevel();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Sending PUBLISH message. MessageId={}, CId={}, topic={}, qos={}, payload={}", messageId,
-                clientId, topicName, DebugUtils.payload2Str(pubMessage.payload()));
+                clientId, topicName, qos, DebugUtils.payload2Str(pubMessage.payload()));
         } else {
             LOG.info("Sending PUBLISH message. MessageId={}, CId={}, topic={}", messageId, clientId, topicName);
         }
 
         boolean messageDelivered = connectionDescriptorStore.sendMessage(pubMessage, messageId, clientId);
 
-        MqttQoS qos = pubMessage.fixedHeader().qosLevel();
-        if (!messageDelivered && qos != AT_MOST_ONCE && !clientsession.isCleanSession()) {
-            LOG.warn("PUBLISH message could not be delivered. It will be stored. MessageId={}, CId={}, topic={}, "
+        if (!messageDelivered) {
+            if (qos != AT_MOST_ONCE && !clientsession.isCleanSession()) {
+                LOG.warn("PUBLISH message could not be delivered. It will be stored. MessageId={}, CId={}, topic={}, "
                     + "qos={}, cleanSession={}", messageId, clientId, topicName, qos, false);
-            clientsession.enqueue(asStoredMessage(pubMessage));
-        } else {
-            LOG.warn("PUBLISH message could not be delivered. It will be discarded. MessageId={}, CId={}, topic={}, " +
-                "qos={}, cleanSession={}", messageId, clientId, topicName, qos, true);
+                clientsession.enqueue(asStoredMessage(pubMessage));
+            } else {
+                LOG.warn("PUBLISH message could not be delivered. It will be discarded. MessageId={}, CId={}, topic={}, " +
+                    "qos={}, cleanSession={}", messageId, clientId, topicName, qos, true);
+            }
         }
     }
 }

@@ -269,9 +269,11 @@ public class ProtocolProcessor {
             msg.variableHeader().isCleanSession());
         ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
         if (existing != null) {
-            LOG.info("The client ID is being used in an existing connection. It will be closed. CId={}", clientId);
+            LOG.info("Client ID is being used in an existing connection, force to be closed. CId={}", clientId);
             existing.abort();
-            return;
+            //return;
+            this.connectionDescriptors.removeConnection(existing);
+            this.connectionDescriptors.addConnection(descriptor);
         }
 
         initializeKeepAliveTimeout(channel, msg, clientId);
@@ -298,7 +300,7 @@ public class ProtocolProcessor {
             channel.close();
         }
 
-        LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
+        LOG.info("CONNECT message processed CId={}, username={}", clientId, payload.userName());
     }
 
     private MqttConnAckMessage connAck(MqttConnectReturnCode returnCode) {

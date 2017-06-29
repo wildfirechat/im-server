@@ -20,21 +20,24 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
 
 import java.util.*;
 
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
+import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 abstract class AbstractProtocolProcessorCommonUtils {
 
@@ -82,20 +85,32 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void verifyNoPublishIsReceived() {
-        assertNull("No out messages from the processor", m_channel.readOutbound());
+        assertNull("Received an out message from processor while not expected", m_channel.readOutbound());
     }
 
     protected void subscribe(String topic, MqttQoS desiredQos) {
+        subscribe(this.m_channel, topic, desiredQos);
+    }
+
+    protected void subscribe(EmbeddedChannel channel, String topic, MqttQoS desiredQos) {
         MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
             .addSubscription(desiredQos, topic)
             .messageId(1)
             .build();
-        this.m_processor.processSubscribe(m_channel, subscribe);
-        MqttSubAckMessage subAck = m_channel.readOutbound();
+        this.m_processor.processSubscribe(channel, subscribe);
+        MqttSubAckMessage subAck = channel.readOutbound();
         assertEquals(desiredQos.value(), (int) subAck.payload().grantedQoSLevels().get(0));
 
-        Subscription expectedSubscription = new Subscription(FAKE_CLIENT_ID, new Topic(topic), desiredQos);
-        assertTrue(subscriptions.contains(expectedSubscription));
+        final String clientId = NettyUtils.clientID(channel);
+        Subscription expectedSubscription = new Subscription(clientId, new Topic(topic), desiredQos);
+        verifySubscriptionExists(channel, m_sessionStore, expectedSubscription);
+    }
+
+    protected static void verifySubscriptionExists(Channel channel, ISessionsStore sessionsStore, Subscription expectedSubscription) {
+        final String clientId = NettyUtils.clientID(channel);
+        final Subscription subscription = sessionsStore.subscriptionStore()
+            .getSubscription(new ClientTopicCouple(clientId, expectedSubscription.getTopicFilter()));
+        assertEquals(expectedSubscription, subscription);
     }
 
     protected MqttSubAckMessage subscribeWithoutVerify(String topic, MqttQoS desiredQos) {
@@ -116,12 +131,26 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void unsubscribe(String topic) {
+        final int messageId = 1;
         MqttUnsubscribeMessage msg = MqttMessageBuilders.unsubscribe()
             .addTopicFilter(topic)
-            .messageId(1)
+            .messageId(messageId)
             .build();
 
         m_processor.processUnsubscribe(m_channel, msg);
+    }
+
+    protected void unsubscribeAndVerifyAck(String topic) {
+        final int messageId = 1;
+        MqttUnsubscribeMessage msg = MqttMessageBuilders.unsubscribe()
+            .addTopicFilter(topic)
+            .messageId(messageId)
+            .build();
+
+        m_processor.processUnsubscribe(m_channel, msg);
+
+        MqttUnsubAckMessage unsubAckMessageAck = m_channel.readOutbound();
+        assertEquals("Unsubscribe must be accepted", messageId, unsubAckMessageAck.variableHeader().messageId());
     }
 
     protected void internalPublishNotRetainedTo(String topic) {
@@ -142,7 +171,11 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void publishToAs(String clientId, String topic, MqttQoS qos, boolean retained) {
-        NettyUtils.userName(m_channel, clientId);
+        publishToAs(m_channel, clientId, topic, qos, retained);
+    }
+
+    protected void publishToAs(EmbeddedChannel channel, String clientId, String topic, MqttQoS qos, boolean retained) {
+        NettyUtils.userName(channel, clientId);
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic)
             .retained(retained)
@@ -152,14 +185,55 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void publishToAs(String clientId, String topic, MqttQoS qos, int messageId, boolean retained) {
-        NettyUtils.userName(m_channel, clientId);
+        publishToAs(this.m_channel, clientId, topic, qos, messageId, retained);
+    }
+
+    protected void publishToAs(EmbeddedChannel channel, String clientId, String topic, MqttQoS qos, int messageId, boolean retained) {
+        publishToAs(channel, clientId, topic, HELLO_WORLD_MQTT, qos, messageId, retained);
+    }
+
+    protected void publishToAs(EmbeddedChannel channel, String clientId, String topic, String payload, MqttQoS qos, int messageId, boolean retained) {
+        NettyUtils.userName(channel, clientId);
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic)
             .retained(retained)
             .messageId(messageId)
             .qos(qos)
-            .payload(Unpooled.copiedBuffer(HELLO_WORLD_MQTT.getBytes())).build();
-        this.m_processor.processPublish(m_channel, publish);
+            .payload(Unpooled.copiedBuffer(payload.getBytes())).build();
+        this.m_processor.processPublish(channel, publish);
+    }
+
+    protected void publishQoS2ToAs(EmbeddedChannel channel, String clientId, String topic, int messageId, boolean retained) {
+        publishQoS2ToAs(channel, clientId, topic, HELLO_WORLD_MQTT, messageId, retained);
+    }
+
+    protected void publishQoS2ToAs(EmbeddedChannel channel, String clientId, String topic, String payload, int messageId, boolean retained) {
+        NettyUtils.userName(channel, clientId);
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+            .topicName(topic)
+            .retained(retained)
+            .messageId(messageId)
+            .qos(MqttQoS.EXACTLY_ONCE)
+            .payload(Unpooled.copiedBuffer(payload.getBytes())).build();
+        this.m_processor.processPublish(channel, publish);
+
+        verifyPubrecIsReceived(channel, messageId);
+
+        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.PUBREL, false, AT_LEAST_ONCE, false, 0);
+        MqttMessage pubRel = new MqttMessage(mqttFixedHeader, from(messageId));
+        this.m_processor.processPubRel(channel, pubRel);
+
+        verifyPubCompIsReceived(channel, messageId);
+    }
+
+    private void verifyPubrecIsReceived(EmbeddedChannel channel, int messageId) {
+        final MqttMessage pubRec = channel.readOutbound();
+        assertEquals(messageId, Utils.messageId(pubRec));
+    }
+
+    private void verifyPubCompIsReceived(EmbeddedChannel channel, int messageId) {
+        final MqttMessage pubComp = channel.readOutbound();
+        assertEquals(messageId, Utils.messageId(pubComp));
     }
 
 
@@ -168,11 +242,15 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void connectAsClient(String clientId) {
+        connectAsClient(m_channel, clientId);
+    }
+
+    protected void connectAsClient(EmbeddedChannel channel, String clientId) {
         MqttConnectMessage connectMessage = MqttMessageBuilders.connect()
             .clientId(clientId)
             .build();
-        this.m_processor.processConnect(m_channel, connectMessage);
-        MqttConnAckMessage connAck = m_channel.readOutbound();
+        this.m_processor.processConnect(channel, connectMessage);
+        MqttConnAckMessage connAck = channel.readOutbound();
         assertEquals("Connect must be accepted", CONNECTION_ACCEPTED, connAck.variableHeader().connectReturnCode());
     }
 
@@ -192,8 +270,12 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     protected void connectNoCleanSession() {
+        connectNoCleanSession(FAKE_CLIENT_ID);
+    }
+
+    protected void connectNoCleanSession(String clientId) {
         MqttConnectMessage connectMessage = MqttMessageBuilders.connect()
-            .clientId(FAKE_CLIENT_ID)
+            .clientId(clientId)
             .cleanSession(false)
             .build();
         this.m_processor.processConnect(m_channel, connectMessage);
@@ -201,13 +283,46 @@ abstract class AbstractProtocolProcessorCommonUtils {
         assertEquals("Connect must be accepted", CONNECTION_ACCEPTED, connAck.variableHeader().connectReturnCode());
     }
 
+    protected void connectWithCleanSession(String clientId) {
+        MqttConnectMessage connectMessage = MqttMessageBuilders.connect()
+            .clientId(clientId)
+            .cleanSession(true)
+            .build();
+        this.m_processor.processConnect(m_channel, connectMessage);
+        MqttConnAckMessage connAck = m_channel.readOutbound();
+        assertEquals("Connect must be accepted", CONNECTION_ACCEPTED, connAck.variableHeader().connectReturnCode());
+    }
+
     protected void disconnect() throws InterruptedException {
-        this.m_processor.processDisconnect(this.m_channel);
+        disconnect(this.m_channel);
+    }
+
+    protected void disconnect(EmbeddedChannel channel) throws InterruptedException {
+        this.m_processor.processDisconnect(channel);
     }
 
     protected void verifyPublishIsReceived() {
-        final MqttPublishMessage publishReceived = m_channel.readOutbound();
+        verifyPublishIsReceived(m_channel);
+    }
+
+    protected void verifyPublishIsReceived(EmbeddedChannel channel) {
+        final MqttPublishMessage publishReceived = channel.readOutbound();
         String payloadMessage = new String(publishReceived.payload().array());
         assertEquals("Sent and received payload must be identical", HELLO_WORLD_MQTT, payloadMessage);
+    }
+
+    protected void verifyPublishIsReceived(MqttQoS expectedQoS) {
+        verifyPublishIsReceived(HELLO_WORLD_MQTT, expectedQoS);
+    }
+
+    protected void verifyPublishIsReceived(String expectedPayload, MqttQoS expectedQoS) {
+        verifyPublishIsReceived(this.m_channel, expectedPayload, expectedQoS);
+    }
+
+    protected void verifyPublishIsReceived(EmbeddedChannel channel, String expectedPayload, MqttQoS expectedQoS) {
+        final MqttPublishMessage publishReceived = channel.readOutbound();
+        String payloadMessage = new String(publishReceived.payload().array());
+        assertEquals("Sent and received payload must be identical", expectedPayload, payloadMessage);
+        assertEquals("Expected QoS don't match", expectedQoS, publishReceived.fixedHeader().qosLevel());
     }
 }
