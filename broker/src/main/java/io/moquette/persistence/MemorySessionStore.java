@@ -303,7 +303,7 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     @Override
     public void cleanSession(String clientID) {
-        LOG.error("Fooooooooo <{}>", clientID);
+        LOG.debug("Session cleanup for client <{}>", clientID);
 
         Session session = sessions.get(clientID);
         if (session == null) {
