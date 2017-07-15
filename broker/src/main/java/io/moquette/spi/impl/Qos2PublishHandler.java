@@ -21,7 +21,7 @@ import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.Channel;
@@ -39,14 +39,14 @@ class Qos2PublishHandler extends QosPublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Qos2PublishHandler.class);
 
-    private final SubscriptionsDirectory subscriptions;
+    private final ISubscriptionsDirectory subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
     private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final MessagesPublisher publisher;
 
-    public Qos2PublishHandler(IAuthorizator authorizator, SubscriptionsDirectory subscriptions,
+    public Qos2PublishHandler(IAuthorizator authorizator, ISubscriptionsDirectory subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
                               ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
                               MessagesPublisher messagesPublisher) {

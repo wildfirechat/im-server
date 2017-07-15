@@ -13,7 +13,6 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-
 package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ISessionsStore;
@@ -28,14 +27,14 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Represents a tree of topics subscriptions.
  */
-public class SubscriptionsDirectory {
+public class SubscriptionsDirectory implements ISubscriptionsDirectory {
 
-    public static class NodeCouple {
+    static class NodeCouple {
 
         final TreeNode root;
         final TreeNode createdNode;
 
-        public NodeCouple(TreeNode root, TreeNode createdNode) {
+        NodeCouple(TreeNode root, TreeNode createdNode) {
             this.root = root;
             this.createdNode = createdNode;
         }
@@ -54,10 +53,10 @@ public class SubscriptionsDirectory {
 
         @Override
         public void visit(TreeNode node, int deep) {
-            String subScriptionsStr = "";
+            StringBuilder subScriptionsStr = new StringBuilder();
             String indentTabs = indentTabs(deep);
             for (ClientTopicCouple couple : node.m_subscriptions) {
-                subScriptionsStr += indentTabs + couple.toString() + "\n";
+                subScriptionsStr.append(indentTabs).append(couple.toString()).append("\n");
             }
             s += node.getToken() == null ? "" : node.getToken().toString();
             s += "\n" + (node.m_subscriptions.isEmpty() ? indentTabs : "")
@@ -65,12 +64,12 @@ public class SubscriptionsDirectory {
         }
 
         private String indentTabs(int deep) {
-            String s = "";
+            StringBuilder s = new StringBuilder();
             for (int i = 0; i < deep; i++) {
-                s += "\t";
+                s.append("\t");
                 // s += "--";
             }
-            return s;
+            return s.toString();
         }
 
         @Override
@@ -81,7 +80,6 @@ public class SubscriptionsDirectory {
 
     private AtomicReference<TreeNode> subscriptions = new AtomicReference<>(new TreeNode());
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionsDirectory.class);
-    private volatile ISessionsStore m_sessionsStore;
     private volatile ISubscriptionsStore subscriptionsStore;
 
     /**
@@ -91,9 +89,9 @@ public class SubscriptionsDirectory {
      * @param sessionsStore
      *            to be used as backing store from the subscription store.
      */
+    @Override
     public void init(ISessionsStore sessionsStore) {
         LOG.info("Initializing subscriptions store...");
-        m_sessionsStore = sessionsStore;
         this.subscriptionsStore = sessionsStore.subscriptionStore();
         List<ClientTopicCouple> subscriptions = this.subscriptionsStore.listAllSubscriptions();
         // reload any subscriptions persisted
@@ -111,6 +109,7 @@ public class SubscriptionsDirectory {
         }
     }
 
+    @Override
     public void add(ClientTopicCouple newSubscription) {
         /*
          * The topic filters have already been validated at the ProtocolProcessor. We can assume
@@ -128,7 +127,7 @@ public class SubscriptionsDirectory {
         LOG.debug("A subscription has been added. Root = {}, oldRoot = {}.", couple.root, oldRoot);
     }
 
-    protected NodeCouple recreatePath(Topic topic, final TreeNode oldRoot) {
+    NodeCouple recreatePath(Topic topic, final TreeNode oldRoot) {
         final TreeNode newRoot = oldRoot.copy();
         TreeNode parent = newRoot;
         TreeNode current = newRoot;
@@ -153,6 +152,7 @@ public class SubscriptionsDirectory {
         return new NodeCouple(newRoot, current);
     }
 
+    @Override
     public void removeSubscription(Topic topic, String clientID) {
         /*
          * The topic filters have already been validated at the ProtocolProcessor. We can assume
@@ -170,22 +170,22 @@ public class SubscriptionsDirectory {
         } while (!subscriptions.compareAndSet(oldRoot, couple.root));
     }
 
-    /**
-     * Visit the topics tree to remove matching subscriptions with clientID. It's a mutating
-     * structure operation so create a new subscription tree (partial or total).
-     *
-     * @param clientID
-     *            the client ID to remove.
-     */
-    public void removeForClient(String clientID) {
-        TreeNode oldRoot;
-        TreeNode newRoot;
-        do {
-            oldRoot = subscriptions.get();
-            newRoot = oldRoot.removeClientSubscriptions(clientID);
-            // spin lock repeating till we can, swap root, if can't swap just re-do the operation
-        } while (!subscriptions.compareAndSet(oldRoot, newRoot));
-    }
+//    /**
+//     * Visit the topics tree to remove matching subscriptions with clientID. It's a mutating
+//     * structure operation so create a new subscription tree (partial or total).
+//     *
+//     * @param clientID
+//     *            the client ID to remove.
+//     */
+//    void removeForClient(String clientID) {
+//        TreeNode oldRoot;
+//        TreeNode newRoot;
+//        do {
+//            oldRoot = subscriptions.get();
+//            newRoot = oldRoot.removeClientSubscriptions(clientID);
+//            // spin lock repeating till we can, swap root, if can't swap just re-do the operation
+//        } while (!subscriptions.compareAndSet(oldRoot, newRoot));
+//    }
 
     /**
      * Given a topic string return the clients subscriptions that matches it. Topic string can't
@@ -196,6 +196,7 @@ public class SubscriptionsDirectory {
      *            to use fo searching matching subscriptions.
      * @return the list of matching subscriptions, or empty if not matching.
      */
+    @Override
     public List<Subscription> matches(Topic topic) {
         Queue<Token> tokenQueue = new LinkedBlockingDeque<>(topic.getTokens());
         List<ClientTopicCouple> matchingSubs = new ArrayList<>();
@@ -218,10 +219,12 @@ public class SubscriptionsDirectory {
         return new ArrayList<>(subsForClient.values());
     }
 
+    @Override
     public int size() {
         return subscriptions.get().size();
     }
 
+    @Override
     public String dumpTree() {
         DumpTreeVisitor visitor = new DumpTreeVisitor();
         bfsVisit(subscriptions.get(), visitor, 0);

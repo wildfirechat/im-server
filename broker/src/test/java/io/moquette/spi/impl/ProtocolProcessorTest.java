@@ -22,6 +22,7 @@ import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
@@ -68,7 +69,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -104,7 +105,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
                 AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -228,7 +229,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
                 new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        SubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -258,7 +259,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     @Test
     public void testRepublishAndConsumePersistedMessages_onReconnect() {
-        SubscriptionsDirectory subs = mock(SubscriptionsDirectory.class);
+        ISubscriptionsDirectory subs = mock(SubscriptionsDirectory.class);
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
@@ -282,7 +283,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         // create an inactive session for Subscriber
         m_sessionStore.createNewSession("Subscriber", false);
 
-        SubscriptionsDirectory mockedSubscriptions = mock(SubscriptionsDirectory.class);
+        ISubscriptionsDirectory mockedSubscriptions = mock(SubscriptionsDirectory.class);
         Subscription inactiveSub = new Subscription("Subscriber", new Topic("/topic"), MqttQoS.AT_LEAST_ONCE);
         List<Subscription> inactiveSubscriptions = Collections.singletonList(inactiveSub);
         when(mockedSubscriptions.matches(eq(new Topic("/topic")))).thenReturn(inactiveSubscriptions);

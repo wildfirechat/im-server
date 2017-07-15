@@ -17,9 +17,7 @@
 package io.moquette.spi;
 
 import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.spi.impl.subscriptions.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,11 +32,11 @@ public class ClientSessionTest {
     ClientSession session1;
     ClientSession session2;
     ISessionsStore sessionsStore;
-    SubscriptionsDirectory store;
+    ISubscriptionsDirectory store;
 
     @Before
     public void setUp() {
-        store = new SubscriptionsDirectory();
+        store = new CTrieSubscriptionDirectory();
         MemoryStorageService storageService = new MemoryStorageService(null, null);
         this.sessionsStore = storageService.sessionsStore();
         store.init(sessionsStore);

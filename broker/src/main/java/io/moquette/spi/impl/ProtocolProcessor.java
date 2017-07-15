@@ -23,8 +23,8 @@ import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
@@ -128,7 +128,7 @@ public class ProtocolProcessor {
     protected ConnectionDescriptorStore connectionDescriptors;
     protected ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
-    private SubscriptionsDirectory subscriptions;
+    private ISubscriptionsDirectory subscriptions;
     private ISubscriptionsStore subscriptionStore;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
@@ -153,21 +153,21 @@ public class ProtocolProcessor {
     ProtocolProcessor() {
     }
 
-    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+    public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
                      BrokerInterceptor interceptor) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator,
             interceptor, null);
     }
 
-    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+    public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
                      IAuthorizator authorizator, BrokerInterceptor interceptor) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId,
             authorizator, interceptor, null);
     }
 
-    public void init(SubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
+    public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
                      IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
         init(new ConnectionDescriptorStore(sessionsStore), subscriptions, storageService, sessionsStore, authenticator,
@@ -192,7 +192,7 @@ public class ProtocolProcessor {
      * @param interceptor
      *            to notify events to an intercept handler
      */
-    void init(ConnectionDescriptorStore connectionDescriptors, SubscriptionsDirectory subscriptions,
+    void init(ConnectionDescriptorStore connectionDescriptors, ISubscriptionsDirectory subscriptions,
             IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
             boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
             BrokerInterceptor interceptor, String serverPort) {

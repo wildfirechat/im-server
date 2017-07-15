@@ -20,8 +20,8 @@ import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
@@ -36,10 +36,10 @@ class MessagesPublisher {
     private final ConnectionDescriptorStore connectionDescriptors;
     private final ISessionsStore m_sessionsStore;
     private final PersistentQueueMessageSender messageSender;
-    private final SubscriptionsDirectory subscriptions;
+    private final ISubscriptionsDirectory subscriptions;
 
     public MessagesPublisher(ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
-                             PersistentQueueMessageSender messageSender, SubscriptionsDirectory subscriptions) {
+                             PersistentQueueMessageSender messageSender, ISubscriptionsDirectory subscriptions) {
         this.connectionDescriptors = connectionDescriptors;
         this.m_sessionsStore = sessionsStore;
         this.messageSender = messageSender;

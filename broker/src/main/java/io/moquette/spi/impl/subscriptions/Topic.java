@@ -19,8 +19,11 @@ package io.moquette.spi.impl.subscriptions;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +39,22 @@ public class Topic implements Serializable {
 
     private transient boolean valid;
 
+    /**
+     * Factory method
+     * */
+    public static Topic asTopic(String s) {
+        return new Topic(s);
+    }
+
     public Topic(String topic) {
         this.topic = topic;
+    }
+
+    Topic(List<Token> tokens) {
+        this.tokens = tokens;
+        List<String> strTokens = tokens.stream().map(Token::toString).collect(Collectors.toList());
+        this.topic = String.join("/", strTokens);
+        this.valid = true;
     }
 
     public List<Token> getTokens() {
@@ -98,6 +115,33 @@ public class Topic implements Serializable {
         }
 
         return res;
+    }
+
+    public Token headToken() {
+        final List<Token> tokens = getTokens();
+        if (tokens.isEmpty()) {
+            //TODO UGLY use Optional
+            return null;
+        }
+        return tokens.get(0);
+    }
+
+    public boolean isEmpty() {
+        final List<Token> tokens = getTokens();
+        return tokens == null || tokens.isEmpty();
+    }
+
+    /**
+     * @return a new Topic corresponding to this less than the head token
+     * */
+    public Topic exceptHeadToken() {
+        List<Token> tokens = getTokens();
+        if (tokens.isEmpty()) {
+            return new Topic(Collections.emptyList());
+        }
+        List<Token> tokensCopy = new ArrayList<>(tokens);
+        tokensCopy.remove(0);
+        return new Topic(tokensCopy);
     }
 
     public boolean isValid() {
@@ -168,10 +212,4 @@ public class Topic implements Serializable {
         return topic.hashCode();
     }
 
-    /**
-     * Factory method
-     * */
-    public static Topic asTopic(String s) {
-        return new Topic(s);
-    }
 }

@@ -34,7 +34,7 @@ public final class PerformanceTest {
        cpufreq-set -g performance -u 800MHz -c 3
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        SubscriptionsDirectory store = new SubscriptionsDirectory();
+        ISubscriptionsDirectory store = new SubscriptionsDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
         store.init(aSessionsStore);

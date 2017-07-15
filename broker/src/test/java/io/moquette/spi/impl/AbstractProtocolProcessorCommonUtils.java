@@ -22,9 +22,7 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.spi.impl.subscriptions.*;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -56,7 +54,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
 
     IMessagesStore m_messagesStore;
     ISessionsStore m_sessionStore;
-    SubscriptionsDirectory subscriptions;
+    ISubscriptionsDirectory subscriptions;
     MockAuthenticator m_mockAuthenticator;
 
     protected void initializeProcessorAndSubsystems() {
@@ -77,7 +75,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
         users.put(TEST_USER, TEST_PWD);
         m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
-        subscriptions = new SubscriptionsDirectory();
+        subscriptions = new CTrieSubscriptionDirectory();
         subscriptions.init(memStorage.sessionsStore());
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,

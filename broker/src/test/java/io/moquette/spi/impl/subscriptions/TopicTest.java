@@ -19,6 +19,8 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class TopicTest {
 
     @Test
@@ -38,7 +40,7 @@ public class TopicTest {
     }
 
     @Test
-    public void testValidtionProcess() {
+    public void testValidationProcess() {
         // TopicMultiInTheMiddle
         assertThat(new Topic("finance/#/closingprice")).isInValid();
 
@@ -113,6 +115,13 @@ public class TopicTest {
         assertThat(new Topic("foo///baz")).matches("foo/+/+/baz");
         assertThat(new Topic("foo/bar/")).matches("foo/bar/+");
     }
+
+    @Test
+    public void exceptHeadToken() {
+        assertEquals(Topic.asTopic("token"), Topic.asTopic("/token").exceptHeadToken());
+        assertEquals(Topic.asTopic("a/b"), Topic.asTopic("/a/b").exceptHeadToken());
+    }
+
 
     public static TopicAssert assertThat(Topic topic) {
         return new TopicAssert(topic);

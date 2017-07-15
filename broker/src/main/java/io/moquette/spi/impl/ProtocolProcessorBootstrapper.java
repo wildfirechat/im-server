@@ -27,6 +27,8 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.IStore;
 import io.moquette.spi.ISubscriptionsStore;
 import io.moquette.spi.impl.security.*;
+import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.security.IAuthenticator;
@@ -118,7 +120,7 @@ public class ProtocolProcessorBootstrapper {
         BrokerInterceptor interceptor = new BrokerInterceptor(props, observers);
 
         LOG.info("Initializing subscriptions store...");
-        SubscriptionsDirectory subscriptions = new SubscriptionsDirectory();
+        ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         subscriptions.init(m_sessionsStore);
 
         LOG.info("Configuring MQTT authenticator...");

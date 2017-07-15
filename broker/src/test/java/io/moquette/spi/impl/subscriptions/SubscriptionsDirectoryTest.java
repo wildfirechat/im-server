@@ -235,34 +235,6 @@ public class SubscriptionsDirectoryTest {
     }
 
     @Test
-    public void testRemoveClientSubscriptions_existingClientID() {
-        String cliendID = "FAKE_CLID_1";
-        Subscription sub = new Subscription(cliendID, new Topic("finance/#"), MqttQoS.AT_MOST_ONCE);
-        this.subscriptionsStore.addNewSubscription(sub);
-        store.add(sub.asClientTopicCouple());
-
-        // Exercise
-        store.removeForClient(cliendID);
-
-        // Verify
-        assertThat(store.size()).isZero();
-    }
-
-    @Test
-    public void testRemoveClientSubscriptions_notexistingClientID() {
-        String clientID = "FAKE_CLID_1";
-        Subscription s = new Subscription(clientID, new Topic("finance/#"), MqttQoS.AT_MOST_ONCE);
-        this.subscriptionsStore.addNewSubscription(s);
-        store.add(s.asClientTopicCouple());
-
-        // Exercise
-        store.removeForClient("FAKE_CLID_2");
-
-        // Verify
-        assertThat(store.size()).isEqualTo(1);
-    }
-
-    @Test
     public void testOverlappingSubscriptions() {
         Subscription genericSub = new Subscription("FAKE_CLI_ID_1", new Topic("a/+"), MqttQoS.EXACTLY_ONCE);
         this.subscriptionsStore.addNewSubscription(genericSub);
@@ -277,7 +249,7 @@ public class SubscriptionsDirectoryTest {
 
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
-        SubscriptionsDirectory aStore = new SubscriptionsDirectory();
+        ISubscriptionsDirectory aStore = new SubscriptionsDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore sessionsStore = memStore.sessionsStore();
         aStore.init(sessionsStore);
