@@ -101,6 +101,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.librato.metrics</groupId>
+            <artifactId>librato-java</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.bugsnag</groupId>
             <artifactId>bugsnag</artifactId>
             <version>[3.0,4.0)</version>
@@ -177,6 +183,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.191</version>
@@ -241,6 +254,21 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            io.moquette.persistence,
+                            io.moquette.server.config,
+                            io.moquette.spi,
+                            io.moquette.spi.impl.subscriptions,
+                        </Export-Package>
+                        <Embed-Dependency>
+                            com.bugsnag;bugsnag,
+                            com.librato.metrics;metrics-librato,
+                            com.librato.metrics;librato-java,
+                        </Embed-Dependency>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

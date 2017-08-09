@@ -18,7 +18,7 @@ broker/runner
 /perf/target/
 /mapdb_storage/target/
 *~
-*log*
+*.log*
 .DS_Store
 .settings/
 .project
