@@ -943,4 +943,9 @@ public class ProtocolProcessor {
     public ISessionsStore getSessionsStore() {
         return m_sessionsStore;
     }
+
+    public void shutdown() {
+        if (m_interceptor != null)
+            m_interceptor.stop();
+    }
 }
