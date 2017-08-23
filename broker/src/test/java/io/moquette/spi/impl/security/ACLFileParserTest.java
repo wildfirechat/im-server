@@ -44,9 +44,12 @@ public class ACLFileParserTest {
     }
 
     @Test(expected = ParseException.class)
-    public void testParseInvalidComment() throws ParseException {
+    public void testParseInvalidPaddedComment() throws ParseException {
         Reader conf = new StringReader(" #simple comment");
-        ACLFileParser.parse(conf);
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
+
+        // Verify
+        assertTrue(authorizations.isEmpty());
     }
 
     @Test
@@ -59,4 +62,33 @@ public class ACLFileParserTest {
         assertTrue(authorizations.canWrite(new Topic("/weather/italy/anemometer"), "", ""));
     }
 
+    @Test
+    public void testParseValidEndLineComment() throws ParseException {
+        Reader conf = new StringReader("topic /weather/italy/anemometer #simple comment");
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
+
+        // Verify
+        assertTrue(authorizations.canRead(new Topic("/weather/italy/anemometer"), "", ""));
+        assertTrue(authorizations.canWrite(new Topic("/weather/italy/anemometer"), "", ""));
+    }
+
+    @Test
+    public void testParseValidPoundTopicWithEndLineComment() throws ParseException {
+        Reader conf = new StringReader("topic /weather/italy/anemometer/# #simple comment");
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
+
+        // Verify
+        assertTrue(authorizations.canRead(new Topic("/weather/italy/anemometer/#"), "", ""));
+        assertTrue(authorizations.canWrite(new Topic("/weather/italy/anemometer/#"), "", ""));
+    }
+
+    @Test
+    public void testParseValidPlusTopicWithEndLineComment() throws ParseException {
+        Reader conf = new StringReader("topic /weather/+/anemometer #simple comment");
+        AuthorizationsCollector authorizations = ACLFileParser.parse(conf);
+
+        // Verify
+        assertTrue(authorizations.canRead(new Topic("/weather/+/anemometer"), "", ""));
+        assertTrue(authorizations.canWrite(new Topic("/weather/+/anemometer"), "", ""));
+    }
 }

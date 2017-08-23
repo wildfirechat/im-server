@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parses the acl configuration file. If a line starts with # it's comment. Blank lines are skipped.
@@ -83,25 +85,29 @@ public final class ACLFileParser {
         String line;
         AuthorizationsCollector collector = new AuthorizationsCollector();
 
+        Pattern emptyLine = Pattern.compile("^\\s*$");
+        Pattern commentLine = Pattern.compile("^#.*"); // As spec, comment lines should start with '#'
+        Pattern invalidCommentLine = Pattern.compile("^\\s*#.*");
+        Pattern endLineComment = Pattern.compile("^([\\w\\s\\/\\+]+#?)(\\s*#.*)$"); // This pattern has a dependency on filtering `commentLine`.
+        Matcher endLineCommentMatcher;
+
         try {
             while ((line = br.readLine()) != null) {
-                int commentMarker = line.indexOf('#');
-                if (commentMarker != -1) {
-                    if (commentMarker == 0) {
-                        // skip its a comment
-                        continue;
-                    } else {
-                        // it's a malformed comment
-                        throw new ParseException(line, commentMarker);
-                    }
-                } else {
-                    if (line.isEmpty() || line.matches("^\\s*$")) {
-                        // skip it's a black line
-                        continue;
-                    }
-
-                    collector.parse(line);
+                if (line.isEmpty() || emptyLine.matcher(line).matches() || commentLine.matcher(line).matches()) {
+                    // skip it's a black line or comment
+                    continue;
+                } else if (invalidCommentLine.matcher(line).matches()) {
+                    // it's a malformed comment
+                    int commentMarker = line.indexOf('#');
+                    throw new ParseException(line, commentMarker);
                 }
+
+                endLineCommentMatcher = endLineComment.matcher(line);
+                if (endLineCommentMatcher.matches()) {
+                    line = endLineCommentMatcher.group(1);
+                }
+
+                collector.parse(line);
             }
         } catch (IOException ex) {
             throw new ParseException("Failed to read", 1);
