@@ -13,18 +13,17 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+
 package io.moquette.persistence.h2;
 
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 class H2MessagesStore implements IMessagesStore {
@@ -33,12 +32,7 @@ class H2MessagesStore implements IMessagesStore {
 
     private final MVStore mvStore;
 
-    // maps clientID -> guid
-    private MVMap<Topic, MessageGUID> retainedStore;
-    // maps guid to message, it's message store
-    private MVMap<MessageGUID, StoredMessage> persistentMessageStore;
-
-    private MVMap<Topic, StoredMessage> new_retainedStore;
+    private MVMap<Topic, StoredMessage> retainedStore;
 
     public H2MessagesStore(MVStore mvStore) {
         this.mvStore = mvStore;
@@ -47,8 +41,6 @@ class H2MessagesStore implements IMessagesStore {
     @Override
     public void initStore() {
         retainedStore = mvStore.openMap("retained");
-        persistentMessageStore = mvStore.openMap("oldPersistedMessages");
-        new_retainedStore = mvStore.openMap("persistedMessages");
         LOG.info("Initialized message H2 store");
     }
 
@@ -56,9 +48,9 @@ class H2MessagesStore implements IMessagesStore {
     public void storeRetained(Topic topic, StoredMessage storedMessage) {
         LOG.debug("Store retained message for topic={}, CId={}", topic, storedMessage.getClientID());
         if (storedMessage.getClientID() == null) {
-            throw new IllegalArgumentException( "Message to be persisted must have a not null client ID");
+            throw new IllegalArgumentException("Message to be persisted must have a not null client ID");
         }
-        new_retainedStore.put(topic, storedMessage);
+        retainedStore.put(topic, storedMessage);
     }
 
     @Override
@@ -66,19 +58,14 @@ class H2MessagesStore implements IMessagesStore {
         LOG.debug("Scanning retained messages");
         List<StoredMessage> results = new ArrayList<>();
 
-        Cursor<Topic, MessageGUID> mapCursor = retainedStore.cursor(null);
+        Cursor<Topic, StoredMessage> mapCursor = retainedStore.cursor(null);
         while (mapCursor.hasNext()) {
-            final MessageGUID guid = mapCursor.getValue();
-            final Topic topic = mapCursor.getKey();
-            StoredMessage storedMsg = persistentMessageStore.get(guid);
-            if (condition.match(topic)) {
-                results.add(storedMsg);
-            }
+            Topic topic = mapCursor.next();
+            if (topic != null && condition.match(topic))
+                results.add(mapCursor.getValue());
         }
 
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Retained messages have been scanned matchingMessages={}", results);
-        }
+        LOG.trace("Retained messages have been scanned matchingMessages={}", results);
 
         return results;
     }

@@ -4,6 +4,7 @@ import io.moquette.BrokerConstants;
 import org.h2.mvstore.MVStore;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -54,6 +55,7 @@ public class H2PersistentQueueTest {
         assertTrue("after poll 2 elements inserted before, should be empty", sut.isEmpty());
     }
 
+    @Ignore
     @Test
     public void testPerformance() {
         H2PersistentQueue<String> sut = new H2PersistentQueue<>(this.mvStore, "test");
