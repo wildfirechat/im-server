@@ -41,6 +41,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,10 +61,21 @@ public class ServerIntegrationSSLTest {
     IMqttClient m_client;
     MessageCollector m_callback;
 
+    static String backup;
+
     @BeforeClass
     public static void beforeTests() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         s_dataStore = new MqttDefaultFilePersistence(tmpDir);
+        backup = System.getProperty("moquette.path");
+    }
+
+    @AfterClass
+    public static void afterTests() {
+        if (backup == null)
+            System.clearProperty("moquette.path");
+        else
+            System.setProperty("moquette.path", backup);
     }
 
     protected void startServer() throws IOException {

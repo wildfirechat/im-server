@@ -27,8 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.awaitility.Awaitility;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static org.junit.Assert.*;
 
@@ -81,10 +84,10 @@ public class ServerLowlevelMessagesIntegrationTests {
          */
         m_client.sendMessage(connectMessage);
 
-        // wait 2 times the keepAlive
-        Thread.sleep(keepAlive * 2 * 1000);
-
-        assertTrue(m_client.isConnectionLost());
+        // wait 3 times the keepAlive
+        Awaitility.await()
+            .atMost(3 * keepAlive, TimeUnit.SECONDS)
+            .until(m_client::isConnectionLost);
     }
 
     private static MqttConnectMessage createConnectMessage(String clientID, int keepAlive) {
@@ -109,14 +112,18 @@ public class ServerLowlevelMessagesIntegrationTests {
         m_client.clientId("FAKECLNT").connect(willTestamentTopic, willTestamentMsg);
         long connectTime = System.currentTimeMillis();
 
-        // but after the 2 KEEP ALIVE timeout expires it gets fired,
-        // NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
-        org.eclipse.paho.client.mqttv3.MqttMessage msg = m_messageCollector.waitMessage(5);
-        assertNotNull("the will message should be fired after keep alive!", msg);
-        // the will message hasn't to be received before the elapsing of Keep Alive timeout
-        assertTrue(System.currentTimeMillis() - connectTime > 3000);
+        Awaitility.await()
+            .atMost(7, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                // but after the 2 KEEP ALIVE timeout expires it gets fired,
+                // NB it's 1,5 * KEEP_ALIVE so 3 secs and some millis to propagate the message
+                org.eclipse.paho.client.mqttv3.MqttMessage msg = m_messageCollector.getMessageImmediate();
+                assertNotNull("the will message should be fired after keep alive!", msg);
+                // the will message hasn't to be received before the elapsing of Keep Alive timeout
+                assertTrue(System.currentTimeMillis() - connectTime > 3000);
+                assertEquals(willTestamentMsg, new String(msg.getPayload(), StandardCharsets.UTF_8));
+        });
 
-        assertEquals(willTestamentMsg, new String(msg.getPayload()));
         m_willSubscriber.disconnect();
     }
 

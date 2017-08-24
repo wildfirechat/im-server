@@ -18,7 +18,9 @@ package io.moquette.test.osgi;
 
 import static org.junit.Assert.*;
 import static org.ops4j.pax.exam.CoreOptions.*;
-
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -26,7 +28,8 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 
 /**
@@ -35,6 +38,9 @@ import javax.inject.Inject;
  */
 @RunWith(PaxExam.class)
 public class MoquetteOsgiTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MoquetteOsgiTest.class);
+
     @Inject
     private BundleContext bundleContext;
 
@@ -43,7 +49,42 @@ public class MoquetteOsgiTest {
 
         return options(
             junitBundles(),
-            mavenBundle("io.moquette", "moquette-broker")
+
+            mavenBundle("com.google.guava", "guava").versionAsInProject(),
+            //mavenBundle("com.google.code.findbugs", "jsr305").versionAsInProject(),
+
+            mavenBundle("com.fasterxml.jackson.core", "jackson-core").versionAsInProject().start(),
+            mavenBundle("com.fasterxml.jackson.core", "jackson-databind").versionAsInProject(),
+            mavenBundle("com.fasterxml.jackson.core", "jackson-annotations").versionAsInProject(),
+            //mavenBundle("com.librato.metrics", "librato-java").versionAsInProject(),
+            //mavenBundle("com.librato.metrics", "metrics-librato").versionAsInProject(),
+            mavenBundle("io.dropwizard.metrics", "metrics-core").versionAsInProject(),
+            mavenBundle("io.dropwizard.metrics", "metrics-jvm").versionAsInProject(),
+            mavenBundle("com.hazelcast", "hazelcast").versionAsInProject(),
+
+            mavenBundle("io.netty", "netty-common").versionAsInProject(),
+            mavenBundle("io.netty", "netty-buffer").versionAsInProject(),
+            mavenBundle("io.netty", "netty-transport").versionAsInProject(),
+            mavenBundle("io.netty", "netty-resolver").versionAsInProject(),
+            mavenBundle("io.netty", "netty-handler").versionAsInProject(),
+            mavenBundle("io.netty", "netty-handler").versionAsInProject(),
+            mavenBundle("io.netty", "netty-codec").versionAsInProject(),
+            mavenBundle("io.netty", "netty-codec-http").versionAsInProject(),
+            mavenBundle("io.netty", "netty-codec-mqtt").versionAsInProject(),
+            mavenBundle("io.netty", "netty-transport-native-epoll").versionAsInProject(),
+            mavenBundle("io.netty", "netty-transport-native-unix-common").versionAsInProject(),
+
+            mavenBundle("commons-codec", "commons-codec").versionAsInProject(),
+
+            mavenBundle("javax.servlet", "javax.servlet-api").versionAsInProject(),
+
+            mavenBundle("io.moquette", "moquette-broker").versionAsInProject(),
+
+            mavenBundle("com.h2database", "h2-mvstore").versionAsInProject(),
+            mavenBundle("io.moquette", "moquette-h2-storage").versionAsInProject(),
+
+            mavenBundle("org.mapdb", "mapdb").versionAsInProject(),
+            mavenBundle("io.moquette", "moquette-mapdb-storage").versionAsInProject()
         );
     }
 
@@ -55,15 +96,23 @@ public class MoquetteOsgiTest {
      */
     @Test
     public void testCanFindOsgiBundle() throws Exception {
+        List<String> list = new LinkedList<>(Arrays.asList("io.moquette.broker", "io.moquette.h2-storage",
+                "io.moquette.mapdb-storage"));
+
+        List<String> inactive = new LinkedList<>();
+
         for (Bundle b : bundleContext.getBundles()) {
             String symbolicName = b.getSymbolicName();
-            System.out.format("%s %d\n", symbolicName, b.getState());
-            if (symbolicName != null && symbolicName.indexOf("moquette") != -1) {
-                return;
+            LOG.info("{} {}", symbolicName, b.getState());
+            System.out.println("" + symbolicName);
+            if (symbolicName != null) {
+                list.remove(symbolicName);
+                if (b.getState() != Bundle.ACTIVE)
+                    inactive.add(symbolicName);
             }
         }
 
-        // If found no bundles with moquette in the name, fail the test.
-	    fail();
+        if (!inactive.isEmpty() || !list.isEmpty())
+            fail("This osgi bundles are missing: " + list + " this osgi packages are NOT active" + inactive);
     }
 }
