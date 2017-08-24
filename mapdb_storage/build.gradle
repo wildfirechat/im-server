@@ -1,0 +1,23 @@
+
+description = 'Moquette - MapDB storage'
+
+apply plugin: 'osgi'
+apply plugin: 'maven'
+
+dependencies {
+  compile project(':moquette-broker')
+  compile group: 'org.mapdb', name: 'mapdb', version:'1.0.8'
+
+  testCompile project(path:':moquette-broker', configuration: 'archives')
+}
+
+task createPom () {
+    pom { }.writeTo("build/pom.xml")
+}
+
+jar {
+    into ("META-INF/maven/io.moquette/${project.name}"){
+        from "build/pom.xml"
+    }
+}
+jar.dependsOn createPom

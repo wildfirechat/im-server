@@ -1,0 +1,22 @@
+
+description = 'Moquette - OSGi test'
+
+ext {
+  paxExamVersion = '4.6.0'
+}
+
+dependencies {
+  compile project(':moquette-broker')
+  compile project(':moquette-h2-storage')
+  compile project(':moquette-mapdb-storage')
+
+  testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+
+  testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-container-native', version: paxExamVersion
+  testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-junit4', version: paxExamVersion
+  testCompile group: 'org.ops4j.pax.exam', name: 'pax-exam-link-mvn', version: paxExamVersion
+  testCompile group: 'org.ops4j.pax.url', name: 'pax-url-aether', version:'1.4.0'
+  testCompile group: 'org.apache.felix', name: 'org.apache.felix.framework', version:'5.0.0'
+  testCompile group: 'javax.inject', name: 'javax.inject', version:'1'
+}

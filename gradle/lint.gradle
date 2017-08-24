@@ -1,0 +1,19 @@
+apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
+
+checkstyle {
+    configProperties.checkstyleConfigDir = "."
+    configFile = new File(rootDir, 'checkstyle.xml')
+    ignoreFailures false
+    toolVersion = '6.7'
+}
+
+findbugs {
+    toolVersion = '3.0.1'
+    ignoreFailures true
+    omitVisitors = ['RuntimeExceptionCapture']
+}
+
+tasks.withType(FindBugs) {
+    maxHeapSize = '2g'
+}
