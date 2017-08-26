@@ -1,9 +1,6 @@
 
 description = 'Moquette - broker'
 
-apply plugin: 'osgi'
-apply plugin: 'maven'
-
 dependencies {
     compile group: 'io.netty', name: 'netty-common', version: nettyVersion
     compile group: 'io.netty', name: 'netty-buffer', version: nettyVersion
@@ -33,19 +30,3 @@ dependencies {
 
     testCompile group: 'com.h2database', name: 'h2', version:'1.4.191'
 }
-
-task createPom () {
-    pom { }.writeTo("build/pom.xml")
-}
-
-jar {
-    manifest {
-      instruction 'Bundle-Description', 'Moquette lightweight MQTT Broker'
-      instruction 'Bundle-License', 'http://www.apache.org/licenses/LICENSE-2.0.txt, http://www.eclipse.org/org/documents/epl-v10.php'
-      instruction 'Import-Package', '!com.codahale.metrics*, !com.bugsnag*, !com.librato.metrics*, *'
-    }
-    into ("META-INF/maven/io.moquette/${project.name}"){
-        from "build/pom.xml"
-    }
-}
-jar.dependsOn createPom
