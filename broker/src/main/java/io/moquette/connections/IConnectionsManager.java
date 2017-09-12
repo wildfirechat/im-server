@@ -56,14 +56,6 @@ public interface IConnectionsManager {
     boolean closeConnection(String clientID, boolean closeImmediately);
 
     /**
-     * Returns the state of the session of a given client.
-     *
-     * @param clientID
-     * @return
-     */
-    MqttSession getSessionStatus(String clientID);
-
-    /**
      * Returns the state of all the sessions
      *
      * @return

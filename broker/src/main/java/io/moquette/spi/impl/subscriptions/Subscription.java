@@ -16,8 +16,8 @@
 
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import io.netty.handler.codec.mqtt.MqttQoS;
+
 import java.io.Serializable;
 
 /**
@@ -26,10 +26,10 @@ import java.io.Serializable;
 public final class Subscription implements Serializable {
 
     private static final long serialVersionUID = -3383457629635732794L;
-    final MqttQoS requestedQos; // max QoS acceptable
+    private final MqttQoS requestedQos; // max QoS acceptable
     final String clientId;
     final Topic topicFilter;
-    final boolean active;
+    private final boolean active;
 
     public Subscription(String clientId, Topic topicFilter, MqttQoS requestedQos) {
         this.requestedQos = requestedQos;
@@ -43,6 +43,16 @@ public final class Subscription implements Serializable {
         this.clientId = orig.clientId;
         this.topicFilter = orig.topicFilter;
         this.active = orig.active;
+    }
+
+    /**
+     * Constructor with undefined maximum QoS
+     * */
+    public Subscription(String clientId, Topic topicFilter) {
+        this.requestedQos = null;
+        this.clientId = clientId;
+        this.topicFilter = topicFilter;
+        this.active = true;
     }
 
     public String getClientId() {
@@ -59,6 +69,10 @@ public final class Subscription implements Serializable {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean qosLessThan(Subscription sub) {
+        return requestedQos.value() < sub.requestedQos.value();
     }
 
     @Override
@@ -99,9 +113,5 @@ public final class Subscription implements Serializable {
         } catch (CloneNotSupportedException e) {
             return null;
         }
-    }
-
-    public ClientTopicCouple asClientTopicCouple() {
-        return new ClientTopicCouple(this.clientId, this.topicFilter);
     }
 }

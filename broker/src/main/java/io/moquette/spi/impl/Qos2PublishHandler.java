@@ -43,20 +43,20 @@ class Qos2PublishHandler extends QosPublishHandler {
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
     private final ConnectionDescriptorStore connectionDescriptors;
-    private final ISessionsStore m_sessionsStore;
     private final MessagesPublisher publisher;
+    private final SessionsRepository sessionsRepository;
 
     public Qos2PublishHandler(IAuthorizator authorizator, ISubscriptionsDirectory subscriptions,
                               IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConnectionDescriptorStore connectionDescriptors, ISessionsStore sessionsStore,
-                              MessagesPublisher messagesPublisher) {
+                              ConnectionDescriptorStore connectionDescriptors,
+                              MessagesPublisher messagesPublisher, SessionsRepository sessionsRepository) {
         super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
         this.connectionDescriptors = connectionDescriptors;
-        this.m_sessionsStore = sessionsStore;
         this.publisher = messagesPublisher;
+        this.sessionsRepository = sessionsRepository;
     }
 
     void receivedPublishQos2(Channel channel, MqttPublishMessage msg) {
@@ -78,8 +78,7 @@ class Qos2PublishHandler extends QosPublishHandler {
             LOG.trace("payload={}, subs Tree={}", payload2Str(toStoreMsg.getPayload()), subscriptions.dumpTree());
         }
 
-        m_sessionsStore.sessionForClient(clientID)
-            .markAsInboundInflight(messageID, toStoreMsg);
+        this.sessionsRepository.sessionForClient(clientID).markAsInboundInflight(messageID, toStoreMsg);
 
         sendPubRec(clientID, messageID);
 
@@ -105,7 +104,7 @@ class Qos2PublishHandler extends QosPublishHandler {
         String clientID = NettyUtils.clientID(channel);
         int messageID = messageId(msg);
         LOG.info("Processing PUBREL message. CId={}, messageId={}", clientID, messageID);
-        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession targetSession = this.sessionsRepository.sessionForClient(clientID);
         IMessagesStore.StoredMessage evt = targetSession.inboundInflight(messageID);
         if (evt == null) {
             LOG.warn("Can't find inbound inflight message for CId={}, messageId={}", clientID, messageID);

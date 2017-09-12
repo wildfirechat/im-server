@@ -20,7 +20,6 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.*;
 import io.netty.buffer.Unpooled;
@@ -56,6 +55,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
     ISessionsStore m_sessionStore;
     ISubscriptionsDirectory subscriptions;
     MockAuthenticator m_mockAuthenticator;
+    protected SessionsRepository sessionsRepository;
 
     protected void initializeProcessorAndSubsystems() {
         m_channel = new EmbeddedChannel();
@@ -68,6 +68,8 @@ abstract class AbstractProtocolProcessorCommonUtils {
         m_sessionStore = memStorage.sessionsStore();
         // m_messagesStore.initStore();
 
+        sessionsRepository = new SessionsRepository(m_sessionStore);
+
         Set<String> clientIds = new HashSet<>();
         clientIds.add(FAKE_CLIENT_ID);
         clientIds.add(FAKE_CLIENT_ID2);
@@ -76,14 +78,15 @@ abstract class AbstractProtocolProcessorCommonUtils {
         m_mockAuthenticator = new MockAuthenticator(clientIds, users);
 
         subscriptions = new CTrieSubscriptionDirectory();
-        subscriptions.init(memStorage.sessionsStore());
+        subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository);
     }
 
     protected void verifyNoPublishIsReceived() {
-        assertNull("Received an out message from processor while not expected", m_channel.readOutbound());
+        final Object messageReceived = m_channel.readOutbound();
+        assertNull("Received an out message from processor while not expected", messageReceived);
     }
 
     protected void subscribe(String topic, MqttQoS desiredQos) {
@@ -106,8 +109,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
 
     protected static void verifySubscriptionExists(Channel channel, ISessionsStore sessionsStore, Subscription expectedSubscription) {
         final String clientId = NettyUtils.clientID(channel);
-        final Subscription subscription = sessionsStore.subscriptionStore()
-            .getSubscription(new ClientTopicCouple(clientId, expectedSubscription.getTopicFilter()));
+        final Subscription subscription = sessionsStore.subscriptionStore().reload(expectedSubscription);
         assertEquals(expectedSubscription, subscription);
     }
 

@@ -15,9 +15,8 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISubscriptionsStore;
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
+import io.moquette.spi.ClientSession;
+import io.moquette.spi.impl.SessionsRepository;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,16 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.lang.String.format;
+
 public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
 
     private static final Logger LOG = LoggerFactory.getLogger(CTrieSubscriptionDirectory.class);
 
     private static final Token ROOT = new Token("root");
 
-    protected INode root;
-    private volatile ISubscriptionsStore subscriptionsStore;
+    INode root;
+    private volatile SessionsRepository sessionsRepository;
 
     private interface IVisitor<T> {
 
@@ -57,10 +58,10 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
             }
             StringBuilder subScriptionsStr = new StringBuilder(" ~~[");
             int counter = 0;
-            for (ClientTopicCouple couple : node.subscriptions) {
+            for (Subscription couple : node.subscriptions) {
                 subScriptionsStr
                     .append("{filter=").append(couple.topicFilter).append(", ")
-                    .append("client='").append(couple.clientID).append("'}");
+                    .append("client='").append(couple.clientId).append("'}");
                 counter++;
                 if (counter < node.subscriptions.size()) {
                     subScriptionsStr.append(";");
@@ -90,24 +91,24 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         OK, REPEAT
     }
 
-    public void init(ISessionsStore sessionsStore) {
+    public void init(SessionsRepository sessionsRepository) {
         LOG.info("Initializing CTrie");
         final CNode mainNode = new CNode();
         mainNode.token = ROOT;
         this.root = new INode(mainNode);
 
         LOG.info("Initializing subscriptions store...");
-        this.subscriptionsStore = sessionsStore.subscriptionStore();
-        List<ClientTopicCouple> subscriptions = this.subscriptionsStore.listAllSubscriptions();
+        this.sessionsRepository = sessionsRepository;
         // reload any subscriptions persisted
         if (LOG.isTraceEnabled()) {
             LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}", dumpTree());
         }
-
-        for (ClientTopicCouple clientTopic : subscriptions) {
-            LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", clientTopic.clientID,
-                clientTopic.topicFilter);
-            add(clientTopic);
+        for (ClientSession session : this.sessionsRepository.getAllSessions()) {
+            for (Subscription subscription : session.getSubscriptions()) {
+                LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", subscription.clientId,
+                    subscription.topicFilter);
+                add(subscription);
+            }
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("Stored subscriptions have been reloaded. SubscriptionTree = {}", dumpTree());
@@ -145,25 +146,31 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
      * @return the list of matching subscriptions, or empty if not matching.
      */
      Set<Subscription> match(Topic topic) {
-        final Set<ClientTopicCouple> matchingSubs = recursiveMatch(topic, this.root);
+        final Set<Subscription> matchingSubs = recursiveMatch(topic, this.root);
         // remove the overlapping subscriptions, selecting ones with greatest qos
         Map<String, Subscription> subsForClient = new HashMap<>();
-        for (ClientTopicCouple matchingCouple : matchingSubs) {
-            Subscription existingSub = subsForClient.get(matchingCouple.clientID);
-            Subscription sub = this.subscriptionsStore.getSubscription(matchingCouple);
-            if (sub == null) {
-                // if the m_sessionStore hasn't the sub because the client disconnected
+        for (Subscription matchingSub : matchingSubs) {
+            Subscription existingSub = subsForClient.get(matchingSub.clientId);
+            final ClientSession subscribedSession = this.sessionsRepository.sessionForClient(matchingSub.clientId);
+            if (subscribedSession == null) {
+                //clean session disconnected
                 continue;
             }
+            Subscription sub = subscribedSession.findSubscriptionByTopicFilter(matchingSub);
+            if (sub == null) {
+                final String excpMesg = format("Target session %s is connected but doesn't anymore subscribed to %s",
+                    matchingSub.clientId, matchingSub);
+                throw new IllegalStateException(excpMesg);
+            }
             // update the selected subscriptions if not present or if has a greater qos
-            if (existingSub == null || existingSub.getRequestedQos().value() < sub.getRequestedQos().value()) {
-                subsForClient.put(matchingCouple.clientID, sub);
+            if (existingSub == null || existingSub.qosLessThan(sub)) {
+                subsForClient.put(sub.clientId, sub);
             }
         }
         return new HashSet<>(subsForClient.values());
     }
 
-    Set<ClientTopicCouple> recursiveMatch(Topic topic, INode inode) {
+    Set<Subscription> recursiveMatch(Topic topic, INode inode) {
         CNode cnode = inode.mainNode();
         if (cnode.token == Token.MULTI) {
             return cnode.subscriptions;
@@ -179,7 +186,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
             return Collections.emptySet();
         }
         Topic remainingTopic = (cnode.token == ROOT) ? topic : topic.exceptHeadToken();
-        Set<ClientTopicCouple> subscriptions = new HashSet<>();
+        Set<Subscription> subscriptions = new HashSet<>();
         if (remainingTopic.isEmpty()) {
             subscriptions.addAll(cnode.subscriptions);
         }
@@ -190,10 +197,10 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     }
 
 
-    public void add(ClientTopicCouple newSubscription) {
+    public void add(Subscription newSubscription) {
         Action res;
         do {
-            res = insert(newSubscription.clientID, newSubscription.topicFilter, this.root, newSubscription.topicFilter);
+            res = insert(newSubscription.clientId, newSubscription.topicFilter, this.root, newSubscription.topicFilter);
         } while (res == Action.REPEAT);
     }
 

@@ -22,6 +22,7 @@ import java.lang.management.ThreadMXBean;
 
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.impl.SessionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 public final class PerformanceTest {
@@ -34,10 +35,11 @@ public final class PerformanceTest {
        cpufreq-set -g performance -u 800MHz -c 3
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        ISubscriptionsDirectory store = new SubscriptionsDirectory();
+        ISubscriptionsDirectory store = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        store.init(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        store.init(sessionsRepository);
 
         int times = 10000;
 
@@ -57,7 +59,7 @@ public final class PerformanceTest {
 
             Subscription sub = new Subscription("CLI_ID_" + (i % users), topics[i], MqttQoS.AT_MOST_ONCE);
             aSessionsStore.subscriptionStore().addNewSubscription(sub);
-            store.add(sub.asClientTopicCouple());
+            store.add(sub);
         }
 
         long min = Long.MAX_VALUE;

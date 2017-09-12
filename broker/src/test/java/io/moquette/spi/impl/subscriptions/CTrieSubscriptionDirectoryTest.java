@@ -16,7 +16,7 @@
 
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
+import io.moquette.spi.impl.SessionsRepository;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,8 +24,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.moquette.spi.impl.subscriptions.Topic.asTopic;
-import static org.junit.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CTrieSubscriptionDirectoryTest {
 
@@ -36,7 +37,8 @@ public class CTrieSubscriptionDirectoryTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        sut.init(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        sut.init(sessionsRepository);
     }
 
     @Test
@@ -73,7 +75,7 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testLookup() {
-        final ClientTopicCouple existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
+        final Subscription existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
         sut.add(existingSubscription);
 
         //Exercise
@@ -85,17 +87,17 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testAddNewSubscriptionOnExistingNode() {
-        final ClientTopicCouple existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
+        final Subscription existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
         sut.add(existingSubscription);
 
         //Exercise
-        final ClientTopicCouple newSubscription = clientSubOnTopic("TempSensor2", "/temp");
+        final Subscription newSubscription = clientSubOnTopic("TempSensor2", "/temp");
         sut.add(newSubscription);
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
         assertTrue("Node on path /temp must be present", matchedNode.isPresent());
-        final Set<ClientTopicCouple> subscriptions = matchedNode.get().subscriptions;
+        final Set<Subscription> subscriptions = matchedNode.get().subscriptions;
         assertTrue(subscriptions.contains(newSubscription));
     }
 
@@ -104,18 +106,18 @@ public class CTrieSubscriptionDirectoryTest {
         sut.add(clientSubOnTopic("TempSensorRM", "/italy/roma/temp"));
         sut.add(clientSubOnTopic("TempSensorFI", "/italy/firenze/temp"));
         sut.add(clientSubOnTopic("HumSensorFI", "/italy/roma/humidity"));
-        final ClientTopicCouple happinessSensor = clientSubOnTopic("HappinessSensor", "/italy/happiness");
+        final Subscription happinessSensor = clientSubOnTopic("HappinessSensor", "/italy/happiness");
         sut.add(happinessSensor);
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/italy/happiness"));
         assertTrue("Node on path /italy/happiness must be present", matchedNode.isPresent());
-        final Set<ClientTopicCouple> subscriptions = matchedNode.get().subscriptions;
+        final Set<Subscription> subscriptions = matchedNode.get().subscriptions;
         assertTrue(subscriptions.contains(happinessSensor));
     }
 
-    static ClientTopicCouple clientSubOnTopic(String clientID, String topicName) {
-        return new ClientTopicCouple(clientID, asTopic(topicName));
+    static Subscription clientSubOnTopic(String clientID, String topicName) {
+        return new Subscription(clientID, asTopic(topicName), null);
     }
 
     @Test
@@ -135,10 +137,10 @@ public class CTrieSubscriptionDirectoryTest {
         sut.add(clientSubOnTopic("TempSensor1", "/temp"));
 
         //Exercise
-        final Set<ClientTopicCouple> matchingSubs = sut.recursiveMatch(asTopic("/temp"), sut.root);
+        final Set<Subscription> matchingSubs = sut.recursiveMatch(asTopic("/temp"), sut.root);
 
         //Verify
-        final ClientTopicCouple expectedMatchingsub = new ClientTopicCouple("TempSensor1", asTopic("/temp"));
+        final Subscription expectedMatchingsub = new Subscription("TempSensor1", asTopic("/temp"));
         assertThat(matchingSubs).contains(expectedMatchingsub);
     }
 }

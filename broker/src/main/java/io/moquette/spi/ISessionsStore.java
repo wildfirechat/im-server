@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+import io.moquette.persistence.PersistentSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 
 import java.util.Collection;
@@ -30,30 +31,27 @@ public interface ISessionsStore {
 
     ISubscriptionsStore subscriptionStore();
 
-    void updateCleanStatus(String clientID, boolean cleanSession);
-
     /**
      * @param clientID
      *            the session client ID.
-     * @return true iff there are subscriptions persisted with clientID
+     * @return true iff there is a session stored for the client
      */
     boolean contains(String clientID);
 
-    ClientSession createNewSession(String clientID, boolean cleanSession);
+    void createNewDurableSession(String clientID);
 
-    /**
-     * @param clientID
-     *            the client owning the session.
-     * @return the session for the given clientID, null if not found.
-     */
-    ClientSession sessionForClient(String clientID);
+    void removeDurableSession(String clientId);
+
+    void updateCleanStatus(String clientID, boolean cleanSession);
+
+    PersistentSession loadSessionByKey(String clientID);
 
     /**
      * Returns all the sessions
      *
      * @return the collection of all stored client sessions.
      */
-    Collection<ClientSession> getAllSessions();
+    Collection<PersistentSession> listAllSessions();
 
     StoredMessage inFlightAck(String clientID, int messageID);
 
@@ -98,7 +96,7 @@ public interface ISessionsStore {
      *            the message ID that reached the second phase.
      * @return the guid of message just acked.
      */
-    StoredMessage secondPhaseAcknowledged(String clientID, int messageID);
+    StoredMessage completeReleasedPublish(String clientID, int messageID);
 
     /**
      * Returns the number of inflight messages for the given client ID
@@ -109,27 +107,12 @@ public interface ISessionsStore {
     int getInflightMessagesNo(String clientID);
 
     /**
-     * @return the inflight inbound (PUBREL for Qos2) message.
-     * */
-    IMessagesStore.StoredMessage inboundInflight(String clientID, int messageID);
-
-    void markAsInboundInflight(String clientID, int messageID, StoredMessage msg);
-
-    /**
-     * Returns the size of the session queue for the given client ID
-     *
-     * @param clientID target client.
-     * @return count of enqueued publish messages.
-     */
-    int getPendingPublishMessagesNo(String clientID);
-
-    /**
      * Returns the number of second-phase ACK pending messages for the given client ID
      *
      * @param clientID target client.
      * @return count of pending in flight publish messages.
      */
-    int getSecondPhaseAckPendingMessages(String clientID);
+    int countPubReleaseWaitingPubComplete(String clientID);
 
-    void cleanSession(String clientID);
+    void removeTemporaryQoS2(String clientID);
 }

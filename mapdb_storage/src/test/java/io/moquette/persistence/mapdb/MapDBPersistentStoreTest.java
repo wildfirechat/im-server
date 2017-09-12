@@ -21,6 +21,7 @@ import io.moquette.persistence.MessageStoreTCK;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.IMessagesStore.StoredMessage;
+import io.moquette.spi.impl.SessionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.After;
 import org.junit.Before;
@@ -56,6 +57,7 @@ public class MapDBPersistentStoreTest extends MessageStoreTCK {
         m_storageService.initStore();
         messagesStore = m_storageService.messagesStore();
         sessionsStore = m_storageService.sessionsStore();
+        this.sessionsRepository = new SessionsRepository(sessionsStore);
     }
 
     @After

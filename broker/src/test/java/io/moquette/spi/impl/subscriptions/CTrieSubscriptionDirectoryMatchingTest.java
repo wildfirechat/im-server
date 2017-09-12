@@ -18,13 +18,11 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore;
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
+import io.moquette.spi.impl.SessionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,28 +35,27 @@ import static org.junit.Assert.assertTrue;
 public class CTrieSubscriptionDirectoryMatchingTest {
 
     private CTrieSubscriptionDirectory sut;
-    private ISessionsStore sessionsStore;
     private ISubscriptionsStore subscriptionsStore;
-    private MemoryStorageService storageService;
+    private SessionsRepository sessionsRepository;
 
     @Before
     public void setUp() {
         sut = new CTrieSubscriptionDirectory();
 
-        this.storageService = new MemoryStorageService(null, null);
-        this.sessionsStore = storageService.sessionsStore();
-        sut.init(sessionsStore);
-
-        this.subscriptionsStore = this.sessionsStore.subscriptionStore();
+        MemoryStorageService storageService = new MemoryStorageService(null, null);
+        ISessionsStore sessionsStore = storageService.sessionsStore();
+        this.subscriptionsStore = sessionsStore.subscriptionStore();
+        this.sessionsRepository = new SessionsRepository(sessionsStore);
+        sut.init(this.sessionsRepository);
     }
 
     @Test
     public void testMatchSimple() {
-        ClientTopicCouple slashSub = clientSubOnTopic("TempSensor1", "/");
+        Subscription slashSub = clientSubOnTopic("TempSensor1", "/");
         sut.add(slashSub);
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isEmpty();
 
-        ClientTopicCouple slashFinanceSub = clientSubOnTopic("TempSensor1", "/finance");
+        Subscription slashFinanceSub = clientSubOnTopic("TempSensor1", "/finance");
         sut.add(slashFinanceSub);
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isEmpty();
 
@@ -68,19 +65,19 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchSimpleMulti() {
-        ClientTopicCouple anySub = clientSubOnTopic("TempSensor1", "#");
+        Subscription anySub = clientSubOnTopic("TempSensor1", "#");
         sut.add(anySub);
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).contains(anySub);
 
-        ClientTopicCouple financeAnySub = clientSubOnTopic("TempSensor1", "finance/#");
+        Subscription financeAnySub = clientSubOnTopic("TempSensor1", "finance/#");
         sut.add(financeAnySub);
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).containsExactlyInAnyOrder(financeAnySub, anySub);
     }
 
     @Test
     public void testMatchingDeepMulti_one_layer() {
-        ClientTopicCouple anySub = clientSubOnTopic("AllSensor1", "#");
-        ClientTopicCouple financeAnySub = clientSubOnTopic("FinanceSensor", "finance/#");
+        Subscription anySub = clientSubOnTopic("AllSensor1", "#");
+        Subscription financeAnySub = clientSubOnTopic("FinanceSensor", "finance/#");
         sut.add(anySub);
         sut.add(financeAnySub);
 
@@ -93,7 +90,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchingDeepMulti_two_layer() {
-        ClientTopicCouple financeAnySub = clientSubOnTopic("FinanceSensor", "finance/stock/#");
+        Subscription financeAnySub = clientSubOnTopic("FinanceSensor", "finance/stock/#");
         sut.add(financeAnySub);
 
         // Verify
@@ -102,18 +99,18 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchSimpleSingle() {
-        ClientTopicCouple anySub = clientSubOnTopic("AnySensor", "+");
+        Subscription anySub = clientSubOnTopic("AnySensor", "+");
         sut.add(anySub);
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).containsExactly(anySub);
 
-        ClientTopicCouple financeOne = clientSubOnTopic("AnySensor", "finance/+");
+        Subscription financeOne = clientSubOnTopic("AnySensor", "finance/+");
         sut.add(financeOne);
         assertThat(sut.recursiveMatch(asTopic("finance/stock"), sut.root)).containsExactly(financeOne);
     }
 
     @Test
     public void testMatchManySingle() {
-        ClientTopicCouple manySub = clientSubOnTopic("AnySensor", "+/+");
+        Subscription manySub = clientSubOnTopic("AnySensor", "+/+");
         sut.add(manySub);
 
         // verify
@@ -122,9 +119,9 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchSlashSingle() {
-        ClientTopicCouple slashPlusSub = clientSubOnTopic("AnySensor", "/+");
+        Subscription slashPlusSub = clientSubOnTopic("AnySensor", "/+");
         sut.add(slashPlusSub);
-        ClientTopicCouple anySub = clientSubOnTopic("AnySensor", "+");
+        Subscription anySub = clientSubOnTopic("AnySensor", "+");
         sut.add(anySub);
 
         // Verify
@@ -134,9 +131,9 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchManyDeepSingle() {
-        ClientTopicCouple slashPlusSub = clientSubOnTopic("FinanceSensor1", "/finance/+/ibm");
+        Subscription slashPlusSub = clientSubOnTopic("FinanceSensor1", "/finance/+/ibm");
         sut.add(slashPlusSub);
-        ClientTopicCouple slashPlusDeepSub = clientSubOnTopic("FinanceSensor2", "/+/stock/+");
+        Subscription slashPlusDeepSub = clientSubOnTopic("FinanceSensor2", "/+/stock/+");
         sut.add(slashPlusDeepSub);
 
         // Verify
@@ -146,7 +143,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testMatchSimpleMulti_allTheTree() {
-        ClientTopicCouple sub = clientSubOnTopic("AnySensor1", "#");
+        Subscription sub = clientSubOnTopic("AnySensor1", "#");
         sut.add(sub);
 
         assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isNotEmpty();
@@ -181,9 +178,10 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        sut.init(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        sut.init(sessionsRepository);
 
-        ClientTopicCouple sub = clientSubOnTopic("AnySensor1", s);
+        Subscription sub = clientSubOnTopic("AnySensor1", s);
         sut.add(sub);
 
         assertThat(sut.recursiveMatch(asTopic(t), sut.root)).isNotEmpty();
@@ -193,9 +191,10 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        sut.init(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        sut.init(sessionsRepository);
 
-        ClientTopicCouple sub = clientSubOnTopic("AnySensor1", subscription);
+        Subscription sub = clientSubOnTopic("AnySensor1", subscription);
         sut.add(sub);
 
         assertThat(sut.recursiveMatch(asTopic(topic), sut.root)).isEmpty();
@@ -203,47 +202,50 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     @Test
     public void testOverlappingSubscriptions() {
-        Subscription sub = new Subscription("Sensor1", asTopic("a/+"), MqttQoS.AT_MOST_ONCE);
-        ClientTopicCouple genericSub = sub.asClientTopicCouple();
-        this.subscriptionsStore.addNewSubscription(sub);
-        storageService.sessionsStore().createNewSession("Sensor1", false);
+        Subscription genericSub = new Subscription("Sensor1", asTopic("a/+"), MqttQoS.AT_MOST_ONCE);
+        this.subscriptionsStore.addNewSubscription(genericSub);
+        final ClientSession sensorSession = this.sessionsRepository.createNewSession("Sensor1", false);
+        sensorSession.subscribe(genericSub);
         sut.add(genericSub);
 
-        Subscription sub2 = new Subscription("Sensor1", asTopic("a/b"), MqttQoS.AT_MOST_ONCE);
-        ClientTopicCouple specificSub = sub2.asClientTopicCouple();
-        this.subscriptionsStore.addNewSubscription(sub2);
+        Subscription specificSub = new Subscription("Sensor1", asTopic("a/b"), MqttQoS.AT_MOST_ONCE);
+        sensorSession.subscribe(specificSub);
+        this.subscriptionsStore.addNewSubscription(specificSub);
         sut.add(specificSub);
 
+        //Exercise
+        final Set<Subscription> matchingForSpecific = sut.match(asTopic("a/b"));
+
         // Verify
-        assertThat(sut.match(asTopic("a/b")).size()).isEqualTo(1);
+        assertThat(matchingForSpecific.size()).isEqualTo(1);
     }
 
     @Test
     public void removeSubscription_withDifferentClients_subscribedSameTopic() {
-        ClientTopicCouple slashSub = clientSubOnTopic("Sensor1", "/topic");
+        Subscription slashSub = clientSubOnTopic("Sensor1", "/topic");
         sut.add(slashSub);
-        ClientTopicCouple slashSub2 = clientSubOnTopic("Sensor2", "/topic");
+        Subscription slashSub2 = clientSubOnTopic("Sensor2", "/topic");
         sut.add(slashSub2);
 
         // Exercise
-        sut.removeSubscription(asTopic("/topic"), slashSub2.clientID);
+        sut.removeSubscription(asTopic("/topic"), slashSub2.clientId);
 
         // Verify
-        ClientTopicCouple remainedSubscription = sut.recursiveMatch(asTopic("/topic"), sut.root).iterator().next();
-        assertThat(remainedSubscription.clientID).isEqualTo(slashSub.clientID);
-        assertEquals(slashSub.clientID, remainedSubscription.clientID);
+        Subscription remainedSubscription = sut.recursiveMatch(asTopic("/topic"), sut.root).iterator().next();
+        assertThat(remainedSubscription.clientId).isEqualTo(slashSub.clientId);
+        assertEquals(slashSub.clientId, remainedSubscription.clientId);
     }
 
     @Test
     public void removeSubscription_sameClients_subscribedSameTopic() {
-        ClientTopicCouple slashSub = clientSubOnTopic("Sensor1", "/topic");
+        Subscription slashSub = clientSubOnTopic("Sensor1", "/topic");
         sut.add(slashSub);
 
         // Exercise
-        sut.removeSubscription(asTopic("/topic"), slashSub.clientID);
+        sut.removeSubscription(asTopic("/topic"), slashSub.clientId);
 
         // Verify
-        final Set<ClientTopicCouple> matchingSubscriptions = sut.recursiveMatch(asTopic("/topic"), sut.root);
+        final Set<Subscription> matchingSubscriptions = sut.recursiveMatch(asTopic("/topic"), sut.root);
         assertThat(matchingSubscriptions).isEmpty();
     }
 
@@ -252,18 +254,18 @@ public class CTrieSubscriptionDirectoryMatchingTest {
      */
     @Test
     public void duplicatedSubscriptionsWithDifferentQos() {
-        ClientSession session2 = sessionsStore.createNewSession("client2", true);
+        ClientSession session2 = this.sessionsRepository.createNewSession("client2", true);
         Subscription client2Sub = new Subscription("client2", asTopic("client/test/b"), MqttQoS.AT_MOST_ONCE);
         session2.subscribe(client2Sub);
-        this.sut.add(client2Sub.asClientTopicCouple());
-        ClientSession session1 = sessionsStore.createNewSession("client1", true);
+        this.sut.add(client2Sub);
+        ClientSession session1 = this.sessionsRepository.createNewSession("client1", true);
         Subscription client1SubQoS0 = new Subscription("client1", asTopic("client/test/b"), MqttQoS.AT_MOST_ONCE);
         session1.subscribe(client1SubQoS0);
-        this.sut.add(client1SubQoS0.asClientTopicCouple());
+        this.sut.add(client1SubQoS0);
 
         Subscription client1SubQoS2 = new Subscription("client1", asTopic("client/test/b"), MqttQoS.EXACTLY_ONCE);
         session1.subscribe(client1SubQoS2);
-        this.sut.add(client1SubQoS2.asClientTopicCouple());
+        this.sut.add(client1SubQoS2);
 
         // Verify
         Set<Subscription> subscriptions = this.sut.match(asTopic("client/test/b"));

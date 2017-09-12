@@ -15,18 +15,14 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.server.MessageCollector;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProcessorCommonUtils {
 
@@ -43,8 +39,6 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
 
         // reconnect and publish
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
-//        NettyUtils.clientID(anotherChannel, "TestClient");
-//        NettyUtils.cleanSession(anotherChannel, false);
         connectAsClient(anotherChannel, "TestClient");
 
         publishToAs(anotherChannel, "TestClient", "/topic", AT_MOST_ONCE, false);

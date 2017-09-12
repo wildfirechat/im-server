@@ -19,6 +19,7 @@ import io.moquette.BrokerConstants;
 import io.moquette.persistence.MessageStoreTCK;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.spi.impl.SessionsRepository;
 import org.junit.After;
 import org.junit.Before;
 
@@ -47,6 +48,7 @@ public class H2MessagesStoreTest extends MessageStoreTCK {
         storageService.initStore();
         messagesStore = storageService.messagesStore();
         sessionsStore = storageService.sessionsStore();
+        this.sessionsRepository = new SessionsRepository(sessionsStore);
     }
 
     @After

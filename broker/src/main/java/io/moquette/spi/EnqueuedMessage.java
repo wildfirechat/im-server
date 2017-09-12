@@ -13,23 +13,16 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.impl.SessionsRepository;
+package io.moquette.spi;
 
-import java.util.List;
+public class EnqueuedMessage {
 
-public interface ISubscriptionsDirectory {
+    public final IMessagesStore.StoredMessage msg;
+    public final int messageId;
 
-    void init(SessionsRepository sessionsRepository);
-
-    void add(Subscription newSubscription);
-
-    void removeSubscription(Topic topic, String clientID);
-
-    List<Subscription> matches(Topic topic);
-
-    int size();
-
-    String dumpTree();
+    EnqueuedMessage(IMessagesStore.StoredMessage msg, int messageId) {
+        this.msg = msg;
+        this.messageId = messageId;
+    }
 }

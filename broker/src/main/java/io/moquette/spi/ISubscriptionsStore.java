@@ -3,46 +3,10 @@ package io.moquette.spi;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ISubscriptionsStore {
-    class ClientTopicCouple {
-
-        public final Topic topicFilter;
-        public final String clientID;
-
-        public ClientTopicCouple(String clientID, Topic topicFilter) {
-            this.clientID = clientID;
-            this.topicFilter = topicFilter;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-
-            ClientTopicCouple that = (ClientTopicCouple) o;
-
-            if (topicFilter != null ? !topicFilter.equals(that.topicFilter) : that.topicFilter != null)
-                return false;
-            return !(clientID != null ? !clientID.equals(that.clientID) : that.clientID != null);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = topicFilter != null ? topicFilter.hashCode() : 0;
-            result = 31 * result + (clientID != null ? clientID.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "ClientTopicCouple{" + "topicFilter='" + topicFilter + '\'' + ", clientID='" + clientID + '\'' + '}';
-        }
-    }
-
 
     /**
      * Add a new subscription to the session
@@ -65,26 +29,25 @@ public interface ISubscriptionsStore {
     /**
      * Remove all the subscriptions of the session
      *
-     * @param sessionID
+     * @param clientID
      *            the client ID
      */
-    void wipeSubscriptions(String sessionID);
+    void wipeSubscriptions(String clientID);
 
     /**
      * Return all topic filters to recreate the subscription tree.
      */
-    List<ClientTopicCouple> listAllSubscriptions();
+    List<Subscription> listAllSubscriptions();
 
     /**
-     * @param couple
-     *            the subscription descriptor.
+     * Load from storage all the subscriptions of the specified client.
+     * */
+    Collection<Subscription> listClientSubscriptions(String clientID);
+
+    /**
+     * @param subcription
+     *            the subscription to reaload from storage.
      * @return the subscription stored by clientID and topicFilter, if any else null;
      */
-    Subscription getSubscription(ClientTopicCouple couple);
-
-    /*
-     * @return all subscriptions stored.
-     */
-    List<Subscription> getSubscriptions();
-
+    Subscription reload(Subscription subcription);
 }

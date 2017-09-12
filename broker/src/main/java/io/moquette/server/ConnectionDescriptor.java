@@ -126,7 +126,7 @@ public class ConnectionDescriptor {
 
     @Override
     public String toString() {
-        return "ConnectionDescriptor{" + "clientID=" + clientID + ", cleanSession=" + cleanSession + ", state="
+        return "ConnectionDescriptor{" + "clientID=" + clientID + ", removeTemporaryQoS2=" + cleanSession + ", state="
                 + channelState.get() + '}';
     }
 

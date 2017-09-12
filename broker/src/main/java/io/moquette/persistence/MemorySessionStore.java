@@ -17,7 +17,6 @@
 package io.moquette.persistence;
 
 import io.moquette.server.Constants;
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore;
@@ -30,7 +29,6 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
@@ -38,24 +36,23 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     class Session {
         final String clientID;
-        final ClientSession clientSession;
         final Map<Topic, Subscription> subscriptions = new ConcurrentHashMap<>();
-        final AtomicReference<PersistentSession> persistentSession = new AtomicReference<>(null);
+        boolean cleanSession;
         final BlockingQueue<StoredMessage> queue = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
         final Map<Integer, StoredMessage> secondPhaseStore = new ConcurrentHashMap<>();
         final Map<Integer, StoredMessage> outboundFlightMessages =
                 Collections.synchronizedMap(new HashMap<Integer, StoredMessage>());
         final Map<Integer, StoredMessage> inboundFlightMessages = new ConcurrentHashMap<>();
 
-        Session(String clientID, ClientSession clientSession) {
+        Session(String clientID, boolean cleanSession) {
             this.clientID = clientID;
-            this.clientSession = clientSession;
+            this.cleanSession = cleanSession;
         }
     }
 
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-    public MemorySessionStore() {
+    MemorySessionStore() {
     }
 
     private Session getSession(String clientID) {
@@ -110,64 +107,57 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public ClientSession createNewSession(String clientID, boolean cleanSession) {
-        LOG.debug("createNewSession for client <{}>", clientID);
-        Session session = sessions.get(clientID);
-        if (session != null) {
-            LOG.error("already exists a session for client <{}>, bad condition", clientID);
-            throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
-        }
-        LOG.debug("clientID {} is a newcome, creating it's empty subscriptions set", clientID);
-        session = new Session(clientID, new ClientSession(clientID, this, this, cleanSession));
-        session.persistentSession.set(new PersistentSession(cleanSession));
-        sessions.put(clientID, session);
-        return session.clientSession;
+    public void createNewDurableSession(String clientID) {
+        Session innerSession = new Session(clientID, false);
+        sessions.put(clientID, innerSession);
     }
 
     @Override
-    public ClientSession sessionForClient(String clientID) {
-        if (!sessions.containsKey(clientID)) {
-            LOG.error("Can't find the session for client <{}>", clientID);
-            return null;
-        }
-
-        PersistentSession storedSession = sessions.get(clientID).persistentSession.get();
-        return new ClientSession(clientID, this, this, storedSession.cleanSession);
+    public void removeDurableSession(String clientId) {
+        this.sessions.remove(clientId);
+        this.wipeSubscriptions(clientId);
     }
 
     @Override
-    public Collection<ClientSession> getAllSessions() {
-        Collection<ClientSession> result = new ArrayList<>();
+    public void updateCleanStatus(String clientId, boolean newCleanStatus) {
+        sessions.get(clientId).cleanSession = newCleanStatus;
+    }
+
+    @Override
+    public PersistentSession loadSessionByKey(String clientID) {
+        return new PersistentSession(clientID, sessions.get(clientID).cleanSession);
+    }
+
+    @Override
+    public Collection<PersistentSession> listAllSessions() {
+        Collection<PersistentSession> result = new ArrayList<>();
         for (Session entry : sessions.values()) {
-            result.add(new ClientSession(entry.clientID, this, this, entry.persistentSession.get().cleanSession));
+            result.add(new PersistentSession(entry.clientID, entry.cleanSession));
         }
         return result;
     }
 
     @Override
-    public void updateCleanStatus(String clientID, boolean cleanSession) {
-        if (!sessions.containsKey(clientID)) {
-            LOG.error("Can't find the session for client <{}>", clientID);
-            return;
-        }
-
-        sessions.get(clientID).persistentSession.set(new PersistentSession(cleanSession));
-    }
-
-    @Override
-    public List<ClientTopicCouple> listAllSubscriptions() {
-        List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
+    public List<Subscription> listAllSubscriptions() {
+        List<Subscription> allSubscriptions = new ArrayList<>();
         for (Session entry : sessions.values()) {
-            for (Subscription sub : entry.subscriptions.values()) {
-                allSubscriptions.add(sub.asClientTopicCouple());
-            }
+            allSubscriptions.addAll(entry.subscriptions.values());
         }
         return allSubscriptions;
     }
 
     @Override
-    public Subscription getSubscription(ClientTopicCouple couple) {
-        String clientID = couple.clientID;
+    public Collection<Subscription> listClientSubscriptions(String clientID) {
+        final Session session = sessions.get(clientID);
+        if (session == null) {
+            throw new IllegalStateException("Asking for subscriptions of not persisted client: " + clientID);
+        }
+        return session.subscriptions.values();
+    }
+
+    @Override
+    public Subscription reload(Subscription subcription) {
+        String clientID = subcription.getClientId();
         if (!sessions.containsKey(clientID)) {
             LOG.error("Can't find the session for client <{}>", clientID);
             return null;
@@ -177,17 +167,9 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
         if (subscriptions == null || subscriptions.isEmpty()) {
             return null;
         }
-        return subscriptions.get(couple.topicFilter);
+        return subscriptions.get(subcription.getTopicFilter());
     }
 
-    @Override
-    public List<Subscription> getSubscriptions() {
-        List<Subscription> subscriptions = new ArrayList<>();
-        for (Session entry : sessions.values()) {
-            subscriptions.addAll(entry.subscriptions.values());
-        }
-        return subscriptions;
-    }
 
     @Override
     public StoredMessage inFlightAck(String clientID, int messageID) {
@@ -234,7 +216,10 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     @Override
     public void dropQueue(String clientID) {
-        sessions.get(clientID).queue.clear();
+        final Session session = sessions.get(clientID);
+        session.queue.clear();
+        session.outboundFlightMessages.clear();
+        session.inboundFlightMessages.clear();
     }
 
     @Override
@@ -251,7 +236,7 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public StoredMessage secondPhaseAcknowledged(String clientID, int messageID) {
+    public StoredMessage completeReleasedPublish(String clientID, int messageID) {
         LOG.info("Acknowledged message in second phase, clientID <{}> messageID {}", clientID, messageID);
         return getSession(clientID).secondPhaseStore.remove(messageID);
     }
@@ -264,35 +249,13 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
             return 0;
         }
 
-        return session.inboundFlightMessages.size() + session.secondPhaseStore.size()
-            + session.outboundFlightMessages.size();
+        return session.inboundFlightMessages.size() +
+//            countPubReleaseWaitingPubComplete(clientID) +
+            session.outboundFlightMessages.size();
     }
 
     @Override
-    public StoredMessage inboundInflight(String clientID, int messageID) {
-        return getSession(clientID).inboundFlightMessages.get(messageID);
-    }
-
-    @Override
-    public void markAsInboundInflight(String clientID, int messageID, StoredMessage msg) {
-        if (!sessions.containsKey(clientID))
-            LOG.error("Can't find the session for client <{}>", clientID);
-
-        sessions.get(clientID).inboundFlightMessages.put(messageID, msg);
-    }
-
-    @Override
-    public int getPendingPublishMessagesNo(String clientID) {
-        if (!sessions.containsKey(clientID)) {
-            LOG.error("Can't find the session for client <{}>", clientID);
-            return 0;
-        }
-
-        return sessions.get(clientID).queue.size();
-    }
-
-    @Override
-    public int getSecondPhaseAckPendingMessages(String clientID) {
+    public int countPubReleaseWaitingPubComplete(String clientID) {
         if (!sessions.containsKey(clientID)) {
             LOG.error("Can't find the session for client <{}>", clientID);
             return 0;
@@ -302,7 +265,7 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public void cleanSession(String clientID) {
+    public void removeTemporaryQoS2(String clientID) {
         LOG.debug("Session cleanup for client <{}>", clientID);
 
         Session session = sessions.get(clientID);
@@ -311,18 +274,8 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
             return;
         }
 
-        // remove also the messages stored of type QoS1/2
-        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", clientID);
-
+        LOG.info("Removing stored messages with QoS 2. ClientId={}", clientID);
         session.secondPhaseStore.clear();
-        session.outboundFlightMessages.clear();
-        session.inboundFlightMessages.clear();
-
-        LOG.info("Wiping existing subscriptions. ClientId={}", clientID);
-        wipeSubscriptions(clientID);
-
-        //remove also the enqueued messages
-        dropQueue(clientID);
 
         // TODO this missing last step breaks the junit test
         //sessions.remove(clientID);

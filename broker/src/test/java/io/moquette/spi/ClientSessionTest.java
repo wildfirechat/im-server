@@ -17,7 +17,11 @@
 package io.moquette.spi;
 
 import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.impl.subscriptions.*;
+import io.moquette.spi.impl.SessionsRepository;
+import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
+import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,38 +33,46 @@ import static org.junit.Assert.assertEquals;
 
 public class ClientSessionTest {
 
-    ClientSession session1;
-    ClientSession session2;
-    ISessionsStore sessionsStore;
-    ISubscriptionsDirectory store;
+    private ISubscriptionsDirectory subscriptionsDirectory;
+    private SessionsRepository sessionsRepository;
 
     @Before
     public void setUp() {
-        store = new CTrieSubscriptionDirectory();
+        subscriptionsDirectory = new CTrieSubscriptionDirectory();
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        this.sessionsStore = storageService.sessionsStore();
-        store.init(sessionsStore);
-
-        session1 = sessionsStore.createNewSession("SESSION_ID_1", true);
-        session2 = sessionsStore.createNewSession("SESSION_ID_2", true);
+        ISessionsStore sessionsStore = storageService.sessionsStore();
+        sessionsRepository = new SessionsRepository(sessionsStore);
+        subscriptionsDirectory.init(sessionsRepository);
     }
 
     @Test
-    public void overridingSubscriptions() {
+    public void overridingSubscriptionsForTransientSession() {
+        ClientSession sessionClean = sessionsRepository.createNewSession("SESSION_ID_1", true);
+        checkOverridingSubcription(sessionClean);
+    }
+
+    @Test
+    public void overridingSubscriptionsForPersistentSession() {
+        ClientSession sessionClean = sessionsRepository.createNewSession("SESSION_ID_1", false);
+        checkOverridingSubcription(sessionClean);
+    }
+
+    private void checkOverridingSubcription(ClientSession sessionClean) {
         // Subscribe on /topic with QOSType.MOST_ONE
-        Subscription oldSubscription = new Subscription(session1.clientID, new Topic("/topic"), AT_MOST_ONCE);
-        session1.subscribe(oldSubscription);
-        store.add(oldSubscription.asClientTopicCouple());
+        Subscription oldSubscription = new Subscription(sessionClean.clientID, new Topic("/topic"), AT_MOST_ONCE);
+        sessionClean.subscribe(oldSubscription);
+        subscriptionsDirectory.add(oldSubscription);
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overrindingSubscription = new Subscription(session1.clientID, new Topic("/topic"), EXACTLY_ONCE);
-        session1.subscribe(overrindingSubscription);
-        store.add(overrindingSubscription.asClientTopicCouple());
+        Subscription overrindingSubscription = new Subscription(sessionClean.clientID, new Topic("/topic"), EXACTLY_ONCE);
+        sessionClean.subscribe(overrindingSubscription);
+        subscriptionsDirectory.add(overrindingSubscription);
 
         // Verify
-        List<Subscription> subscriptions = store.matches(new Topic("/topic"));
-        assertEquals(1, subscriptions.size());
+        List<Subscription> subscriptions = subscriptionsDirectory.matches(new Topic("/topic"));
+        assertEquals("Only one subscription must match /topic", 1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
-        assertEquals(overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
+        assertEquals("Matching subscription MUST have higher QoS",
+            overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
     }
 }

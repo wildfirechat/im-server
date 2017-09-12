@@ -22,7 +22,10 @@ import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
-import io.moquette.spi.impl.subscriptions.*;
+import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
+import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
 import org.junit.Before;
@@ -62,10 +65,11 @@ public class ProtocolProcessor_CONNECT_Test {
         m_mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
 
         subscriptions = new CTrieSubscriptionDirectory();
-        subscriptions.init(m_sessionStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(m_sessionStore);
+        subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-                new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+                new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
     }
 
     @Test
@@ -155,7 +159,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProcessorProhibitingAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
     }
 
     @Test
@@ -203,7 +207,7 @@ public class ProtocolProcessor_CONNECT_Test {
         assertEqualsConnAck(CONNECTION_ACCEPTED, m_session.readOutbound());
 
         // Verify client session is clean false
-        ClientSession session = m_sessionStore.sessionForClient(FAKE_CLIENT_ID);
+        ClientSession session = m_processor.sessionsRepository.sessionForClient(FAKE_CLIENT_ID);
         assertFalse(session.isCleanSession());
 
         // Verify
@@ -320,7 +324,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProtocolProcessorWithZeroLengthClientIdAndAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR);
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
     }
 
     @Test

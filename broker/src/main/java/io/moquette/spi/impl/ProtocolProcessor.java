@@ -125,8 +125,8 @@ public class ProtocolProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
-    protected ConnectionDescriptorStore connectionDescriptors;
-    protected ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
+    private ConnectionDescriptorStore connectionDescriptors;
+    private ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private ISubscriptionsDirectory subscriptions;
     private ISubscriptionsStore subscriptionStore;
@@ -146,6 +146,7 @@ public class ProtocolProcessor {
     private Qos2PublishHandler qos2PublishHandler;
     private MessagesPublisher messagesPublisher;
     private InternalRepublisher internalRepublisher;
+    SessionsRepository sessionsRepository;
 
     // maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -155,23 +156,16 @@ public class ProtocolProcessor {
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
-                     BrokerInterceptor interceptor) {
+                     BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator,
-            interceptor, null);
+            interceptor, sessionsRepository);
     }
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-                     IAuthorizator authorizator, BrokerInterceptor interceptor) {
-        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId,
-            authorizator, interceptor, null);
-    }
-
-    public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
-                     IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-                     IAuthorizator authorizator, BrokerInterceptor interceptor, String serverPort) {
-        init(new ConnectionDescriptorStore(sessionsStore), subscriptions, storageService, sessionsStore, authenticator,
-            allowAnonymous, allowZeroByteClientId, authorizator, interceptor, serverPort);
+                     IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
+        init(new ConnectionDescriptorStore(sessionsRepository), subscriptions, storageService, sessionsStore, authenticator,
+            allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository);
     }
 
     /**
@@ -193,9 +187,9 @@ public class ProtocolProcessor {
      *            to notify events to an intercept handler
      */
     void init(ConnectionDescriptorStore connectionDescriptors, ISubscriptionsDirectory subscriptions,
-            IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
-            boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
-            BrokerInterceptor interceptor, String serverPort) {
+              IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
+              boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
+              BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
         LOG.info("Initializing MQTT protocol processor...");
         this.connectionDescriptors = connectionDescriptors;
         this.subscriptionInCourse = new ConcurrentHashMap<>();
@@ -212,10 +206,12 @@ public class ProtocolProcessor {
         m_sessionsStore = sessionsStore;
         subscriptionStore = sessionsStore.subscriptionStore();
 
+        this.sessionsRepository = sessionsRepository;
+
         LOG.info("Initializing messages publisher...");
         final PersistentQueueMessageSender messageSender = new PersistentQueueMessageSender(this.connectionDescriptors);
-        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, sessionsStore, messageSender,
-            subscriptions);
+        this.messagesPublisher = new MessagesPublisher(connectionDescriptors, messageSender,
+            subscriptions, this.sessionsRepository);
 
         LOG.info("Initializing QoS publish handlers...");
         this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
@@ -223,7 +219,7 @@ public class ProtocolProcessor {
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
                 this.connectionDescriptors, this.messagesPublisher);
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore, m_interceptor,
-                this.connectionDescriptors, m_sessionsStore, this.messagesPublisher);
+                this.connectionDescriptors, this.messagesPublisher, this.sessionsRepository);
 
         LOG.info("Initializing internal republisher...");
         this.internalRepublisher = new InternalRepublisher(messageSender);
@@ -244,8 +240,9 @@ public class ProtocolProcessor {
             return;
         }
 
+        final boolean cleanSession = msg.variableHeader().isCleanSession();
         if (clientId == null || clientId.length() == 0) {
-            if (!msg.variableHeader().isCleanSession() || !this.allowZeroByteClientId) {
+            if (!cleanSession || !this.allowZeroByteClientId) {
                 MqttConnAckMessage badId = connAck(CONNECTION_REFUSED_IDENTIFIER_REJECTED);
 
                 channel.writeAndFlush(badId);
@@ -265,8 +262,7 @@ public class ProtocolProcessor {
             return;
         }
 
-        ConnectionDescriptor descriptor = new ConnectionDescriptor(clientId, channel,
-            msg.variableHeader().isCleanSession());
+        ConnectionDescriptor descriptor = new ConnectionDescriptor(clientId, channel, cleanSession);
         ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
         if (existing != null) {
             LOG.info("Client ID is being used in an existing connection, force to be closed. CId={}", clientId);
@@ -285,11 +281,11 @@ public class ProtocolProcessor {
 
         m_interceptor.notifyClientConnected(msg);
 
-        final ClientSession clientSession = createOrLoadClientSession(descriptor, msg, clientId);
-        if (clientSession == null) {
+        if (!descriptor.assignState(SENDACK, SESSION_CREATED)) {
             channel.close();
             return;
         }
+        final ClientSession clientSession = this.sessionsRepository.createOrLoadClientSession(clientId, cleanSession);
 
         if (!republish(descriptor, msg, clientSession)) {
             channel.close();
@@ -345,27 +341,30 @@ public class ProtocolProcessor {
     }
 
     private boolean sendAck(ConnectionDescriptor descriptor, MqttConnectMessage msg, final String clientId) {
-        LOG.info("Sending connect ACK. CId={}", clientId);
+        LOG.info("Sending CONNACK. CId={}", clientId);
         final boolean success = descriptor.assignState(DISCONNECTED, SENDACK);
         if (!success) {
             return false;
         }
 
         MqttConnAckMessage okResp;
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
+        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientId);
         boolean isSessionAlreadyStored = clientSession != null;
-        if (!msg.variableHeader().isCleanSession() && isSessionAlreadyStored) {
+        final boolean msgCleanSessionFlag = msg.variableHeader().isCleanSession();
+        if (!msgCleanSessionFlag && isSessionAlreadyStored) {
             okResp = connAckWithSessionPresent(CONNECTION_ACCEPTED);
         } else {
             okResp = connAck(CONNECTION_ACCEPTED);
         }
 
-        if (isSessionAlreadyStored) {
-            LOG.info("Cleaning session. CId={}", clientId);
-            clientSession.cleanSession(msg.variableHeader().isCleanSession());
-        }
         descriptor.writeAndFlush(okResp);
-        LOG.info("The connect ACK has been sent. CId={}", clientId);
+        LOG.info("CONNACK has been sent. CId={}", clientId);
+
+        if (isSessionAlreadyStored && msgCleanSessionFlag) {
+            for (Subscription existingSub : clientSession.getSubscriptions()) {
+                this.subscriptions.removeSubscription(existingSub.getTopicFilter(), clientId);
+            }
+        }
         return true;
     }
 
@@ -373,15 +372,12 @@ public class ProtocolProcessor {
         int keepAlive = msg.variableHeader().keepAliveTimeSeconds();
         LOG.info("Configuring connection. CId={}", clientId);
         NettyUtils.keepAlive(channel, keepAlive);
-        // session.attr(NettyUtils.ATTR_KEY_CLEANSESSION).set(msg.variableHeader().isCleanSession());
         NettyUtils.cleanSession(channel, msg.variableHeader().isCleanSession());
-        // used to track the client in the subscription and publishing phases.
-        // session.attr(NettyUtils.ATTR_KEY_CLIENTID).set(msg.getClientID());
         NettyUtils.clientID(channel, clientId);
         int idleTime = Math.round(keepAlive * 1.5f);
         setIdleTime(channel.pipeline(), idleTime);
 
-        LOG.debug("The connection has been configured CId={}, keepAlive={}, cleanSession={}, idleTime={}",
+        LOG.debug("The connection has been configured CId={}, keepAlive={}, removeTemporaryQoS2={}, idleTime={}",
                 clientId, keepAlive, msg.variableHeader().isCleanSession(), idleTime);
     }
 
@@ -401,25 +397,6 @@ public class ProtocolProcessor {
         }
     }
 
-    private ClientSession createOrLoadClientSession(ConnectionDescriptor descriptor, MqttConnectMessage msg,
-            String clientId) {
-        final boolean success = descriptor.assignState(SENDACK, SESSION_CREATED);
-        if (!success) {
-            return null;
-        }
-
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
-        boolean isSessionAlreadyStored = clientSession != null;
-        if (!isSessionAlreadyStored) {
-            clientSession = m_sessionsStore.createNewSession(clientId, msg.variableHeader().isCleanSession());
-        }
-        if (msg.variableHeader().isCleanSession()) {
-            LOG.info("Cleaning session. CId={}", clientId);
-            clientSession.cleanSession();
-        }
-        return clientSession;
-    }
-
     private boolean republish(ConnectionDescriptor descriptor, MqttConnectMessage msg, ClientSession clientSession) {
         final boolean success = descriptor.assignState(SESSION_CREATED, MESSAGES_REPUBLISHED);
         if (!success) {
@@ -428,7 +405,8 @@ public class ProtocolProcessor {
 
         if (!msg.variableHeader().isCleanSession()) {
             // force the republish of stored QoS1 and QoS2
-            republishStoredInSession(clientSession);
+            LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
+            this.internalRepublisher.publishStored(clientSession);
         }
         int flushIntervalMs = 500/* (keepAlive * 1000) / 2 */;
         descriptor.setupAutoFlusher(flushIntervalMs);
@@ -447,27 +425,13 @@ public class ProtocolProcessor {
         pipeline.addFirst("idleStateHandler", new IdleStateHandler(idleTime, 0, 0));
     }
 
-    /**
-     * Republish QoS1 and QoS2 messages stored into the session for the clientID.
-     */
-    private void republishStoredInSession(ClientSession clientSession) {
-        LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
-        Queue<StoredMessage> publishedEvents = clientSession.queue();
-        if (publishedEvents.isEmpty()) {
-            LOG.info("There are no stored publish events to CId={}", clientSession.clientID);
-            return;
-        }
-
-        this.internalRepublisher.publishStored(clientSession, publishedEvents);
-    }
-
     public void processPubAck(Channel channel, MqttPubAckMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.variableHeader().messageId();
         String username = NettyUtils.userName(channel);
         LOG.trace("retrieving inflight for messageID <{}>", messageID);
 
-        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession targetSession = this.sessionsRepository.sessionForClient(clientID);
         StoredMessage inflightMsg = targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
@@ -531,16 +495,12 @@ public class ProtocolProcessor {
         final Topic topic = new Topic(msg.variableHeader().topicName());
         LOG.info("Sending PUBLISH message. Topic={}, qos={}", topic, qos);
 
-        MessageGUID guid = null;
         IMessagesStore.StoredMessage toStoreMsg = asStoredMessage(msg);
         if (clientId == null || clientId.isEmpty()) {
             toStoreMsg.setClientID("BROKER_SELF");
         } else {
             toStoreMsg.setClientID(clientId);
         }
-//        if (qos == EXACTLY_ONCE) { // QoS2
-//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-//        }
         this.messagesPublisher.publish2Subscribers(toStoreMsg, topic);
 
         if (!msg.fixedHeader().isRetain()) {
@@ -551,10 +511,6 @@ public class ProtocolProcessor {
             m_messagesStore.cleanRetained(topic);
             return;
         }
-//        if (guid == null) {
-//            // before wasn't stored
-//            guid = m_messagesStore.storePublishForFuture(toStoreMsg);
-//        }
         m_messagesStore.storeRetained(topic, toStoreMsg);
     }
 
@@ -598,9 +554,10 @@ public class ProtocolProcessor {
 
     public void processPubRec(Channel channel, MqttMessage msg) {
         String clientID = NettyUtils.clientID(channel);
-        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        // remove from the inflight and move to the QoS2 second phase queue
         int messageID = messageId(msg);
+        LOG.debug("Processing PUBREC message. CId={}, messageId={}", clientID, messageID);
+        ClientSession targetSession = this.sessionsRepository.sessionForClient(clientID);
+        // remove from the inflight and move to the QoS2 second phase queue
         StoredMessage ackedMsg = targetSession.inFlightAcknowledged(messageID);
         targetSession.moveInFlightToSecondPhaseAckWaiting(messageID, ackedMsg);
         // once received a PUBREC reply with a PUBREL(messageID)
@@ -616,12 +573,13 @@ public class ProtocolProcessor {
         int messageID = messageId(msg);
         LOG.debug("Processing PUBCOMP message. CId={}, messageId={}", clientID, messageID);
         // once received the PUBCOMP then remove the message from the temp memory
-        ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
-        StoredMessage inflightMsg = targetSession.secondPhaseAcknowledged(messageID);
+        ClientSession targetSession = this.sessionsRepository.sessionForClient(clientID);
+        StoredMessage inflightMsg = targetSession.completeReleasedPublish(messageID);
         String username = NettyUtils.userName(channel);
         String topic = inflightMsg.getTopic();
-        m_interceptor
-                .notifyMessageAcknowledged(new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID));
+        final InterceptAcknowledgedMessage interceptAckMsg = new InterceptAcknowledgedMessage(inflightMsg, topic,
+            username, messageID);
+        m_interceptor.notifyMessageAcknowledged(interceptAckMsg);
     }
 
     public void processDisconnect(Channel channel) throws InterruptedException {
@@ -671,6 +629,7 @@ public class ProtocolProcessor {
             LOG.warn("Another descriptor has been inserted. CId={}", clientID);
             return;
         }
+        this.sessionsRepository.disconnect(clientID);
 
         LOG.info("DISCONNECT message has been processed. CId={}", clientID);
     }
@@ -684,7 +643,7 @@ public class ProtocolProcessor {
         if (descriptor.cleanSession) {
             LOG.info("Removing saved subscriptions. CId={}", descriptor.clientID);
             subscriptionStore.wipeSubscriptions(clientID);
-            LOG.info("The saved subscriptions have been removed. CId={}", descriptor.clientID);
+            LOG.info("Saved subscriptions have been removed. CId={}", descriptor.clientID);
         }
         return true;
     }
@@ -695,10 +654,12 @@ public class ProtocolProcessor {
             return false;
         }
 
-        if (descriptor.cleanSession) {
-            LOG.debug("Removing messages of session. CId={}", descriptor.clientID);
-            this.m_sessionsStore.dropQueue(clientID);
-            LOG.debug("The messages of the session have been removed. CId={}", descriptor.clientID);
+        final ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
+        if (clientSession.isCleanSession()) {
+            clientSession.dropQueue();
+//            LOG.debug("Removing messages of session. CId={}", descriptor.clientID);
+//            this.m_sessionsStore.dropQueue(clientID);
+//            LOG.debug("Messages of the session have been removed. CId={}", descriptor.clientID);
         }
         return true;
     }
@@ -747,7 +708,7 @@ public class ProtocolProcessor {
 
         LOG.info("Processing UNSUBSCRIBE message. CId={}, topics={}", clientID, topics);
 
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
         for (String t : topics) {
             Topic topic = new Topic(t);
             boolean validTopic = topic.isValid();
@@ -801,7 +762,7 @@ public class ProtocolProcessor {
 
         // save session, persist subscriptions from session
         for (Subscription subscription : newSubscriptions) {
-            subscriptions.add(subscription.asClientTopicCouple());
+            subscriptions.add(subscription);
         }
 
         LOG.info("Sending SUBACK response CId={}, messageId={}", clientID, messageID);
@@ -819,7 +780,7 @@ public class ProtocolProcessor {
     }
 
     private List<Subscription> doStoreSubscription(List<MqttTopicSubscription> ackTopics, String clientID) {
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
 
         List<Subscription> newSubscriptions = new ArrayList<>();
         for (MqttTopicSubscription req : ackTopics) {
@@ -827,10 +788,8 @@ public class ProtocolProcessor {
             if (req.qualityOfService() == FAILURE) {
                 continue;
             }
-            Subscription newSubscription = new Subscription(
-                    clientID,
-                    new Topic(req.topicName()),
-                    req.qualityOfService());
+            Subscription newSubscription = new Subscription(clientID, new Topic(req.topicName()),
+                                                            req.qualityOfService());
 
             clientSession.subscribe(newSubscription);
             newSubscriptions.add(newSubscription);
@@ -848,7 +807,7 @@ public class ProtocolProcessor {
      * @return the list of verified topics for the given subscribe message.
      */
     private List<MqttTopicSubscription> doVerify(String clientID, String username, MqttSubscribeMessage msg) {
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
         List<MqttTopicSubscription> ackTopics = new ArrayList<>();
 
         final int messageId = messageId(msg);
@@ -903,7 +862,7 @@ public class ProtocolProcessor {
             LOG.info("Publishing retained messages CId={}, topics={}, messagesNo={}",
                 newSubscription.getClientId(), newSubscription.getTopicFilter(), messages.size());
         }
-        ClientSession targetSession = m_sessionsStore.sessionForClient(newSubscription.getClientId());
+        ClientSession targetSession = this.sessionsRepository.sessionForClient(newSubscription.getClientId());
         this.internalRepublisher.publishRetained(targetSession, messages);
 
         // notify the Observables
@@ -912,16 +871,16 @@ public class ProtocolProcessor {
 
     public void notifyChannelWritable(Channel channel) {
         String clientID = NettyUtils.clientID(channel);
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
+        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
         boolean emptyQueue = false;
         while (channel.isWritable() && !emptyQueue) {
-            StoredMessage msg = clientSession.queue().poll();
+            EnqueuedMessage msg = clientSession.poll();
             if (msg == null) {
                 emptyQueue = true;
             } else {
                 // recreate a publish from stored publish in queue
-                MqttPublishMessage pubMsg = createPublishForQos( msg.getTopic(), msg.getQos(), msg.getPayload(),
-                        msg.isRetained(), 0);
+                MqttPublishMessage pubMsg = createPublishForQos(msg.msg.getTopic(), msg.msg.getQos(), msg.msg.getPayload(),
+                        msg.msg.isRetained(), msg.messageId);
                 channel.write(pubMsg);
             }
         }

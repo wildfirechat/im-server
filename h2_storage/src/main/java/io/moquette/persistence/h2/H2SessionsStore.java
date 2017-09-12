@@ -16,7 +16,6 @@
 package io.moquette.persistence.h2;
 
 import io.moquette.persistence.PersistentSession;
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
@@ -45,7 +44,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     // maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, ConcurrentMap<Integer, StoredMessage>> secondPhaseStore;
 
-    public H2SessionsStore(MVStore mvStore) {
+    H2SessionsStore(MVStore mvStore) {
         this.mvStore = mvStore;
     }
 
@@ -63,12 +62,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         return this;
     }
 
-    @Override
-    public void updateCleanStatus(String clientID, boolean cleanSession) {
-        LOG.info("Updating cleanSession flag. CId={}, cleanSession={}", clientID, cleanSession);
-        this.sessions.put(clientID, new PersistentSession(cleanSession));
-    }
-
+    //TODO move in the subscription directory
     @Override
     public void addNewSubscription(Subscription newSubscription) {
         LOG.info("Adding new subscription CId={}, topics={}", newSubscription.getClientId(),
@@ -83,6 +77,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         }
     }
 
+    //TODO move in the subscription directory
     @Override
     public void removeSubscription(Topic topicFilter, String clientID) {
         LOG.info("Removing subscription. CId={}, topics={}", clientID, topicFilter);
@@ -111,23 +106,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public List<ClientTopicCouple> listAllSubscriptions() {
-        LOG.info("Retrieving existing subscriptions");
-        final List<ClientTopicCouple> allSubscriptions = new ArrayList<>();
-        for (String clientID : this.sessions.keySet()) {
-            ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
-            for (Topic topicFilter : clientSubscriptions.keySet()) {
-                allSubscriptions.add(new ClientTopicCouple(clientID, topicFilter));
-            }
-        }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("The existing subscriptions have been retrieved. Result={}", allSubscriptions);
-        }
-        return allSubscriptions;
-    }
-
-    @Override
-    public List<Subscription> getSubscriptions() {
+    public List<Subscription> listAllSubscriptions() {
         LOG.debug("Retrieving existing subscriptions...");
         List<Subscription> subscriptions = new ArrayList<>();
         for (String clientID : this.sessions.keySet()) {
@@ -139,47 +118,51 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public Subscription getSubscription(ClientTopicCouple couple) {
-        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + couple.clientID);
-        LOG.debug("Retrieving subscriptions CId={}, subscriptions={}", couple.clientID, clientSubscriptions);
-        return clientSubscriptions.get(couple.topicFilter);
+    public Collection<Subscription> listClientSubscriptions(String clientID) {
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
+        if (clientSubscriptions == null) {
+            throw new IllegalStateException("Asking for subscriptions of not persisted client: " + clientID);
+        }
+        return clientSubscriptions.values();
+    }
+
+    @Override
+    public Subscription reload(Subscription subcription) {
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + subcription.getClientId());
+        LOG.debug("Retrieving subscriptions CId={}, subscriptions={}", subcription.getClientId(), clientSubscriptions);
+        return clientSubscriptions.get(subcription.getTopicFilter());
     }
 
     @Override
     public boolean contains(String clientID) {
-        return this.mvStore.hasMap("subscriptions_" + clientID);
+        return this.sessions.containsKey(clientID);
     }
 
     @Override
-    public ClientSession createNewSession(String clientID, boolean cleanSession) {
-        if (sessions.containsKey(clientID)) {
-            LOG.error("Unable to create a new session: the client ID is already in use. CId={}, cleanSession={}",
-                clientID, cleanSession);
-            throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
-        }
-        LOG.debug("Creating new session. CId={}, cleanSession={}", clientID, cleanSession);
-        sessions.putIfAbsent(clientID, new PersistentSession(cleanSession));
-        return new ClientSession(clientID, this, this, cleanSession);
+    public void createNewDurableSession(String clientID) {
+        this.sessions.putIfAbsent(clientID, new PersistentSession(clientID, false));
     }
 
     @Override
-    public ClientSession sessionForClient(String clientID) {
-        LOG.debug("Retrieving session. CId={}", clientID);
-        if (!this.sessions.containsKey(clientID)) {
-            LOG.warn("Session does not exist. CId={}", clientID);
-            return null;
-        }
-        PersistentSession storedSession = this.sessions.get(clientID);
-        return new ClientSession(clientID, this, this, storedSession.cleanSession);
+    public void removeDurableSession(String clientId) {
+        this.sessions.remove(clientId);
+        this.wipeSubscriptions(clientId);
     }
 
     @Override
-    public Collection<ClientSession> getAllSessions() {
-        Collection<ClientSession> result = new ArrayList<>();
-        for (Map.Entry<String, PersistentSession> entry : this.sessions.entrySet()) {
-            result.add(new ClientSession(entry.getKey(), this, this, entry.getValue().cleanSession));
-        }
-        return result;
+    public void updateCleanStatus(String clientId, boolean newCleanStatus) {
+        PersistentSession updatedSession = new PersistentSession(clientId, newCleanStatus);
+        this.sessions.put(clientId, updatedSession);
+    }
+
+    @Override
+    public PersistentSession loadSessionByKey(String clientID) {
+        return this.sessions.get(clientID);
+    }
+
+    @Override
+    public Collection<PersistentSession> listAllSessions() {
+        return this.sessions.values();
     }
 
     @Override
@@ -238,6 +221,8 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     @Override
     public void dropQueue(String clientID) {
         H2PersistentQueue.dropQueue(this.mvStore, clientID);
+        this.outboundFlightMessages.remove(clientID);
+        this.inFlightIds.remove(clientID);
     }
 
     @Override
@@ -255,7 +240,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public StoredMessage secondPhaseAcknowledged(String clientID, int messageID) {
+    public StoredMessage completeReleasedPublish(String clientID, int messageID) {
         LOG.debug("Processing second phase ACK CId={}, messageId={}", clientID, messageID);
         final ConcurrentMap<Integer, StoredMessage> m = this.secondPhaseStore.get(clientID);
         if (m == null) {
@@ -278,10 +263,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
             totalInflight += inflightPerClient.size();
         }
 
-        Map<Integer, StoredMessage> secondPhaseInFlight = this.secondPhaseStore.get(clientID);
-        if (secondPhaseInFlight != null) {
-            totalInflight += secondPhaseInFlight.size();
-        }
+//        totalInflight += countPubReleaseWaitingPubComplete(clientID);
 
         Map<Integer, StoredMessage> outboundPerClient = outboundFlightMessages.get(clientID);
         if (outboundPerClient != null) {
@@ -296,44 +278,16 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public StoredMessage inboundInflight(String clientID, int messageID) {
-        LOG.debug("Mapping inbound message ID to GUID CId={}, messageId={}", clientID, messageID);
-        ConcurrentMap<Integer, StoredMessage> messageIdToGuid = this.mvStore.openMap(inboundStoreForClient(clientID));
-        return messageIdToGuid.get(messageID);
-    }
-
-    @Override
-    public void markAsInboundInflight(String clientID, int messageID, StoredMessage msg) {
-        ConcurrentMap<Integer, StoredMessage> messageIdToGuid = this.mvStore.openMap(inboundStoreForClient(clientID));
-        messageIdToGuid.put(messageID, msg);
-    }
-
-    @Override
-    public int getPendingPublishMessagesNo(String clientID) {
-        return queue(clientID).size();
-    }
-
-    @Override
-    public int getSecondPhaseAckPendingMessages(String clientID) {
+    public int countPubReleaseWaitingPubComplete(String clientID) {
         if (!this.secondPhaseStore.containsKey(clientID))
             return 0;
         return this.secondPhaseStore.get(clientID).size();
     }
 
     @Override
-    public void cleanSession(String clientID) {
-        // remove also the messages stored of type QoS1/2
-        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", clientID);
-
+    public void removeTemporaryQoS2(String clientID) {
+        LOG.info("Removing stored messages with QoS 2. ClientId={}", clientID);
         this.secondPhaseStore.remove(clientID);
-        this.outboundFlightMessages.remove(clientID);
-        this.inFlightIds.remove(clientID);
-
-        LOG.info("Wiping existing subscriptions. ClientId={}", clientID);
-        wipeSubscriptions(clientID);
-
-        //remove also the enqueued messages
-        dropQueue(clientID);
     }
 
 }

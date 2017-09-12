@@ -177,13 +177,13 @@ public class ProtocolProcessor_InternalPublish_Test extends AbstractProtocolProc
     public void testClientSubscribeWithoutCleanSession() throws Exception {
         subscribe("foo", AT_MOST_ONCE);
         disconnect();
-        assertEquals(1, m_processor.getSessionsStore().subscriptionStore().getSubscriptions().size());
+        assertEquals(1, m_sessionStore.subscriptionStore().listAllSubscriptions().size());
 
         m_channel = new EmbeddedChannel();
         NettyUtils.clientID(m_channel, FAKE_CLIENT_ID);
 
         connectNoCleanSession();
-        assertEquals(1, m_processor.getSessionsStore().subscriptionStore().getSubscriptions().size());
+        assertEquals(1, m_sessionStore.subscriptionStore().listAllSubscriptions().size());
         internalPublishTo("foo", MqttQoS.AT_MOST_ONCE, false);
         verifyPublishIsReceived();
     }

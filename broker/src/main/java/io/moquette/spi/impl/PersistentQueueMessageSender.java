@@ -51,11 +51,11 @@ class PersistentQueueMessageSender {
         if (!messageDelivered) {
             if (qos != AT_MOST_ONCE && !clientsession.isCleanSession()) {
                 LOG.warn("PUBLISH message could not be delivered. It will be stored. MessageId={}, CId={}, topic={}, "
-                    + "qos={}, cleanSession={}", messageId, clientId, topicName, qos, false);
+                    + "qos={}, removeTemporaryQoS2={}", messageId, clientId, topicName, qos, false);
                 clientsession.enqueue(asStoredMessage(pubMessage));
             } else {
                 LOG.warn("PUBLISH message could not be delivered. It will be discarded. MessageId={}, CId={}, topic={}, " +
-                    "qos={}, cleanSession={}", messageId, clientId, topicName, qos, true);
+                    "qos={}, removeTemporaryQoS2={}", messageId, clientId, topicName, qos, true);
             }
         }
     }

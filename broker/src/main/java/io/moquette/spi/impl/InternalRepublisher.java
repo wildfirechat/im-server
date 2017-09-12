@@ -17,6 +17,7 @@
 package io.moquette.spi.impl;
 
 import io.moquette.spi.ClientSession;
+import io.moquette.spi.EnqueuedMessage;
 import io.moquette.spi.IMessagesStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
@@ -24,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Queue;
 
 class InternalRepublisher {
 
@@ -53,17 +53,22 @@ class InternalRepublisher {
         }
     }
 
-    void publishStored(ClientSession clientSession, Queue<IMessagesStore.StoredMessage> publishedEvents) {
-        IMessagesStore.StoredMessage pubEvt;
-        while ((pubEvt = publishedEvents.poll()) != null) {
+    void publishStored(ClientSession clientSession) {
+        if (clientSession.isEmptyQueue()) {
+            LOG.info("There are no stored publish events to CId={}", clientSession.clientID);
+            return;
+        }
+
+        EnqueuedMessage pubEvt;
+        while ((pubEvt = clientSession.poll()) != null) {
             // put in flight zone
             LOG.debug("Adding message ot inflight zone. ClientId={}, guid={}, topic={}", clientSession.clientID,
-                pubEvt.getGuid(), pubEvt.getTopic());
-            int messageId = clientSession.inFlightAckWaiting(pubEvt);
-            MqttPublishMessage publishMsg = notRetainedPublish(pubEvt);
+                pubEvt.msg.getGuid(), pubEvt.msg.getTopic());
+
+            MqttPublishMessage publishMsg = notRetainedPublish(pubEvt.msg);
             // set the PacketIdentifier only for QoS > 0
             if (publishMsg.fixedHeader().qosLevel() != MqttQoS.AT_MOST_ONCE) {
-                publishMsg = notRetainedPublish(pubEvt, messageId);
+                publishMsg = notRetainedPublish(pubEvt.msg, pubEvt.messageId);
             }
             this.messageSender.sendPublish(clientSession, publishMsg);
         }

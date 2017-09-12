@@ -2,7 +2,7 @@ package io.moquette.persistence;
 
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
+import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
@@ -25,10 +25,11 @@ public abstract class MessageStoreTCK {
     public static final String TEST_CLIENT = "TestClient";
     protected ISessionsStore sessionsStore;
     protected IMessagesStore messagesStore;
+    protected SessionsRepository sessionsRepository;
 
     @Test
     public void testDropMessagesInSessionDoesntCleanAnyRetainedStoredMessages() {
-        final ClientSession session = sessionsStore.createNewSession(TEST_CLIENT, true);
+        final ClientSession session = sessionsRepository.createNewSession(TEST_CLIENT, true);
         StoredMessage publishToStore = new StoredMessage("Hello".getBytes(), EXACTLY_ONCE, "/topic");
         publishToStore.setClientID(TEST_CLIENT);
         publishToStore.setRetained(true);
@@ -72,7 +73,7 @@ public abstract class MessageStoreTCK {
 
     @Test
     public void givenSubscriptionAlreadyStoredIsOverwrittenByAnotherWithSameTopic() {
-        ClientSession session1 = sessionsStore.createNewSession("SESSION_ID_1", true);
+        ClientSession session1 = sessionsRepository.createNewSession("SESSION_ID_1", false);
 
         // Subscribe on /topic with QOSType.MOST_ONE
         Subscription oldSubscription = new Subscription(session1.clientID, new Topic("/topic"), AT_MOST_ONCE);
@@ -84,9 +85,9 @@ public abstract class MessageStoreTCK {
 
         // Verify
         final ISubscriptionsStore subscriptionsStore = sessionsStore.subscriptionStore();
-        List<ClientTopicCouple> subscriptions = subscriptionsStore.listAllSubscriptions();
+        List<Subscription> subscriptions = subscriptionsStore.listAllSubscriptions();
         assertEquals(1, subscriptions.size());
-        Subscription sub = subscriptionsStore.getSubscription(subscriptions.get(0));
+        Subscription sub = subscriptions.get(0);
         assertEquals(overridingSubscription.getRequestedQos(), sub.getRequestedQos());
     }
 }

@@ -22,9 +22,9 @@ import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
+import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.buffer.Unpooled;
@@ -33,7 +33,10 @@ import io.netty.handler.codec.mqtt.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
@@ -69,7 +72,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -83,9 +86,10 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        subs.init(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
 
         connect_v3_1();
 
@@ -105,7 +109,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
                 AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -119,9 +123,10 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        subs.init(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
 
         EmbeddedChannel firstReceiverChannel = new EmbeddedChannel();
         MqttConnectMessage connectMessage = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1)
@@ -174,7 +179,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
             .thenReturn(false);
 
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, mockAuthorizator,
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
 
         connect();
 
@@ -229,7 +234,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
                 new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
-        ISubscriptionsDirectory subs = new SubscriptionsDirectory() {
+        ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
@@ -241,11 +246,12 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
             }
         };
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        subs.init(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        subs.init(sessionsRepository);
 
         // simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
         connect_v3_1_asClient(FAKE_PUBLISHER_ID);
         publishToAs(FAKE_PUBLISHER_ID, FAKE_TOPIC, AT_MOST_ONCE, true);
         NettyUtils.cleanSession(m_channel, false);
@@ -259,7 +265,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     @Test
     public void testRepublishAndConsumePersistedMessages_onReconnect() {
-        ISubscriptionsDirectory subs = mock(SubscriptionsDirectory.class);
+        ISubscriptionsDirectory subs = mock(ISubscriptionsDirectory.class);
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
@@ -269,27 +275,26 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         m_messagesStore.storeRetained(new Topic("/topic"), retainedMessage);
 
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
 
         connect_v3_1_asClient(FAKE_PUBLISHER_ID);
 
         // Verify no messages are still stored
-        Queue<StoredMessage> messages = m_sessionStore.queue(FAKE_PUBLISHER_ID);
-        assertTrue(messages.isEmpty());
+        assertTrue(this.sessionsRepository.sessionForClient(FAKE_PUBLISHER_ID).isEmptyQueue());
     }
 
     @Test
     public void publishNoPublishToInactiveSession() {
         // create an inactive session for Subscriber
-        m_sessionStore.createNewSession("Subscriber", false);
-
-        ISubscriptionsDirectory mockedSubscriptions = mock(SubscriptionsDirectory.class);
+        ISubscriptionsDirectory mockedSubscriptions = mock(ISubscriptionsDirectory.class);
         Subscription inactiveSub = new Subscription("Subscriber", new Topic("/topic"), MqttQoS.AT_LEAST_ONCE);
         List<Subscription> inactiveSubscriptions = Collections.singletonList(inactiveSub);
         when(mockedSubscriptions.matches(eq(new Topic("/topic")))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
         m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+
+        m_processor.sessionsRepository.createNewSession("Subscriber", false);
 
         // Exercise
         connectAsClient("Publisher");

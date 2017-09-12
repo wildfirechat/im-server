@@ -30,7 +30,6 @@ import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.SubscriptionsDirectory;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
@@ -98,6 +97,7 @@ public class ProtocolProcessorBootstrapper {
         store.initStore();
         messagesStore = store.messagesStore();
         m_sessionsStore = store.sessionsStore();
+        SessionsRepository sessionsRepository = new SessionsRepository(this.m_sessionsStore);
         this.subscriptionsStore = m_sessionsStore.subscriptionStore();
         storeShutdown = new Runnable() {
 
@@ -121,7 +121,7 @@ public class ProtocolProcessorBootstrapper {
 
         LOG.info("Initializing subscriptions store...");
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
-        subscriptions.init(m_sessionsStore);
+        subscriptions.init(sessionsRepository);
 
         LOG.info("Configuring MQTT authenticator...");
         String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
@@ -164,7 +164,7 @@ public class ProtocolProcessorBootstrapper {
         }
 
         LOG.info("Initializing connection descriptor store...");
-        connectionDescriptors = new ConnectionDescriptorStore(m_sessionsStore);
+        connectionDescriptors = new ConnectionDescriptorStore(sessionsRepository);
 
         LOG.info("Initializing MQTT protocol processor...");
         boolean allowAnonymous = Boolean
@@ -173,7 +173,7 @@ public class ProtocolProcessorBootstrapper {
                 .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
         m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator,
                 allowAnonymous, allowZeroByteClientId, authorizator, interceptor,
-                props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
+            sessionsRepository);
         return m_processor;
     }
 
@@ -226,8 +226,7 @@ public class ProtocolProcessorBootstrapper {
             return null;
         } catch (NoSuchMethodException | InvocationTargetException e) {
             try {
-                LOG.info("Invoking default constructor. ClassName={}, interfaceName={}",
-                        className, intrface.getName());
+                LOG.info("Invoking default constructor. ClassName={}, interfaceName={}", className, intrface.getName());
                 // fallback to default constructor
                 instance = this.getClass().getClassLoader()
                     .loadClass(className)
@@ -248,7 +247,7 @@ public class ProtocolProcessorBootstrapper {
     }
 
     public List<Subscription> getSubscriptions() {
-        return this.subscriptionsStore.getSubscriptions();
+        return this.subscriptionsStore.listAllSubscriptions();
     }
 
     public void shutdown() {

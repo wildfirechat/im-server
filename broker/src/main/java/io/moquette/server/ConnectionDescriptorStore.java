@@ -23,12 +23,13 @@ import io.moquette.connections.MqttSubscription;
 import io.moquette.server.netty.metrics.BytesMetrics;
 import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.ISessionsStore;
+import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,11 +40,11 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionDescriptorStore.class);
 
     private final ConcurrentMap<String, ConnectionDescriptor> connectionDescriptors;
-    private final ISessionsStore sessionsStore;
+    private final SessionsRepository sessionsRepository;
 
-    public ConnectionDescriptorStore(ISessionsStore sessionsStore) {
+    public ConnectionDescriptorStore(SessionsRepository sessionsRepository) {
         this.connectionDescriptors = new ConcurrentHashMap<>();
-        this.sessionsStore = sessionsStore;
+        this.sessionsRepository = sessionsRepository;
     }
 
     public boolean sendMessage(MqttMessage message, Integer messageID, String clientID) {
@@ -125,21 +126,10 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
     }
 
     @Override
-    public MqttSession getSessionStatus(String clientID) {
-        LOG.info("Retrieving status of session. CId=<{}>", clientID);
-        ClientSession session = sessionsStore.sessionForClient(clientID);
-        if (session == null) {
-            LOG.error("MQTT client ID doesn't have an associated session. CId=<{}>", clientID);
-            return null;
-        }
-        return buildMqttSession(session);
-    }
-
-    @Override
     public Collection<MqttSession> getSessions() {
         LOG.info("Retrieving status of all sessions.");
         Collection<MqttSession> result = new ArrayList<>();
-        for (ClientSession session : sessionsStore.getAllSessions()) {
+        for (ClientSession session : this.sessionsRepository.getAllSessions()) {
             result.add(buildMqttSession(session));
         }
         return result;
@@ -165,7 +155,7 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
             result.setConnectionEstablished(false);
         }
         result.setPendingPublishMessagesNo(session.getPendingPublishMessagesNo());
-        result.setSecondPhaseAckPendingMessages(session.getSecondPhaseAckPendingMessages());
+        result.setSecondPhaseAckPendingMessages(session.countPubReleaseWaitingPubComplete());
         result.setInflightMessages(session.getInflightMessagesNo());
         return result;
     }

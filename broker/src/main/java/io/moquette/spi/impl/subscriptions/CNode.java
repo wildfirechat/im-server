@@ -15,15 +15,16 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ISubscriptionsStore.ClientTopicCouple;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 class CNode {
 
     Token token;
     private List<INode> children;
-    Set<ClientTopicCouple> subscriptions = new HashSet<>();
+    Set<Subscription> subscriptions = new HashSet<>();
 
     //private int subtreeSubscriptions;
 
@@ -33,7 +34,7 @@ class CNode {
     }
 
     //Copy constructor
-    private CNode(Token token, List<INode> children, Set<ClientTopicCouple> subscriptions) {
+    private CNode(Token token, List<INode> children, Set<Subscription> subscriptions) {
         this.token = token;
         this.children = children;
         this.subscriptions = subscriptions;
@@ -64,10 +65,7 @@ class CNode {
     }
 
     private boolean equals(Token token) {
-        if (this.token == null) {
-            return false;
-        }
-        return this.token.equals(token);
+        return this.token != null && this.token.equals(token);
     }
 
     CNode copy() {
@@ -79,7 +77,7 @@ class CNode {
     }
 
     CNode addSubscription(String clientId, Topic topic) {
-        this.subscriptions.add(new ClientTopicCouple(clientId, topic));
+        this.subscriptions.add(new Subscription(clientId, topic));
         return this;
     }
 
@@ -87,8 +85,8 @@ class CNode {
      * @return true iff the subscriptions contained in this node are owned by clientId
      * */
     boolean containsOnly(String clientId) {
-        for (ClientTopicCouple sub : this.subscriptions) {
-            if (!sub.clientID.equals(clientId)) {
+        for (Subscription sub : this.subscriptions) {
+            if (!sub.clientId.equals(clientId)) {
                 return false;
             }
         }
@@ -97,8 +95,8 @@ class CNode {
 
     //TODO this is equivalent to negate(containsOnly(clientId))
     public boolean contains(String clientId) {
-        for (ClientTopicCouple sub : this.subscriptions) {
-            if (sub.clientID.equals(clientId)) {
+        for (Subscription sub : this.subscriptions) {
+            if (sub.clientId.equals(clientId)) {
                 return true;
             }
         }
@@ -106,23 +104,12 @@ class CNode {
     }
 
     void removeSubscriptionsFor(String clientId) {
-        Set<ClientTopicCouple> toRemove = new HashSet<>();
-        for (ClientTopicCouple sub : this.subscriptions) {
-            if (sub.clientID.equals(clientId)) {
+        Set<Subscription> toRemove = new HashSet<>();
+        for (Subscription sub : this.subscriptions) {
+            if (sub.clientId.equals(clientId)) {
                 toRemove.add(sub);
             }
         }
         this.subscriptions.removeAll(toRemove);
     }
-
-//    public List<INode> childrenMatching(Token token) {
-//        List<INode> res = new ArrayList<>();
-//        for (INode iNode : children) {
-//            final CNode child = iNode.mainNode();
-//            if (child.equals(token) || (child.token == Token.MULTI || child.token == Token.SINGLE)) {
-//                res.add(iNode);
-//            }
-//        }
-//        return res;
-//    }
 }
