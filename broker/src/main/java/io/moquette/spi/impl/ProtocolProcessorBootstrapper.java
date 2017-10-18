@@ -97,7 +97,8 @@ public class ProtocolProcessorBootstrapper {
         store.initStore();
         messagesStore = store.messagesStore();
         m_sessionsStore = store.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(this.m_sessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(this.m_sessionsStore, server.getScheduler());
+        sessionsRepository.init();
         this.subscriptionsStore = m_sessionsStore.subscriptionStore();
         storeShutdown = new Runnable() {
 

@@ -48,7 +48,7 @@ public class H2MessagesStoreTest extends MessageStoreTCK {
         storageService.initStore();
         messagesStore = storageService.messagesStore();
         sessionsStore = storageService.sessionsStore();
-        this.sessionsRepository = new SessionsRepository(sessionsStore);
+        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
     }
 
     @After

@@ -27,6 +27,7 @@ import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,6 +44,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     private Map<String, Set<Integer>> inFlightIds;
     // maps clientID->[MessageId -> guid]
     private ConcurrentMap<String, ConcurrentMap<Integer, StoredMessage>> secondPhaseStore;
+    private MVMap<LocalDateTime, Set<String>> sessionsClosingTimes;
 
     H2SessionsStore(MVStore mvStore) {
         this.mvStore = mvStore;
@@ -54,6 +56,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         this.outboundFlightMessages = mvStore.openMap("outboundFlight");
         this.inFlightIds = mvStore.openMap("inflightPacketIDs");
         this.secondPhaseStore = mvStore.openMap("secondPhase");
+        this.sessionsClosingTimes = mvStore.openMap("sessionsCreationTimes");
         LOG.info("Initialized sessions H2 store");
     }
 
@@ -290,4 +293,23 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         this.secondPhaseStore.remove(clientID);
     }
 
+    @Override
+    public synchronized void trackSessionClose(LocalDateTime when, String clientID) {
+        this.sessionsClosingTimes.putIfAbsent(when, new HashSet<>());
+        this.sessionsClosingTimes.computeIfPresent(when, (key, oldSet) -> {
+            oldSet.add(clientID);
+            return oldSet;
+        });
+    }
+
+    @Override
+    public Set<String> sessionOlderThan(LocalDateTime queryPin) {
+        final Set<String> results = new HashSet<>();
+        LocalDateTime keyBefore = this.sessionsClosingTimes.lowerKey(queryPin);
+        while (keyBefore != null) {
+            results.addAll(this.sessionsClosingTimes.get(keyBefore));
+            keyBefore = this.sessionsClosingTimes.lowerKey(keyBefore);
+        }
+        return results;
+    }
 }

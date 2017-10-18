@@ -19,8 +19,10 @@ package io.moquette.spi;
 import io.moquette.persistence.PersistentSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Store used to handle the persistence of the subscriptions tree.
@@ -115,4 +117,14 @@ public interface ISessionsStore {
     int countPubReleaseWaitingPubComplete(String clientID);
 
     void removeTemporaryQoS2(String clientID);
+
+    /**
+     * Tracks the closing time of a persistent session
+     * */
+    void trackSessionClose(LocalDateTime when, String clientID);
+
+    /**
+     * List the sessions ids closed before the pin date.
+     * */
+    Set<String> sessionOlderThan(LocalDateTime queryPin);
 }

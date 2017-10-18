@@ -13,7 +13,6 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-
 package io.moquette.spi.impl;
 
 import io.moquette.persistence.PersistentSession;
@@ -21,21 +20,44 @@ import io.moquette.spi.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SessionsRepository {
+
+    /**
+     * Task to be scheduled to execute the cleaning of persisted sessions (clean flag=false) older than a defined period.
+     */
+    private class SessionCleanerTask implements Runnable {
+
+        @Override
+        public void run() {
+            wipeExpiredSessions();
+        }
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionsRepository.class);
     private final ISessionsStore sessions;
     private ISubscriptionsStore subscriptionsStore;
+    private ScheduledExecutorService scheduler;
     private final Map<String, ClientSession> sessionsCache = new ConcurrentHashMap<>();
 
-    public SessionsRepository(ISessionsStore sessionsStore) {
+    public SessionsRepository(ISessionsStore sessionsStore, ScheduledExecutorService scheduler) {
         this.sessions = sessionsStore;
         this.subscriptionsStore = sessionsStore.subscriptionStore();
+        this.scheduler = scheduler;
+    }
+
+    public void init() {
+        SessionCleanerTask cleanerTask = new SessionCleanerTask();
+        this.scheduler.schedule(cleanerTask, 1, TimeUnit.HOURS);
     }
 
     public ClientSession sessionForClient(String clientID) {
@@ -122,5 +144,15 @@ public class SessionsRepository {
         }
 
         sessionsCache.remove(clientId);
+        this.sessions.trackSessionClose(LocalDateTime.now(), clientId);
+    }
+
+    private void wipeExpiredSessions() {
+        final LocalDateTime pin = LocalDateTime.now().minus(6, ChronoUnit.DAYS);
+        final Set<String> expiredSessionsIds = this.sessions.sessionOlderThan(pin);
+        for (String expiredSession : expiredSessionsIds) {
+            this.sessions.removeDurableSession(expiredSession);
+            this.subscriptionsStore.wipeSubscriptions(expiredSession);
+        }
     }
 }

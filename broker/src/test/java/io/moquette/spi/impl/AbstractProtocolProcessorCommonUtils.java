@@ -68,7 +68,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
         m_sessionStore = memStorage.sessionsStore();
         // m_messagesStore.initStore();
 
-        sessionsRepository = new SessionsRepository(m_sessionStore);
+        sessionsRepository = new SessionsRepository(m_sessionStore, null);
 
         Set<String> clientIds = new HashSet<>();
         clientIds.add(FAKE_CLIENT_ID);

@@ -25,10 +25,9 @@ import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
@@ -51,6 +50,7 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private ConcurrentNavigableMap<LocalDateTime, Set<String>> sessionsClosingTimes = new ConcurrentSkipListMap<>();
 
     MemorySessionStore() {
     }
@@ -279,5 +279,25 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
         // TODO this missing last step breaks the junit test
         //sessions.remove(clientID);
+    }
+
+    @Override
+    public synchronized void trackSessionClose(LocalDateTime when, String clientID) {
+        this.sessionsClosingTimes.putIfAbsent(when, new HashSet<>());
+        this.sessionsClosingTimes.computeIfPresent(when, (key, oldSet) -> {
+            oldSet.add(clientID);
+            return oldSet;
+        });
+    }
+
+    @Override
+    public Set<String> sessionOlderThan(LocalDateTime queryPin) {
+        final Set<String> results = new HashSet<>();
+        LocalDateTime keyBefore = this.sessionsClosingTimes.lowerKey(queryPin);
+        while (keyBefore != null) {
+            results.addAll(this.sessionsClosingTimes.get(keyBefore));
+            keyBefore = this.sessionsClosingTimes.lowerKey(keyBefore);
+        }
+        return results;
     }
 }

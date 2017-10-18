@@ -86,7 +86,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
         subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
@@ -123,7 +123,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
         subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
@@ -246,7 +246,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
             }
         };
         MemoryStorageService storageService = new MemoryStorageService(null, null);
-        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore());
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
         subs.init(sessionsRepository);
 
         // simulate a connect that register a clientID to an IoSession

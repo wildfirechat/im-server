@@ -37,7 +37,7 @@ public class CTrieSubscriptionDirectoryTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
         sut.init(sessionsRepository);
     }
 

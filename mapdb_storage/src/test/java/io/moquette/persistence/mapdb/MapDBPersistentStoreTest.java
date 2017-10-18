@@ -57,7 +57,7 @@ public class MapDBPersistentStoreTest extends MessageStoreTCK {
         m_storageService.initStore();
         messagesStore = m_storageService.messagesStore();
         sessionsStore = m_storageService.sessionsStore();
-        this.sessionsRepository = new SessionsRepository(sessionsStore);
+        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
     }
 
     @After
@@ -70,7 +70,7 @@ public class MapDBPersistentStoreTest extends MessageStoreTCK {
         cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
     }
 
-    public static void cleanPersistenceFile(String fileName) {
+    static void cleanPersistenceFile(String fileName) {
         File dbFile = new File(fileName);
         if (dbFile.exists()) {
             dbFile.delete();

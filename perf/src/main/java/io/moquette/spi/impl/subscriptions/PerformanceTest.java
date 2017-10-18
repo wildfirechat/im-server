@@ -38,7 +38,7 @@ public final class PerformanceTest {
         ISubscriptionsDirectory store = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
         store.init(sessionsRepository);
 
         int times = 10000;

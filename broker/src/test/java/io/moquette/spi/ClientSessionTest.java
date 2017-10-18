@@ -41,7 +41,7 @@ public class ClientSessionTest {
         subscriptionsDirectory = new CTrieSubscriptionDirectory();
         MemoryStorageService storageService = new MemoryStorageService(null, null);
         ISessionsStore sessionsStore = storageService.sessionsStore();
-        sessionsRepository = new SessionsRepository(sessionsStore);
+        sessionsRepository = new SessionsRepository(sessionsStore, null);
         subscriptionsDirectory.init(sessionsRepository);
     }
 

@@ -65,11 +65,11 @@ public class ProtocolProcessor_CONNECT_Test {
         m_mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
 
         subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(m_sessionStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(m_sessionStore, null);
         subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-                new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
+                new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
     }
 
     @Test
@@ -159,7 +159,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProcessorProhibitingAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
     }
 
     @Test
@@ -324,7 +324,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProtocolProcessorWithZeroLengthClientIdAndAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore));
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
     }
 
     @Test

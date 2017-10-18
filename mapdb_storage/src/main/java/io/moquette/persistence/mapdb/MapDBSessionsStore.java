@@ -26,9 +26,11 @@ import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 
 /**
  * ISessionsStore implementation backed by MapDB.
@@ -46,6 +48,7 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
     private ConcurrentMap<String, ConcurrentMap<Integer, StoredMessage>> m_secondPhaseStore;
 
     private final DB m_db;
+    private ConcurrentNavigableMap<LocalDateTime, Set<String>> sessionsClosingTimes;
 
     MapDBSessionsStore(DB db) {
         m_db = db;
@@ -57,6 +60,7 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
         m_inFlightIds = m_db.getHashMap("inflightPacketIDs");
         m_persistentSessions = m_db.getHashMap("sessions");
         m_secondPhaseStore = m_db.getHashMap("secondPhase");
+        this.sessionsClosingTimes = m_db.getTreeMap("sessionsCreationTimes");
     }
 
     @Override
@@ -291,4 +295,25 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
     private static String inboundMessageId2MessagesMapName(String clientID) {
         return "inboundInflight_" + clientID;
     }
+
+    @Override
+    public synchronized void trackSessionClose(LocalDateTime when, String clientID) {
+        this.sessionsClosingTimes.putIfAbsent(when, new HashSet<>());
+        this.sessionsClosingTimes.computeIfPresent(when, (key, oldSet) -> {
+            oldSet.add(clientID);
+            return oldSet;
+        });
+    }
+
+    @Override
+    public Set<String> sessionOlderThan(LocalDateTime queryPin) {
+        final Set<String> results = new HashSet<>();
+        LocalDateTime keyBefore = this.sessionsClosingTimes.lowerKey(queryPin);
+        while (keyBefore != null) {
+            results.addAll(this.sessionsClosingTimes.get(keyBefore));
+            keyBefore = this.sessionsClosingTimes.lowerKey(keyBefore);
+        }
+        return results;
+    }
+
 }

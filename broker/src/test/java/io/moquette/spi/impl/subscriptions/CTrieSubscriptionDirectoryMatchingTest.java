@@ -12,7 +12,8 @@
  * http://www.opensource.org/licenses/apache2.0.php
  *
  * You may elect to redistribute this code under either of these licenses.
- */package io.moquette.spi.impl.subscriptions;
+ */
+package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ClientSession;
@@ -45,7 +46,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         MemoryStorageService storageService = new MemoryStorageService(null, null);
         ISessionsStore sessionsStore = storageService.sessionsStore();
         this.subscriptionsStore = sessionsStore.subscriptionStore();
-        this.sessionsRepository = new SessionsRepository(sessionsStore);
+        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
         sut.init(this.sessionsRepository);
     }
 
@@ -178,7 +179,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
         sut.init(sessionsRepository);
 
         Subscription sub = clientSubOnTopic("AnySensor1", s);
@@ -191,7 +192,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore);
+        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
         sut.init(sessionsRepository);
 
         Subscription sub = clientSubOnTopic("AnySensor1", subscription);
