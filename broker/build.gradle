@@ -13,6 +13,8 @@ dependencies {
     compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: 'linux-x86_64'
     // <classifier>${os.detected.name}-${os.detected.arch}</classifier>
 
+    compile group: 'com.zaxxer', name: 'HikariCP', version:'2.4.7'
+
     compile group: 'io.dropwizard.metrics', name: 'metrics-core', version:'3.2.2'
     compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version:'3.2.2'
 
