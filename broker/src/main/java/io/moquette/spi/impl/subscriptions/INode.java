@@ -22,6 +22,9 @@ class INode {
 
     INode(CNode mainNode) {
         this.mainNode.set(mainNode);
+        if (mainNode instanceof TNode) { // this should never happen
+            throw new IllegalStateException("TNode should not be set on mainNnode");
+        }
     }
 
     boolean compareAndSet(CNode old, CNode newNode) {
@@ -34,5 +37,9 @@ class INode {
 
     CNode mainNode() {
         return this.mainNode.get();
+    }
+
+    boolean isTombed() {
+        return this.mainNode() instanceof TNode;
     }
 }
