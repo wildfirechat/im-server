@@ -844,7 +844,7 @@ public class ProtocolProcessor {
             grantedQoSLevels.add(req.qualityOfService().value());
         }
 
-        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.SUBACK, false, AT_LEAST_ONCE, false, 0);
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.SUBACK, false, AT_MOST_ONCE, false, 0);
         MqttSubAckPayload payload = new MqttSubAckPayload(grantedQoSLevels);
         return new MqttSubAckMessage(fixedHeader, from(messageId), payload);
     }
