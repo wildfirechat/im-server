@@ -31,6 +31,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     private static final Logger LOG = LoggerFactory.getLogger(CTrieSubscriptionDirectory.class);
 
     private static final Token ROOT = new Token("root");
+    private static final INode NO_PARENT = null;
 
     INode root;
     private volatile SessionsRepository sessionsRepository;
@@ -49,10 +50,13 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         @Override
         public void visit(CNode node, int deep) {
             String indentTabs = indentTabs(deep);
-            s += indentTabs + (node.token == null ? "" : node.token.toString()) + prettySubscriptions(node) + "\n";
+            s += indentTabs + (node.token == null ? "''" : node.token.toString()) + prettySubscriptions(node) + "\n";
         }
 
         private String prettySubscriptions(CNode node) {
+            if (node instanceof TNode) {
+                return "TNode";
+            }
             if (node.subscriptions.isEmpty()) {
                 return StringUtil.EMPTY_STRING;
             }
@@ -73,6 +77,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         private String indentTabs(int deep) {
             StringBuilder s = new StringBuilder();
             if (deep > 0) {
+                s.append("    ");
                 for (int i = 0; i < deep - 1; i++) {
                     s.append("| ");
                 }
@@ -196,6 +201,23 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return subscriptions;
     }
 
+    /**
+     *
+     * Cleans Disposes of TNode in separate Atomic CAS operation per
+     * http://bravenewgeek.com/breaking-and-entering-lose-the-lock-while-embracing-concurrency/
+     *
+     * We roughly follow this theory above, but we allow CNode with no Subscriptions to linger (for now).
+     *
+     *
+     * @param inode
+     * @param iParent
+     * @return
+     */
+    public Action cleanTomb(INode inode, INode iParent) {
+        CNode updatedCnode = iParent.mainNode().copy();
+        updatedCnode.remove(inode);
+        return iParent.compareAndSet(iParent.mainNode(), updatedCnode) ? Action.OK : Action.REPEAT;
+    }
 
     public void add(Subscription newSubscription) {
         Action res;
@@ -259,25 +281,44 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         }
     }
 
+    /**
+     *
+     * Removes subscription from CTrie, adds TNode when the last client unsubscribes, then calls for cleanTomb in a
+     * seperate atomic CAS operation.  
+     *
+     *
+     * @param topic
+     * @param clientID
+     */
     public void removeSubscription(Topic topic, String clientID) {
         Action res;
         do {
-            res = remove(clientID, topic, this.root);
+            res = remove(clientID, topic, this.root, NO_PARENT);
         } while (res == Action.REPEAT);
     }
 
-    private Action remove(String clientId, Topic topic, INode inode) {
+    private Action remove(String clientId, Topic topic, INode inode, INode iParent) {
         Token token = topic.headToken();
         if (!topic.isEmpty() && (inode.mainNode().anyChildrenMatch(token))) {
             Topic remainingTopic = topic.exceptHeadToken();
             INode nextInode = inode.mainNode().childOf(token);
-            return remove(clientId, remainingTopic, nextInode);
+            return remove(clientId, remainingTopic, nextInode, inode);
         } else {
             final CNode cnode = inode.mainNode();
-            if (cnode.containsOnly(clientId)) {
+            if (cnode instanceof TNode) {
+                // this inode is a tomb, has no clients and should be cleaned up
+                // Because we implemented cleanTomb below, this should be rare, but possible
+                // Consider calling cleanTomb here too
+                return Action.OK;
+            }
+            if (cnode.containsOnly(clientId) && topic.isEmpty() && cnode.allChildren().isEmpty()) {
+                // last client to leave this node, AND there are no downstream children, remove via TNode tomb
+                if (inode == this.root) {
+                    return inode.compareAndSet(cnode, inode.mainNode().copy()) ? Action.OK : Action.REPEAT;
+                }
                 TNode tnode = new TNode();
-                return inode.compareAndSet(cnode, tnode) ? Action.OK : Action.REPEAT;
-            } else if (cnode.contains(clientId)) {
+                return inode.compareAndSet(cnode, tnode) ? cleanTomb(inode, iParent) : Action.REPEAT;
+            } else if (cnode.contains(clientId) && topic.isEmpty()) {
                 CNode updatedCnode = cnode.copy();
                 updatedCnode.removeSubscriptionsFor(clientId);
                 return inode.compareAndSet(cnode, updatedCnode) ? Action.OK : Action.REPEAT;
