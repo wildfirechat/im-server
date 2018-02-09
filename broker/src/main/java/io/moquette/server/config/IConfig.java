@@ -42,6 +42,8 @@ public abstract class IConfig {
         setProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.TRUE.toString());
         setProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
         setProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
+        setProperty(BrokerConstants.NETTY_MAX_BYTES_PROPERTY_NAME,
+            String.valueOf(BrokerConstants.DEFAULT_NETTY_MAX_BYTES_IN_MESSAGE));
     }
 
     public abstract IResourceLoader getResourceLoader();

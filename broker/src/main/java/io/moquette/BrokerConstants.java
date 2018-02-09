@@ -57,6 +57,8 @@ public final class BrokerConstants {
     public static final String NETTY_SO_KEEPALIVE_PROPERTY_NAME = "netty.so_keepalive";
     public static final String NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME = "netty.channel_timeout.seconds";
     public static final String NETTY_EPOLL_PROPERTY_NAME = "netty.epoll";
+    public static final String NETTY_MAX_BYTES_PROPERTY_NAME = "netty.mqtt.message_size";
+    public static final int DEFAULT_NETTY_MAX_BYTES_IN_MESSAGE = 8092;
     public static final String METRICS_ENABLE_PROPERTY_NAME = "use_metrics";
     public static final String METRICS_LIBRATO_EMAIL_PROPERTY_NAME = "metrics.librato.email";
     public static final String METRICS_LIBRATO_TOKEN_PROPERTY_NAME = "metrics.librato.token";
