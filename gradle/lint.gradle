@@ -1,5 +1,10 @@
 apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
+apply plugin: 'com.github.spotbugs'
+apply plugin: 'net.ltgt.errorprone'
+
+dependencies {
+    errorprone "com.google.errorprone:error_prone_core:2.2.0"
+}
 
 checkstyle {
     configProperties.checkstyleConfigDir = "."
@@ -8,12 +13,8 @@ checkstyle {
     toolVersion = '6.7'
 }
 
-findbugs {
-    toolVersion = '3.0.1'
+spotbugs {
+    toolVersion = '3.1.1'
     ignoreFailures true
     omitVisitors = ['RuntimeExceptionCapture']
-}
-
-tasks.withType(FindBugs) {
-    maxHeapSize = '2g'
 }
