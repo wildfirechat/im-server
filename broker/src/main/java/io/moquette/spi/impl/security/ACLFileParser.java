@@ -18,10 +18,17 @@ package io.moquette.spi.impl.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Parses the acl configuration file. If a line starts with # it's comment. Blank lines are skipped.
@@ -53,9 +60,9 @@ public final class ACLFileParser {
             return AuthorizationsCollector.emptyImmutableCollector();
         }
         try {
-            FileReader reader = new FileReader(file);
+            Reader reader = Files.newBufferedReader(file.toPath(), UTF_8);
             return parse(reader);
-        } catch (FileNotFoundException fex) {
+        } catch (IOException fex) {
             LOG.warn(
                     String.format(
                             "parsing not existing file %s, so fallback on default configuration!",
@@ -88,7 +95,8 @@ public final class ACLFileParser {
         Pattern emptyLine = Pattern.compile("^\\s*$");
         Pattern commentLine = Pattern.compile("^#.*"); // As spec, comment lines should start with '#'
         Pattern invalidCommentLine = Pattern.compile("^\\s*#.*");
-        Pattern endLineComment = Pattern.compile("^([\\w\\s\\/\\+]+#?)(\\s*#.*)$"); // This pattern has a dependency on filtering `commentLine`.
+        // This pattern has a dependency on filtering `commentLine`.
+        Pattern endLineComment = Pattern.compile("^([\\w\\s\\/\\+]+#?)(\\s*#.*)$");
         Matcher endLineCommentMatcher;
 
         try {

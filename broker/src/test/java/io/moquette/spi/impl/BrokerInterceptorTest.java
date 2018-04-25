@@ -30,6 +30,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
@@ -126,7 +127,7 @@ public class BrokerInterceptorTest {
     public void testNotifyTopicPublished() throws Exception {
         interceptor.notifyTopicPublished(
                 MqttMessageBuilders.publish().qos(MqttQoS.AT_MOST_ONCE)
-                    .payload(Unpooled.copiedBuffer("Hello".getBytes())).build(),
+                    .payload(Unpooled.copiedBuffer("Hello".getBytes(UTF_8))).build(),
                 "cli1234",
                 "cli1234");
         interval();

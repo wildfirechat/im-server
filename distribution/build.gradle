@@ -1,10 +1,8 @@
-
-description = 'Moquette - distribution'
-
 apply plugin: 'application'
-
 // adds task shadowJar - Create a combined JAR of project and runtime dependencies
+description = 'Moquette - distribution'
 apply plugin: 'com.github.johnrengelman.shadow'
+
 
 mainClassName = "io.moquette.server.Server"
 
@@ -17,35 +15,35 @@ dependencies {
 def packageSet = project.copySpec {
   from 'src/main/resources/README.txt'
 
-  into ('bin'){
-    from 'src/main/scripts/'
+  into ('bin') {
+    from 'src/ main/scripts/'
     fileMode=0755
   }
 
-  into ('lib'){
+  into ('lib') {
     from "build/libs/${project.name}-${version}.jar"
     rename { "moquette-${version}.jar" }
   }
 
-  into ('lib'){
+  into ('lib') {
     from configurations.compile
   }
 
-  into ('config'){
+  into ('config') {
     from 'src/main/resources/moquette.conf'
     from 'src/main/resources/password_file.conf'
     from 'src/main/resources/hazelcast.xml'
     // from 'src/main/resources/acl.conf'
   }
 
-  into ('config'){
+  into ('config') {
     from 'src/main/resources/log4j.properties'
     rename {  'moquette-log.properties' }
   }
 }
 
 task distMoquetteTar(type: Tar) {
-  archiveName = "moquette-${version}.tar"
+  archiveName = "moquette-${version}.tar.gz"
   destinationDir  file('build')
   extension 'tar'
   compression = Compression.GZIP

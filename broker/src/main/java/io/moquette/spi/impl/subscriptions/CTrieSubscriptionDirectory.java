@@ -17,12 +17,10 @@ package io.moquette.spi.impl.subscriptions;
 
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.impl.SessionsRepository;
-import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 
@@ -36,66 +34,18 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     INode root;
     private volatile SessionsRepository sessionsRepository;
 
-    private interface IVisitor<T> {
+    interface IVisitor<T> {
 
         void visit(CNode node, int deep);
 
         T getResult();
     }
 
-    private class DumpTreeVisitor implements IVisitor<String> {
-
-        String s = "";
-
-        @Override
-        public void visit(CNode node, int deep) {
-            String indentTabs = indentTabs(deep);
-            s += indentTabs + (node.token == null ? "''" : node.token.toString()) + prettySubscriptions(node) + "\n";
-        }
-
-        private String prettySubscriptions(CNode node) {
-            if (node instanceof TNode) {
-                return "TNode";
-            }
-            if (node.subscriptions.isEmpty()) {
-                return StringUtil.EMPTY_STRING;
-            }
-            StringBuilder subScriptionsStr = new StringBuilder(" ~~[");
-            int counter = 0;
-            for (Subscription couple : node.subscriptions) {
-                subScriptionsStr
-                    .append("{filter=").append(couple.topicFilter).append(", ")
-                    .append("client='").append(couple.clientId).append("'}");
-                counter++;
-                if (counter < node.subscriptions.size()) {
-                    subScriptionsStr.append(";");
-                }
-            }
-            return subScriptionsStr.append("]").toString();
-        }
-
-        private String indentTabs(int deep) {
-            StringBuilder s = new StringBuilder();
-            if (deep > 0) {
-                s.append("    ");
-                for (int i = 0; i < deep - 1; i++) {
-                    s.append("| ");
-                }
-                s.append("|-");
-            }
-            return s.toString();
-        }
-
-        @Override
-        public String getResult() {
-            return s;
-        }
-    }
-
     private enum Action {
         OK, REPEAT
     }
 
+    @Override
     public void init(SessionsRepository sessionsRepository) {
         LOG.info("Initializing CTrie");
         final CNode mainNode = new CNode();
@@ -134,12 +84,10 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return Optional.of(inode.mainNode());
     }
 
-
     @Override
     public List<Subscription> matches(Topic topic) {
         return new ArrayList<>(match(topic));
     }
-
 
     /**
      * Given a topic string return the clients subscriptions that matches it. Topic string can't
@@ -177,7 +125,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
 
     Set<Subscription> recursiveMatch(Topic topic, INode inode) {
         CNode cnode = inode.mainNode();
-        if (cnode.token == Token.MULTI) {
+        if (Token.MULTI.equals(cnode.token)) {
             return cnode.subscriptions;
         }
         if (topic.isEmpty()) {
@@ -187,10 +135,10 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
             return Collections.emptySet();
         }
         final Token token = topic.headToken();
-        if (!(cnode.token == Token.SINGLE || cnode.token.equals(token) || cnode.token == ROOT)) {
+        if (!(Token.SINGLE.equals(cnode.token) || cnode.token.equals(token) || ROOT.equals(cnode.token))) {
             return Collections.emptySet();
         }
-        Topic remainingTopic = (cnode.token == ROOT) ? topic : topic.exceptHeadToken();
+        Topic remainingTopic = (ROOT.equals(cnode.token)) ? topic : topic.exceptHeadToken();
         Set<Subscription> subscriptions = new HashSet<>();
         if (remainingTopic.isEmpty()) {
             subscriptions.addAll(cnode.subscriptions);
@@ -219,6 +167,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return iParent.compareAndSet(iParent.mainNode(), updatedCnode) ? Action.OK : Action.REPEAT;
     }
 
+    @Override
     public void add(Subscription newSubscription) {
         Action res;
         do {
@@ -282,14 +231,13 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     }
 
     /**
-     *
      * Removes subscription from CTrie, adds TNode when the last client unsubscribes, then calls for cleanTomb in a
-     * seperate atomic CAS operation.  
-     *
+     * separate atomic CAS operation.
      *
      * @param topic
      * @param clientID
      */
+    @Override
     public void removeSubscription(Topic topic, String clientID) {
         Action res;
         do {
@@ -329,27 +277,14 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         }
     }
 
-    private class SubscriptionCounterVisitor implements IVisitor<Integer> {
-
-        AtomicInteger accumulator = new AtomicInteger(0);
-
-        @Override
-        public void visit(CNode node, int deep) {
-            accumulator.addAndGet(node.subscriptions.size());
-        }
-
-        @Override
-        public Integer getResult() {
-            return accumulator.get();
-        }
-    }
-
+    @Override
     public int size() {
         SubscriptionCounterVisitor visitor = new SubscriptionCounterVisitor();
         dfsVisit(this.root, visitor, 0);
         return visitor.getResult();
     }
 
+    @Override
     public String dumpTree() {
         DumpTreeVisitor visitor = new DumpTreeVisitor();
         dfsVisit(this.root, visitor, 0);

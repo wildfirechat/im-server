@@ -13,19 +13,20 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+package io.moquette.spi;
 
-package io.moquette.spi.impl;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import io.netty.buffer.ByteBuf;
+class InboundFlightZone {
 
-import java.nio.charset.StandardCharsets;
+    private final Map<Integer, IMessagesStore.StoredMessage> inboundFlightMessages = new ConcurrentHashMap<>();
 
-final class DebugUtils {
-
-    static String payload2Str(ByteBuf content) {
-        return new String(content.copy().array(), StandardCharsets.UTF_8);
+    IMessagesStore.StoredMessage lookup(int messageID) {
+        return inboundFlightMessages.get(messageID);
     }
 
-    private DebugUtils() {
+    void waitingRel(int messageID, IMessagesStore.StoredMessage msg) {
+        inboundFlightMessages.put(messageID, msg);
     }
 }

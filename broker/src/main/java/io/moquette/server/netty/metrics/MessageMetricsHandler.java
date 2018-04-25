@@ -23,6 +23,8 @@ import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 public class MessageMetricsHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("MessageMetrics");
@@ -52,7 +54,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementWrote(1);
-        ctx.write(msg, promise);
+        ctx.write(msg, promise).addListener(CLOSE_ON_FAILURE);
     }
 
     @Override

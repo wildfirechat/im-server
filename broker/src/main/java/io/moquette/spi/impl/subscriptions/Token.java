@@ -35,11 +35,11 @@ public class Token {
     }
 
     protected boolean match(Token t) {
-        if (t == MULTI || t == SINGLE) {
+        if (MULTI.equals(t) || SINGLE.equals(t)) {
             return false;
         }
 
-        if (this == MULTI || this == SINGLE) {
+        if (MULTI.equals(this) || SINGLE.equals(this)) {
             return true;
         }
 

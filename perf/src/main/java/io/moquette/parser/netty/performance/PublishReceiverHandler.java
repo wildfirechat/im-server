@@ -27,12 +27,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static io.moquette.parser.netty.performance.NettyPublishReceiverHandler.payload2Str;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 @ChannelHandler.Sharable
 class PublishReceiverHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PublishReceiverHandler.class);
-    Histogram forthNetworkTime = new Histogram(5);
+    private Histogram forthNetworkTime = new Histogram(5);
 
     PublishReceiverHandler() {
     }
@@ -69,9 +70,9 @@ class PublishReceiverHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         LOG.info("Received channel inactive");
-        ctx.channel().close();
+        ctx.channel().close().addListener(CLOSE_ON_FAILURE);
 
         System.out.println("Network time histogram (microsecs)");
         this.forthNetworkTime.outputPercentileDistribution(System.out, 1000.0);

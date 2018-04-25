@@ -24,6 +24,8 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 @ChannelHandler.Sharable
 class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
@@ -38,9 +40,9 @@ class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         m_client.setConnectionLost(true);
-        ctx.close(/* false */);
+        ctx.close().addListener(CLOSE_ON_FAILURE);
     }
 
     void setClient(Client client) {

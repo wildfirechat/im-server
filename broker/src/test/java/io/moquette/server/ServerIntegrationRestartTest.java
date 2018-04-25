@@ -27,6 +27,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -100,11 +102,11 @@ public class ServerIntegrationRestartTest {
 
         // should be just one registration so a publisher receive one notification
         m_publisher.connect(CLEAN_SESSION_OPT);
-        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), 1, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(UTF_8), 1, false);
 
         // read the messages
         MqttMessage msg = m_messageCollector.waitMessage(1);
-        assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
+        assertEquals("Hello world MQTT!!", new String(msg.getPayload(), UTF_8));
         // no more messages on the same topic will be received
         assertNull(m_messageCollector.waitMessage(1));
     }
@@ -121,7 +123,7 @@ public class ServerIntegrationRestartTest {
         m_server.startServer(IntegrationUtils.prepareTestProperties());
 
         m_publisher.connect();
-        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), 0, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(UTF_8), 0, false);
     }
 
     @Test
@@ -147,7 +149,7 @@ public class ServerIntegrationRestartTest {
         // publisher publishes on /topic
         m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
         m_publisher.connect();
-        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(), 1, false);
+        m_publisher.publish("/topic", "Hello world MQTT!!".getBytes(UTF_8), 1, false);
 
         // Expected
         // the subscriber doesn't get notified (it's fully unsubscribed)
@@ -163,9 +165,9 @@ public class ServerIntegrationRestartTest {
         client.setCallback(collector);
         client.connect();
         client.subscribe(topic, 1);
-        client.publish(topic, "Hello world MQTT!!".getBytes(), 0, false);
+        client.publish(topic, "Hello world MQTT!!".getBytes(UTF_8), 0, false);
         MqttMessage msg = collector.waitMessage(1);
-        assertEquals("Hello world MQTT!!", new String(msg.getPayload()));
+        assertEquals("Hello world MQTT!!", new String(msg.getPayload(), UTF_8));
         return client;
     }
 }

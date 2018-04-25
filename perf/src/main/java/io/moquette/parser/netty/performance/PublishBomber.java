@@ -24,9 +24,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.mqtt.*;
+import org.apache.commons.codec.CharEncoding;
 import org.eclipse.jetty.toolchain.perf.PlatformTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 class PublishBomber {
 
@@ -35,6 +40,7 @@ class PublishBomber {
     private final EventLoopGroup workerGroup;
     private Channel channel;
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     PublishBomber(String host, int port) {
         workerGroup = new NioEventLoopGroup();
         try {
@@ -61,13 +67,13 @@ class PublishBomber {
 
     private void sendMessage(MqttMessage msg) {
         try {
-            channel.writeAndFlush(msg).await();
+            channel.writeAndFlush(msg).await().addListener(CLOSE_ON_FAILURE);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public void publishLoop(int messagesPerSecond, int numToSend) {
+    public void publishLoop(int messagesPerSecond, int numToSend) throws UnsupportedEncodingException {
         long pauseMicroseconds = (int) ((1.0 / messagesPerSecond) * 1000 * 1000);
         LOG.warn("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
 
@@ -78,7 +84,7 @@ class PublishBomber {
         PlatformTimer timer = PlatformTimer.detect();
         for (int i = 0; i < numToSend; i++) {
             long nanos = System.nanoTime();
-            byte[] rawContent = ("Hello world!!-" + nanos).getBytes();
+            byte[] rawContent = ("Hello world!!-" + nanos).getBytes(CharEncoding.UTF_8);
             ByteBuf payload = Unpooled.copiedBuffer(rawContent);
 
             MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE,
@@ -94,7 +100,7 @@ class PublishBomber {
 
     public void disconnect() {
         try {
-            this.channel.disconnect().await();
+            this.channel.disconnect().await().addListener(CLOSE_ON_FAILURE);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

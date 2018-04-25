@@ -24,6 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.util.Properties;
 
@@ -55,15 +57,10 @@ class ConfigurationParser {
             return;
         }
         try {
-            FileReader reader = new FileReader(file);
+            Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8);
             parse(reader);
-        } catch (FileNotFoundException fex) {
-            LOG.warn(
-                    String.format(
-                            "parsing not existing file %s, so fallback on default configuration!",
-                            file.getAbsolutePath()),
-                    fex);
-            return;
+        } catch (IOException fex) {
+            LOG.warn("parsing not existing file {}, fallback on default configuration!", file.getAbsolutePath(), fex);
         }
     }
 

@@ -169,19 +169,19 @@ public final class Utils {
             return 3;
         if (2097152 <= len && len <= 268435455)
             return 4;
-        throw new IllegalArgumentException("value shoul be in the range [0..268435455]");
+        throw new IllegalArgumentException("value should be in the range [0..268435455]");
     }
 
     static byte encodeFlags(MqttMessage message) {
         byte flags = 0;
         if (message.fixedHeader().isDup()) {
-            flags |= 0x08;
+            flags |= (byte) 0x08;
         }
         if (message.fixedHeader().isRetain()) {
-            flags |= 0x01;
+            flags |= (byte) 0x01;
         }
 
-        flags |= (message.fixedHeader().qosLevel().value() & 0x03) << 1;
+        flags |= (byte) ((message.fixedHeader().qosLevel().value() & 0x03) << 1);
         return flags;
     }
 

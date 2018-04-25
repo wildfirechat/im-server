@@ -29,6 +29,10 @@ import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.server.netty.metrics.MessageMetricsHandler;
 import io.netty.channel.Channel;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
+
 /**
  * Value object to maintain the information of single connection, like ClientID, Channel, and clean
  * session flag.
@@ -62,7 +66,7 @@ public class ConnectionDescriptor {
     }
 
     public void writeAndFlush(Object payload) {
-        this.channel.writeAndFlush(payload);
+        this.channel.writeAndFlush(payload).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void setupAutoFlusher(int flushIntervalMs) {
@@ -88,7 +92,7 @@ public class ConnectionDescriptor {
         if (!success) {
             return false;
         }
-        this.channel.close();
+        this.channel.close().addListener(CLOSE_ON_FAILURE);
         return true;
     }
 
@@ -100,7 +104,7 @@ public class ConnectionDescriptor {
         LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
         // try {
         // this.channel.disconnect().sync();
-        this.channel.close(); // .sync();
+        this.channel.close().addListener(CLOSE_ON_FAILURE); // .sync();
         // } catch (InterruptedException e) {
         // e.printStackTrace();
         // }

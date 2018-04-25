@@ -30,7 +30,7 @@ public class TransientSession extends ClientSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(TransientSession.class);
 
-    private Queue<StoredMessage> messagesQueue = new LinkedList<>();
+    private Queue<StoredMessage> messagesQueue = new ArrayDeque<>();
 
     private final AtomicInteger packetGenerator = new AtomicInteger(1);
 
@@ -43,7 +43,7 @@ public class TransientSession extends ClientSession {
     }
 
     @Override
-    public void disconnect() {}
+    public void disconnect() { }
 
     @Override
     public boolean isCleanSession() {

@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 public class ServerLowlevelMessagesIntegrationTests {
@@ -121,7 +122,7 @@ public class ServerLowlevelMessagesIntegrationTests {
                 assertNotNull("the will message should be fired after keep alive!", msg);
                 // the will message hasn't to be received before the elapsing of Keep Alive timeout
                 assertTrue(System.currentTimeMillis() - connectTime > 3000);
-                assertEquals(willTestamentMsg, new String(msg.getPayload(), StandardCharsets.UTF_8));
+                assertEquals(willTestamentMsg, new String(msg.getPayload(), UTF_8));
         });
 
         m_willSubscriber.disconnect();
@@ -153,7 +154,7 @@ public class ServerLowlevelMessagesIntegrationTests {
 
         // Verify will testament is published
         org.eclipse.paho.client.mqttv3.MqttMessage receivedTestament = m_messageCollector.waitMessage(1);
-        assertEquals(willTestamentMsg, new String(receivedTestament.getPayload()));
+        assertEquals(willTestamentMsg, new String(receivedTestament.getPayload(), UTF_8));
         m_willSubscriber.disconnect();
     }
 

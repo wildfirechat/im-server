@@ -33,7 +33,8 @@ import java.util.concurrent.TimeUnit;
 public class SessionsRepository {
 
     /**
-     * Task to be scheduled to execute the cleaning of persisted sessions (clean flag=false) older than a defined period.
+     * Task to be scheduled to execute the cleaning of persisted sessions (clean flag=false) older than a
+     * defined period.
      */
     private class SessionCleanerTask implements Runnable {
 
@@ -55,6 +56,7 @@ public class SessionsRepository {
         this.scheduler = scheduler;
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void init() {
         SessionCleanerTask cleanerTask = new SessionCleanerTask();
         this.scheduler.schedule(cleanerTask, 1, TimeUnit.HOURS);

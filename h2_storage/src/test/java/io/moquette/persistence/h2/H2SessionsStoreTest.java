@@ -97,7 +97,8 @@ public class H2SessionsStoreTest {
     }
 
     @Test
-    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException,
+                TimeoutException {
         H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(2);

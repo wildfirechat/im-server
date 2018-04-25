@@ -127,10 +127,12 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public Subscription reload(Subscription subcription) {
-        ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap("subscriptions_" + subcription.getClientId());
-        LOG.debug("Retrieving subscriptions. CId={}, subscriptions={}", subcription.getClientId(), clientSubscriptions);
-        return clientSubscriptions.get(subcription.getTopicFilter());
+    public Subscription reload(Subscription subscription) {
+        final String clientId = subscription.getClientId();
+        final String clientSubcMapName = "subscriptions_" + clientId;
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = m_db.getHashMap(clientSubcMapName);
+        LOG.debug("Retrieving subscriptions. CId={}, subscriptions={}", clientId, clientSubscriptions);
+        return clientSubscriptions.get(subscription.getTopicFilter());
     }
 
     @Override
@@ -178,7 +180,6 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
             inFlightForClient.add(nextPacketId);
             this.m_inFlightIds.put(clientID, inFlightForClient);
             return nextPacketId;
-
         }
 
         int maxId = inFlightForClient.isEmpty() ? 0 : Collections.max(inFlightForClient);
@@ -264,7 +265,8 @@ class MapDBSessionsStore implements ISessionsStore, ISubscriptionsStore {
     @Override
     public int getInflightMessagesNo(String clientID) {
         int totalInflight = 0;
-        ConcurrentMap<Integer, StoredMessage> inflightPerClient = m_db.getHashMap(inboundMessageId2MessagesMapName(clientID));
+        final String infligthMessageMapName = inboundMessageId2MessagesMapName(clientID);
+        ConcurrentMap<Integer, StoredMessage> inflightPerClient = m_db.getHashMap(infligthMessageMapName);
         if (inflightPerClient != null) {
             totalInflight += inflightPerClient.size();
         }

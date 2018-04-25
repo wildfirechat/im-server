@@ -26,7 +26,7 @@ import java.util.concurrent.*;
  */
 public class MessageCollector implements MqttCallback {
 
-    private final class ReceivedMessage {
+    private static final class ReceivedMessage {
 
         private final MqttMessage message;
         private final String topic;

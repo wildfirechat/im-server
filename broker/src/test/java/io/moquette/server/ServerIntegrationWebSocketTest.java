@@ -65,6 +65,7 @@ public class ServerIntegrationWebSocketTest {
         m_server.stopServer();
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     @Test
     public void checkPlainConnect() throws Exception {
         LOG.info("*** checkPlainConnect ***");

@@ -21,19 +21,25 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CountDownLatch;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class  BenchmarkPublisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkPublisher.class);
 
     static class PublishCallback implements IMqttActionListener {
+
+        @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-            LOG.error("PUB: Publish failed: " + exception);
+            LOG.error("PUB: Publish failed", exception);
             exception.printStackTrace();
             System.exit(2);
         }
 
+        @Override
         public void onSuccess(IMqttToken asyncActionToken) {
         }
     }
@@ -44,12 +50,13 @@ class  BenchmarkPublisher {
         private final long numToSend;
         private final CountDownLatch stopLatch;
 
-        ExitTopicCallback(long startedTime, long numToSend, IMqttAsyncClient connection, CountDownLatch stopLatch) {
+        ExitTopicCallback(long startedTime, long numToSend, CountDownLatch stopLatch) {
             this.startedTime = startedTime;
             this.numToSend = numToSend;
             this.stopLatch = stopLatch;
         }
 
+        @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             long stopTime = System.currentTimeMillis();
             long spentTime = stopTime - startedTime;
@@ -65,6 +72,7 @@ class  BenchmarkPublisher {
             this.stopLatch.countDown();
         }
 
+        @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable th) {
             LOG.error("PUB: Publish failed: " + th);
             System.exit(2);
@@ -90,11 +98,14 @@ class  BenchmarkPublisher {
         MqttConnectOptions connectOptions = new MqttConnectOptions();
         connectOptions.setCleanSession(true);
         this.client.connect(connectOptions, null, new IMqttActionListener() {
+
+            @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                 LOG.error("PUB: connect fail", exception);
                 System.exit(2);
             }
 
+            @Override
             public void onSuccess(IMqttToken asyncActionToken) {
                 LOG.info("PUB: Successfully connected to server");
             }
@@ -103,7 +114,7 @@ class  BenchmarkPublisher {
         this.m_latch = new CountDownLatch(1);
     }
 
-    public void firePublishes() throws MqttException {
+    public void firePublishes() throws MqttException, UnsupportedEncodingException {
         long pauseMicroseconds = (int) ((1.0 / messagesPerSecond) * 1000 * 1000);
         LOG.info("PUB: Pause over the each message sent {} microsecs", pauseMicroseconds);
 
@@ -116,14 +127,14 @@ class  BenchmarkPublisher {
         IMqttActionListener pubCallback = new PublishCallback();
         for (int i = 0; i < numToSend; i++) {
             long nanos = System.nanoTime();
-            byte[] message = ("Hello world!!-" + nanos).getBytes();
+            byte[] message = ("Hello world!!-" + nanos).getBytes(UTF_8);
             this.client.publish("/topic" + dialog_id, message, qos, retain, null, pubCallback);
             timer.sleep(pauseMicroseconds);
         }
 
-        IMqttActionListener exitCallback = new ExitTopicCallback(startTime, numToSend, this.client, m_latch);
+        IMqttActionListener exitCallback = new ExitTopicCallback(startTime, numToSend, m_latch);
         long nanosExit = System.nanoTime();
-        byte[] exitMessage = ("Hello world!!-" + nanosExit).getBytes();
+        byte[] exitMessage = ("Hello world!!-" + nanosExit).getBytes(UTF_8);
         this.client.publish("/exit" + dialog_id, exitMessage, qos, retain, null, exitCallback);
     }
 

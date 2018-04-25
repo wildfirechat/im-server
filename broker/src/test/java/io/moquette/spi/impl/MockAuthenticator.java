@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import io.moquette.spi.security.IAuthenticator;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Test utility to implements authenticator instance.
  */
@@ -33,6 +35,7 @@ class MockAuthenticator implements IAuthenticator {
         m_userPwds = userPwds;
     }
 
+    @Override
     public boolean checkValid(String clientId, String username, byte[] password) {
         if (!m_clientIds.contains(clientId)) {
             return false;
@@ -43,7 +46,7 @@ class MockAuthenticator implements IAuthenticator {
         if (password == null) {
             return false;
         }
-        return m_userPwds.get(username).equals(new String(password));
+        return m_userPwds.get(username).equals(new String(password, UTF_8));
     }
 
 }

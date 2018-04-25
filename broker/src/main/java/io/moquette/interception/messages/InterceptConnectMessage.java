@@ -18,6 +18,8 @@ package io.moquette.interception.messages;
 
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 
+import java.nio.charset.StandardCharsets;
+
 public class InterceptConnectMessage extends InterceptAbstractMessage {
 
     private final MqttConnectMessage msg;
@@ -72,7 +74,7 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
     }
 
     public byte[] getPassword() {
-        return msg.payload().password().getBytes();
+        return msg.payload().password().getBytes(StandardCharsets.UTF_8);
     }
 
     public String getWillTopic() {
@@ -80,6 +82,6 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
     }
 
     public byte[] getWillMessage() {
-        return msg.payload().willMessage().getBytes();
+        return msg.payload().willMessage().getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -27,6 +27,9 @@ import org.HdrHistogram.Histogram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @ChannelHandler.Sharable
 class NettyPublishReceiverHandler extends ChannelInboundHandlerAdapter {
 
@@ -76,13 +79,13 @@ class NettyPublishReceiverHandler extends ChannelInboundHandlerAdapter {
             rawBytes = new byte[size];
             content.getBytes(content.readerIndex(), rawBytes);
         }
-        return new String(rawBytes);
+        return new String(rawBytes, UTF_8);
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         LOG.info("Received channel inactive");
-        ctx.channel().close();
+        ctx.channel().close().addListener(CLOSE_ON_FAILURE);
 
         System.out.println("Network time histogram (microsecs)");
         this.forthNetworkTime.outputPercentileDistribution(System.out, 1000.0);

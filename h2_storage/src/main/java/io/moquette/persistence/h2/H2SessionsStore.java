@@ -71,7 +71,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         LOG.info("Adding new subscription CId={}, topics={}", newSubscription.getClientId(),
             newSubscription.getTopicFilter());
         final String clientID = newSubscription.getClientId();
-        final MVMap<Object, Object> sessionSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
+        final MVMap<Object, Object> sessionSubscriptions = this.mvStore.openMap(subscriptionsMapName(clientID));
         sessionSubscriptions.put(newSubscription.getTopicFilter(), newSubscription);
 
         if (LOG.isTraceEnabled()) {
@@ -84,10 +84,10 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     @Override
     public void removeSubscription(Topic topicFilter, String clientID) {
         LOG.info("Removing subscription. CId={}, topics={}", clientID, topicFilter);
-        if (!this.mvStore.hasMap("subscriptions_" + clientID)) {
+        if (!this.mvStore.hasMap(subscriptionsMapName(clientID))) {
             return;
         }
-        final MVMap<Object, Object> sessionsSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
+        final MVMap<Object, Object> sessionsSubscriptions = this.mvStore.openMap(subscriptionsMapName(clientID));
         sessionsSubscriptions.remove(topicFilter);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Subscription has been removed. CId={}, topics={}, clientSubscriptions={}", clientID,
@@ -98,10 +98,10 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     @Override
     public void wipeSubscriptions(String sessionID) {
         LOG.info("Wiping subscriptions. CId={}", sessionID);
-        if (!this.mvStore.hasMap("subscriptions_" + sessionID)) {
+        if (!this.mvStore.hasMap(subscriptionsMapName(sessionID))) {
             return;
         }
-        final MVMap<Object, Object> subscriptions = this.mvStore.openMap("subscriptions_" + sessionID);
+        final MVMap<Object, Object> subscriptions = this.mvStore.openMap(subscriptionsMapName(sessionID));
         this.mvStore.removeMap(subscriptions);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Subscriptions have been removed. CId={}, clientSubscriptions={}", sessionID, subscriptions);
@@ -113,7 +113,8 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
         LOG.debug("Retrieving existing subscriptions...");
         List<Subscription> subscriptions = new ArrayList<>();
         for (String clientID : this.sessions.keySet()) {
-            ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
+            final String mapName = subscriptionsMapName(clientID);
+            ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap(mapName);
             subscriptions.addAll(clientSubscriptions.values());
         }
         LOG.debug("Existing subscriptions has been retrieved Result={}", subscriptions);
@@ -122,7 +123,7 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
 
     @Override
     public Collection<Subscription> listClientSubscriptions(String clientID) {
-        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + clientID);
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap(subscriptionsMapName(clientID));
         if (clientSubscriptions == null) {
             throw new IllegalStateException("Asking for subscriptions of not persisted client: " + clientID);
         }
@@ -130,10 +131,15 @@ public class H2SessionsStore implements ISessionsStore, ISubscriptionsStore {
     }
 
     @Override
-    public Subscription reload(Subscription subcription) {
-        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap("subscriptions_" + subcription.getClientId());
-        LOG.debug("Retrieving subscriptions CId={}, subscriptions={}", subcription.getClientId(), clientSubscriptions);
-        return clientSubscriptions.get(subcription.getTopicFilter());
+    public Subscription reload(Subscription subscription) {
+        final String subscriptionsMapName = subscriptionsMapName(subscription.getClientId());
+        ConcurrentMap<Topic, Subscription> clientSubscriptions = this.mvStore.openMap(subscriptionsMapName);
+        LOG.debug("Retrieving subscriptions CId={}, subscriptions={}", subscription.getClientId(), clientSubscriptions);
+        return clientSubscriptions.get(subscription.getTopicFilter());
+    }
+
+    private String subscriptionsMapName(String clientId) {
+        return "subscriptions_" + clientId;
     }
 
     @Override

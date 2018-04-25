@@ -23,12 +23,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 class BenchmarkSubscriber {
 
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkSubscriber.class);
 
     class SubscriberCallback implements MqttCallback {
 
+        @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             //used to catch the first message published
             if (!alreadyStarted) {
@@ -54,7 +57,7 @@ class BenchmarkSubscriber {
                 histogram.outputPercentileDistribution(System.out, 1000.0); //nanos/1000
                 m_latch.countDown();
             } else {
-                String payload = new String(message.getPayload());
+                String payload = new String(message.getPayload(), UTF_8);
                 //long sentTime = Long.parseLong(payload.split("-")[1]);
                 long sentTime = Long.parseLong(payload.split("-")[1]);
                 long delay = System.nanoTime() - sentTime;
@@ -67,6 +70,7 @@ class BenchmarkSubscriber {
             }
         }
 
+        @Override
         public void connectionLost(Throwable cause) {
             LOG.error("Client Subscriber lost connection, caused by ", cause);
             try {
@@ -78,6 +82,7 @@ class BenchmarkSubscriber {
             m_latch.countDown();
         }
 
+        @Override
         public void deliveryComplete(IMqttDeliveryToken token) {
         }
     }
@@ -102,14 +107,18 @@ class BenchmarkSubscriber {
         this.client.setCallback(new SubscriberCallback());
         this.client.connect(connectOptions, null, new IMqttActionListener() {
 
+            @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                 LOG.error("SUB: connect fail", exception);
                 System.exit(2);
             }
 
+            @Override
             public void onSuccess(IMqttToken asyncActionToken) {
                 try {
                     client.subscribe("/topic" + dialog_id, 1, null, new IMqttActionListener() {
+
+                        @Override
                         public void onFailure(IMqttToken asyncActionToken2, Throwable exception) {
                             try {
                                 client.disconnect();
@@ -118,6 +127,7 @@ class BenchmarkSubscriber {
                             }
                         }
 
+                        @Override
                         public void onSuccess(IMqttToken asyncActionToken2) {
                             LOG.info("SUB: subscribed to /topic{} qos: 1", dialog_id);
                         }
@@ -128,6 +138,8 @@ class BenchmarkSubscriber {
 
                 try {
                     client.subscribe("/exit" + dialog_id, 1, null, new IMqttActionListener() {
+
+                        @Override
                         public void onFailure(IMqttToken asyncActionToken2, Throwable exception) {
                             try {
                                 client.disconnect();
@@ -137,6 +149,7 @@ class BenchmarkSubscriber {
                             m_latch.countDown();
                         }
 
+                        @Override
                         public void onSuccess(IMqttToken asyncActionToken2) {
                             LOG.info("SUB: subscribed to /exit{} qos: 1", dialog_id);
                         }

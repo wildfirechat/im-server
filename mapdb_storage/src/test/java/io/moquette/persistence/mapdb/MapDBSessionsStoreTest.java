@@ -98,7 +98,8 @@ public class MapDBSessionsStoreTest {
     }
 
     @Test
-    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException,
+                TimeoutException {
         MapDBSessionsStore sessionsStore = (MapDBSessionsStore) storageService.sessionsStore();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(2);

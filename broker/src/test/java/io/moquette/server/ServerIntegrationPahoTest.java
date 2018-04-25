@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 public class ServerIntegrationPahoTest {
@@ -83,7 +85,6 @@ public class ServerIntegrationPahoTest {
         m_server.stopServer();
     }
 
-
     @Ignore("This test hasn't any meaning using in memory storage service")
     @Test
     public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws Exception {
@@ -100,11 +101,10 @@ public class ServerIntegrationPahoTest {
 
         // reconnect and publish
         m_client.connect(options);
-        m_client.publish("/topic", "Test my payload".getBytes(), 0, false);
+        m_client.publish("/topic", "Test my payload".getBytes(UTF_8), 0, false);
 
         assertEquals("/topic", m_messagesCollector.getTopic());
     }
-
 
     /**
      * subscriber A connect and subscribe on "a/b" QoS 1 subscriber B connect and subscribe on "a/+"
@@ -133,15 +133,15 @@ public class ServerIntegrationPahoTest {
         subscriberB.subscribe("a/+", 2);
 
         m_client.connect();
-        m_client.publish("a/b", "Hello world MQTT!!".getBytes(), 2, false);
+        m_client.publish("a/b", "Hello world MQTT!!".getBytes(UTF_8), 2, false);
 
         MqttMessage messageOnA = cbSubscriberA.waitMessage(1);
-        assertEquals("Hello world MQTT!!", new String(messageOnA.getPayload()));
+        assertEquals("Hello world MQTT!!", new String(messageOnA.getPayload(), UTF_8));
         assertEquals(1, messageOnA.getQos());
         subscriberA.disconnect();
 
         MqttMessage messageOnB = cbSubscriberB.waitMessage(1);
-        assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload()));
+        assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload(), UTF_8));
         assertEquals(2, messageOnB.getQos());
         subscriberB.disconnect();
     }
@@ -180,15 +180,15 @@ public class ServerIntegrationPahoTest {
                 tmpDir + File.separator + "clientForPublish");
         MqttClient clientForPublish = new MqttClient("tcp://localhost:1883", "clientForPublish", dsSubscriberPUB);
         clientForPublish.connect();
-        clientForPublish.publish("topic", "Hello".getBytes(), 2, true);
+        clientForPublish.publish("topic", "Hello".getBytes(UTF_8), 2, true);
 
         // verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
-        LOG.info("Before waiting to receive 1 sec from " + clientForSubscribe1.getClientId());
+        LOG.info("Before waiting to receive 1 sec from {}", clientForSubscribe1.getClientId());
         assertFalse(clientForSubscribe1.isConnected());
         assertTrue(clientForSubscribe2.isConnected());
-        LOG.info("Waiting to receive 1 sec from " + clientForSubscribe2.getClientId());
+        LOG.info("Waiting to receive 1 sec from {}", clientForSubscribe2.getClientId());
         MqttMessage messageOnB = cbSubscriber2.waitMessage(1);
-        assertEquals("Hello", new String(messageOnB.getPayload()));
+        assertEquals("Hello", new String(messageOnB.getPayload(), UTF_8));
     }
 
 //    @Test

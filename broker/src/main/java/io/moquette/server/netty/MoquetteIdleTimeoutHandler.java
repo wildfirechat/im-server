@@ -24,6 +24,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 @Sharable
 class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
 
@@ -37,7 +39,7 @@ class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
                 LOG.info("Firing channel inactive event. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
                 // fire a channelInactive to trigger publish of Will
                 ctx.fireChannelInactive();
-                ctx.close();
+                ctx.close().addListener(CLOSE_ON_FAILURE);
             }
         } else {
             if (LOG.isDebugEnabled()) {

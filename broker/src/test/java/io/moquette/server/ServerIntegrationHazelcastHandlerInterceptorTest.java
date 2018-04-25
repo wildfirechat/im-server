@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static io.moquette.BrokerConstants.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 
 public class ServerIntegrationHazelcastHandlerInterceptorTest {
@@ -122,7 +123,7 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
         LOG.info("*** checkPublishPassThroughCluster_Qos0 ***");
         m_listener.subscribe("/topic", 1);
 
-        m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(), 0, false);
+        m_publisher.publish("/topic", "Hello world MQTT QoS0".getBytes(UTF_8), 0, false);
         MqttMessage messageQos0 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS0", messageQos0.toString());
         assertEquals(0, messageQos0.getQos());
@@ -133,7 +134,7 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
         LOG.info("*** checkPublishPassThroughCluster_Qos1 ***");
         m_listener.subscribe("/topic", 1);
 
-        m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(), 1, false);
+        m_publisher.publish("/topic", "Hello world MQTT QoS1".getBytes(UTF_8), 1, false);
         MqttMessage messageQos1 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS1", messageQos1.toString());
         assertEquals(1, messageQos1.getQos());
@@ -144,7 +145,7 @@ public class ServerIntegrationHazelcastHandlerInterceptorTest {
         LOG.info("*** checkPublishPassThroughCluster_Qos2 ***");
         m_listener.subscribe("/topic", 2);
 
-        m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(), 2, false);
+        m_publisher.publish("/topic", "Hello world MQTT QoS2".getBytes(UTF_8), 2, false);
         MqttMessage messageQos2 = m_messagesCollector.waitMessage(1);
         assertEquals("Hello world MQTT QoS2", messageQos2.toString());
         assertEquals(2, messageQos2.getQos());

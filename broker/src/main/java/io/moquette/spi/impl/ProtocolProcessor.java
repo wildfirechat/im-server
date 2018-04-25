@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,6 +46,8 @@ import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
 import static io.moquette.spi.impl.Utils.messageId;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
@@ -92,37 +95,6 @@ public class ProtocolProcessor {
         STORED, VERIFIED
     }
 
-    private class RunningSubscription {
-
-        final String clientID;
-        final long packetId;
-
-        RunningSubscription(String clientID, long packetId) {
-            this.clientID = clientID;
-            this.packetId = packetId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-
-            RunningSubscription that = (RunningSubscription) o;
-
-            return packetId == that.packetId
-                    && (clientID != null ? clientID.equals(that.clientID) : that.clientID == null);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = clientID != null ? clientID.hashCode() : 0;
-            result = 31 * result + (int) (packetId ^ (packetId >>> 32));
-            return result;
-        }
-    }
-
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
     private ConnectionDescriptorStore connectionDescriptors;
@@ -157,15 +129,15 @@ public class ProtocolProcessor {
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
                      BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
-        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false, authorizator,
-            interceptor, sessionsRepository);
+        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false,
+             authorizator, interceptor, sessionsRepository);
     }
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
                      IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
-        init(new ConnectionDescriptorStore(sessionsRepository), subscriptions, storageService, sessionsStore, authenticator,
-            allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository);
+        init(new ConnectionDescriptorStore(sessionsRepository), subscriptions, storageService, sessionsStore,
+             authenticator, allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository);
     }
 
     /**
@@ -235,8 +207,8 @@ public class ProtocolProcessor {
             MqttConnAckMessage badProto = connAck(CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION);
 
             LOG.error("MQTT protocol version is not valid. CId={}", clientId);
-            channel.writeAndFlush(badProto);
-            channel.close();
+            channel.writeAndFlush(badProto).addListener(FIRE_EXCEPTION_ON_FAILURE);
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
 
@@ -245,8 +217,8 @@ public class ProtocolProcessor {
             if (!cleanSession || !this.allowZeroByteClientId) {
                 MqttConnAckMessage badId = connAck(CONNECTION_REFUSED_IDENTIFIER_REJECTED);
 
-                channel.writeAndFlush(badId);
-                channel.close();
+                channel.writeAndFlush(badId).addListener(FIRE_EXCEPTION_ON_FAILURE);
+                channel.close().addListener(CLOSE_ON_FAILURE);
                 LOG.error("The MQTT client ID cannot be empty. Username={}", payload.userName());
                 return;
             }
@@ -258,7 +230,7 @@ public class ProtocolProcessor {
         }
 
         if (!login(channel, msg, clientId)) {
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
 
@@ -275,25 +247,25 @@ public class ProtocolProcessor {
         initializeKeepAliveTimeout(channel, msg, clientId);
         storeWillMessage(msg, clientId);
         if (!sendAck(descriptor, msg, clientId)) {
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
 
         m_interceptor.notifyClientConnected(msg);
 
         if (!descriptor.assignState(SENDACK, SESSION_CREATED)) {
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
         final ClientSession clientSession = this.sessionsRepository.createOrLoadClientSession(clientId, cleanSession);
 
         if (!republish(descriptor, msg, clientSession)) {
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
         final boolean success = descriptor.assignState(MESSAGES_REPUBLISHED, ESTABLISHED);
         if (!success) {
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
         }
 
         LOG.info("CONNECT message processed CId={}, username={}", clientId, payload.userName());
@@ -319,7 +291,7 @@ public class ProtocolProcessor {
         if (msg.variableHeader().hasUserName()) {
             byte[] pwd = null;
             if (msg.variableHeader().hasPassword()) {
-                pwd = msg.payload().password().getBytes();
+                pwd = msg.payload().password().getBytes(StandardCharsets.UTF_8);
             } else if (!this.allowAnonymous) {
                 LOG.error("Client didn't supply any password and MQTT anonymous mode is disabled CId={}", clientId);
                 failedCredentials(channel);
@@ -386,12 +358,12 @@ public class ProtocolProcessor {
         if (msg.variableHeader().isWillFlag()) {
             MqttQoS willQos = MqttQoS.valueOf(msg.variableHeader().willQos());
             LOG.info("Configuring MQTT last will and testament CId={}, willQos={}, willTopic={}, willRetain={}",
-                    clientId, willQos, msg.payload().willTopic(), msg.variableHeader().isWillRetain());
-            byte[] willPayload = msg.payload().willMessage().getBytes();
+                     clientId, willQos, msg.payload().willTopic(), msg.variableHeader().isWillRetain());
+            byte[] willPayload = msg.payload().willMessage().getBytes(StandardCharsets.UTF_8);
             ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
             // save the will testament in the clientID store
             WillMessage will = new WillMessage(msg.payload().willTopic(), bb, msg.variableHeader().isWillRetain(),
-                    willQos);
+                                               willQos);
             m_willStore.put(clientId, will);
             LOG.info("MQTT last will and testament has been configured. CId={}", clientId);
         }
@@ -414,7 +386,8 @@ public class ProtocolProcessor {
     }
 
     private void failedCredentials(Channel session) {
-        session.writeAndFlush(connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
+        session.writeAndFlush(connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD))
+            .addListener(FIRE_EXCEPTION_ON_FAILURE);
         LOG.info("Client {} failed to connect with bad username or password.", session);
     }
 
@@ -435,7 +408,8 @@ public class ProtocolProcessor {
         StoredMessage inflightMsg = targetSession.inFlightAcknowledged(messageID);
 
         String topic = inflightMsg.getTopic();
-        InterceptAcknowledgedMessage wrapped = new InterceptAcknowledgedMessage(inflightMsg, topic, username, messageID);
+        InterceptAcknowledgedMessage wrapped = new InterceptAcknowledgedMessage(inflightMsg, topic, username,
+                                                                                messageID);
         m_interceptor.notifyMessageAcknowledged(wrapped);
     }
 
@@ -517,19 +491,19 @@ public class ProtocolProcessor {
     /**
      * Specialized version to publish will testament message.
      */
-     private void forwardPublishWill(WillMessage will, String clientID) {
-         LOG.info("Publishing will message. CId={}, topic={}", clientID, will.getTopic());
-         // it has just to publish the message downstream to the subscribers
-         // NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
-         IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
-         tobeStored.setClientID(clientID);
-         Topic topic = new Topic(tobeStored.getTopic());
-         this.messagesPublisher.publish2Subscribers(tobeStored, topic);
+    private void forwardPublishWill(WillMessage will, String clientID) {
+        LOG.info("Publishing will message. CId={}, topic={}", clientID, will.getTopic());
+        // it has just to publish the message downstream to the subscribers
+        // NB it's a will publish, it needs a PacketIdentifier for this conn, default to 1
+        IMessagesStore.StoredMessage tobeStored = asStoredMessage(will);
+        tobeStored.setClientID(clientID);
+        Topic topic = new Topic(tobeStored.getTopic());
+        this.messagesPublisher.publish2Subscribers(tobeStored, topic);
 
-         //Stores retained message to the topic
- 	    if(will.isRetained()) {
- 	    	m_messagesStore.storeRetained(topic, tobeStored);
- 	    }
+        //Stores retained message to the topic
+        if (will.isRetained()) {
+            m_messagesStore.storeRetained(topic, tobeStored);
+        }
      }
 
     static MqttQoS lowerQosToTheSubscriptionDesired(Subscription sub, MqttQoS qos) {
@@ -565,7 +539,7 @@ public class ProtocolProcessor {
 
         MqttFixedHeader pubRelHeader = new MqttFixedHeader(MqttMessageType.PUBREL, false, AT_LEAST_ONCE, false, 0);
         MqttMessage pubRelMessage = new MqttMessage(pubRelHeader, from(messageID));
-        channel.writeAndFlush(pubRelMessage);
+        channel.writeAndFlush(pubRelMessage).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void processPubComp(Channel channel, MqttMessage msg) {
@@ -589,7 +563,7 @@ public class ProtocolProcessor {
         final ConnectionDescriptor existingDescriptor = this.connectionDescriptors.getConnection(clientID);
         if (existingDescriptor == null) {
             // another client with same ID removed the descriptor, we must exit
-            channel.close();
+            channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
 
@@ -714,7 +688,7 @@ public class ProtocolProcessor {
             boolean validTopic = topic.isValid();
             if (!validTopic) {
                 // close the connection, not valid topicFilter is a protocol violation
-                channel.close();
+                channel.close().addListener(CLOSE_ON_FAILURE);
                 LOG.error("Topic filter is not valid. CId={}, topics={}, badTopicFilter={}", clientID, topics, topic);
                 return;
             }
@@ -732,7 +706,7 @@ public class ProtocolProcessor {
         MqttUnsubAckMessage ackMessage = new MqttUnsubAckMessage(fixedHeader, from(messageID));
 
         LOG.info("Sending UNSUBACK message. CId={}, topics={}, messageId={}", clientID, topics, messageID);
-        channel.writeAndFlush(ackMessage);
+        channel.writeAndFlush(ackMessage).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void processSubscribe(Channel channel, MqttSubscribeMessage msg) {
@@ -766,7 +740,7 @@ public class ProtocolProcessor {
         }
 
         LOG.info("Sending SUBACK response CId={}, messageId={}", clientID, messageID);
-        channel.writeAndFlush(ackMessage);
+        channel.writeAndFlush(ackMessage).addListener(FIRE_EXCEPTION_ON_FAILURE);
 
         // fire the persisted messages in session
         for (Subscription subscription : newSubscriptions) {
@@ -879,9 +853,10 @@ public class ProtocolProcessor {
                 emptyQueue = true;
             } else {
                 // recreate a publish from stored publish in queue
-                MqttPublishMessage pubMsg = createPublishForQos(msg.msg.getTopic(), msg.msg.getQos(), msg.msg.getPayload(),
-                        msg.msg.isRetained(), msg.messageId);
-                channel.write(pubMsg);
+                MqttPublishMessage pubMsg = createPublishForQos(msg.msg.getTopic(), msg.msg.getQos(),
+                                                                msg.msg.getPayload(), msg.msg.isRetained(),
+                                                                msg.messageId);
+                channel.write(pubMsg).addListener(FIRE_EXCEPTION_ON_FAILURE);
             }
         }
         channel.flush();

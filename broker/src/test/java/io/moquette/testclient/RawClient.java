@@ -32,6 +32,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 /**
  * This class is used to have a fluent interface to interact with a server. Inspired by
  * org.kaazing.robot
@@ -55,10 +57,9 @@ public final class RawClient {
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            // m_client.setConnectionLost(true);
+        public void channelInactive(ChannelHandlerContext ctx) {
             disconnectLatch.countDown();
-            ctx.close(/* false */);
+            ctx.close().addListener(CLOSE_ON_FAILURE);
         }
     }
 
@@ -72,6 +73,7 @@ public final class RawClient {
     private CountDownLatch disconnectLatch;
     private final Semaphore readableBytesSem;
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     private RawClient(String host, int port) {
         handler = new RawMessageHandler();
         heapBuffer = Unpooled.buffer(128);
@@ -120,14 +122,14 @@ public final class RawClient {
         for (int b : bytes) {
             buff.writeByte((byte) b);
         }
-        m_channel.write(buff);
+        m_channel.write(buff).addListener(CLOSE_ON_FAILURE);
         return this;
     }
 
     public RawClient writeWithSize(String str) {
         ByteBuf buff = Unpooled.buffer(str.length() + 2);
         buff.writeBytes(Utils.encodeString(str));
-        m_channel.write(buff);
+        m_channel.write(buff).addListener(CLOSE_ON_FAILURE);
         return this;
     }
 
@@ -145,7 +147,7 @@ public final class RawClient {
             throw new IllegalStateException(ex);
         }
         out.writeBytes(raw);
-        m_channel.write(out);
+        m_channel.write(out).addListener(CLOSE_ON_FAILURE);
         return this;
     }
 

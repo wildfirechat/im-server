@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -70,7 +72,7 @@ public class DBAuthenticatorTest {
                 JDBC_H2_MEM_TEST,
                 "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
                 SHA_256);
-        assertTrue(dbAuthenticator.checkValid(null, "dbuser", "password".getBytes()));
+        assertTrue(dbAuthenticator.checkValid(null, "dbuser", "password".getBytes(UTF_8)));
     }
 
     @Test
@@ -80,7 +82,7 @@ public class DBAuthenticatorTest {
                 JDBC_H2_MEM_TEST,
                 "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
                 SHA_256);
-        assertFalse(dbAuthenticator.checkValid(null, "dbuser2", "password".getBytes()));
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser2", "password".getBytes(UTF_8)));
     }
 
     @Test
@@ -90,7 +92,7 @@ public class DBAuthenticatorTest {
                 JDBC_H2_MEM_TEST,
                 "SELECT PASSWORD FROM ACCOUNT WHERE LOGIN=?",
                 SHA_256);
-        assertFalse(dbAuthenticator.checkValid(null, "dbuser", "wrongPassword".getBytes()));
+        assertFalse(dbAuthenticator.checkValid(null, "dbuser", "wrongPassword".getBytes(UTF_8)));
     }
 
     @After

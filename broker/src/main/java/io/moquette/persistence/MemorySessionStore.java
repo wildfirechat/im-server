@@ -33,7 +33,7 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
-    class Session {
+    static class Session {
         final String clientID;
         final Map<Topic, Subscription> subscriptions = new ConcurrentHashMap<>();
         boolean cleanSession;
@@ -169,7 +169,6 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
         }
         return subscriptions.get(subcription.getTopicFilter());
     }
-
 
     @Override
     public StoredMessage inFlightAck(String clientID, int messageID) {

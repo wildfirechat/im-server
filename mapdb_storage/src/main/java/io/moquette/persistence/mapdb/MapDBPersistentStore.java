@@ -63,6 +63,7 @@ public class MapDBPersistentStore implements IStore {
         return m_sessionsStore;
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     @Override
     public void initStore() {
         LOG.info("Initializing MapDB store");

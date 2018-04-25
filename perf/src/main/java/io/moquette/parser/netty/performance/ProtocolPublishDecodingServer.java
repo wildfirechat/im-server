@@ -27,6 +27,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 /**
  * Emulates a broker, but doesn't apply any protocol logic, just forward the qos0 publishes
  * to the lone subscriber, it's used just to measure the protocol decoding/encoding overhead.
@@ -73,12 +77,13 @@ public class ProtocolPublishDecodingServer {
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
             LOG.info("Server binded host: {}, port: {}", host, port);
-            f.sync();
+            f.sync().addListener(CLOSE_ON_FAILURE);
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void stop() {
         if (m_workerGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
@@ -93,7 +98,7 @@ public class ProtocolPublishDecodingServer {
         System.out.println("Server stopped");
     }
 
-    public static void main(String[] args) throws MqttException, InterruptedException {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         final ProtocolPublishDecodingServer server = new ProtocolPublishDecodingServer();
         server.init();
 
@@ -107,7 +112,7 @@ public class ProtocolPublishDecodingServer {
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
     }
 
-    private static void publishBombing() {
+    private static void publishBombing() throws UnsupportedEncodingException {
         LOG.info("Started publish loop");
         PublishBomber heavyPublisher = new PublishBomber("localhost", 1883);
         heavyPublisher.publishLoop(25000, 100000);

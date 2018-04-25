@@ -62,11 +62,12 @@ class MessagesPublisher {
     void publish2Subscribers(IMessagesStore.StoredMessage pubMsg, Topic topic, int messageID) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}, payload={}, " +
-                    "subscriptionTree={}", pubMsg.getClientID(), topic, messageID, DebugUtils.payload2Str(pubMsg.getPayload()),
+                      "subscriptionTree={}", pubMsg.getClientID(), topic, messageID,
+                      DebugUtils.payload2Str(pubMsg.getPayload()),
                 subscriptions.dumpTree());
         } else {
-            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}", pubMsg.getClientID(), topic,
-                messageID);
+            LOG.info("Sending publish message to subscribers. ClientId={}, topic={}, messageId={}",
+                     pubMsg.getClientID(), topic, messageID);
         }
         publish2Subscribers(pubMsg, topic);
     }
@@ -82,7 +83,8 @@ class MessagesPublisher {
             ClientSession targetSession = this.sessionsRepository.sessionForClient(sub.getClientId());
 
             boolean targetIsActive = this.connectionDescriptors.isConnected(sub.getClientId());
-//TODO move all this logic into messageSender, which puts into the flightZone only the messages that pull out of the queue.
+            // TODO move all this logic into messageSender, which puts into the flightZone only the messages
+            // that pull out of the queue.
             if (targetIsActive) {
                 LOG.debug("Sending PUBLISH message to active subscriber. CId={}, topicFilter={}, qos={}",
                     sub.getClientId(), sub.getTopicFilter(), qos);

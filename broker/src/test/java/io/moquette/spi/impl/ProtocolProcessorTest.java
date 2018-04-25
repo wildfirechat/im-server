@@ -42,6 +42,7 @@ import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -60,7 +61,6 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
-
 
     @Before
     public void setUp() throws InterruptedException {
@@ -143,7 +143,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // Exercise
         MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(AT_MOST_ONCE)
-                .retained(false).payload(Unpooled.copiedBuffer("Hello".getBytes())).build();
+                .retained(false).payload(Unpooled.copiedBuffer("Hello".getBytes(UTF_8))).build();
         NettyUtils.userName(m_channel, "FakeCLI");
         m_processor.processPublish(m_channel, msg);
 
@@ -269,7 +269,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
-        StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(), MqttQoS.EXACTLY_ONCE, "/topic");
+        StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(UTF_8), MqttQoS.EXACTLY_ONCE, "/topic");
         retainedMessage.setRetained(true);
         retainedMessage.setClientID(FAKE_PUBLISHER_ID);
         m_messagesStore.storeRetained(new Topic("/topic"), retainedMessage);

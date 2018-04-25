@@ -165,7 +165,7 @@ public class Topic implements Serializable {
         int i = 0;
         for (; i < subscriptionTokens.size(); i++) {
             Token subToken = subscriptionTokens.get(i);
-            if (subToken != Token.MULTI && subToken != Token.SINGLE) {
+            if (!Token.MULTI.equals(subToken) && !Token.SINGLE.equals(subToken)) {
                 if (i >= msgTokens.size()) {
                     return false;
                 }
@@ -174,18 +174,14 @@ public class Topic implements Serializable {
                     return false;
                 }
             } else {
-                if (subToken == Token.MULTI) {
+                if (Token.MULTI.equals(subToken)) {
                     return true;
                 }
-                if (subToken == Token.SINGLE) {
-                    // skip a step forward
-                }
+//                if (Token.SINGLE.equals(subToken)) {
+//                    // skip a step forward
+//                }
             }
         }
-        // if last token was a SINGLE then treat it as an empty
-        // if (subToken == Token.SINGLE && (i - msgTokens.size() == 1)) {
-        // i--;
-        // }
         return i == msgTokens.size();
     }
 

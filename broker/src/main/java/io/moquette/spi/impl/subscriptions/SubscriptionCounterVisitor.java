@@ -13,19 +13,21 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
+package io.moquette.spi.impl.subscriptions;
 
-package io.moquette.spi.impl;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import io.netty.buffer.ByteBuf;
+class SubscriptionCounterVisitor implements CTrieSubscriptionDirectory.IVisitor<Integer> {
 
-import java.nio.charset.StandardCharsets;
+    private AtomicInteger accumulator = new AtomicInteger(0);
 
-final class DebugUtils {
-
-    static String payload2Str(ByteBuf content) {
-        return new String(content.copy().array(), StandardCharsets.UTF_8);
+    @Override
+    public void visit(CNode node, int deep) {
+        accumulator.addAndGet(node.subscriptions.size());
     }
 
-    private DebugUtils() {
+    @Override
+    public Integer getResult() {
+        return accumulator.get();
     }
 }

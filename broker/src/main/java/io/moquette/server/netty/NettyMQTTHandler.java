@@ -24,6 +24,8 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 @Sharable
@@ -78,16 +80,16 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                             false,
                             0);
                     MqttMessage pingResp = new MqttMessage(pingHeader);
-                    ctx.writeAndFlush(pingResp);
+                    ctx.writeAndFlush(pingResp).addListener(CLOSE_ON_FAILURE);
                     break;
                 default:
                     LOG.error("Unkonwn MessageType:{}", messageType);
                     break;
             }
         } catch (Throwable ex) {
-            LOG.error("Exception was caught while processing MQTT message, " + ex.getCause(), ex);
+            LOG.error("Exception was caught while processing MQTT message, {}", ex.getCause(), ex);
             ctx.fireExceptionCaught(ex);
-            ctx.close();
+            ctx.close().addListener(CLOSE_ON_FAILURE);
         } finally {
             ReferenceCountUtil.release(msg);
         }
@@ -97,17 +99,17 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String clientID = NettyUtils.clientID(ctx.channel());
         if (clientID != null && !clientID.isEmpty()) {
-            LOG.info("Notifying connection lost event. MqttClientId = {}.", clientID);
+            LOG.info("Notifying connection lost event. MqttClientId = {}", clientID);
             m_processor.processConnectionLost(clientID, ctx.channel());
         }
-        ctx.close();
+        ctx.close().addListener(CLOSE_ON_FAILURE);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error("An unexpected exception was caught while processing MQTT message. Closing Netty channel. CId={}, " +
             "cause={}, errorMessage={}", NettyUtils.clientID(ctx.channel()), cause.getCause(), cause.getMessage());
-        ctx.close();
+        ctx.close().addListener(CLOSE_ON_FAILURE);
     }
 
     @Override

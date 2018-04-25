@@ -222,8 +222,9 @@ public class ProtocolProcessorBootstrapper {
                 .getConstructor(constructorArgClass)
                 .newInstance(props);
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-            LOG.warn("Unable to invoke constructor with {} argument. ClassName={}, interfaceName={}, cause={}, errorMessage={}",
-                    constructorArgClass.getName(), className, intrface.getName(), ex.getCause(), ex.getMessage());
+            LOG.warn("Unable to invoke constructor with {} argument. ClassName={}, interfaceName={}, cause={}, " +
+                     "errorMessage={}", constructorArgClass.getName(), className, intrface.getName(), ex.getCause(),
+                     ex.getMessage());
             return null;
         } catch (NoSuchMethodException | InvocationTargetException e) {
             try {
@@ -232,10 +233,11 @@ public class ProtocolProcessorBootstrapper {
                 instance = this.getClass().getClassLoader()
                     .loadClass(className)
                     .asSubclass(intrface)
-                    .newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-                LOG.error("Unable to invoke default constructor. ClassName={}, interfaceName={}, cause={}, errorMessage={}",
-                        className, intrface.getName(), ex.getCause(), ex.getMessage());
+                    .getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException |
+                     NoSuchMethodException | InvocationTargetException ex) {
+                LOG.error("Unable to invoke default constructor. ClassName={}, interfaceName={}, cause={}, " +
+                          "errorMessage={}", className, intrface.getName(), ex.getCause(), ex.getMessage());
                 return null;
             }
         }

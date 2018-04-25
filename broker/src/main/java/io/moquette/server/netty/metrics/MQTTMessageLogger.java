@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static io.moquette.spi.impl.Utils.messageId;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 /**
  *
@@ -100,6 +101,6 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         logMQTTMessage(ctx, msg, "C<-B");
-        ctx.write(msg, promise);
+        ctx.write(msg, promise).addListener(CLOSE_ON_FAILURE);
     }
 }

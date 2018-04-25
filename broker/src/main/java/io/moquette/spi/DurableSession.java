@@ -22,9 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DurableSession extends ClientSession {
 
@@ -50,20 +48,6 @@ public class DurableSession extends ClientSession {
             return sessionsStore.inFlightAck(clientID, messageID);
         }
     }
-
-    class InboundFlightZone {
-
-        final Map<Integer, IMessagesStore.StoredMessage> inboundFlightMessages = new ConcurrentHashMap<>();
-
-        IMessagesStore.StoredMessage lookup(int messageID) {
-            return inboundFlightMessages.get(messageID);
-        }
-
-        void waitingRel(int messageID, IMessagesStore.StoredMessage msg) {
-            inboundFlightMessages.put(messageID, msg);
-        }
-    }
-
 
     private static final Logger LOG = LoggerFactory.getLogger(DurableSession.class);
 

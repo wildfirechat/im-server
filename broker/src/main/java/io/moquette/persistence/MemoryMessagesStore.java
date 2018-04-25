@@ -41,7 +41,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void storeRetained(Topic topic, StoredMessage storedMessage) {
         LOG.debug("Store retained message for topic={}, CId={}", topic, storedMessage.getClientID());
         if (storedMessage.getClientID() == null) {
-            throw new IllegalArgumentException( "Message to be persisted must have a not null client ID");
+            throw new IllegalArgumentException("Message to be persisted must have a not null client ID");
         }
         m_retainedStore.put(topic, storedMessage);
     }

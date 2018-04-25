@@ -64,15 +64,16 @@ public class ClientSessionTest {
         subscriptionsDirectory.add(oldSubscription);
 
         // Subscribe on /topic again that overrides the previous subscription.
-        Subscription overrindingSubscription = new Subscription(sessionClean.clientID, new Topic("/topic"), EXACTLY_ONCE);
-        sessionClean.subscribe(overrindingSubscription);
-        subscriptionsDirectory.add(overrindingSubscription);
+        Subscription overridingSubscription = new Subscription(sessionClean.clientID, new Topic("/topic"),
+                                                               EXACTLY_ONCE);
+        sessionClean.subscribe(overridingSubscription);
+        subscriptionsDirectory.add(overridingSubscription);
 
         // Verify
         List<Subscription> subscriptions = subscriptionsDirectory.matches(new Topic("/topic"));
         assertEquals("Only one subscription must match /topic", 1, subscriptions.size());
         Subscription sub = subscriptions.get(0);
         assertEquals("Matching subscription MUST have higher QoS",
-            overrindingSubscription.getRequestedQos(), sub.getRequestedQos());
+            overridingSubscription.getRequestedQos(), sub.getRequestedQos());
     }
 }

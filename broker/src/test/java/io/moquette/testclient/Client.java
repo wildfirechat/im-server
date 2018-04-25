@@ -25,8 +25,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -52,6 +56,7 @@ public class Client {
         this(host, BrokerConstants.PORT);
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public Client(String host, int port) {
         handler.setClient(this);
         workerGroup = new NioEventLoopGroup();
@@ -157,7 +162,7 @@ public class Client {
     }
 
     public void sendMessage(MqttMessage msg) {
-        m_channel.writeAndFlush(msg);
+        m_channel.writeAndFlush(msg).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public MqttMessage lastReceivedMessage() {
@@ -179,9 +184,10 @@ public class Client {
         return m_connectionLost;
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void close() throws InterruptedException {
         // Wait until the connection is closed.
-        m_channel.closeFuture().sync();
+        m_channel.closeFuture().sync().addListener(CLOSE_ON_FAILURE);
         if (workerGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
         }

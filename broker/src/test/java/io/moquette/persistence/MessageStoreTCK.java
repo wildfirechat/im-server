@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2017 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.persistence;
 
 import io.moquette.spi.*;
@@ -9,11 +25,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static io.moquette.spi.impl.subscriptions.Topic.asTopic;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.EXACTLY_ONCE;
+import static java.nio.charset.StandardCharsets.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -28,9 +47,9 @@ public abstract class MessageStoreTCK {
     protected SessionsRepository sessionsRepository;
 
     @Test
-    public void testDropMessagesInSessionDoesntCleanAnyRetainedStoredMessages() {
+    public void testDropMessagesInSessionDoesntCleanAnyRetainedStoredMessages() throws UnsupportedEncodingException {
         final ClientSession session = sessionsRepository.createNewSession(TEST_CLIENT, true);
-        StoredMessage publishToStore = new StoredMessage("Hello".getBytes(), EXACTLY_ONCE, "/topic");
+        StoredMessage publishToStore = new StoredMessage("Hello".getBytes(UTF_8), EXACTLY_ONCE, "/topic");
         publishToStore.setClientID(TEST_CLIENT);
         publishToStore.setRetained(true);
         messagesStore.storeRetained(new Topic("/topic"), publishToStore);
@@ -50,8 +69,8 @@ public abstract class MessageStoreTCK {
     }
 
     @Test
-    public void testStoreRetained() {
-        StoredMessage msgStored = new StoredMessage("Hello".getBytes(), MqttQoS.AT_LEAST_ONCE, "/topic");
+    public void testStoreRetained() throws UnsupportedEncodingException {
+        StoredMessage msgStored = new StoredMessage("Hello".getBytes(UTF_8), MqttQoS.AT_LEAST_ONCE, "/topic");
         msgStored.setClientID(TEST_CLIENT);
 
         messagesStore.storeRetained(asTopic("/topic"), msgStored);
@@ -68,7 +87,7 @@ public abstract class MessageStoreTCK {
         final ByteBuf payload = msgRetrieved.getPayload();
         byte[] content = new byte[payload.readableBytes()];
         payload.readBytes(content);
-        assertEquals("Hello", new String(content));
+        assertEquals("Hello", new String(content, UTF_8));
     }
 
     @Test

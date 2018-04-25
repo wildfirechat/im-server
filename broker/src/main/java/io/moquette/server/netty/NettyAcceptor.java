@@ -44,6 +44,7 @@ import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import static io.moquette.BrokerConstants.*;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 
 public class NettyAcceptor implements ServerAcceptor {
 
@@ -85,7 +87,7 @@ public class NettyAcceptor implements ServerAcceptor {
         }
     }
 
-    abstract class PipelineInitializer {
+    abstract static class PipelineInitializer {
 
         abstract void init(ChannelPipeline pipeline) throws Exception;
     }
@@ -197,7 +199,7 @@ public class NettyAcceptor implements ServerAcceptor {
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
             LOG.info("Server has been bound. host={}, port={}", host, port);
-            f.sync();
+            f.sync().addListener(FIRE_EXCEPTION_ON_FAILURE);
         } catch (InterruptedException ex) {
             LOG.error("An interruptedException was caught while initializing server. Protocol={}", protocol, ex);
         }
@@ -349,6 +351,8 @@ public class NettyAcceptor implements ServerAcceptor {
         });
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
+    @Override
     public void close() {
         LOG.info("Closing Netty acceptor...");
         if (m_workerGroup == null || m_bossGroup == null) {

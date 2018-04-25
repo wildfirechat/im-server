@@ -15,10 +15,7 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 class CNode {
 
@@ -41,7 +38,7 @@ class CNode {
     boolean anyChildrenMatch(Token token) {
         for (INode iNode : children) {
             final CNode child = iNode.mainNode();
-            if (child.equals(token)) {
+            if (child.equalsToken(token)) {
                 return true;
             }
         }
@@ -55,15 +52,20 @@ class CNode {
     INode childOf(Token token) {
         for (INode iNode : children) {
             final CNode child = iNode.mainNode();
-            if (child.equals(token)) {
+            if (child.equalsToken(token)) {
                 return iNode;
             }
         }
         throw new IllegalArgumentException("Asked for a token that doesn't exists in any child [" + token + "]");
     }
 
-    private boolean equals(Token token) {
-        return this.token != null && this.token.equals(token);
+    private boolean equalsToken(Token token) {
+        return token != null && this.token != null && this.token.equals(token);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(token);
     }
 
     CNode copy() {

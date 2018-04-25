@@ -41,17 +41,18 @@ public class H2PersistentStore implements IStore {
 
     public H2PersistentStore(IConfig props, ScheduledExecutorService scheduler) {
         this.storePath = props.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, "");
-        this.autosaveInterval = Integer.parseInt(props.getProperty(BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME, "30"));
+        final String autosaveProp = props.getProperty(BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME, "30");
+        this.autosaveInterval = Integer.parseInt(autosaveProp);
         this.scheduler = scheduler;
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     @Override
     public void initStore() {
         LOG.info("Initializing H2 store");
         if (storePath == null || storePath.isEmpty()) {
             LOG.warn("H2 store file path is empty, using in-memory store");
             mvStore = MVStore.open(null);
-
         } else {
             mvStore = new MVStore.Builder()
                 .fileName(storePath)
@@ -60,13 +61,9 @@ public class H2PersistentStore implements IStore {
         }
 
         LOG.info("Scheduling H2 commit task");
-        scheduler.scheduleWithFixedDelay(new Runnable() {
-
-            @Override
-            public void run() {
-                LOG.debug("Committing to H2");
-                mvStore.commit();
-            }
+        scheduler.scheduleWithFixedDelay(() -> {
+            LOG.debug("Committing to H2");
+            mvStore.commit();
         }, this.autosaveInterval, this.autosaveInterval, TimeUnit.SECONDS);
 
         messageStore = new H2MessagesStore(mvStore);
@@ -78,7 +75,6 @@ public class H2PersistentStore implements IStore {
 
     @Override
     public void close() {
-
     }
 
     @Override

@@ -69,7 +69,8 @@ public class ProtocolProcessor_CONNECT_Test {
         subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-                new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
+                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR,
+                         new SessionsRepository(this.m_sessionStore, null));
     }
 
     @Test
@@ -286,7 +287,7 @@ public class ProtocolProcessor_CONNECT_Test {
                 FAKE_CLIENT_ID,
                 new Topic(ProtocolProcessorTest.FAKE_TOPIC),
                 MqttQoS.AT_MOST_ONCE);
-        verifySubscriptionExists(m_session, m_sessionStore, expectedSubscription);
+        verifySubscriptionExists(m_sessionStore, expectedSubscription);
         assertEqualsSubAck(m_session.readOutbound());
 
         // disconnect
@@ -300,7 +301,7 @@ public class ProtocolProcessor_CONNECT_Test {
         assertTrue("Connection is accepted and therefore should remain open.", m_session.isOpen());
 
         // verify that the first subscription is still preserved
-        verifySubscriptionExists(m_session, m_sessionStore, expectedSubscription);
+        verifySubscriptionExists(m_sessionStore, expectedSubscription);
     }
 
     @Test

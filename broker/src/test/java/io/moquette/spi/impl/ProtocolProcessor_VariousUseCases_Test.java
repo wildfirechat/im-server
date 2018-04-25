@@ -201,7 +201,8 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1() throws InterruptedException {
+    public void avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1()
+            throws InterruptedException {
         connect();
         subscribe("/topic", AT_LEAST_ONCE);
         disconnect();
@@ -220,7 +221,6 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
         connect();
         verifyPublishIsReceived("Hello MQTT 2", AT_LEAST_ONCE);
     }
-
 
     @Test
     public void testConnectSubPub_cycle_getTimeout_on_second_disconnect_issue142() throws InterruptedException {

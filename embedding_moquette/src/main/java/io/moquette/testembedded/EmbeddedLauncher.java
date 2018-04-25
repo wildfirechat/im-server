@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 final class EmbeddedLauncher {
 
@@ -44,8 +46,8 @@ final class EmbeddedLauncher {
 
         @Override
         public void onPublish(InterceptPublishMessage msg) {
-            System.out.println(
-                    "Received on topic: " + msg.getTopicName() + " content: " + new String(msg.getPayload().array()));
+            final String decodedPayload = new String(msg.getPayload().array(), UTF_8);
+            System.out.println("Received on topic: " + msg.getTopicName() + " content: " + decodedPayload);
         }
     }
 
@@ -73,7 +75,7 @@ final class EmbeddedLauncher {
 //        qos(MqttQoS.AT_MOST_ONCE);
 //        qQos(MqttQoS.AT_LEAST_ONCE);
             .qos(MqttQoS.EXACTLY_ONCE)
-            .payload(Unpooled.copiedBuffer("Hello World!!".getBytes()))
+            .payload(Unpooled.copiedBuffer("Hello World!!".getBytes(UTF_8)))
             .build();
 
         mqttBroker.internalPublish(message, "INTRLPUB");

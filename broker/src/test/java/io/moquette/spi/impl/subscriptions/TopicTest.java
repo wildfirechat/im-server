@@ -122,7 +122,6 @@ public class TopicTest {
         assertEquals(Topic.asTopic("a/b"), Topic.asTopic("/a/b").exceptHeadToken());
     }
 
-
     public static TopicAssert assertThat(Topic topic) {
         return new TopicAssert(topic);
     }

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static io.moquette.parser.netty.performance.NettyPublishReceiverHandler.payload2Str;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
@@ -65,7 +66,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
                     return;
                 case DISCONNECT:
                     LOG.info("Received a message of type {} from <{}>", messageType, clientID);
-                    ctx.close();
+                    ctx.close().addListener(CLOSE_ON_FAILURE);
 //                case PUBACK:
 //                    NettyChannel channel;
 //                    synchronized (m_channelMapper) {
@@ -85,7 +86,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
                             false,
                             0);
                     MqttMessage pingResp = new MqttMessage(pingHeader);
-                    ctx.writeAndFlush(pingResp);
+                    ctx.writeAndFlush(pingResp).addListener(CLOSE_ON_FAILURE);
                     break;
                 default:
                     LOG.info("Received a message of type {} from <{}>", messageType, clientID);
@@ -114,7 +115,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(msg.variableHeader().topicName(), 0);
         MqttPublishMessage pubMessage = new MqttPublishMessage(fixedHeader, varHeader, msg.payload());
 
-        m_state.getSubscriberCh().writeAndFlush(pubMessage);
+        m_state.getSubscriberCh().writeAndFlush(pubMessage).addListener(CLOSE_ON_FAILURE);
         /*Channel subscriberCh = m_state.getSubscriberCh();
         if (subscriberCh.isWritable()) {
             subscriberCh.write(pubMessage);
@@ -135,7 +136,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
                 fixedHeader,
                 from(msg.variableHeader().messageId()),
                 payload);
-        ctx.writeAndFlush(ackMessage);
+        ctx.writeAndFlush(ackMessage).addListener(CLOSE_ON_FAILURE);
         LOG.debug("subscribed client to {}", msg.payload().topicSubscriptions());
     }
 
@@ -156,8 +157,8 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
             MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(
                     MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED, false);
             MqttConnAckMessage koResp = new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader);
-            ctx.writeAndFlush(koResp);
-            ctx.close();
+            ctx.writeAndFlush(koResp).addListener(CLOSE_ON_FAILURE);
+            ctx.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
 
@@ -166,7 +167,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
         MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(
                 MqttConnectReturnCode.CONNECTION_ACCEPTED, false);
         MqttConnAckMessage okResp = new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader);
-        ctx.writeAndFlush(okResp);
+        ctx.writeAndFlush(okResp).addListener(CLOSE_ON_FAILURE);
     }
 
     @Override
@@ -175,7 +176,7 @@ class LoopMQTTHandler extends ChannelInboundHandlerAdapter {
 //        NettyChannel channel = m_channelMapper.get(ctx);
 //        String clientID = (String) channel.getAttribute(NettyChannel.ATTR_KEY_CLIENTID);
 //        m_messaging.lostConnection(channel, clientID);
-        ctx.channel().close(/*false*/);
+        ctx.channel().close().addListener(CLOSE_ON_FAILURE);
         System.out.println("Processing time histogram (microsecs)");
         this.processingTime.outputPercentileDistribution(System.out, 1000.0);
 

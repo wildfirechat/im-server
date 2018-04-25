@@ -144,8 +144,8 @@ public class CTrieSubscriptionDirectoryTest {
     @Test
     public void givenTreeWithSomeNodeWhenRemoveMultipleTimes() {
         sut.add(clientSubOnTopic("TempSensor1", "test"));
-        
-        // make sure no TNode exceptions 
+
+        // make sure no TNode exceptions
         sut.removeSubscription(asTopic("test"), "TempSensor1");
         sut.removeSubscription(asTopic("test"), "TempSensor1");
         sut.removeSubscription(asTopic("test"), "TempSensor1");
@@ -192,34 +192,29 @@ public class CTrieSubscriptionDirectoryTest {
         sut.add(clientSubOnTopic("TempSensor1", "/temp/2"));
 
         //Exercise
-
         sut.removeSubscription(asTopic("/temp"), "TempSensor1");
 
         final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("/temp/1"), sut.root);
         final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("/temp/2"), sut.root);
 
         //Verify
-
         // not clear to me, but I believe /temp unsubscribe should not unsub you from downstream /temp/1 or /temp/2
-        
         final Subscription expectedMatchingsub1 = new Subscription("TempSensor1", asTopic("/temp/1"));
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         final Subscription expectedMatchingsub2 = new Subscription("TempSensor1", asTopic("/temp/2"));
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
     }
 
-
     @Test
     public void givenTreeWithDeepNodeWhenRemoveContainedSubscriptionThenNodeIsUpdated() {
         sut.add(clientSubOnTopic("TempSensor1", "/bah/bin/bash"));
 
-        sut.removeSubscription(asTopic("/bah/bin/bash"),"TempSensor1");
+        sut.removeSubscription(asTopic("/bah/bin/bash"), "TempSensor1");
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/bah/bin/bash"));
         assertFalse("Node on path /temp can't be present", matchedNode.isPresent());
     }
-
 
     @Test
     public void testMatchSubscriptionNoWildcards() {
@@ -237,7 +232,7 @@ public class CTrieSubscriptionDirectoryTest {
     public void testRemovalInnerTopicOffRootSameClient() {
         sut.add(clientSubOnTopic("TempSensor1", "temp"));
         sut.add(clientSubOnTopic("TempSensor1", "temp/1"));
-        
+
         //Exercise
         final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"), sut.root);
         final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
@@ -249,7 +244,7 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp"),"TempSensor1");
+        sut.removeSubscription(asTopic("temp"), "TempSensor1");
 
         //Exercise
         final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
@@ -275,7 +270,7 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp"),"TempSensor1");
+        sut.removeSubscription(asTopic("temp"), "TempSensor1");
 
         //Exercise
         final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
@@ -301,7 +296,7 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp/1"),"TempSensor2");
+        sut.removeSubscription(asTopic("temp/1"), "TempSensor2");
 
         //Exercise
         final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
@@ -311,5 +306,3 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs4).doesNotContain(expectedMatchingsub2);
     }
 }
-
-

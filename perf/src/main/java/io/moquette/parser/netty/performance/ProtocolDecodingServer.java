@@ -32,6 +32,10 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 /**
  * Emulates a broker, but doesn't apply any protocol logic, just forward the qos0 publishes
  * to the lone subscriber, it's used just to measure the protocol decoding/encoding overhead.
@@ -39,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProtocolDecodingServer {
 
-    class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
+    static class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
@@ -47,7 +51,7 @@ public class ProtocolDecodingServer {
                 if (e == IdleState.READER_IDLE) {
                     //fire a channelInactive to trigger publish of Will
                     ctx.fireChannelInactive();
-                    ctx.close();
+                    ctx.close().addListener(CLOSE_ON_FAILURE);
                 } /*else if (e.getState() == IdleState.WRITER_IDLE) {
                     ctx.writeAndFlush(new PingMessage());
                 }*/
@@ -125,12 +129,13 @@ public class ProtocolDecodingServer {
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
             LOG.info("Server binded host: {}, port: {}", host, port);
-            f.sync();
+            f.sync().addListener(CLOSE_ON_FAILURE);
         } catch (InterruptedException ex) {
             LOG.error(null, ex);
         }
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void stop() {
         if (m_workerGroup == null) {
             throw new IllegalStateException("Invoked close on an Acceptor that wasn't initialized");
@@ -145,7 +150,7 @@ public class ProtocolDecodingServer {
         System.out.println("Server stopped");
     }
 
-    public static void main(String[] args) throws MqttException, InterruptedException {
+    public static void main(String[] args) throws MqttException, InterruptedException, UnsupportedEncodingException {
         final ProtocolDecodingServer server = new ProtocolDecodingServer();
         server.init();
 
@@ -155,7 +160,7 @@ public class ProtocolDecodingServer {
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
     }
 
-    private static void startClientsTesting() throws MqttException, InterruptedException {
+    private static void startClientsTesting() throws MqttException, InterruptedException, UnsupportedEncodingException {
         String host = "localhost";
         int numToSend = 10;
         int messagesPerSecond = 10000;

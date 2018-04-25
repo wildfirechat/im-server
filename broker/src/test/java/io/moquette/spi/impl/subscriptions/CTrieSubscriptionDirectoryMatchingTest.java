@@ -83,10 +83,11 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(financeAnySub);
 
         // Verify
-        assertThat(sut.recursiveMatch(asTopic("finance/stock"), sut.root)).containsExactlyInAnyOrder(financeAnySub, anySub);
-        assertThat(sut.recursiveMatch(asTopic("finance/stock/ibm"), sut.root)).containsExactlyInAnyOrder(financeAnySub, anySub);
-
-        System.out.println(sut.dumpTree());
+        assertThat(sut.recursiveMatch(asTopic("finance/stock"), sut.root))
+            .containsExactlyInAnyOrder(financeAnySub, anySub);
+        assertThat(sut.recursiveMatch(asTopic("finance/stock/ibm"), sut.root))
+            .containsExactlyInAnyOrder(financeAnySub, anySub);
+//        System.out.println(sut.dumpTree());
     }
 
     @Test
