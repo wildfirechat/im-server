@@ -185,8 +185,10 @@ public class NettyAcceptor implements ServerAcceptor {
                             throw th;
                         }
                     }
-                }).option(ChannelOption.SO_BACKLOG, nettySoBacklog).option(ChannelOption.SO_REUSEADDR, nettySoReuseaddr)
-                .option(ChannelOption.TCP_NODELAY, nettyTcpNodelay)
+                })
+                .option(ChannelOption.SO_BACKLOG, nettySoBacklog)
+                .option(ChannelOption.SO_REUSEADDR, nettySoReuseaddr)
+                .childOption(ChannelOption.TCP_NODELAY, nettyTcpNodelay)
                 .childOption(ChannelOption.SO_KEEPALIVE, nettySoKeepalive);
         try {
             LOG.info("Binding server. host={}, port={}", host, port);
