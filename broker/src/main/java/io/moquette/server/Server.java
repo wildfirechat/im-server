@@ -39,6 +39,7 @@ import io.moquette.spi.security.ISslContextCreator;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -82,8 +83,7 @@ public class Server {
     /**
      * Starts Moquette bringing the configuration from the file located at m_config/moquette.conf
      *
-     * @throws IOException
-     *             in case of any IO error.
+     * @throws IOException in case of any IO error.
      */
     public void startServer() throws IOException {
         File defaultConfigurationFile = defaultConfigFile();
@@ -101,10 +101,8 @@ public class Server {
     /**
      * Starts Moquette bringing the configuration from the given file
      *
-     * @param configFile
-     *            text file that contains the configuration.
-     * @throws IOException
-     *             in case of any IO Error.
+     * @param configFile text file that contains the configuration.
+     * @throws IOException in case of any IO Error.
      */
     public void startServer(File configFile) throws IOException {
         LOG.info("Starting Moquette server. Configuration file path={}", configFile.getAbsolutePath());
@@ -115,17 +113,15 @@ public class Server {
 
     /**
      * Starts the server with the given properties.
-     *
+     * <p>
      * Its suggested to at least have the following properties:
      * <ul>
      * <li>port</li>
      * <li>password_file</li>
      * </ul>
      *
-     * @param configProps
-     *            the properties map to use as configuration.
-     * @throws IOException
-     *             in case of any IO Error.
+     * @param configProps the properties map to use as configuration.
+     * @throws IOException in case of any IO Error.
      */
     public void startServer(Properties configProps) throws IOException {
         LOG.info("Starting Moquette server using properties object");
@@ -136,10 +132,8 @@ public class Server {
     /**
      * Starts Moquette bringing the configuration files from the given Config implementation.
      *
-     * @param config
-     *            the configuration to use to start the broker.
-     * @throws IOException
-     *             in case of any IO Error.
+     * @param config the configuration to use to start the broker.
+     * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config) throws IOException {
         LOG.info("Starting Moquette server using IConfig instance...");
@@ -150,12 +144,9 @@ public class Server {
      * Starts Moquette with config provided by an implementation of IConfig class and with the set
      * of InterceptHandler.
      *
-     * @param config
-     *            the configuration to use to start the broker.
-     * @param handlers
-     *            the handlers to install in the broker.
-     * @throws IOException
-     *             in case of any IO Error.
+     * @param config   the configuration to use to start the broker.
+     * @param handlers the handlers to install in the broker.
+     * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
         LOG.info("Starting moquette server using IConfig instance and intercept handlers");
@@ -163,7 +154,7 @@ public class Server {
     }
 
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers, ISslContextCreator sslCtxCreator,
-            IAuthenticator authenticator, IAuthorizator authorizator) throws IOException {
+                            IAuthenticator authenticator, IAuthorizator authorizator) throws IOException {
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
@@ -207,8 +198,8 @@ public class Server {
         if (hzConfigPath != null) {
             boolean isHzConfigOnClasspath = this.getClass().getClassLoader().getResource(hzConfigPath) != null;
             Config hzconfig = isHzConfigOnClasspath
-                    ? new ClasspathXmlConfig(hzConfigPath)
-                    : new FileSystemXmlConfig(hzConfigPath);
+                ? new ClasspathXmlConfig(hzConfigPath)
+                : new FileSystemXmlConfig(hzConfigPath);
             LOG.info("Starting Hazelcast instance. ConfigurationFile={}", hzconfig);
             hazelcastInstance = Hazelcast.newHazelcastInstance(hzconfig);
         } else {
@@ -233,12 +224,9 @@ public class Server {
      * Use the broker to publish a message. It's intended for embedding applications. It can be used
      * only after the server is correctly started with startServer.
      *
-     * @param msg
-     *            the message to forward.
-     * @param clientId
-     *            the id of the sending server.
-     * @throws IllegalStateException
-     *             if the server is not yet started
+     * @param msg      the message to forward.
+     * @param clientId the id of the sending server.
+     * @throws IllegalStateException if the server is not yet started
      */
     public void internalPublish(MqttPublishMessage msg, final String clientId) {
         final int messageID = msg.variableHeader().messageId();
@@ -287,8 +275,7 @@ public class Server {
     /**
      * SPI method used by Broker embedded applications to add intercept handlers.
      *
-     * @param interceptHandler
-     *            the handler to add.
+     * @param interceptHandler the handler to add.
      */
     public void addInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
@@ -303,8 +290,7 @@ public class Server {
     /**
      * SPI method used by Broker embedded applications to remove intercept handlers.
      *
-     * @param interceptHandler
-     *            the handler to remove.
+     * @param interceptHandler the handler to remove.
      */
     public void removeInterceptHandler(InterceptHandler interceptHandler) {
         if (!m_initialized) {
