@@ -88,6 +88,7 @@ final class BrokerInterceptor implements Interceptor {
             LOG.warn("Forcing shutdown of interceptor thread pool...");
             executor.shutdownNow();
         }
+        LOG.info("interceptors stopped");
     }
 
     @Override

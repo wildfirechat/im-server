@@ -124,7 +124,7 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(Properties configProps) throws IOException {
-        LOG.info("Starting Moquette server using properties object");
+        LOG.debug("Starting Moquette server using properties object");
         final IConfig config = new MemoryConfig(configProps);
         startServer(config);
     }
@@ -136,7 +136,7 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config) throws IOException {
-        LOG.info("Starting Moquette server using IConfig instance...");
+        LOG.debug("Starting Moquette server using IConfig instance");
         startServer(config, null);
     }
 
@@ -149,16 +149,17 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
-        LOG.info("Starting moquette server using IConfig instance and intercept handlers");
+        LOG.debug("Starting moquette server using IConfig instance and intercept handlers");
         startServer(config, handlers, null, null, null);
     }
 
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers, ISslContextCreator sslCtxCreator,
                             IAuthenticator authenticator, IAuthorizator authorizator) throws IOException {
+        final long start = System.currentTimeMillis();
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
-        LOG.info("Starting Moquette Server. MQTT message interceptors={}", getInterceptorIds(handlers));
+        LOG.trace("Starting Moquette Server. MQTT message interceptors={}", getInterceptorIds(handlers));
 
         scheduler = Executors.newScheduledThreadPool(1);
 
@@ -168,22 +169,22 @@ public class Server {
         }
         configureCluster(config);
         final String persistencePath = config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME);
-        LOG.info("Configuring Using persistent store file, path={}", persistencePath);
+        LOG.debug("Configuring Using persistent store file, path={}", persistencePath);
         m_processorBootstrapper = new ProtocolProcessorBootstrapper();
         final ProtocolProcessor processor = m_processorBootstrapper.init(config, handlers, authenticator, authorizator,
             this);
-        LOG.info("Initialized MQTT protocol processor");
+        LOG.debug("Initialized MQTT protocol processor");
         if (sslCtxCreator == null) {
-            LOG.warn("Using default SSL context creator");
+            LOG.info("Using default SSL context creator");
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
         }
 
-        LOG.info("Binding server to the configured ports");
         m_acceptor = new NettyAcceptor();
         m_acceptor.initialize(processor, config, sslCtxCreator);
         m_processor = processor;
 
-        LOG.info("Moquette server has been initialized successfully");
+        final long startTime = System.currentTimeMillis() - start;
+        LOG.info("Moquette server has been started successfully in {} ms", startTime);
         m_initialized = true;
     }
 

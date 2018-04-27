@@ -52,11 +52,11 @@ public class TransientSession extends ClientSession {
 
     @Override
     public boolean subscribe(Subscription newSubscription) {
-        LOG.info("Adding new subscription. CId={}, topics={}, qos={}", newSubscription.getClientId(),
+        LOG.trace("Adding new subscription. CId={}, topics={}, qos={}", newSubscription.getClientId(),
             newSubscription.getTopicFilter(), newSubscription.getRequestedQos());
         boolean validTopic = newSubscription.getTopicFilter().isValid();
         if (!validTopic) {
-            LOG.warn("The topic filter is not valid. CId={}, topics={}", newSubscription.getClientId(),
+            LOG.warn("Invalid topic filter. CId={}, topicFilter={}", newSubscription.getClientId(),
                 newSubscription.getTopicFilter());
             // send SUBACK with 0x80 for this topic filter
             return false;
@@ -67,7 +67,7 @@ public class TransientSession extends ClientSession {
         if (mathingExisting.isPresent()) {
             Subscription existingSub = mathingExisting.get();
             if (existingSub.qosLessThan(newSubscription)) {
-                LOG.info("Subscription already existed with a lower QoS value. It will be updated. CId={}, " +
+                LOG.debug("Subscription already existed with a lower QoS value. It will be updated. CId={}, " +
                         "topics={}, existingQos={}, newQos={}", newSubscription.getClientId(),
                     newSubscription.getTopicFilter(), existingSub.getRequestedQos(), newSubscription.getRequestedQos());
                 subscriptions.remove(newSubscription);
@@ -80,7 +80,7 @@ public class TransientSession extends ClientSession {
 
     @Override
     public void unsubscribeFrom(Topic topicFilter) {
-        LOG.info("Removing subscription. CId={}, topics={}", clientID, topicFilter);
+        LOG.trace("Removing subscription. CId={}, topics={}", clientID, topicFilter);
         Set<Subscription> subscriptionsToRemove = new HashSet<>();
         for (Subscription sub : this.subscriptions) {
             if (sub.getTopicFilter().equals(topicFilter)) {
@@ -112,14 +112,13 @@ public class TransientSession extends ClientSession {
 
     @Override
     public void dropQueue() {
-        LOG.debug("Removing messages of session. CId={}", this.clientID);
         this.messagesQueue = null;
-        LOG.debug("Messages of the session have been removed. CId={}", this.clientID);
+        LOG.trace("Messages of the session have been removed. CId={}", this.clientID);
     }
 
     @Override
     public void cleanSession() {
-        LOG.info("Transient sessiom, wiping existing subscriptions. ClientId={}", clientID);
+        LOG.trace("Transient session, wiping existing subscriptions. ClientId={}", clientID);
         this.subscriptions.clear();
 
         //TODO
@@ -134,7 +133,7 @@ public class TransientSession extends ClientSession {
 
     @Override
     public int inFlightAckWaiting(StoredMessage msg) {
-        LOG.debug("Adding message to inflight zone. CId={}", clientID);
+        LOG.trace("Adding message to inflight zone. CId={}", clientID);
         int messageId = this.nextPacketId();
         this.outboundInflightMap.put(messageId, msg);
         return messageId;
@@ -142,7 +141,7 @@ public class TransientSession extends ClientSession {
 
     @Override
     public IMessagesStore.StoredMessage inFlightAcknowledged(int messageID) {
-        LOG.debug("Removing message to inflight zone. CId={}, messageID={}", clientID, messageID);
+        LOG.trace("Removing message to inflight zone. CId={}, messageID={}", clientID, messageID);
         return this.outboundInflightMap.remove(messageID);
     }
 
@@ -164,7 +163,7 @@ public class TransientSession extends ClientSession {
 
     @Override
     public IMessagesStore.StoredMessage completeReleasedPublish(int messageID) {
-        LOG.info("Acknowledged message in second phase, clientID <{}> messageID {}", clientID, messageID);
+        LOG.trace("Acknowledged message in second phase, clientID <{}> messageID {}", clientID, messageID);
         return this.secondPhaseStore.remove(messageID);
     }
 

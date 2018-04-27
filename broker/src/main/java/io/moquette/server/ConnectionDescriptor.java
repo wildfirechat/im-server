@@ -87,7 +87,7 @@ public class ConnectionDescriptor {
     }
 
     public boolean close() {
-        LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
+        LOG.debug("Closing connection descriptor. MqttClientId = {}.", clientID);
         final boolean success = assignState(ConnectionState.INTERCEPTORS_NOTIFIED, ConnectionState.DISCONNECTED);
         if (!success) {
             return false;
@@ -111,19 +111,12 @@ public class ConnectionDescriptor {
     }
 
     public boolean assignState(ConnectionState expected, ConnectionState newState) {
-        LOG.debug(
-                "Updating state of connection descriptor. MqttClientId = {}, expectedState = {}, newState = {}.",
-                clientID,
-                expected,
-                newState);
+        LOG.debug("Updating state of connection descriptor. MqttClientId = {}, expectedState = {}, newState = {}.",
+                  clientID, expected, newState);
         boolean retval = channelState.compareAndSet(expected, newState);
         if (!retval) {
-            LOG.error(
-                    "Unable to update state of connection descriptor."
-                    + " MqttclientId = {}, expectedState = {}, newState = {}.",
-                    clientID,
-                    expected,
-                    newState);
+            LOG.error("Unable to update state of connection descriptor. CId = {}, expectedState = {}, newState = {}.",
+                      clientID, expected, newState);
         }
         return retval;
     }
