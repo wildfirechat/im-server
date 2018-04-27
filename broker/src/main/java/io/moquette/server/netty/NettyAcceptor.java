@@ -44,7 +44,6 @@ import io.netty.handler.codec.mqtt.MqttEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
@@ -113,22 +112,17 @@ public class NettyAcceptor implements ServerAcceptor {
     @Override
     public void initialize(ProtocolProcessor processor, IConfig props, ISslContextCreator sslCtxCreator)
             throws IOException {
-        LOG.info("Initializing Netty acceptor...");
+        LOG.info("Initializing Netty acceptor");
 
-        nettySoBacklog = Integer.parseInt(props.getProperty(BrokerConstants.NETTY_SO_BACKLOG_PROPERTY_NAME, "128"));
-        nettySoReuseaddr = Boolean
-                .parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_REUSEADDR_PROPERTY_NAME, "true"));
-        nettyTcpNodelay = Boolean
-                .parseBoolean(props.getProperty(BrokerConstants.NETTY_TCP_NODELAY_PROPERTY_NAME, "true"));
-        nettySoKeepalive = Boolean
-                .parseBoolean(props.getProperty(BrokerConstants.NETTY_SO_KEEPALIVE_PROPERTY_NAME, "true"));
-        nettyChannelTimeoutSeconds = Integer
-                .parseInt(props.getProperty(BrokerConstants.NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME, "10"));
-        maxBytesInMessage = Integer
-            .parseInt(props.getProperty(BrokerConstants.NETTY_MAX_BYTES_PROPERTY_NAME,
-                String.valueOf(BrokerConstants.DEFAULT_NETTY_MAX_BYTES_IN_MESSAGE)));
+        nettySoBacklog = props.intProp(BrokerConstants.NETTY_SO_BACKLOG_PROPERTY_NAME, 128);
+        nettySoReuseaddr = props.boolProp(BrokerConstants.NETTY_SO_REUSEADDR_PROPERTY_NAME, true);
+        nettyTcpNodelay = props.boolProp(BrokerConstants.NETTY_TCP_NODELAY_PROPERTY_NAME, true);
+        nettySoKeepalive = props.boolProp(BrokerConstants.NETTY_SO_KEEPALIVE_PROPERTY_NAME, true);
+        nettyChannelTimeoutSeconds = props.intProp(BrokerConstants.NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME, 10);
+        maxBytesInMessage = props.intProp(BrokerConstants.NETTY_MAX_BYTES_PROPERTY_NAME,
+                                          BrokerConstants.DEFAULT_NETTY_MAX_BYTES_IN_MESSAGE);
 
-        boolean epoll = Boolean.parseBoolean(props.getProperty(BrokerConstants.NETTY_EPOLL_PROPERTY_NAME, "false"));
+        boolean epoll = props.boolProp(BrokerConstants.NETTY_EPOLL_PROPERTY_NAME, false);
         if (epoll) {
             LOG.info("Netty is using Epoll");
             m_bossGroup = new EpollEventLoopGroup();
@@ -143,7 +137,7 @@ public class NettyAcceptor implements ServerAcceptor {
 
         final NettyMQTTHandler mqttHandler = new NettyMQTTHandler(processor);
 
-        final boolean useFineMetrics = Boolean.parseBoolean(props.getProperty(METRICS_ENABLE_PROPERTY_NAME, "false"));
+        final boolean useFineMetrics = props.boolProp(METRICS_ENABLE_PROPERTY_NAME, false);
         if (useFineMetrics) {
             DropWizardMetricsHandler metricsHandler = new DropWizardMetricsHandler();
             metricsHandler.init(props);
@@ -152,7 +146,7 @@ public class NettyAcceptor implements ServerAcceptor {
             this.metrics = Optional.empty();
         }
 
-        final boolean useBugSnag = Boolean.parseBoolean(props.getProperty(BUGSNAG_ENABLE_PROPERTY_NAME, "false"));
+        final boolean useBugSnag = props.boolProp(BUGSNAG_ENABLE_PROPERTY_NAME, false);
         if (useBugSnag) {
             BugSnagErrorsHandler bugSnagHandler = new BugSnagErrorsHandler();
             bugSnagHandler.init(props);

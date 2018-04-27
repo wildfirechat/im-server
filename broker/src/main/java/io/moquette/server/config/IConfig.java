@@ -27,8 +27,14 @@ public abstract class IConfig {
 
     public abstract void setProperty(String name, String value);
 
+    /**
+     * Same semantic of Properties
+     * */
     public abstract String getProperty(String name);
 
+    /**
+     * Same semantic of Properties
+     * */
     public abstract String getProperty(String name, String defaultValue);
 
     void assignDefaults() {
@@ -48,4 +54,19 @@ public abstract class IConfig {
 
     public abstract IResourceLoader getResourceLoader();
 
+    public int intProp(String propertyName, int defaultValue) {
+        String propertyValue = getProperty(propertyName);
+        if (propertyValue == null) {
+            return defaultValue;
+        }
+        return Integer.parseInt(propertyValue);
+    }
+
+    public boolean boolProp(String propertyName, boolean defaultValue) {
+        String propertyValue = getProperty(propertyName);
+        if (propertyValue == null) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(propertyValue);
+    }
 }
