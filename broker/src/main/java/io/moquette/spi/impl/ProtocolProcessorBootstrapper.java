@@ -165,7 +165,7 @@ public class ProtocolProcessorBootstrapper {
         }
 
         LOG.info("Initializing connection descriptor store...");
-        connectionDescriptors = new ConnectionDescriptorStore(sessionsRepository);
+        connectionDescriptors = new ConnectionDescriptorStore();
 
         LOG.info("Initializing MQTT protocol processor...");
         boolean allowAnonymous = Boolean

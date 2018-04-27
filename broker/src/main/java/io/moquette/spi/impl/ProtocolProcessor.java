@@ -16,10 +16,12 @@
 
 package io.moquette.spi.impl;
 
+import io.moquette.connections.IConnectionsManager;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
+import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.*;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -41,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
@@ -97,11 +100,11 @@ public class ProtocolProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
 
-    private ConnectionDescriptorStore connectionDescriptors;
+    private IConnectionsManager connectionDescriptors;
     private ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private ISubscriptionsDirectory subscriptions;
-    private ISubscriptionsStore subscriptionStore;
+//    private ISubscriptionsStore subscriptionStore;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
     private IAuthorizator m_authorizator;
@@ -136,7 +139,7 @@ public class ProtocolProcessor {
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
                      IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
-        init(new ConnectionDescriptorStore(sessionsRepository), subscriptions, storageService, sessionsStore,
+        init(new ConnectionDescriptorStore(), subscriptions, storageService, sessionsStore,
              authenticator, allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository);
     }
 
@@ -158,11 +161,11 @@ public class ProtocolProcessor {
      * @param interceptor
      *            to notify events to an intercept handler
      */
-    void init(ConnectionDescriptorStore connectionDescriptors, ISubscriptionsDirectory subscriptions,
+    void init(IConnectionsManager connectionDescriptors, ISubscriptionsDirectory subscriptions,
               IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
               boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
               BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
-        LOG.info("Initializing MQTT protocol processor...");
+        LOG.debug("Initializing MQTT protocol processor...");
         this.connectionDescriptors = connectionDescriptors;
         this.subscriptionInCourse = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
@@ -176,7 +179,6 @@ public class ProtocolProcessor {
         m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
-        subscriptionStore = sessionsStore.subscriptionStore();
 
         this.sessionsRepository = sessionsRepository;
 
@@ -185,7 +187,7 @@ public class ProtocolProcessor {
         this.messagesPublisher = new MessagesPublisher(connectionDescriptors, messageSender,
             subscriptions, this.sessionsRepository);
 
-        LOG.info("Initializing QoS publish handlers...");
+        LOG.debug("Initializing QoS publish handlers...");
         this.qos0PublishHandler = new Qos0PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
                 this.messagesPublisher);
         this.qos1PublishHandler = new Qos1PublishHandler(m_authorizator, m_messagesStore, m_interceptor,
@@ -193,7 +195,7 @@ public class ProtocolProcessor {
         this.qos2PublishHandler = new Qos2PublishHandler(m_authorizator, subscriptions, m_messagesStore, m_interceptor,
                 this.connectionDescriptors, this.messagesPublisher, this.sessionsRepository);
 
-        LOG.info("Initializing internal republisher...");
+        LOG.debug("Initializing internal republisher...");
         this.internalRepublisher = new InternalRepublisher(messageSender);
     }
 
@@ -263,12 +265,29 @@ public class ProtocolProcessor {
             channel.close().addListener(CLOSE_ON_FAILURE);
             return;
         }
+
+        int flushIntervalMs = 500/* (keepAlive * 1000) / 2 */;
+        setupAutoFlusher(channel, flushIntervalMs);
+
         final boolean success = descriptor.assignState(MESSAGES_REPUBLISHED, ESTABLISHED);
         if (!success) {
             channel.close().addListener(CLOSE_ON_FAILURE);
         }
 
         LOG.info("Connected client <{}> with login <{}>", clientId, payload.userName());
+    }
+
+    private void setupAutoFlusher(Channel channel, int flushIntervalMs) {
+        try {
+            channel.pipeline().addAfter(
+                "idleEventHandler",
+                "autoFlusher",
+                new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
+        } catch (NoSuchElementException nseex) {
+            // the idleEventHandler is not present on the pipeline
+            channel.pipeline()
+                .addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
+        }
     }
 
     private MqttConnAckMessage connAck(MqttConnectReturnCode returnCode) {
@@ -379,8 +398,6 @@ public class ProtocolProcessor {
             LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
             this.internalRepublisher.publishStored(clientSession);
         }
-        int flushIntervalMs = 500/* (keepAlive * 1000) / 2 */;
-        descriptor.setupAutoFlusher(flushIntervalMs);
         return true;
     }
 

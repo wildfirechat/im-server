@@ -69,19 +69,6 @@ public class ConnectionDescriptor {
         this.channel.writeAndFlush(payload).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
-    public void setupAutoFlusher(int flushIntervalMs) {
-        try {
-            this.channel.pipeline().addAfter(
-                    "idleEventHandler",
-                    "autoFlusher",
-                    new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        } catch (NoSuchElementException nseex) {
-            // the idleEventHandler is not present on the pipeline
-            this.channel.pipeline()
-                    .addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        }
-    }
-
     public boolean doesNotUseChannel(Channel channel) {
         return !(this.channel.equals(channel));
     }

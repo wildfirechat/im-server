@@ -16,21 +16,27 @@
 
 package io.moquette.spi.impl;
 
+import io.moquette.connections.IConnectionsManager;
+import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.spi.ClientSession;
+import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 class PersistentQueueMessageSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersistentQueueMessageSender.class);
-    private final ConnectionDescriptorStore connectionDescriptorStore;
+    private final IConnectionsManager connectionDescriptorStore;
 
-    PersistentQueueMessageSender(ConnectionDescriptorStore connectionDescriptorStore) {
+    PersistentQueueMessageSender(IConnectionsManager connectionDescriptorStore) {
         this.connectionDescriptorStore = connectionDescriptorStore;
     }
 
@@ -46,7 +52,19 @@ class PersistentQueueMessageSender {
             LOG.info("Sending PUBLISH message. MessageId={}, CId={}, topic={}", messageId, clientId, topicName);
         }
 
-        boolean messageDelivered = connectionDescriptorStore.sendMessage(pubMessage, messageId, clientId);
+        boolean messageDelivered = false;
+
+        final Optional<ConnectionDescriptor> optDescriptor = connectionDescriptorStore.lookupDescriptor(clientId);
+        if (optDescriptor.isPresent()) {
+            final ConnectionDescriptor descriptor = optDescriptor.get();
+            try {
+                descriptor.writeAndFlush(pubMessage);
+                messageDelivered = true;
+            } catch (Throwable e) {
+                LOG.error("Unable to send {} message. CId=<{}>, messageId={}", pubMessage.fixedHeader().messageType(),
+                          clientId, messageId, e);
+            }
+        }
 
         if (!messageDelivered) {
             if (qos != AT_MOST_ONCE && !clientsession.isCleanSession()) {

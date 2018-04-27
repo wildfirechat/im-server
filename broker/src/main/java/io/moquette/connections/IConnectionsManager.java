@@ -16,10 +16,13 @@
 
 package io.moquette.connections;
 
+import io.moquette.server.ConnectionDescriptor;
+
 import java.util.Collection;
+import java.util.Optional;
 
 /**
- * This interface will be used by an external codebase to retrieve and close physical connections.
+ * Repository for active connections
  */
 public interface IConnectionsManager {
 
@@ -28,7 +31,15 @@ public interface IConnectionsManager {
      *
      * @return
      */
-    int getActiveConnectionsNo();
+    int countActiveConnections();
+
+    Optional<ConnectionDescriptor> lookupDescriptor(String clientID);
+
+    ConnectionDescriptor addConnection(ConnectionDescriptor descriptor);
+
+    boolean removeConnection(ConnectionDescriptor descriptor);
+
+    ConnectionDescriptor getConnection(String clientID);
 
     /**
      * Determines wether a MQTT client is connected to the broker.
@@ -44,21 +55,4 @@ public interface IConnectionsManager {
      * @return
      */
     Collection<String> getConnectedClientIds();
-
-    /**
-     * Closes a physical connection.
-     *
-     * @param clientID
-     * @param closeImmediately
-     *            If false, the connection will be flushed before it is closed.
-     * @return
-     */
-    boolean closeConnection(String clientID, boolean closeImmediately);
-
-    /**
-     * Returns the state of all the sessions
-     *
-     * @return
-     */
-    Collection<MqttSession> getSessions();
 }

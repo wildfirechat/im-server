@@ -16,6 +16,8 @@
 
 package io.moquette.spi.impl;
 
+import io.moquette.connections.IConnectionsManager;
+import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
@@ -29,6 +31,8 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
@@ -39,11 +43,11 @@ class Qos1PublishHandler extends QosPublishHandler {
 
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final ConnectionDescriptorStore connectionDescriptors;
+    private final IConnectionsManager connectionDescriptors;
     private final MessagesPublisher publisher;
 
-    public Qos1PublishHandler(IAuthorizator authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConnectionDescriptorStore connectionDescriptors, MessagesPublisher messagesPublisher) {
+    Qos1PublishHandler(IAuthorizator authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
+                       IConnectionsManager connectionDescriptors, MessagesPublisher messagesPublisher) {
         super(authorizator);
         this.m_messagesStore = messagesStore;
         this.m_interceptor = interceptor;
@@ -89,16 +93,17 @@ class Qos1PublishHandler extends QosPublishHandler {
         MqttPubAckMessage pubAckMessage = new MqttPubAckMessage(fixedHeader, from(messageID));
 
         try {
-            if (connectionDescriptors == null) {
-                throw new RuntimeException("Internal bad error, found connectionDescriptors to null while it should " +
-                    "be initialized, somewhere it's overwritten!!");
-            }
             LOG.trace("connected clientIDs are {}", connectionDescriptors.getConnectedClientIds());
             if (!connectionDescriptors.isConnected(clientId)) {
                 throw new RuntimeException(String.format("Can't find a ConnectionDescriptor for client %s in cache %s",
                     clientId, connectionDescriptors));
             }
-            connectionDescriptors.sendMessage(pubAckMessage, messageID, clientId);
+            LOG.info("Sending {} message CId=<{}>", MqttMessageType.PUBACK, clientId);
+            final Optional<ConnectionDescriptor> optDescriptor = connectionDescriptors.lookupDescriptor(clientId);
+            if (optDescriptor.isPresent()) {
+                final ConnectionDescriptor descriptor = optDescriptor.get();
+                descriptor.writeAndFlush(pubAckMessage);
+            }
         } catch (Throwable t) {
             LOG.error(null, t);
         }

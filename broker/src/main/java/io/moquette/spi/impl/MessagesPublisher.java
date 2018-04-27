@@ -16,7 +16,7 @@
 
 package io.moquette.spi.impl;
 
-import io.moquette.server.ConnectionDescriptorStore;
+import io.moquette.connections.IConnectionsManager;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -34,21 +34,21 @@ import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDe
 class MessagesPublisher {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessagesPublisher.class);
-    private final ConnectionDescriptorStore connectionDescriptors;
+    private final IConnectionsManager connectionDescriptors;
     private final PersistentQueueMessageSender messageSender;
     private final ISubscriptionsDirectory subscriptions;
     private SessionsRepository sessionsRepository;
 
-    public MessagesPublisher(ConnectionDescriptorStore connectionDescriptors,
-                             PersistentQueueMessageSender messageSender, ISubscriptionsDirectory subscriptions,
-                             SessionsRepository sessionsRepository) {
+    MessagesPublisher(IConnectionsManager connectionDescriptors,
+                      PersistentQueueMessageSender messageSender, ISubscriptionsDirectory subscriptions,
+                      SessionsRepository sessionsRepository) {
         this.connectionDescriptors = connectionDescriptors;
         this.messageSender = messageSender;
         this.subscriptions = subscriptions;
         this.sessionsRepository = sessionsRepository;
     }
 
-    static MqttPublishMessage notRetainedPublish(String topic, MqttQoS qos, ByteBuf message) {
+    private static MqttPublishMessage notRetainedPublish(String topic, MqttQoS qos, ByteBuf message) {
         return notRetainedPublishWithMessageId(topic, qos, message, 0);
     }
 

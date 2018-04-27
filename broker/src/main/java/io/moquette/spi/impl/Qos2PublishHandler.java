@@ -16,6 +16,8 @@
 
 package io.moquette.spi.impl;
 
+import io.moquette.connections.IConnectionsManager;
+import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
@@ -28,6 +30,8 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 import static io.moquette.spi.impl.DebugUtils.payload2Str;
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
@@ -42,14 +46,14 @@ class Qos2PublishHandler extends QosPublishHandler {
     private final ISubscriptionsDirectory subscriptions;
     private final IMessagesStore m_messagesStore;
     private final BrokerInterceptor m_interceptor;
-    private final ConnectionDescriptorStore connectionDescriptors;
+    private final IConnectionsManager connectionDescriptors;
     private final MessagesPublisher publisher;
     private final SessionsRepository sessionsRepository;
 
-    public Qos2PublishHandler(IAuthorizator authorizator, ISubscriptionsDirectory subscriptions,
-                              IMessagesStore messagesStore, BrokerInterceptor interceptor,
-                              ConnectionDescriptorStore connectionDescriptors,
-                              MessagesPublisher messagesPublisher, SessionsRepository sessionsRepository) {
+    Qos2PublishHandler(IAuthorizator authorizator, ISubscriptionsDirectory subscriptions,
+                       IMessagesStore messagesStore, BrokerInterceptor interceptor,
+                       IConnectionsManager connectionDescriptors,
+                       MessagesPublisher messagesPublisher, SessionsRepository sessionsRepository) {
         super(authorizator);
         this.subscriptions = subscriptions;
         this.m_messagesStore = messagesStore;
@@ -129,16 +133,34 @@ class Qos2PublishHandler extends QosPublishHandler {
     }
 
     private void sendPubRec(String clientID, int messageID) {
-        LOG.debug("Sending PUBREC message. CId={}, messageId={}", clientID, messageID);
+        LOG.trace("Sending PUBREC message. CId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBREC, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubRecMessage = new MqttMessage(fixedHeader, from(messageID));
-        connectionDescriptors.sendMessage(pubRecMessage, messageID, clientID);
+        final Optional<ConnectionDescriptor> connectionDescriptor = connectionDescriptors.lookupDescriptor(clientID);
+        if (connectionDescriptor.isPresent()) {
+            final ConnectionDescriptor descriptor = connectionDescriptor.get();
+            try {
+                descriptor.writeAndFlush(pubRecMessage);
+            } catch (Throwable e) {
+                LOG.error("Unable to send {} message. CId=<{}>, messageId={}", MqttMessageType.PUBREC, clientID,
+                          messageID, e);
+            }
+        }
     }
 
     private void sendPubComp(String clientID, int messageID) {
-        LOG.debug("Sending PUBCOMP message. CId={}, messageId={}", clientID, messageID);
+        LOG.trace("Sending PUBCOMP message. CId={}, messageId={}", clientID, messageID);
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBCOMP, false, AT_MOST_ONCE, false, 0);
         MqttMessage pubCompMessage = new MqttMessage(fixedHeader, from(messageID));
-        connectionDescriptors.sendMessage(pubCompMessage, messageID, clientID);
+        final Optional<ConnectionDescriptor> connectionDescriptor = connectionDescriptors.lookupDescriptor(clientID);
+        if (connectionDescriptor.isPresent()) {
+            final ConnectionDescriptor descriptor = connectionDescriptor.get();
+            try {
+                descriptor.writeAndFlush(pubCompMessage);
+            } catch (Throwable e) {
+                LOG.error("Unable to send {} message. CId=<{}>, messageId={}", MqttMessageType.PUBCOMP, clientID,
+                          messageID, e);
+            }
+        }
     }
 }
