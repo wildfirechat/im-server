@@ -16,7 +16,7 @@ def packageSet = project.copySpec {
   from 'src/main/resources/README.txt'
 
   into ('bin') {
-    from 'src/ main/scripts/'
+    from 'src/main/scripts/'
     fileMode=0755
   }
 
