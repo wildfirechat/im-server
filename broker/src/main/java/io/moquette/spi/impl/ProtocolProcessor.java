@@ -235,7 +235,7 @@ public class ProtocolProcessor {
         }
 
         ConnectionDescriptor descriptor = new ConnectionDescriptor(clientId, channel, cleanSession);
-        ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
+        final ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
         if (existing != null) {
             LOG.info("Client ID is being used in an existing connection, force to be closed. CId={}", clientId);
             existing.abort();
@@ -616,7 +616,8 @@ public class ProtocolProcessor {
 
         if (descriptor.cleanSession) {
             LOG.info("Removing saved subscriptions. CId={}", descriptor.clientID);
-            subscriptionStore.wipeSubscriptions(clientID);
+            final ClientSession session = this.sessionsRepository.sessionForClient(clientID);
+            session.wipeSubscriptions();
             LOG.info("Saved subscriptions have been removed. CId={}", descriptor.clientID);
         }
         return true;

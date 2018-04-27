@@ -182,4 +182,9 @@ public class TransientSession extends ClientSession {
     public int getInflightMessagesNo() {
         return this.inboundInflightMap.size();
     }
+
+    @Override
+    public void wipeSubscriptions() {
+        // it's transient, no need to wide subs because wasn't stored
+    }
 }

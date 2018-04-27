@@ -115,4 +115,6 @@ public abstract class ClientSession {
     public String toString() {
         return getClass().getSimpleName() + "{clientID='" + clientID + "'}";
     }
+
+    public abstract void wipeSubscriptions();
 }

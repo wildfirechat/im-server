@@ -110,11 +110,6 @@ public class SessionsRepository {
         return result;
     }
 
-    private void updateCleanStatus(String clientID, boolean cleanSession) {
-        LOG.info("Updating cleanSession flag. CId={}, cleanSession={}", clientID, cleanSession);
-        this.sessions.updateCleanStatus(clientID, cleanSession);
-    }
-
     ClientSession createOrLoadClientSession(String clientId, boolean cleanSession) {
         ClientSession clientSession = this.sessionForClient(clientId);
         if (clientSession == null) {

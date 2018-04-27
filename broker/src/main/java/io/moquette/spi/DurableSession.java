@@ -210,4 +210,9 @@ public class DurableSession extends ClientSession {
     public int getInflightMessagesNo() {
         return this.sessionsStore.getInflightMessagesNo(clientID);
     }
+
+    @Override
+    public void wipeSubscriptions() {
+        this.subscriptionsStore.wipeSubscriptions(clientID);
+    }
 }
