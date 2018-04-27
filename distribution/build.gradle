@@ -54,7 +54,7 @@ distMoquetteTar.dependsOn jar
 
 task distMoquetteZip(type: Zip) {
   archiveName = "moquette-${version}.zip"
-  destinationDir  file('build')
+  destinationDir file('build')
 
   with packageSet
 }

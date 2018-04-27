@@ -55,7 +55,6 @@ subprojects {
     testCompile group: 'org.assertj', name: 'assertj-core', version:'2.6.0'
     testCompile group: 'org.mockito', name: 'mockito-core', version:'1.9.0'
     testCompile group: 'org.awaitility', name: 'awaitility', version: '3.0.0'
-
   }
 
   test {
