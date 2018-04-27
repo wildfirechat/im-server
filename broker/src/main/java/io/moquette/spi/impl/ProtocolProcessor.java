@@ -297,13 +297,13 @@ public class ProtocolProcessor {
                 failedCredentials(channel);
                 return false;
             }
-            if (!m_authenticator.checkValid(clientId, msg.payload().userName(), pwd)) {
-                LOG.error("Authenticator has rejected the MQTT credentials CId={}, username={}, password={}",
-                        clientId, msg.payload().userName(), pwd);
+            final String login = msg.payload().userName();
+            if (!m_authenticator.checkValid(clientId, login, pwd)) {
+                LOG.error("Authenticator has rejected the MQTT credentials CId={}, username={}", clientId, login);
                 failedCredentials(channel);
                 return false;
             }
-            NettyUtils.userName(channel, msg.payload().userName());
+            NettyUtils.userName(channel, login);
         } else if (!this.allowAnonymous) {
             LOG.error("Client didn't supply any credentials and MQTT anonymous mode is disabled. CId={}", clientId);
             failedCredentials(channel);
