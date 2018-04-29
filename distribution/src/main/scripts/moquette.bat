@@ -13,6 +13,7 @@ echo "  \_|  |_/\___/ \__, |\__,_|\___|\__|\__\___| \_|  |_/\_/\_\ \_/   \_/   "
 echo "                   | |                                                   "
 echo "                   |_|                                                   "
 echo "                                                                         "
+echo "                                               version: 0.11-SNAPSHOT    "
 
 set "CURRENT_DIR=%cd%"
 if not "%MOQUETTE_HOME%" == "" goto gotHome
@@ -30,7 +31,7 @@ goto end
 
 rem Set JavaHome if it exists
 if exist { "%JAVA_HOME%\bin\java" } (
-    set "JAVA="%JAVA_HOME%\bin\java""
+    set "JAVA="%JAVA_HOME%\bin\java"
 )
 
 echo Using JAVA_HOME:       "%JAVA_HOME%"
