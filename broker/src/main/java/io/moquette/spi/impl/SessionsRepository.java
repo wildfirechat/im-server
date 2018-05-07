@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +49,7 @@ public class SessionsRepository {
     private final ISessionsStore sessions;
     private ISubscriptionsStore subscriptionsStore;
     private ScheduledExecutorService scheduler;
-    private final Map<String, ClientSession> sessionsCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ClientSession> sessionsCache = new ConcurrentHashMap<>();
 
     public SessionsRepository(ISessionsStore sessionsStore, ScheduledExecutorService scheduler) {
         this.sessions = sessionsStore;
