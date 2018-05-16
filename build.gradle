@@ -1,8 +1,9 @@
 allprojects  {
   apply plugin: 'maven'
+  apply plugin: 'maven-publish'
 
   group = 'io.moquette'
-  version = '0.11-SNAPSHOT'
+  version = '0.11'
 }
 
 buildscript {
@@ -67,15 +68,28 @@ subprojects {
   }
 
   // Deploy set environment variables and run ./gradlew bintrayUpload
+  // publication to maven repo
+  publishing {
+    publications {
+      MyPublication(MavenPublication) {
+        from components.java
+        groupId "$project.group"
+        artifactId "${project.name}"
+        version '0.11'
+      }
+    }
+  }
+
   bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
+    user = bintrayUser //System.getenv('BINTRAY_USER')
+    key = bintrayPassword //System.getenv('BINTRAY_KEY')
     pkg {
-      repo = '${project.group}'
-      name = "${project.name}"
+      repo = 'maven'//"${project.group}"
+      name = "${project.group}.${project.name}"
       userOrg = 'andsel'
       licenses = ['Apache-2.0']
       vcsUrl = "https://api.bintray.com/maven/andsel/maven/${project.group}.${project.name}"
+      publications = ['MyPublication']
     }
   }
 }
