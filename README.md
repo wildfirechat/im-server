@@ -25,11 +25,11 @@ Point your MQTT client to _broker.moquette.io_
 
 ## 1 minute set up
 
-Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/distribution-0.10-bundle-tar.tar.gz) ,
+Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/moquette-distribution-0.11.tar) ,
 the un untar and start the broker listening on `1883` port and enjoy!
 
 ```
-tar zxf distribution-0.10-bundle-tar.tar.gz
+tar zxf moquette-distribution-0.11.tar
 cd bin
 ./moquette.sh
 ```
@@ -66,7 +66,7 @@ Include dependency in your project:
 <dependency>
       <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
-      <version>0.10</version>
+      <version>0.11</version>
 </dependency>
 ```
 
