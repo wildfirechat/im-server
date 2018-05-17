@@ -38,7 +38,7 @@ def packageSet = project.copySpec {
 
   into ('config') {
     from 'src/main/resources/log4j.properties'
-    rename {  'moquette-log.properties' }
+    rename { 'moquette-log.properties' }
   }
 }
 

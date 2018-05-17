@@ -46,7 +46,24 @@ subprojects {
     from sourceSets.test.resources
     classifier = 'tests'
   }
-  artifacts.archives packageTests
+
+  task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  task sourceJar (type : Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  // summarize artifacts
+  artifacts {
+    archives jar
+    archives sourceJar
+    archives javadocJar
+    archives packageTests
+  }
 
   dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
@@ -71,7 +88,7 @@ subprojects {
   // publication to maven repo
   publishing {
     publications {
-      MyPublication(MavenPublication) {
+      bintrayPublication(MavenPublication) {
         from components.java
         groupId "$project.group"
         artifactId "${project.name}"
@@ -81,15 +98,16 @@ subprojects {
   }
 
   bintray {
-    user = bintrayUser //System.getenv('BINTRAY_USER')
-    key = bintrayPassword //System.getenv('BINTRAY_KEY')
+    println "Bintray deploy with user [${System.getenv('BINTRAY_USER')}] while working on ${project.name}"
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
     pkg {
       repo = 'maven'//"${project.group}"
       name = "${project.group}.${project.name}"
       userOrg = 'andsel'
       licenses = ['Apache-2.0']
       vcsUrl = "https://api.bintray.com/maven/andsel/maven/${project.group}.${project.name}"
-      publications = ['MyPublication']
+      publications = ['bintrayPublication']
     }
   }
 }

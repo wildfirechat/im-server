@@ -34,8 +34,10 @@ import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-
-final class EmbeddedLauncher {
+/**
+ * Simple example of how to embed the broker in another project
+ * */
+public final class EmbeddedLauncher {
 
     static class PublisherListener extends AbstractInterceptHandler {
 
