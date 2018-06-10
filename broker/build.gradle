@@ -27,7 +27,7 @@ dependencies {
     compile group: 'com.hazelcast', name: 'hazelcast', version:'3.5.4'
 
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
 
     testCompile group: 'org.fusesource.mqtt-client', name: 'mqtt-client', version:'1.12'
     testCompile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version:'1.0.2'
