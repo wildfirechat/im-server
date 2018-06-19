@@ -37,7 +37,7 @@ subprojects {
   apply plugin: 'eclipse'
 
   ext {
-    nettyVersion = '4.1.12.Final'
+    nettyVersion = '4.1.22.Final'
   }
 
   task packageTests(type: Jar) {

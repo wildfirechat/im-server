@@ -109,7 +109,7 @@ public class Client {
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(
                 this.clientId,
                 willTestamentTopic,
-                willTestamentMsg,
+                willTestamentMsg.getBytes(),
                 null,
                 null);
         MqttConnectMessage connectMessage = new MqttConnectMessage(
