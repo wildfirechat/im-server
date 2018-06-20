@@ -97,7 +97,7 @@ public class ServerLowlevelMessagesIntegrationTests {
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
             MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
             true, keepAlive);
-        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, null, null, null, null);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, (String)null, (byte[])null, (String)null, (byte[])null);
         return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
     }
 
