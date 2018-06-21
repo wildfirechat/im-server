@@ -25,6 +25,7 @@ broker/runner
 .settings/
 .project
 .classpath
+/*/bin/
 *.swp
 
 *.class
