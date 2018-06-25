@@ -16,12 +16,12 @@
 
 package io.moquette.spi.security;
 
-import javax.net.ssl.SSLContext;
+import io.netty.handler.ssl.SslContext;
 
 /**
  * SSL certificate loader used to open SSL connections (websocket and MQTT-S).
  */
 public interface ISslContextCreator {
 
-    SSLContext initSSLContext();
+    SslContext initSSLContext();
 }

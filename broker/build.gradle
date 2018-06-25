@@ -34,4 +34,5 @@ dependencies {
     testCompile group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version:'9.2.0.M1'
 
     testCompile group: 'com.h2database', name: 'h2', version:'1.4.191'
+	testRuntime group: 'io.netty', name: 'netty-tcnative', version: '2.0.10.Final', classifier: 'linux-x86_64'
 }
