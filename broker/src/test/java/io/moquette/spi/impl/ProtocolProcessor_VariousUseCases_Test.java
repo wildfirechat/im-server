@@ -27,7 +27,7 @@ import static org.junit.Assert.assertFalse;
 public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProcessorCommonUtils {
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         initializeProcessorAndSubsystems();
     }
 

@@ -59,16 +59,16 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
     static final String EVIL_TEST_USER = "eviluser";
     static final String EVIL_TEST_PWD = "unsecret";
 
-    static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
-    static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
+    public static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
+    public static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         initializeProcessorAndSubsystems();
     }
 
     @Test
-    public void testPublishToItself() throws InterruptedException {
+    public void testPublishToItself() {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
@@ -101,7 +101,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
     }
 
     @Test
-    public void testPublishToMultipleSubscribers() throws InterruptedException {
+    public void testPublishToMultipleSubscribers() {
         final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
         final Subscription subscriptionClient2 = new Subscription(
                 FAKE_CLIENT_ID2,

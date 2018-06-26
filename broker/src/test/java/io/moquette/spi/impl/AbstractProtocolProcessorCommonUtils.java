@@ -22,12 +22,14 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.*;
+import io.moquette.spi.security.IAuthorizator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
 
 import java.util.*;
 
+import static io.moquette.spi.impl.ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
@@ -44,9 +46,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
     static final String TEST_USER = "fakeuser";
     static final String TEST_PWD = "fakepwd";
 
-    static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
-    static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
-    public static final String HELLO_WORLD_MQTT = "Hello world MQTT!!";
+    private static final String HELLO_WORLD_MQTT = "Hello world MQTT!!";
 
     EmbeddedChannel m_channel;
     ProtocolProcessor m_processor;
@@ -55,7 +55,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
     ISessionsStore m_sessionStore;
     ISubscriptionsDirectory subscriptions;
     MockAuthenticator m_mockAuthenticator;
-    protected SessionsRepository sessionsRepository;
+    SessionsRepository sessionsRepository;
 
     protected void initializeProcessorAndSubsystems() {
         m_channel = new EmbeddedChannel();
@@ -81,10 +81,10 @@ abstract class AbstractProtocolProcessorCommonUtils {
         subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository);
+                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository);
     }
 
-    protected void verifyNoPublishIsReceived() {
+    void verifyNoPublishIsReceived() {
         final Object messageReceived = m_channel.readOutbound();
         assertNull("Received an out message from processor while not expected", messageReceived);
     }
@@ -105,6 +105,16 @@ abstract class AbstractProtocolProcessorCommonUtils {
         final String clientId = NettyUtils.clientID(channel);
         Subscription expectedSubscription = new Subscription(clientId, new Topic(topic), desiredQos);
         verifySubscriptionExists(m_sessionStore, expectedSubscription);
+    }
+
+    protected void subscribeWithFail(EmbeddedChannel channel, String topic, MqttQoS desiredQos) {
+        MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
+            .addSubscription(desiredQos, topic)
+            .messageId(1)
+            .build();
+        this.m_processor.processSubscribe(channel, subscribe);
+        MqttSubAckMessage subAck = channel.readOutbound();
+        assertEquals(MqttQoS.FAILURE.value(), (int) subAck.payload().grantedQoSLevels().get(0));
     }
 
     protected static void verifySubscriptionExists(ISessionsStore sessionsStore, Subscription expectedSubscription) {
