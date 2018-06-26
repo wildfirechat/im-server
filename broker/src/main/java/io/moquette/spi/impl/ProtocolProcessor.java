@@ -719,7 +719,8 @@ public class ProtocolProcessor {
 
         // ack the client
         int messageID = msg.variableHeader().messageId();
-        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.UNSUBACK, false, AT_LEAST_ONCE, false, 0);
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.UNSUBACK, false, AT_MOST_ONCE,
+                                                         false, 0);
         MqttUnsubAckMessage ackMessage = new MqttUnsubAckMessage(fixedHeader, from(messageID));
 
         LOG.debug("Sending UNSUBACK message. CId={}, topics={}, messageId={}", clientID, topics, messageID);
