@@ -42,6 +42,7 @@ import static io.moquette.spi.impl.NettyChannelAssertions.assertConnAckAccepted;
 import static io.moquette.spi.impl.ProtocolProcessor.lowerQosToTheSubscriptionDesired;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import static io.netty.handler.codec.mqtt.MqttQoS.EXACTLY_ONCE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -50,8 +51,9 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     static final String FAKE_CLIENT_ID = "FAKE_123";
     static final String FAKE_CLIENT_ID2 = "FAKE_456";
-    static final String FAKE_PUBLISHER_ID = "Publisher";
-    static final String FAKE_TOPIC = "/news";
+    static final String PUBLISHER_ID = "Publisher";
+    private static final String SUBSCRIBER_ID = "Subscriber";
+    static final String NEWS_TOPIC = "/news";
     static final String BAD_FORMATTED_TOPIC = "#MQTTClient";
 
     static final String TEST_USER = "fakeuser";
@@ -69,17 +71,17 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     @Test
     public void testPublishToItself() {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(NEWS_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
-                if (topic.toString().equals(FAKE_TOPIC)) {
+                if (topic.toString().equals(NEWS_TOPIC)) {
                     return Collections.singletonList(subscription);
                 } else {
-                    throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
+                    throw new IllegalArgumentException("Expected " + NEWS_TOPIC + " buf found " + topic);
                 }
             }
         };
@@ -94,7 +96,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         connect_v3_1();
 
         // Exercise
-        publishToAs("FakeCLI", FAKE_TOPIC, AT_MOST_ONCE, false);
+        publishToAs("FakeCLI", NEWS_TOPIC, AT_MOST_ONCE, false);
 
         // Verify
         verifyPublishIsReceived();
@@ -102,10 +104,10 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
     @Test
     public void testPublishToMultipleSubscribers() {
-        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
+        final Subscription subscription = new Subscription(FAKE_CLIENT_ID, new Topic(NEWS_TOPIC), AT_MOST_ONCE);
         final Subscription subscriptionClient2 = new Subscription(
                 FAKE_CLIENT_ID2,
-                new Topic(FAKE_TOPIC),
+                new Topic(NEWS_TOPIC),
                 AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
@@ -113,10 +115,10 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
             @Override
             public List<Subscription> matches(Topic topic) {
-                if (topic.toString().equals(FAKE_TOPIC)) {
+                if (topic.toString().equals(NEWS_TOPIC)) {
                     return Arrays.asList(subscription, subscriptionClient2);
                 } else {
-                    throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
+                    throw new IllegalArgumentException("Expected " + NEWS_TOPIC + " buf found " + topic);
                 }
             }
         };
@@ -142,7 +144,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         assertConnAckAccepted(secondReceiverChannel);
 
         // Exercise
-        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(FAKE_TOPIC).qos(AT_MOST_ONCE)
+        MqttPublishMessage msg = MqttMessageBuilders.publish().topicName(NEWS_TOPIC).qos(AT_MOST_ONCE)
                 .retained(false).payload(Unpooled.copiedBuffer("Hello".getBytes(UTF_8))).build();
         NettyUtils.userName(m_channel, "FakeCLI");
         m_processor.processPublish(m_channel, msg);
@@ -166,7 +168,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         connect();
 
         // Exercise & verify
-        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
+        subscribe(NEWS_TOPIC, AT_MOST_ONCE);
     }
 
     @Test
@@ -175,7 +177,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         NettyUtils.userName(m_channel, fakeUserName);
 
         IAuthorizator mockAuthorizator = mock(IAuthorizator.class);
-        when(mockAuthorizator.canRead(eq(new Topic(FAKE_TOPIC)), eq(fakeUserName), eq(FAKE_CLIENT_ID)))
+        when(mockAuthorizator.canRead(eq(new Topic(NEWS_TOPIC)), eq(fakeUserName), eq(FAKE_CLIENT_ID)))
             .thenReturn(false);
 
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, mockAuthorizator,
@@ -184,7 +186,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         connect();
 
         //Exercise
-        MqttSubAckMessage subAckMsg = subscribeWithoutVerify(FAKE_TOPIC, AT_MOST_ONCE);
+        MqttSubAckMessage subAckMsg = subscribeWithoutVerify(NEWS_TOPIC, AT_MOST_ONCE);
 
         verifyFailureQos(subAckMsg);
     }
@@ -199,11 +201,11 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
     public void testDoubleSubscribe() {
         connect();
         assertEquals(0, subscriptions.size());
-        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
+        subscribe(NEWS_TOPIC, AT_MOST_ONCE);
         assertEquals(1, subscriptions.size());
 
         //Exercise & verify
-        subscribe(FAKE_TOPIC, AT_MOST_ONCE);
+        subscribe(NEWS_TOPIC, AT_MOST_ONCE);
     }
 
     @Test
@@ -231,17 +233,17 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
     public void testPublishOfRetainedMessage_afterNewSubscription() throws Exception {
         // simulate a connect that register a clientID to an IoSession
         final Subscription subscription =
-                new Subscription(FAKE_PUBLISHER_ID, new Topic(FAKE_TOPIC), AT_MOST_ONCE);
+                new Subscription(PUBLISHER_ID, new Topic(NEWS_TOPIC), AT_MOST_ONCE);
 
         // subscriptions.matches(topic) redefine the method to return true
         ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory() {
 
             @Override
             public List<Subscription> matches(Topic topic) {
-                if (topic.toString().equals(FAKE_TOPIC)) {
+                if (topic.toString().equals(NEWS_TOPIC)) {
                     return Collections.singletonList(subscription);
                 } else {
-                    throw new IllegalArgumentException("Expected " + FAKE_TOPIC + " buf found " + topic);
+                    throw new IllegalArgumentException("Expected " + NEWS_TOPIC + " buf found " + topic);
                 }
             }
         };
@@ -252,8 +254,8 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         // simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
-        connect_v3_1_asClient(FAKE_PUBLISHER_ID);
-        publishToAs(FAKE_PUBLISHER_ID, FAKE_TOPIC, AT_MOST_ONCE, true);
+        connect_v3_1_asClient(PUBLISHER_ID);
+        publishToAs(PUBLISHER_ID, NEWS_TOPIC, AT_MOST_ONCE, true);
         NettyUtils.cleanSession(m_channel, false);
 
         // Exercise
@@ -269,18 +271,18 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         List<Subscription> emptySubs = Collections.emptyList();
         when(subs.matches(any(Topic.class))).thenReturn(emptySubs);
 
-        StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(UTF_8), MqttQoS.EXACTLY_ONCE, "/topic");
+        StoredMessage retainedMessage = new StoredMessage("Hello".getBytes(UTF_8), EXACTLY_ONCE, "/topic");
         retainedMessage.setRetained(true);
-        retainedMessage.setClientID(FAKE_PUBLISHER_ID);
+        retainedMessage.setClientID(PUBLISHER_ID);
         m_messagesStore.storeRetained(new Topic("/topic"), retainedMessage);
 
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
                 NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
 
-        connect_v3_1_asClient(FAKE_PUBLISHER_ID);
+        connect_v3_1_asClient(PUBLISHER_ID);
 
         // Verify no messages are still stored
-        assertTrue(this.sessionsRepository.sessionForClient(FAKE_PUBLISHER_ID).isEmptyQueue());
+        assertTrue(this.sessionsRepository.sessionForClient(PUBLISHER_ID).isEmptyQueue());
     }
 
     @Test
@@ -313,27 +315,54 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         connect_v3_1_asClient("Publisher");
 
         // prepare and existing retained store
-        publishToAs("Publisher", FAKE_TOPIC, AT_LEAST_ONCE, 100, true);
+        publishToAs("Publisher", NEWS_TOPIC, AT_LEAST_ONCE, 100, true);
 
         Collection<IMessagesStore.StoredMessage> messages = m_messagesStore
-                .searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));
+                .searchMatching(key -> key.match(new Topic(NEWS_TOPIC)));
         assertFalse(messages.isEmpty());
 
         // Exercise
         // send a message that clean the previous retained publish
-        publishToAs("Publisher", FAKE_TOPIC, AT_MOST_ONCE, true);
+        publishToAs("Publisher", NEWS_TOPIC, AT_MOST_ONCE, true);
 
         // Verify
-        messages = m_messagesStore.searchMatching(key -> key.match(new Topic(FAKE_TOPIC)));
+        messages = m_messagesStore.searchMatching(key -> key.match(new Topic(NEWS_TOPIC)));
         assertTrue(messages.isEmpty());
     }
 
     @Test
     public void testLowerTheQosToTheRequestedBySubscription() {
         Subscription subQos1 = new Subscription("Sub A", new Topic("a/b"), MqttQoS.AT_LEAST_ONCE);
-        assertEquals(MqttQoS.AT_LEAST_ONCE, lowerQosToTheSubscriptionDesired(subQos1, MqttQoS.EXACTLY_ONCE));
+        assertEquals(MqttQoS.AT_LEAST_ONCE, lowerQosToTheSubscriptionDesired(subQos1, EXACTLY_ONCE));
 
-        Subscription subQos2 = new Subscription("Sub B", new Topic("a/+"), MqttQoS.EXACTLY_ONCE);
-        assertEquals(MqttQoS.EXACTLY_ONCE, lowerQosToTheSubscriptionDesired(subQos2, MqttQoS.EXACTLY_ONCE));
+        Subscription subQos2 = new Subscription("Sub B", new Topic("a/+"), EXACTLY_ONCE);
+        assertEquals(EXACTLY_ONCE, lowerQosToTheSubscriptionDesired(subQos2, EXACTLY_ONCE));
+    }
+
+    @Test
+    public void testSubscribeReceivePublishedMessageAtSubscriberQoSAndNotPublisherQoS() {
+        ISubscriptionsDirectory subs = new CTrieSubscriptionDirectory();
+        MemoryStorageService storageService = new MemoryStorageService(null, null);
+        SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
+        subs.init(sessionsRepository);
+
+        // simulate a connect that register a clientID to an IoSession
+        m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
+                         NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+        connect_v3_1_asClient(PUBLISHER_ID);
+        publishQoS2ToAs(this.m_channel, PUBLISHER_ID, NEWS_TOPIC, 1, true);
+        disconnect();
+
+        // connect from the subscriber
+        EmbeddedChannel subscriberChannel = new EmbeddedChannel();
+        NettyUtils.clientID(subscriberChannel, SUBSCRIBER_ID);
+        NettyUtils.cleanSession(subscriberChannel, false);
+        connectAsClient(subscriberChannel, SUBSCRIBER_ID);
+
+        // subscribe to the topic news with granted QoS0
+        subscribe(subscriberChannel, NEWS_TOPIC, MqttQoS.AT_MOST_ONCE);
+
+        // Verify the retained message arrives with QoS0 instead of QoS2
+        verifyPublishIsReceived(subscriberChannel, HELLO_WORLD_MQTT, MqttQoS.AT_MOST_ONCE);
     }
 }

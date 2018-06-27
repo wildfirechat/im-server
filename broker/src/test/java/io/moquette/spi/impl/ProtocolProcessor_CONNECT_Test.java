@@ -278,14 +278,14 @@ public class ProtocolProcessor_CONNECT_Test {
 
         // subscribe
         MqttSubscribeMessage subscribeMsg = MqttMessageBuilders.subscribe()
-                .addSubscription(MqttQoS.AT_MOST_ONCE, ProtocolProcessorTest.FAKE_TOPIC).messageId(10).build();
+                .addSubscription(MqttQoS.AT_MOST_ONCE, ProtocolProcessorTest.NEWS_TOPIC).messageId(10).build();
 
         NettyUtils.clientID(m_session, FAKE_CLIENT_ID);
         NettyUtils.cleanSession(m_session, false);
         m_processor.processSubscribe(m_session, subscribeMsg);
         Subscription expectedSubscription = new Subscription(
                 FAKE_CLIENT_ID,
-                new Topic(ProtocolProcessorTest.FAKE_TOPIC),
+                new Topic(ProtocolProcessorTest.NEWS_TOPIC),
                 MqttQoS.AT_MOST_ONCE);
         verifySubscriptionExists(m_sessionStore, expectedSubscription);
         assertEqualsSubAck(m_session.readOutbound());

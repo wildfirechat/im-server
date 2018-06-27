@@ -46,7 +46,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
     static final String TEST_USER = "fakeuser";
     static final String TEST_PWD = "fakepwd";
 
-    private static final String HELLO_WORLD_MQTT = "Hello world MQTT!!";
+    static final String HELLO_WORLD_MQTT = "Hello world MQTT!!";
 
     EmbeddedChannel m_channel;
     ProtocolProcessor m_processor;
@@ -305,11 +305,11 @@ abstract class AbstractProtocolProcessorCommonUtils {
         assertEquals("Connect must be accepted", CONNECTION_ACCEPTED, connAck.variableHeader().connectReturnCode());
     }
 
-    protected void disconnect() throws InterruptedException {
+    protected void disconnect() {
         disconnect(this.m_channel);
     }
 
-    protected void disconnect(EmbeddedChannel channel) throws InterruptedException {
+    protected void disconnect(EmbeddedChannel channel) {
         this.m_processor.processDisconnect(channel);
     }
 

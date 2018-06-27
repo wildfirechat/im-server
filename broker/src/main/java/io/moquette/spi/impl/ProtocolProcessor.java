@@ -858,6 +858,14 @@ public class ProtocolProcessor {
                 newSubscription.getClientId(), newSubscription.getTopicFilter(), messages.size());
         }
         ClientSession targetSession = this.sessionsRepository.sessionForClient(newSubscription.getClientId());
+
+        // adapt the message QoS to subscriber's accepted accepted
+        for (IMessagesStore.StoredMessage msg : messages) {
+            int lowestQoS = Math.min(msg.getQos().value(), newSubscription.getRequestedQos().value());
+            MqttQoS qosToPublish = MqttQoS.valueOf(lowestQoS);
+            msg.setQos(qosToPublish);
+        }
+
         this.internalRepublisher.publishRetained(targetSession, messages);
 
         // notify the Observables

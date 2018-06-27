@@ -31,7 +31,7 @@ public interface IMessagesStore {
     class StoredMessage implements Serializable {
 
         private static final long serialVersionUID = 1755296138639817304L;
-        final MqttQoS m_qos;
+        private MqttQoS m_qos;
         final byte[] m_payload;
         final String m_topic;
         private boolean m_retained;
@@ -42,6 +42,11 @@ public interface IMessagesStore {
             m_qos = qos;
             m_payload = message;
             m_topic = topic;
+        }
+
+
+        public void setQos(MqttQoS qos) {
+            this.m_qos = qos;
         }
 
         public MqttQoS getQos() {

@@ -83,7 +83,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testRetain_maintainMessage_againstClientDestruction() throws InterruptedException {
+    public void testRetain_maintainMessage_againstClientDestruction() {
         connect();
         publishToAs(FAKE_CLIENT_ID, "/topic", AT_LEAST_ONCE, 66, true);
         disconnect();
@@ -135,7 +135,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testPublishWithQoS1_notCleanSession() throws InterruptedException {
+    public void testPublishWithQoS1_notCleanSession() {
         connect();
         subscribe("/topic", AT_LEAST_ONCE);
         disconnect();
@@ -148,21 +148,21 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
         verifyPublishIsReceived();
     }
 
-    protected void publishFromAnotherClient(String topic, MqttQoS qos) throws InterruptedException {
+    protected void publishFromAnotherClient(String topic, MqttQoS qos) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishToAs(anotherChannel, "AnotherClient", topic, qos, 67, false);
         disconnect(anotherChannel);
     }
 
-    protected void publishFromAnotherClient(String topic, String payload, MqttQoS qos) throws InterruptedException {
+    protected void publishFromAnotherClient(String topic, String payload, MqttQoS qos) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishToAs(anotherChannel, "AnotherClient", topic, payload, qos, 68, false);
         disconnect(anotherChannel);
     }
 
-    protected void publishQoS2FromAnotherClient(String topic) throws InterruptedException {
+    protected void publishQoS2FromAnotherClient(String topic) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishQoS2ToAs(anotherChannel, "AnotherClient", topic, 67, false);
@@ -170,7 +170,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession() throws InterruptedException {
+    public void checkReceivePublishedMessage_after_a_reconnect_with_notCleanSession() {
         connect();
         subscribe("/topic", AT_LEAST_ONCE);
         disconnect();
