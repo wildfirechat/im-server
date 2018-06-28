@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
+import java.io.IOException;
+
 @Sharable
 public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
@@ -39,8 +41,11 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object message) {
+    public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
         MqttMessage msg = (MqttMessage) message;
+        if (msg.fixedHeader() == null) {
+        	throw new IOException("Unknown packet");
+        }
         MqttMessageType messageType = msg.fixedHeader().messageType();
         LOG.debug("Processing MQTT message, type: {}", messageType);
         try {
