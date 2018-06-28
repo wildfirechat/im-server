@@ -25,6 +25,7 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 
 import static io.moquette.spi.impl.Utils.messageId;
@@ -40,16 +41,19 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger("messageLogger");
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object message) {
+    public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
         logMQTTMessage(ctx, message, "C->B");
         ctx.fireChannelRead(message);
     }
 
-    private void logMQTTMessage(ChannelHandlerContext ctx, Object message, String direction) {
+    private void logMQTTMessage(ChannelHandlerContext ctx, Object message, String direction) throws Exception {
         if (!(message instanceof MqttMessage)) {
             return;
         }
         MqttMessage msg = (MqttMessage) message;
+        if (msg.fixedHeader() == null) {
+        	throw new IOException("Unknown packet");
+        }
         String clientID = NettyUtils.clientID(ctx.channel());
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {
