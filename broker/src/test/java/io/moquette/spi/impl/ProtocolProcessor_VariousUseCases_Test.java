@@ -341,31 +341,22 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
 
         assertFalse("First 'subscriber' channel MUST be closed by the broker", clientXA.isOpen());
         verifyPublishIsReceived(clientYA, "Hello 2", AT_MOST_ONCE);
+    }
 
-//        LOG.info("*** testForceClientDisconnection_issue118 ***");
-//        MessageCollector cbSubscriber1 = new MessageCollector();
-//        MqttClient clientXA = createClient("subscriber", "X", cbSubscriber1);
-//        LOG.info("Connected 'subscriber' first time");
-//        clientXA.subscribe("topic", 0);
-//        LOG.info("Subscribed 'topic' from 'subscriber' first time");
-//
-//        MqttClient clientXB = createClient("publisher", "X");
-//        LOG.info("Connected 'publisher' first time");
-//        clientXB.publish("topic", "Hello".getBytes(), 2, false);
-//        LOG.info("Published on 'topic' from 'publisher' first time");
-//
-//        LOG.info("Creating second new 'subscriber'");
-//        MessageCollector cbSubscriber2 = new MessageCollector();
-//        MqttClient clientYA = createClient("subscriber", "Y", cbSubscriber2);
-//        LOG.info("Connected 'subscriber' second time");
-//        clientYA.subscribe("topic", 0);
-//
-//        MqttClient clientYB = createClient("publisher", "Y");
-//        clientYB.publish("topic", "Hello 2".getBytes(), 2, true);
-//
-//        // Verify that the second subscriber client get notified and not the first.
-//        assertTrue(cbSubscriber1.connectionLost());
-//        assertEquals("Hello 2", new String(cbSubscriber2.waitMessage(1).getPayload()));
+    @Test
+    public void testPublishToEmptyTopic() {
+        EmbeddedChannel subscriber = new EmbeddedChannel();
+        connectAsClient(subscriber, "Subscriber");
+
+        subscribe(subscriber, "#", AT_LEAST_ONCE);
+
+        // Exercise
+        connect();
+        publishToAs(FAKE_CLIENT_ID, "", AT_LEAST_ONCE, 1, false);
+
+        // Verify
+        verifyNoPublishIsReceived(subscriber);
+        assertFalse("On empty topic subscription the channel MUST be closed", m_channel.isOpen());
     }
 
 }

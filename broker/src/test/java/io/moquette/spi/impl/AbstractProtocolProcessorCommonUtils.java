@@ -85,7 +85,11 @@ abstract class AbstractProtocolProcessorCommonUtils {
     }
 
     void verifyNoPublishIsReceived() {
-        final Object messageReceived = m_channel.readOutbound();
+        verifyNoPublishIsReceived(this.m_channel);
+    }
+
+    void verifyNoPublishIsReceived(EmbeddedChannel channel) {
+        final Object messageReceived = channel.readOutbound();
         assertNull("Received an out message from processor while not expected", messageReceived);
     }
 

@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import static io.moquette.spi.impl.ProtocolProcessor.asStoredMessage;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
@@ -58,6 +59,12 @@ class Qos1PublishHandler extends QosPublishHandler {
     void receivedPublishQos1(Channel channel, MqttPublishMessage msg) {
         // verify if topic can be write
         final Topic topic = new Topic(msg.variableHeader().topicName());
+        topic.getTokens();
+        if (!topic.isValid()) {
+            LOG.warn("Invalid topic format, force close the connection");
+            channel.close().addListener(CLOSE_ON_FAILURE);
+            return;
+        }
         String clientID = NettyUtils.clientID(channel);
         String username = NettyUtils.userName(channel);
         if (!m_authorizator.canWrite(topic, username, clientID)) {

@@ -72,6 +72,10 @@ public class Topic implements Serializable {
     }
 
     private List<Token> parseTopic(String topic) throws ParseException {
+        if (topic.length() == 0) {
+            throw new ParseException("Bad format of topic, topic MUST be at least 1 character [MQTT-4.7.3-1] and " +
+                                     "this was empty", 0);
+        }
         List<Token> res = new ArrayList<>();
         String[] splitted = topic.split("/");
 
