@@ -16,20 +16,18 @@
 
 package io.moquette.server;
 
-import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.server.netty.metrics.BytesMetrics;
 import io.moquette.server.netty.metrics.BytesMetricsHandler;
 import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.server.netty.metrics.MessageMetricsHandler;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static io.netty.channel.ChannelFutureListener.CLOSE;
+import java.net.SocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 
@@ -106,6 +104,10 @@ public class ConnectionDescriptor {
                       clientID, expected, newState);
         }
         return retval;
+    }
+
+    public SocketAddress getRemoteAddress() {
+        return this.channel.remoteAddress();
     }
 
     @Override
