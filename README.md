@@ -21,7 +21,7 @@ and into [WSO2 Messge broker](http://techexplosives-pamod.blogspot.it/2014/05/mq
 
 ## Try the demo instance
 
-Point your MQTT client to _broker.moquette.io_
+Point your browser to [cloud instance](http://broker.moquette.io), request an account then use it from your MQTT clients.
 
 ## 1 minute set up
 
@@ -29,7 +29,7 @@ Start play with it, download the self distribution tar from [BinTray](https://bi
 the un untar and start the broker listening on `1883` port and enjoy!
 
 ```
-tar zxf moquette-distribution-0.11.tar
+tar xvf moquette-distribution-0.11.tar
 cd bin
 ./moquette.sh
 ```
@@ -73,8 +73,8 @@ Include dependency in your project:
 ## Build from sources
 
 
-After a git clone of the repository, cd into the cloned sources and: `./gradlew clean distribution:distMoquetteTar` or
-`./gradlew clean distribution:distMoquetteZip`.
+After a git clone of the repository, cd into the cloned sources and: `./gradlew clean moquette-distribution:distMoquetteTar` or
+`./gradlew clean moquette-distribution:distMoquetteZip`.
 
 
 In distribution/build directory will be produced the selfcontained file for the broker with all dependencies and a running script. 
