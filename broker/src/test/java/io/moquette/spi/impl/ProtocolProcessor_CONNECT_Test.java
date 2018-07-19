@@ -70,7 +70,7 @@ public class ProtocolProcessor_CONNECT_Test {
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
                          new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR,
-                         new SessionsRepository(this.m_sessionStore, null));
+                         new SessionsRepository(this.m_sessionStore, null), false);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProcessorProhibitingAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, false,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null), false);
     }
 
     @Test
@@ -325,7 +325,7 @@ public class ProtocolProcessor_CONNECT_Test {
 
     protected void reinitProtocolProcessorWithZeroLengthClientIdAndAnonymousClients() {
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, true,
-            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null));
+            new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, new SessionsRepository(this.m_sessionStore, null), false);
     }
 
     @Test

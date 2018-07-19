@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.security.AcceptAllAuthenticator;
@@ -27,7 +28,10 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +40,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static io.moquette.spi.impl.ProtocolProcessorTest.EMPTY_OBSERVERS;
-import static io.moquette.spi.impl.ProtocolProcessorTest.NO_OBSERVERS_INTERCEPTOR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
@@ -52,6 +55,7 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
     IMqttClient m_publisher;
     MessageCollector m_messagesCollector;
     IConfig m_config;
+    private boolean canRead;
 
     @BeforeClass
     public static void beforeTests() {
@@ -63,9 +67,12 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
     protected void startServer() throws IOException {
         m_server = new Server();
         final Properties configProps = IntegrationUtils.prepareTestProperties();
+        configProps.setProperty(BrokerConstants.REAUTHORIZE_SUBSCRIPTIONS_ON_CONNECT, "true");
         m_config = new MemoryConfig(configProps);
+        canRead = true;
 
-        final IAuthorizator authorizator = new IAuthorizator() {
+        final IAuthorizator switchingAuthorizator = new IAuthorizator() {
+//            int callCount = 0;
             @Override
             public boolean canWrite(Topic topic, String user, String client) {
                 return true;
@@ -73,11 +80,11 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
 
             @Override
             public boolean canRead(Topic topic, String user, String client) {
-                return false;
+                return canRead;
             }
         };
 
-        m_server.startServer(m_config, EMPTY_OBSERVERS, null, new AcceptAllAuthenticator(), authorizator);
+        m_server.startServer(m_config, EMPTY_OBSERVERS, null, new AcceptAllAuthenticator(), switchingAuthorizator);
     }
 
     @Before
@@ -115,6 +122,27 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setCleanSession(false);
         m_client.connect(options);
+        m_client.subscribe("/topic", 0);
+
+        // Exercise
+        MqttPublishMessage message = MqttMessageBuilders.publish()
+            .topicName("/topic")
+            .retained(true)
+            .qos(MqttQoS.AT_MOST_ONCE)
+            .payload(Unpooled.copiedBuffer("Hello World!!".getBytes(UTF_8)))
+            .build();
+
+        m_server.internalPublish(message, "INTRLPUB");
+
+        final MqttMessage mqttMessage = m_messagesCollector.waitMessage(1);
+        assertNotNull(mqttMessage);
+
+        m_client.disconnect();
+        // switch the authorizator
+        canRead = false;
+
+        // Exercise 2
+        m_client.connect(options);
         try {
             m_client.subscribe("/topic", 0);
             fail();
@@ -122,127 +150,10 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
             // it's OK, the subscribed should fail with error code 128
         }
 
-        // Exercise
-        MqttPublishMessage message = MqttMessageBuilders.publish()
-            .topicName("/topic")
-            .retained(true)
-            .qos(MqttQoS.AT_MOST_ONCE)
-//            .qQos(MqttQoS.AT_LEAST_ONCE)
-//            .qos(MqttQoS.EXACTLY_ONCE)
-            .payload(Unpooled.copiedBuffer("Hello World!!".getBytes(UTF_8)))
-            .build();
-
         m_server.internalPublish(message, "INTRLPUB");
 
-        // TODO verify the message is not published
-        final MqttMessage mqttMessage = m_messagesCollector.waitMessage(1);
-        assertNull(mqttMessage);
+        // verify the message is not published
+        final MqttMessage mqttMessage2 = m_messagesCollector.waitMessage(1);
+        assertNull("No message MUST be received", mqttMessage2);
     }
-
-
-//    @Ignore("This test hasn't any meaning using in memory storage service")
-//    @Test
-//    public void testCleanSession_maintainClientSubscriptions_withServerRestart() throws Exception {
-//        LOG.info("*** testCleanSession_maintainClientSubscriptions_withServerRestart ***");
-//        MqttConnectOptions options = new MqttConnectOptions();
-//        options.setCleanSession(false);
-//        m_client.connect(options);
-//        m_client.subscribe("/topic", 0);
-//        m_client.disconnect();
-//
-//        m_server.stopServer();
-//
-//        m_server.startServer(IntegrationUtils.prepareTestProperties());
-//
-//        // reconnect and publish
-//        m_client.connect(options);
-//        m_client.publish("/topic", "Test my payload".getBytes(UTF_8), 0, false);
-//
-//        assertEquals("/topic", m_messagesCollector.getTopic());
-//    }
-//
-//    /**
-//     * subscriber A connect and subscribe on "a/b" QoS 1 subscriber B connect and subscribe on "a/+"
-//     * BUT with QoS 2 publisher connects and send a message "hello" on "a/b" subscriber A must
-//     * receive a notification with QoS1 subscriber B must receive a notification with QoS2
-//     */
-//    @Test
-//    public void checkSubscribersGetCorrectQosNotifications() throws Exception {
-//        LOG.info("*** checkSubscribersGetCorrectQosNotifications ***");
-//        String tmpDir = System.getProperty("java.io.tmpdir");
-//
-//        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberA");
-//
-//        MqttClient subscriberA = new MqttClient("tcp://localhost:1883", "SubscriberA", dsSubscriberA);
-//        MessageCollector cbSubscriberA = new MessageCollector();
-//        subscriberA.setCallback(cbSubscriberA);
-//        subscriberA.connect();
-//        subscriberA.subscribe("a/b", 1);
-//
-//        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriberB");
-//
-//        MqttClient subscriberB = new MqttClient("tcp://localhost:1883", "SubscriberB", dsSubscriberB);
-//        MessageCollector cbSubscriberB = new MessageCollector();
-//        subscriberB.setCallback(cbSubscriberB);
-//        subscriberB.connect();
-//        subscriberB.subscribe("a/+", 2);
-//
-//        m_client.connect();
-//        m_client.publish("a/b", "Hello world MQTT!!".getBytes(UTF_8), 2, false);
-//
-//        MqttMessage messageOnA = cbSubscriberA.waitMessage(1);
-//        assertEquals("Hello world MQTT!!", new String(messageOnA.getPayload(), UTF_8));
-//        assertEquals(1, messageOnA.getQos());
-//        subscriberA.disconnect();
-//
-//        MqttMessage messageOnB = cbSubscriberB.waitMessage(1);
-//        assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload(), UTF_8));
-//        assertEquals(2, messageOnB.getQos());
-//        subscriberB.disconnect();
-//    }
-//
-//    @Test
-//    public void testSubcriptionDoesntStayActiveAfterARestart() throws Exception {
-//        LOG.info("*** testSubcriptionDoesntStayActiveAfterARestart ***");
-//        String tmpDir = System.getProperty("java.io.tmpdir");
-//        // clientForSubscribe1 connect and subscribe to /topic QoS2
-//        MqttClientPersistence dsSubscriberA = new MqttDefaultFilePersistence(
-//                tmpDir + File.separator + "clientForSubscribe1");
-//
-//        MqttClient clientForSubscribe1 = new MqttClient("tcp://localhost:1883", "clientForSubscribe1", dsSubscriberA);
-//        MessageCollector cbSubscriber1 = new MessageCollector();
-//        clientForSubscribe1.setCallback(cbSubscriber1);
-//        clientForSubscribe1.connect();
-//        clientForSubscribe1.subscribe("topic", 0);
-//
-//        // server stop
-//        m_server.stopServer();
-//        System.out.println("\n\n SEVER REBOOTING \n\n");
-//        // server start
-//        startServer();
-//
-//        // clientForSubscribe2 connect and subscribe to /topic QoS2
-//        MqttClientPersistence dsSubscriberB = new MqttDefaultFilePersistence(
-//                tmpDir + File.separator + "clientForSubscribe2");
-//        MqttClient clientForSubscribe2 = new MqttClient("tcp://localhost:1883", "clientForSubscribe2", dsSubscriberB);
-//        MessageCollector cbSubscriber2 = new MessageCollector();
-//        clientForSubscribe2.setCallback(cbSubscriber2);
-//        clientForSubscribe2.connect();
-//        clientForSubscribe2.subscribe("topic", 0);
-//
-//        // clientForPublish publish on /topic with QoS2 a message
-//        MqttClientPersistence dsSubscriberPUB = new MqttDefaultFilePersistence(
-//                tmpDir + File.separator + "clientForPublish");
-//        MqttClient clientForPublish = new MqttClient("tcp://localhost:1883", "clientForPublish", dsSubscriberPUB);
-//        clientForPublish.connect();
-//        clientForPublish.publish("topic", "Hello".getBytes(UTF_8), 2, true);
-//
-//        // verify clientForSubscribe1 doesn't receive a notification but clientForSubscribe2 yes
-//        LOG.info("Before waiting to receive 1 sec from {}", clientForSubscribe1.getClientId());
-//        assertFalse(clientForSubscribe1.isConnected());
-//        assertTrue(clientForSubscribe2.isConnected());
-//        LOG.info("Waiting to receive 1 sec from {}", clientForSubscribe2.getClientId());
-//        MqttMessage messageOnB = cbSubscriber2.waitMessage(1);
-//        assertEquals("Hello", new String(messageOnB.getPayload(), UTF_8));
-//    }
 }

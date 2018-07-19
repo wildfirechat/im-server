@@ -81,7 +81,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
         subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository);
+                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository, false);
     }
 
     void verifyNoPublishIsReceived() {

@@ -91,7 +91,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
         subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
 
         connect_v3_1();
 
@@ -128,7 +128,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         SessionsRepository sessionsRepository = new SessionsRepository(storageService.sessionsStore(), null);
         subs.init(sessionsRepository);
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
 
         EmbeddedChannel firstReceiverChannel = new EmbeddedChannel();
         MqttConnectMessage connectMessage = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1)
@@ -181,7 +181,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
             .thenReturn(false);
 
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true, mockAuthorizator,
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
 
         connect();
 
@@ -253,7 +253,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
         connect_v3_1_asClient(PUBLISHER_ID);
         publishToAs(PUBLISHER_ID, NEWS_TOPIC, AT_MOST_ONCE, true);
         NettyUtils.cleanSession(m_channel, false);
@@ -277,7 +277,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         m_messagesStore.storeRetained(new Topic("/topic"), retainedMessage);
 
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
 
         connect_v3_1_asClient(PUBLISHER_ID);
 
@@ -294,7 +294,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
         when(mockedSubscriptions.matches(eq(new Topic("/topic")))).thenReturn(inactiveSubscriptions);
         m_processor = new ProtocolProcessor();
         m_processor.init(mockedSubscriptions, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
 
         m_processor.sessionsRepository.createNewSession("Subscriber", false);
 
@@ -348,7 +348,7 @@ public class ProtocolProcessorTest extends AbstractProtocolProcessorCommonUtils 
 
         // simulate a connect that register a clientID to an IoSession
         m_processor.init(subs, m_messagesStore, m_sessionStore, null, true, new PermitAllAuthorizator(),
-                         NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository);
+                         NO_OBSERVERS_INTERCEPTOR, this.sessionsRepository, false);
         connect_v3_1_asClient(PUBLISHER_ID);
         publishQoS2ToAs(this.m_channel, PUBLISHER_ID, NEWS_TOPIC, 1, true);
         disconnect();

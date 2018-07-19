@@ -19,6 +19,7 @@ package io.moquette.spi.impl;
 import io.moquette.connections.IConnectionsManager;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
+import io.moquette.persistence.MemorySessionStore;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.AutoFlushHandler;
@@ -104,9 +105,9 @@ public class ProtocolProcessor {
     private ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private ISubscriptionsDirectory subscriptions;
-//    private ISubscriptionsStore subscriptionStore;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
+    private boolean reauthorizeSubscriptionsOnConnect;
     private IAuthorizator m_authorizator;
 
     private IMessagesStore m_messagesStore;
@@ -131,16 +132,19 @@ public class ProtocolProcessor {
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
-                     BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
+                     BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
+                     boolean reauthorizeSubscriptionsOnConnect) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false,
-             authorizator, interceptor, sessionsRepository);
+             authorizator, interceptor, sessionsRepository, reauthorizeSubscriptionsOnConnect);
     }
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-                     IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
+                     IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
+                     boolean reauthorizeSubscriptionsOnConnect) {
         init(new ConnectionDescriptorStore(), subscriptions, storageService, sessionsStore,
-             authenticator, allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository);
+             authenticator, allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository,
+             reauthorizeSubscriptionsOnConnect);
     }
 
     /**
@@ -164,13 +168,15 @@ public class ProtocolProcessor {
     void init(IConnectionsManager connectionDescriptors, ISubscriptionsDirectory subscriptions,
               IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
               boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
-              BrokerInterceptor interceptor, SessionsRepository sessionsRepository) {
+              BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
+              boolean reauthorizeSubscriptionsOnConnect) {
         LOG.debug("Initializing MQTT protocol processor...");
         this.connectionDescriptors = connectionDescriptors;
         this.subscriptionInCourse = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
+        this.reauthorizeSubscriptionsOnConnect = reauthorizeSubscriptionsOnConnect;
         this.allowZeroByteClientId = allowZeroByteClientId;
         m_authorizator = authorizator;
         if (LOG.isDebugEnabled()) {
@@ -202,7 +208,8 @@ public class ProtocolProcessor {
     public void processConnect(Channel channel, MqttConnectMessage msg) {
         MqttConnectPayload payload = msg.payload();
         String clientId = payload.clientIdentifier();
-        LOG.debug("Processing CONNECT message. CId={}, username={}", clientId, payload.userName());
+        final String username = payload.userName();
+        LOG.debug("Processing CONNECT message. CId={}, username={}", clientId, username);
 
         if (msg.variableHeader().version() != MqttVersion.MQTT_3_1.protocolLevel()
                 && msg.variableHeader().version() != MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -221,14 +228,14 @@ public class ProtocolProcessor {
 
                 channel.writeAndFlush(badId).addListener(FIRE_EXCEPTION_ON_FAILURE);
                 channel.close().addListener(CLOSE_ON_FAILURE);
-                LOG.error("The MQTT client ID cannot be empty. Username={}", payload.userName());
+                LOG.error("The MQTT client ID cannot be empty. Username={}", username);
                 return;
             }
 
             // Generating client id.
             clientId = UUID.randomUUID().toString().replace("-", "");
             LOG.info("Client has connected with a server generated identifier. CId={}, username={}", clientId,
-                payload.userName());
+                username);
         }
 
         if (!login(channel, msg, clientId)) {
@@ -248,6 +255,9 @@ public class ProtocolProcessor {
 
         initializeKeepAliveTimeout(channel, msg, clientId);
         storeWillMessage(msg, clientId);
+        if (!cleanSession && reauthorizeSubscriptionsOnConnect) {
+            reauthorizeOnExistingSubscriptions(clientId, username);
+        }
         if (!sendAck(descriptor, msg, clientId)) {
             channel.close().addListener(CLOSE_ON_FAILURE);
             return;
@@ -274,7 +284,22 @@ public class ProtocolProcessor {
             channel.close().addListener(CLOSE_ON_FAILURE);
         }
 
-        LOG.info("Connected client <{}> with login <{}>", clientId, payload.userName());
+        LOG.info("Connected client <{}> with login <{}>", clientId, username);
+    }
+
+    private void reauthorizeOnExistingSubscriptions(String clientId, String username) {
+        if (!m_sessionsStore.contains(clientId)) {
+            return;
+        }
+        final Collection<Subscription> clientSubscriptions = m_sessionsStore.subscriptionStore()
+            .listClientSubscriptions(clientId);
+        for (Subscription sub : clientSubscriptions) {
+            final Topic topicToReauthorize = sub.getTopicFilter();
+            final boolean readAuthorized = m_authorizator.canRead(topicToReauthorize, username, clientId);
+            if (!readAuthorized) {
+                subscriptions.removeSubscription(topicToReauthorize, clientId);
+            }
+        }
     }
 
     private void setupAutoFlusher(Channel channel, int flushIntervalMs) {
@@ -634,6 +659,9 @@ public class ProtocolProcessor {
             LOG.trace("Removing saved subscriptions. CId={}", descriptor.clientID);
             final ClientSession session = this.sessionsRepository.sessionForClient(clientID);
             session.wipeSubscriptions();
+            for (Subscription existingSub : session.getSubscriptions()) {
+                this.subscriptions.removeSubscription(existingSub.getTopicFilter(), clientID);
+            }
             LOG.trace("Saved subscriptions have been removed. CId={}", descriptor.clientID);
         }
         return true;

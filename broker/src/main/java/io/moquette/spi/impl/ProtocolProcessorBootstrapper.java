@@ -168,13 +168,12 @@ public class ProtocolProcessorBootstrapper {
         connectionDescriptors = new ConnectionDescriptorStore();
 
         LOG.info("Initializing MQTT protocol processor...");
-        boolean allowAnonymous = Boolean
-                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        boolean allowZeroByteClientId = Boolean
-                .parseBoolean(props.getProperty(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, "false"));
+        boolean allowAnonymous = props.boolProp(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, true);
+        boolean allowZeroByteClientId = props.boolProp(BrokerConstants.ALLOW_ZERO_BYTE_CLIENT_ID_PROPERTY_NAME, false);
+        boolean reauthorizeSubscriptionsOnConnect = props.boolProp(BrokerConstants.REAUTHORIZE_SUBSCRIPTIONS_ON_CONNECT, false);
         m_processor.init(connectionDescriptors, subscriptions, messagesStore, m_sessionsStore, authenticator,
                 allowAnonymous, allowZeroByteClientId, authorizator, interceptor,
-            sessionsRepository);
+            sessionsRepository, reauthorizeSubscriptionsOnConnect);
         return m_processor;
     }
 

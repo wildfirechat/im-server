@@ -17,11 +17,15 @@
 package io.moquette.server.netty;
 
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +96,14 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                     break;
             }
         } catch (Throwable ex) {
-            ctx.fireExceptionCaught(ex);
+            //ctx.fireExceptionCaught(ex);
+            LOG.error("Error processing protocol message: {}", messageType, ex);
+            ctx.channel().close().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                    LOG.info("Closed client channel due to exception in processing");
+                }
+            });
         } finally {
             ReferenceCountUtil.release(msg);
         }
