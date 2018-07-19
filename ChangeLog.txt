@@ -1,3 +1,7 @@
+Version 0.12:
+   Fixed issue #415
+   Dropped Hazelcast because at the moment Moquette is not designed to be clusterizable
+
 Version 0.10:
     Netty epoll system added
     Separated in memory and MapDB storage implementations
