@@ -39,10 +39,8 @@ public interface IConnectionsManager {
 
     boolean removeConnection(ConnectionDescriptor descriptor);
 
-    ConnectionDescriptor getConnection(String clientID);
-
     /**
-     * Determines wether a MQTT client is connected to the broker.
+     * Determines weather a MQTT client is connected to the broker.
      *
      * @param clientID
      * @return

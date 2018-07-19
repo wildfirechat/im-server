@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -50,6 +49,9 @@ public class SessionsRepository {
     private ISubscriptionsStore subscriptionsStore;
     private ScheduledExecutorService scheduler;
     private final ConcurrentMap<String, ClientSession> sessionsCache = new ConcurrentHashMap<>();
+    // maps clientID to Will testament, if specified on CONNECT
+    // maps clientID to Will testament, if specified on CONNECT
+    private ConcurrentMap<String, WillMessage> willMessages = new ConcurrentHashMap<>();
 
     public SessionsRepository(ISessionsStore sessionsStore, ScheduledExecutorService scheduler) {
         this.sessions = sessionsStore;
@@ -80,9 +82,9 @@ public class SessionsRepository {
     private ClientSession newClientSessionAndCacheIt(String clientID, boolean cleanSession) {
         ClientSession session;
         if (cleanSession) {
-            session = new TransientSession(clientID);
+            session = new TransientSession(clientID, this.willMessages);
         } else {
-            DurableSession durableSession = new DurableSession(clientID, this.sessions, this.subscriptionsStore);
+            DurableSession durableSession = new DurableSession(clientID, this.sessions, this.subscriptionsStore, willMessages);
             durableSession.reloadAllSubscriptionsFromStore();
             session = durableSession;
         }
