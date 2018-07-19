@@ -255,7 +255,9 @@ public class Server {
             }
         }
 
-        scheduler.shutdown();
+		// calling shutdown() does not actually stop tasks that are not cancelled,
+		// and SessionsRepository does not stop its tasks. Thus shutdownNow().
+        scheduler.shutdownNow();
 
         LOG.info("Moquette server has been stopped.");
     }
