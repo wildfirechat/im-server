@@ -63,11 +63,6 @@ public class ConnectionDescriptorStore implements IConnectionsManager {
     }
 
     @Override
-    public ConnectionDescriptor getConnection(String clientID) {
-        return connectionDescriptors.get(clientID);
-    }
-
-    @Override
     public boolean isConnected(String clientID) {
         return connectionDescriptors.containsKey(clientID);
     }

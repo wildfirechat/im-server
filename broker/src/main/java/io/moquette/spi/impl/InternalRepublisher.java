@@ -59,6 +59,7 @@ class InternalRepublisher {
             return;
         }
 
+        LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
         EnqueuedMessage pubEvt;
         while ((pubEvt = clientSession.poll()) != null) {
             // put in flight zone

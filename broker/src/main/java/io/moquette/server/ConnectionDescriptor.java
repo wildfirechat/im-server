@@ -22,6 +22,7 @@ import io.moquette.server.netty.metrics.BytesMetricsHandler;
 import io.moquette.server.netty.metrics.MessageMetrics;
 import io.moquette.server.netty.metrics.MessageMetricsHandler;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +43,8 @@ public class ConnectionDescriptor {
     public enum ConnectionState {
         // Connection states
         DISCONNECTED,
+        INIT_SESSION,
         SENDACK,
-        SESSION_CREATED,
         MESSAGES_REPUBLISHED,
         ESTABLISHED,
         // Disconnection states
@@ -67,6 +68,10 @@ public class ConnectionDescriptor {
         this.channel.writeAndFlush(payload).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
+    public void writeAndFlush(Object payload, ChannelFutureListener listener) {
+        this.channel.writeAndFlush(payload).addListener(listener);
+    }
+
     public boolean doesNotUseChannel(Channel channel) {
         return !(this.channel.equals(channel));
     }
@@ -86,13 +91,8 @@ public class ConnectionDescriptor {
     }
 
     public void abort() {
-        LOG.info("Closing connection descriptor. MqttClientId = {}.", clientID);
-        // try {
-        // this.channel.disconnect().sync();
-        this.channel.close().addListener(CLOSE_ON_FAILURE); // .sync();
-        // } catch (InterruptedException e) {
-        // e.printStackTrace();
-        // }
+        LOG.info("Closing connection descriptor clientId = {}.", clientID);
+        this.channel.close().addListener(CLOSE_ON_FAILURE);
     }
 
     public boolean assignState(ConnectionState expected, ConnectionState newState) {

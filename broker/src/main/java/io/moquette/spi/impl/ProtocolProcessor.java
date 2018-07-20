@@ -19,13 +19,14 @@ package io.moquette.spi.impl;
 import io.moquette.connections.IConnectionsManager;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
-import io.moquette.persistence.MemorySessionStore;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
-import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.*;
+import io.moquette.spi.ClientSession;
+import io.moquette.spi.EnqueuedMessage;
+import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
+import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
@@ -33,18 +34,16 @@ import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.mqtt.*;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
@@ -52,7 +51,6 @@ import static io.moquette.spi.impl.Utils.messageId;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
-import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
 
@@ -64,37 +62,6 @@ import static io.netty.handler.codec.mqtt.MqttQoS.*;
  */
 public class ProtocolProcessor {
 
-    static final class WillMessage {
-
-        private final String topic;
-        private final ByteBuffer payload;
-        private final boolean retained;
-        private final MqttQoS qos;
-
-        WillMessage(String topic, ByteBuffer payload, boolean retained, MqttQoS qos) {
-            this.topic = topic;
-            this.payload = payload;
-            this.retained = retained;
-            this.qos = qos;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public ByteBuffer getPayload() {
-            return payload;
-        }
-
-        public boolean isRetained() {
-            return retained;
-        }
-
-        public MqttQoS getQos() {
-            return qos;
-        }
-    }
-
     private enum SubscriptionState {
         STORED, VERIFIED
     }
@@ -105,16 +72,12 @@ public class ProtocolProcessor {
     private ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private ISubscriptionsDirectory subscriptions;
-    private boolean allowAnonymous;
-    private boolean allowZeroByteClientId;
-    private boolean reauthorizeSubscriptionsOnConnect;
     private IAuthorizator m_authorizator;
 
     private IMessagesStore m_messagesStore;
 
     private ISessionsStore m_sessionsStore;
 
-    private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
 
     private Qos0PublishHandler qos0PublishHandler;
@@ -124,8 +87,8 @@ public class ProtocolProcessor {
     private InternalRepublisher internalRepublisher;
     SessionsRepository sessionsRepository;
 
-    // maps clientID to Will testament, if specified on CONNECT
-    private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
+    private ConnectHandler connectHandler;
+    private DisconnectHandler disconnectHandler;
 
     ProtocolProcessor() {
     }
@@ -170,25 +133,21 @@ public class ProtocolProcessor {
               boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
               BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
               boolean reauthorizeSubscriptionsOnConnect) {
-        LOG.debug("Initializing MQTT protocol processor...");
+        LOG.info("Initializing MQTT protocol processor..");
         this.connectionDescriptors = connectionDescriptors;
         this.subscriptionInCourse = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
-        this.allowAnonymous = allowAnonymous;
-        this.reauthorizeSubscriptionsOnConnect = reauthorizeSubscriptionsOnConnect;
-        this.allowZeroByteClientId = allowZeroByteClientId;
         m_authorizator = authorizator;
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initial subscriptions tree={}", subscriptions.dumpTree());
         }
-        m_authenticator = authenticator;
         m_messagesStore = storageService;
         m_sessionsStore = sessionsStore;
 
         this.sessionsRepository = sessionsRepository;
 
-        LOG.info("Initializing messages publisher...");
+        LOG.debug("Initializing messages publisher...");
         final PersistentQueueMessageSender messageSender = new PersistentQueueMessageSender(this.connectionDescriptors);
         this.messagesPublisher = new MessagesPublisher(connectionDescriptors, messageSender,
             subscriptions, this.sessionsRepository);
@@ -203,240 +162,16 @@ public class ProtocolProcessor {
 
         LOG.debug("Initializing internal republisher...");
         this.internalRepublisher = new InternalRepublisher(messageSender);
+
+        connectHandler = new ConnectHandler(connectionDescriptors, m_interceptor, sessionsRepository, m_sessionsStore,
+            authenticator, m_authorizator, subscriptions,
+            allowAnonymous, allowZeroByteClientId, reauthorizeSubscriptionsOnConnect, internalRepublisher);
+        disconnectHandler = new DisconnectHandler(connectionDescriptors, sessionsRepository, subscriptions, m_interceptor);
+        LOG.info("Initialized");
     }
 
-    public void processConnect(Channel channel, MqttConnectMessage msg) {
-        MqttConnectPayload payload = msg.payload();
-        String clientId = payload.clientIdentifier();
-        final String username = payload.userName();
-        LOG.debug("Processing CONNECT message. CId={}, username={}", clientId, username);
-
-        if (msg.variableHeader().version() != MqttVersion.MQTT_3_1.protocolLevel()
-                && msg.variableHeader().version() != MqttVersion.MQTT_3_1_1.protocolLevel()) {
-            MqttConnAckMessage badProto = connAck(CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION);
-
-            LOG.error("MQTT protocol version is not valid. CId={}", clientId);
-            channel.writeAndFlush(badProto).addListener(FIRE_EXCEPTION_ON_FAILURE);
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-
-        final boolean cleanSession = msg.variableHeader().isCleanSession();
-        if (clientId == null || clientId.length() == 0) {
-            if (!cleanSession || !this.allowZeroByteClientId) {
-                MqttConnAckMessage badId = connAck(CONNECTION_REFUSED_IDENTIFIER_REJECTED);
-
-                channel.writeAndFlush(badId).addListener(FIRE_EXCEPTION_ON_FAILURE);
-                channel.close().addListener(CLOSE_ON_FAILURE);
-                LOG.error("The MQTT client ID cannot be empty. Username={}", username);
-                return;
-            }
-
-            // Generating client id.
-            clientId = UUID.randomUUID().toString().replace("-", "");
-            LOG.info("Client has connected with a server generated identifier. CId={}, username={}", clientId,
-                username);
-        }
-
-        if (!login(channel, msg, clientId)) {
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-
-        ConnectionDescriptor descriptor = new ConnectionDescriptor(clientId, channel, cleanSession);
-        final ConnectionDescriptor existing = this.connectionDescriptors.addConnection(descriptor);
-        if (existing != null) {
-            LOG.info("Client ID is being used in an existing connection, force to be closed. CId={}", clientId);
-            existing.abort();
-            //return;
-            this.connectionDescriptors.removeConnection(existing);
-            this.connectionDescriptors.addConnection(descriptor);
-        }
-
-        initializeKeepAliveTimeout(channel, msg, clientId);
-        storeWillMessage(msg, clientId);
-        if (!cleanSession && reauthorizeSubscriptionsOnConnect) {
-            reauthorizeOnExistingSubscriptions(clientId, username);
-        }
-        if (!sendAck(descriptor, msg, clientId)) {
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-
-        m_interceptor.notifyClientConnected(msg);
-
-        if (!descriptor.assignState(SENDACK, SESSION_CREATED)) {
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-        final ClientSession clientSession = this.sessionsRepository.createOrLoadClientSession(clientId, cleanSession);
-
-        if (!republish(descriptor, msg, clientSession)) {
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-
-        int flushIntervalMs = 500/* (keepAlive * 1000) / 2 */;
-        setupAutoFlusher(channel, flushIntervalMs);
-
-        final boolean success = descriptor.assignState(MESSAGES_REPUBLISHED, ESTABLISHED);
-        if (!success) {
-            channel.close().addListener(CLOSE_ON_FAILURE);
-        }
-
-        LOG.info("Connected client <{}> with login <{}>", clientId, username);
-    }
-
-    private void reauthorizeOnExistingSubscriptions(String clientId, String username) {
-        if (!m_sessionsStore.contains(clientId)) {
-            return;
-        }
-        final Collection<Subscription> clientSubscriptions = m_sessionsStore.subscriptionStore()
-            .listClientSubscriptions(clientId);
-        for (Subscription sub : clientSubscriptions) {
-            final Topic topicToReauthorize = sub.getTopicFilter();
-            final boolean readAuthorized = m_authorizator.canRead(topicToReauthorize, username, clientId);
-            if (!readAuthorized) {
-                subscriptions.removeSubscription(topicToReauthorize, clientId);
-            }
-        }
-    }
-
-    private void setupAutoFlusher(Channel channel, int flushIntervalMs) {
-        try {
-            channel.pipeline().addAfter(
-                "idleEventHandler",
-                "autoFlusher",
-                new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        } catch (NoSuchElementException nseex) {
-            // the idleEventHandler is not present on the pipeline
-            channel.pipeline()
-                .addFirst("autoFlusher", new AutoFlushHandler(flushIntervalMs, TimeUnit.MILLISECONDS));
-        }
-    }
-
-    private MqttConnAckMessage connAck(MqttConnectReturnCode returnCode) {
-        return connAck(returnCode, false);
-    }
-
-    private MqttConnAckMessage connAckWithSessionPresent(MqttConnectReturnCode returnCode) {
-        return connAck(returnCode, true);
-    }
-
-    private MqttConnAckMessage connAck(MqttConnectReturnCode returnCode, boolean sessionPresent) {
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE,
-                false, 0);
-        MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(returnCode, sessionPresent);
-        return new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader);
-    }
-
-    private boolean login(Channel channel, MqttConnectMessage msg, final String clientId) {
-        // handle user authentication
-        if (msg.variableHeader().hasUserName()) {
-            byte[] pwd = null;
-            if (msg.variableHeader().hasPassword()) {
-                pwd = msg.payload().password().getBytes(StandardCharsets.UTF_8);
-            } else if (!this.allowAnonymous) {
-                LOG.error("Client didn't supply any password and MQTT anonymous mode is disabled CId={}", clientId);
-                failedCredentials(channel);
-                return false;
-            }
-            final String login = msg.payload().userName();
-            if (!m_authenticator.checkValid(clientId, login, pwd)) {
-                LOG.error("Authenticator has rejected the MQTT credentials CId={}, username={}", clientId, login);
-                failedCredentials(channel);
-                return false;
-            }
-            NettyUtils.userName(channel, login);
-        } else if (!this.allowAnonymous) {
-            LOG.error("Client didn't supply any credentials and MQTT anonymous mode is disabled. CId={}", clientId);
-            failedCredentials(channel);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean sendAck(ConnectionDescriptor descriptor, MqttConnectMessage msg, String clientId) {
-        LOG.debug("Sending CONNACK. CId={}", clientId);
-        final boolean success = descriptor.assignState(DISCONNECTED, SENDACK);
-        if (!success) {
-            return false;
-        }
-
-        MqttConnAckMessage okResp;
-        ClientSession clientSession = this.sessionsRepository.sessionForClient(clientId);
-        boolean isSessionAlreadyStored = clientSession != null;
-        final boolean msgCleanSessionFlag = msg.variableHeader().isCleanSession();
-        if (!msgCleanSessionFlag && isSessionAlreadyStored) {
-            okResp = connAckWithSessionPresent(CONNECTION_ACCEPTED);
-        } else {
-            okResp = connAck(CONNECTION_ACCEPTED);
-        }
-
-        descriptor.writeAndFlush(okResp);
-        LOG.debug("CONNACK has been sent. CId={}", clientId);
-
-        if (isSessionAlreadyStored && msgCleanSessionFlag) {
-            for (Subscription existingSub : clientSession.getSubscriptions()) {
-                this.subscriptions.removeSubscription(existingSub.getTopicFilter(), clientId);
-            }
-        }
-        return true;
-    }
-
-    private void initializeKeepAliveTimeout(Channel channel, MqttConnectMessage msg, String clientId) {
-        int keepAlive = msg.variableHeader().keepAliveTimeSeconds();
-        NettyUtils.keepAlive(channel, keepAlive);
-        NettyUtils.cleanSession(channel, msg.variableHeader().isCleanSession());
-        NettyUtils.clientID(channel, clientId);
-        int idleTime = Math.round(keepAlive * 1.5f);
-        setIdleTime(channel.pipeline(), idleTime);
-
-        LOG.debug("Connection has been configured CId={}, keepAlive={}, removeTemporaryQoS2={}, idleTime={}",
-                clientId, keepAlive, msg.variableHeader().isCleanSession(), idleTime);
-    }
-
-    private void storeWillMessage(MqttConnectMessage msg, String clientId) {
-        // Handle will flag
-        if (msg.variableHeader().isWillFlag()) {
-            MqttQoS willQos = MqttQoS.valueOf(msg.variableHeader().willQos());
-            LOG.debug("Configuring MQTT last will and testament CId={}, willQos={}, willTopic={}, willRetain={}",
-                     clientId, willQos, msg.payload().willTopic(), msg.variableHeader().isWillRetain());
-            byte[] willPayload = msg.payload().willMessage().getBytes(StandardCharsets.UTF_8);
-            ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
-            // save the will testament in the clientID store
-            WillMessage will = new WillMessage(msg.payload().willTopic(), bb, msg.variableHeader().isWillRetain(),
-                                               willQos);
-            m_willStore.put(clientId, will);
-            LOG.debug("MQTT last will and testament has been configured. CId={}", clientId);
-        }
-    }
-
-    private boolean republish(ConnectionDescriptor descriptor, MqttConnectMessage msg, ClientSession clientSession) {
-        final boolean success = descriptor.assignState(SESSION_CREATED, MESSAGES_REPUBLISHED);
-        if (!success) {
-            return false;
-        }
-
-        if (!msg.variableHeader().isCleanSession()) {
-            // force the republish of stored QoS1 and QoS2
-            LOG.info("Republishing stored publish events. CId={}", clientSession.clientID);
-            this.internalRepublisher.publishStored(clientSession);
-        }
-        return true;
-    }
-
-    private void failedCredentials(Channel session) {
-        session.writeAndFlush(connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD))
-            .addListener(FIRE_EXCEPTION_ON_FAILURE);
-        LOG.info("Client {} failed to connect with bad username or password.", session);
-    }
-
-    private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
-        if (pipeline.names().contains("idleStateHandler")) {
-            pipeline.remove("idleStateHandler");
-        }
-        pipeline.addFirst("idleStateHandler", new IdleStateHandler(idleTime, 0, 0));
+    public void processConnect(Channel channel, MqttConnectMessage connectMessage) {
+        this.connectHandler.processConnect(channel, connectMessage);
     }
 
     public void processPubAck(Channel channel, MqttPubAckMessage msg) {
@@ -476,7 +211,7 @@ public class ProtocolProcessor {
         final MqttQoS qos = msg.fixedHeader().qosLevel();
         final String clientId = NettyUtils.clientID(channel);
         LOG.info("Processing PUBLISH message. CId={}, topic={}, messageId={}, qos={}", clientId,
-                msg.variableHeader().topicName(), msg.variableHeader().messageId(), qos);
+                 msg.variableHeader().topicName(), msg.variableHeader().messageId(), qos);
         switch (qos) {
             case AT_MOST_ONCE:
                 this.qos0PublishHandler.receivedPublishQos0(channel, msg);
@@ -601,100 +336,7 @@ public class ProtocolProcessor {
         final String clientID = NettyUtils.clientID(channel);
         LOG.debug("Processing DISCONNECT message. CId={}", clientID);
         channel.flush();
-        final ConnectionDescriptor existingDescriptor = this.connectionDescriptors.getConnection(clientID);
-        if (existingDescriptor == null) {
-            // another client with same ID removed the descriptor, we must exit
-            channel.close().addListener(CLOSE_ON_FAILURE);
-            return;
-        }
-
-        if (existingDescriptor.doesNotUseChannel(channel)) {
-            // another client saved it's descriptor, exit
-            LOG.warn("Another client is using the connection descriptor. Closing connection. CId={}", clientID);
-            existingDescriptor.abort();
-            return;
-        }
-
-        if (!removeSubscriptions(existingDescriptor, clientID)) {
-            LOG.warn("Unable to remove subscriptions. Closing connection. CId={}", clientID);
-            existingDescriptor.abort();
-            return;
-        }
-
-        if (!dropStoredMessages(existingDescriptor, clientID)) {
-            LOG.warn("Unable to drop stored messages. Closing connection. CId={}", clientID);
-            existingDescriptor.abort();
-            return;
-        }
-
-        if (!cleanWillMessageAndNotifyInterceptor(existingDescriptor, clientID)) {
-            LOG.warn("Unable to drop will message. Closing connection. CId={}", clientID);
-            existingDescriptor.abort();
-            return;
-        }
-
-        if (!existingDescriptor.close()) {
-            LOG.debug("Connection has been closed. CId={}", clientID);
-            return;
-        }
-
-        boolean stillPresent = this.connectionDescriptors.removeConnection(existingDescriptor);
-        if (!stillPresent) {
-            // another descriptor was inserted
-            LOG.warn("Another descriptor has been inserted. CId={}", clientID);
-            return;
-        }
-        this.sessionsRepository.disconnect(clientID);
-
-        LOG.info("Client <{}> disconnected", clientID);
-    }
-
-    private boolean removeSubscriptions(ConnectionDescriptor descriptor, String clientID) {
-        final boolean success = descriptor.assignState(ESTABLISHED, SUBSCRIPTIONS_REMOVED);
-        if (!success) {
-            return false;
-        }
-
-        if (descriptor.cleanSession) {
-            LOG.trace("Removing saved subscriptions. CId={}", descriptor.clientID);
-            final ClientSession session = this.sessionsRepository.sessionForClient(clientID);
-            session.wipeSubscriptions();
-            for (Subscription existingSub : session.getSubscriptions()) {
-                this.subscriptions.removeSubscription(existingSub.getTopicFilter(), clientID);
-            }
-            LOG.trace("Saved subscriptions have been removed. CId={}", descriptor.clientID);
-        }
-        return true;
-    }
-
-    private boolean dropStoredMessages(ConnectionDescriptor descriptor, String clientID) {
-        final boolean success = descriptor.assignState(SUBSCRIPTIONS_REMOVED, MESSAGES_DROPPED);
-        if (!success) {
-            return false;
-        }
-
-        final ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
-        if (clientSession.isCleanSession()) {
-            clientSession.dropQueue();
-//            LOG.debug("Removing messages of session. CId={}", descriptor.clientID);
-//            this.m_sessionsStore.dropQueue(clientID);
-//            LOG.debug("Messages of the session have been removed. CId={}", descriptor.clientID);
-        }
-        return true;
-    }
-
-    private boolean cleanWillMessageAndNotifyInterceptor(ConnectionDescriptor descriptor, String clientID) {
-        final boolean success = descriptor.assignState(MESSAGES_DROPPED, INTERCEPTORS_NOTIFIED);
-        if (!success) {
-            return false;
-        }
-
-        LOG.trace("Removing will message. ClientId={}", descriptor.clientID);
-        // cleanup the will store
-        m_willStore.remove(clientID);
-        String username = descriptor.getUsername();
-        m_interceptor.notifyClientDisconnected(clientID, username);
-        return true;
+        disconnectHandler.processDisconnect(channel, clientID);
     }
 
     public void processConnectionLost(String clientID, Channel channel) {
@@ -702,10 +344,11 @@ public class ProtocolProcessor {
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
         connectionDescriptors.removeConnection(oldConnDescr);
         // publish the Will message (if any) for the clientID
-        if (m_willStore.containsKey(clientID)) {
-            WillMessage will = m_willStore.get(clientID);
+        final ClientSession clientSession = this.sessionsRepository.sessionForClient(clientID);
+        WillMessage will = clientSession.willMessage();
+        if (will != null) {
             forwardPublishWill(will, clientID);
-            m_willStore.remove(clientID);
+            clientSession.removeWill();
         }
 
         String username = NettyUtils.userName(channel);

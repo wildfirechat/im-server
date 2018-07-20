@@ -15,14 +15,20 @@
  */
 package io.moquette.spi;
 
+import io.moquette.spi.impl.WillMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 public class DurableSession extends ClientSession {
 
@@ -56,11 +62,14 @@ public class DurableSession extends ClientSession {
 
     private final OutboundFlightZone outboundFlightZone;
     private final InboundFlightZone inboundFlightZone;
+    private final ConcurrentMap<String, WillMessage> willMessages;
 
-    public DurableSession(String clientID, ISessionsStore sessions, ISubscriptionsStore subscriptionsStore) {
+    public DurableSession(String clientID, ISessionsStore sessions, ISubscriptionsStore subscriptionsStore,
+                          ConcurrentMap<String, WillMessage> willMessages) {
         super(clientID);
         this.subscriptionsStore = subscriptionsStore;
         this.sessionsStore = sessions;
+        this.willMessages = willMessages;
         this.outboundFlightZone = new OutboundFlightZone();
         this.inboundFlightZone = new InboundFlightZone();
     }
@@ -214,5 +223,31 @@ public class DurableSession extends ClientSession {
     @Override
     public void wipeSubscriptions() {
         this.subscriptionsStore.wipeSubscriptions(clientID);
+    }
+
+    @Override
+    public void storeWillMessage(MqttConnectMessage msg, String clientId) {
+        // Handle will flag
+        if (msg.variableHeader().isWillFlag()) {
+            MqttQoS willQos = MqttQoS.valueOf(msg.variableHeader().willQos());
+            LOG.debug("Configuring MQTT last will and testament CId={}, willQos={}, willTopic={}, willRetain={}",
+                clientId, willQos, msg.payload().willTopic(), msg.variableHeader().isWillRetain());
+            byte[] willPayload = msg.payload().willMessage().getBytes(StandardCharsets.UTF_8);
+            ByteBuffer bb = (ByteBuffer) ByteBuffer.allocate(willPayload.length).put(willPayload).flip();
+            // save the will testament in the clientID store
+            WillMessage will = new WillMessage(msg.payload().willTopic(), bb, msg.variableHeader().isWillRetain(), willQos);
+            willMessages.put(clientId, will);
+            LOG.debug("MQTT last will and testament has been configured. CId={}", clientId);
+        }
+    }
+
+    @Override
+    public void removeWill() {
+        willMessages.remove(clientID);
+    }
+
+    @Override
+    public WillMessage willMessage() {
+        return willMessages.get(clientID);
     }
 }

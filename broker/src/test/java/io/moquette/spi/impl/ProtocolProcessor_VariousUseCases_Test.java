@@ -32,7 +32,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testCleanSession_maintainClientSubscriptions() throws InterruptedException {
+    public void testCleanSession_maintainClientSubscriptions() {
         connectAsClient(this.m_channel, "TestClient");
         subscribe("/topic", AT_MOST_ONCE);
         disconnect();
@@ -48,7 +48,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
 
     @Ignore("At the end it's equal to testCleanSession_maintainClientSubscriptions")
     @Test
-    public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() throws InterruptedException {
+    public void testCleanSession_maintainClientSubscriptions_againstClientDestruction() {
         connectAsClient("TestClient");
         subscribe("/topic", AT_MOST_ONCE);
         disconnect();
@@ -68,7 +68,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
      * previous subscription
      */
     @Test
-    public void testCleanSession_correctlyClientSubscriptions() throws InterruptedException {
+    public void testCleanSession_correctlyClientSubscriptions() {
         connectAsClient("TestClient");
         subscribe("/topic", AT_MOST_ONCE);
         disconnect();
@@ -109,7 +109,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testUnsubscribe_do_not_notify_anymore_new_session() throws InterruptedException {
+    public void testUnsubscribe_do_not_notify_anymore_new_session() {
         connect();
         subscribe("/topic", AT_MOST_ONCE);
         publishToAs(FAKE_CLIENT_ID, "/topic", AT_MOST_ONCE, false);
@@ -125,7 +125,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testPublishWithQoS1() throws InterruptedException {
+    public void testPublishWithQoS1() {
         connect();
         subscribe("/topic", AT_LEAST_ONCE);
         publishToAs(FAKE_CLIENT_ID, "/topic", AT_LEAST_ONCE, 66, false);
@@ -148,21 +148,21 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
         verifyPublishIsReceived();
     }
 
-    protected void publishFromAnotherClient(String topic, MqttQoS qos) {
+    private void publishFromAnotherClient(String topic, MqttQoS qos) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishToAs(anotherChannel, "AnotherClient", topic, qos, 67, false);
         disconnect(anotherChannel);
     }
 
-    protected void publishFromAnotherClient(String topic, String payload, MqttQoS qos) {
+    private void publishFromAnotherClient(String topic, String payload, MqttQoS qos) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishToAs(anotherChannel, "AnotherClient", topic, payload, qos, 68, false);
         disconnect(anotherChannel);
     }
 
-    protected void publishQoS2FromAnotherClient(String topic) {
+    private void publishQoS2FromAnotherClient(String topic) {
         EmbeddedChannel anotherChannel = new EmbeddedChannel();
         connectAsClient(anotherChannel, "AnotherClient");
         publishQoS2ToAs(anotherChannel, "AnotherClient", topic, 67, false);
@@ -187,7 +187,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testPublishWithQoS2() throws InterruptedException {
+    public void testPublishWithQoS2() {
         connect();
         subscribe("/topic", EXACTLY_ONCE);
         disconnect();
@@ -201,8 +201,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1()
-            throws InterruptedException {
+    public void avoidMultipleNotificationsAfterMultipleReconnection_cleanSessionFalseQoS1() {
         connect();
         subscribe("/topic", AT_LEAST_ONCE);
         disconnect();
@@ -223,7 +222,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void testConnectSubPub_cycle_getTimeout_on_second_disconnect_issue142() throws InterruptedException {
+    public void testConnectSubPub_cycle_getTimeout_on_second_disconnect_issue142() {
         connect();
         subscribe("/topic", AT_MOST_ONCE);
         publishToAs(FAKE_CLIENT_ID, "/topic", AT_MOST_ONCE, true);
@@ -240,7 +239,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() throws InterruptedException {
+    public void checkReplayofStoredPublishResumeAfter_a_disconnect_cleanSessionFalseQoS1() {
         EmbeddedChannel publisher = new EmbeddedChannel();
         connectAsClient(publisher, "Publisher");
 
@@ -261,7 +260,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
     }
 
     @Test
-    public void checkReplayStoredPublish_forNoCleanSession_qos1() throws InterruptedException {
+    public void checkReplayStoredPublish_forNoCleanSession_qos1() {
         EmbeddedChannel publisher = new EmbeddedChannel();
         connectAsClient(publisher, "Publisher");
 
@@ -283,7 +282,7 @@ public class ProtocolProcessor_VariousUseCases_Test extends AbstractProtocolProc
      * "hello2"
      */
     @Test
-    public void checkQoS2SubscriberDisconnectReceivePersistedPublishes() throws InterruptedException {
+    public void checkQoS2SubscriberDisconnectReceivePersistedPublishes() {
         connect();
         subscribe("topic", EXACTLY_ONCE);
         disconnect();

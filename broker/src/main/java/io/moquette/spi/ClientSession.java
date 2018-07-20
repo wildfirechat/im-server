@@ -16,8 +16,10 @@
 
 package io.moquette.spi;
 
+import io.moquette.spi.impl.WillMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -111,10 +113,16 @@ public abstract class ClientSession {
 
     public abstract int getInflightMessagesNo();
 
+    public abstract void wipeSubscriptions();
+
+    public abstract void storeWillMessage(MqttConnectMessage msg, String clientId);
+
+    public abstract void removeWill();
+
+    public abstract WillMessage willMessage();
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "{clientID='" + clientID + "'}";
     }
-
-    public abstract void wipeSubscriptions();
 }
