@@ -57,10 +57,12 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         String clientID = NettyUtils.clientID(ctx.channel());
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {
-            case CONNECT:
             case CONNACK:
             case PINGREQ:
             case PINGRESP:
+                LOG.debug("{} {} <{}>", direction, messageType, clientID);
+                break;        
+            case CONNECT:
             case DISCONNECT:
                 LOG.info("{} {} <{}>", direction, messageType, clientID);
                 break;
@@ -75,7 +77,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 break;
             case PUBLISH:
                 MqttPublishMessage publish = (MqttPublishMessage) msg;
-                LOG.info("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.variableHeader().topicName());
+                LOG.debug("{} PUBLISH <{}> to topics <{}>", direction, clientID, publish.variableHeader().topicName());
                 break;
             case PUBREC:
             case PUBCOMP:
