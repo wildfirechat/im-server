@@ -98,9 +98,45 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
      *            to use fo searching matching subscriptions.
      * @return the list of matching subscriptions, or empty if not matching.
      */
-     Set<Subscription> match(Topic topic) {
-        final Set<Subscription> matchingSubs = recursiveMatch(topic, this.root);
+    @Override
+    public Set<Subscription> matchWithoutQosSharpening(Topic topic) {
+        return recursiveMatch(topic, this.root);
+    }
+
+    @Override
+    public Set<Subscription> matchQosSharpening(Topic topic) {
+        final Set<Subscription> subscriptions = matchWithoutQosSharpening(topic);
+
+        Map<String, Subscription> subsGroupedByClient = new HashMap<>();
+        for (Subscription sub : subscriptions) {
+            Subscription existingSub = subsGroupedByClient.get(sub.clientId);
+            // update the selected subscriptions if not present or if has a greater qos
+            if (existingSub == null || existingSub.qosLessThan(sub)) {
+                subsGroupedByClient.put(sub.clientId, sub);
+            }
+        }
+        return new HashSet<>(subsGroupedByClient.values());
+    }
+
+    /**
+     * Given a topic string return the clients subscriptions that matches it. Topic string can't
+     * contain character # and + because they are reserved to listeners subscriptions, and not topic
+     * publishing.
+     *
+     * @param topic
+     *            to use fo searching matching subscriptions.
+     * @return the list of matching subscriptions, or empty if not matching.
+     */
+    @Deprecated
+    Set<Subscription> match(Topic topic) {
+        final Set<Subscription> matchingSubs = matchWithoutQosSharpening(topic);
         // remove the overlapping subscriptions, selecting ones with greatest qos
+        Map<String, Subscription> subsForClient = loadSubscriptionsFromStorage(matchingSubs);
+        return new HashSet<>(subsForClient.values());
+    }
+
+    @Deprecated
+    private Map<String, Subscription> loadSubscriptionsFromStorage(Set<Subscription> matchingSubs) {
         Map<String, Subscription> subsForClient = new HashMap<>();
         for (Subscription matchingSub : matchingSubs) {
             Subscription existingSub = subsForClient.get(matchingSub.clientId);
@@ -120,7 +156,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
                 subsForClient.put(sub.clientId, sub);
             }
         }
-        return new HashSet<>(subsForClient.values());
+        return subsForClient;
     }
 
     Set<Subscription> recursiveMatch(Topic topic, INode inode) {
@@ -171,28 +207,28 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     public void add(Subscription newSubscription) {
         Action res;
         do {
-            res = insert(newSubscription.clientId, newSubscription.topicFilter, this.root, newSubscription.topicFilter);
+            res = insert(newSubscription.topicFilter, this.root, newSubscription);
         } while (res == Action.REPEAT);
     }
 
-    private Action insert(String clientId, Topic topic, final INode inode, Topic fullpath) {
+    private Action insert(Topic topic, final INode inode, Subscription newSubscription) {
         Token token = topic.headToken();
         if (!topic.isEmpty() && inode.mainNode().anyChildrenMatch(token)) {
             Topic remainingTopic = topic.exceptHeadToken();
             INode nextInode = inode.mainNode().childOf(token);
-            return insert(clientId, remainingTopic, nextInode, fullpath);
+            return insert(remainingTopic, nextInode, newSubscription);
         } else {
             if (topic.isEmpty()) {
-                return insertSubscription(clientId, fullpath, inode);
+                return insertSubscription(inode, newSubscription);
             } else {
-                return createNodeAndInsertSubscription(clientId, topic, inode, fullpath);
+                return createNodeAndInsertSubscription(topic, inode, newSubscription);
             }
         }
     }
 
-    private Action insertSubscription(String clientId, Topic topic, INode inode) {
+    private Action insertSubscription(INode inode, Subscription newSubscription) {
         CNode cnode = inode.mainNode();
-        CNode updatedCnode = cnode.copy().addSubscription(clientId, topic);
+        CNode updatedCnode = cnode.copy().addSubscription(newSubscription);
         if (inode.compareAndSet(cnode, updatedCnode)) {
             return Action.OK;
         } else {
@@ -200,8 +236,8 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         }
     }
 
-    private Action createNodeAndInsertSubscription(String clientId, Topic topic, INode inode, Topic fullpath) {
-        INode newInode = createPathRec(clientId, topic, fullpath);
+    private Action createNodeAndInsertSubscription(Topic topic, INode inode, Subscription newSubscription) {
+        INode newInode = createPathRec(topic, newSubscription);
         CNode cnode = inode.mainNode();
         CNode updatedCnode = cnode.copy();
         updatedCnode.add(newInode);
@@ -209,24 +245,24 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return inode.compareAndSet(cnode, updatedCnode) ? Action.OK : Action.REPEAT;
     }
 
-    private INode createLeafNodes(String clientId, Topic fullpath, Token token) {
+    private INode createLeafNodes(Token token, Subscription newSubscription) {
         CNode newLeafCnode = new CNode();
         newLeafCnode.token = token;
-        newLeafCnode.addSubscription(clientId, fullpath);
+        newLeafCnode.addSubscription(newSubscription);
 
         return new INode(newLeafCnode);
     }
 
-    private INode createPathRec(String clientId, Topic topic, Topic fullpath) {
+    private INode createPathRec(Topic topic, Subscription newSubscription) {
         Topic remainingTopic = topic.exceptHeadToken();
         if (!remainingTopic.isEmpty()) {
-            INode inode = createPathRec(clientId, remainingTopic, fullpath);
+            INode inode = createPathRec(remainingTopic, newSubscription);
             CNode cnode = new CNode();
             cnode.token = topic.headToken();
             cnode.add(inode);
             return new INode(cnode);
         } else {
-            return createLeafNodes(clientId, fullpath, topic.headToken());
+            return createLeafNodes(topic.headToken(), newSubscription);
         }
     }
 

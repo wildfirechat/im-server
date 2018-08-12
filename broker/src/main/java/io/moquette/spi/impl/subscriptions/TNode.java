@@ -33,7 +33,7 @@ class TNode extends CNode {
     }
 
     @Override
-    CNode addSubscription(String clientId, Topic topic) {
+    CNode addSubscription(Subscription newSubscription) {
         throw new IllegalStateException("Can't be invoked on TNode");
     }
 

@@ -1,14 +1,16 @@
 //@GrabResolver(name='Paho', root='https://repo.eclipse.org/content/repositories/paho-snapshots/')
 //@Grab(group='org.eclipse.paho', module='org.eclipse.paho.client.mqttv3', version='1.0.1-SNAPSHOT')
+//@GrabResolver(name='Paho', root='https://repo.eclipse.org/content/repositories/paho-releases/')
+//@Grab(group='org.eclipse.paho', module='mqtt-client', version='0.4.0')
 @GrabResolver(name='Paho', root='https://repo.eclipse.org/content/repositories/paho-releases/')
-@Grab(group='org.eclipse.paho', module='mqtt-client', version='0.4.0')
+@Grab(group='org.eclipse.paho', module='org.eclipse.paho.client.mqttv3', version='1.2.0')
 
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttMessage
-import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence
+//import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import java.util.concurrent.CountDownLatch
 import static groovy.json.JsonOutput.*
 import java.nio.ByteBuffer
@@ -71,7 +73,7 @@ def publishQos0(client, long numMessages) {
     print "publishing.."
     long startTime = System.currentTimeMillis()
     (1..numMessages).each {
-        byte[] bytes = ByteBuffer.allocate(8).putLong(System.currentTimeMillis()).array();
+        byte[] bytes = ByteBuffer.allocate(8).putLong(System.currentTimeMillis()).array()
         client.publish('topic', bytes, 0, false)
     }
     client.publish('/exit', 'Exit'.bytes, 0, false)
@@ -82,6 +84,7 @@ def publishQos0(client, long numMessages) {
 
 if (args.size() < 2) {
     println "Usage benchmarker <host> <numMessages>"
+    println "groovy benchmarker.groovy localhost 1000 500 test1"
     return
 }
 
@@ -89,12 +92,13 @@ String host = args[0]
 long numMessages = args[1] as long
 String tmpDir = System.getProperty("java.io.tmpdir")
 MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir)
+//MemoryPersistence dataStore = new MemoryPersistence()
 
 int rnd = (Math.random() * 100) as int
 MqttAsyncClient client = new MqttAsyncClient("tcp://${host}:1883", "SubscriberClient${rnd}", dataStore)
 def callback = new SubscriberCallback()
 client.callback = callback
-client.connect().waitForCompletion(1000);
+client.connect().waitForCompletion(1000)
 client.subscribe("topic", 0)
 println "subscribed to topic"
 client.subscribe("/exit", 0)

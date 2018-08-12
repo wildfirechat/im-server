@@ -25,12 +25,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Test utility to implements authenticator instance.
  */
-class MockAuthenticator implements IAuthenticator {
+public class MockAuthenticator implements IAuthenticator {
 
     private Set<String> m_clientIds;
     private Map<String, String> m_userPwds;
 
-    MockAuthenticator(Set<String> clientIds, Map<String, String> userPwds) {
+    public MockAuthenticator(Set<String> clientIds, Map<String, String> userPwds) {
         m_clientIds = clientIds;
         m_userPwds = userPwds;
     }

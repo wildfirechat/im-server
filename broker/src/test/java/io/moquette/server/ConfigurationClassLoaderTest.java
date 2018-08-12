@@ -24,14 +24,14 @@ import io.moquette.persistence.MemoryMessagesStore;
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import org.junit.After;
 import org.junit.Test;
 import java.io.IOException;
 import java.util.Properties;
 import static org.junit.Assert.*;
 
-public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizator {
+public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizatorPolicy {
 
     Server m_server;
     IConfig m_config;

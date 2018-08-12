@@ -10,7 +10,7 @@ import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -40,7 +40,7 @@ public class ConnectHandler {
     private SessionsRepository sessionsRepository;
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
-    private IAuthorizator m_authorizator;
+    private IAuthorizatorPolicy m_authorizator;
     private ISubscriptionsDirectory subscriptions;
     private boolean allowAnonymous;
     private boolean allowZeroByteClientId;
@@ -48,7 +48,7 @@ public class ConnectHandler {
     private InternalRepublisher internalRepublisher;
 
     ConnectHandler(IConnectionsManager connectedClients, BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
-                   ISessionsStore sessionsStore, IAuthenticator authenticator, IAuthorizator authorizator,
+                   ISessionsStore sessionsStore, IAuthenticator authenticator, IAuthorizatorPolicy authorizator,
                    ISubscriptionsDirectory subscriptions, boolean allowAnonymous, boolean allowZeroByteClientId,
                    boolean reauthorizeSubscriptionsOnConnect, InternalRepublisher internalRepublisher) {
         this.connectionDescriptors = connectedClients;

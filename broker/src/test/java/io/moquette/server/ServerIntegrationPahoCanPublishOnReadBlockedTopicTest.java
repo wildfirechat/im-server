@@ -21,7 +21,7 @@ import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.security.AcceptAllAuthenticator;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
@@ -71,7 +71,7 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
         m_config = new MemoryConfig(configProps);
         canRead = true;
 
-        final IAuthorizator switchingAuthorizator = new IAuthorizator() {
+        final IAuthorizatorPolicy switchingAuthorizator = new IAuthorizatorPolicy() {
 //            int callCount = 0;
             @Override
             public boolean canWrite(Topic topic, String user, String client) {

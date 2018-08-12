@@ -31,7 +31,7 @@ import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
@@ -41,11 +41,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
 import static io.moquette.spi.impl.Utils.messageId;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
@@ -72,7 +70,7 @@ public class ProtocolProcessor {
     private ConcurrentMap<RunningSubscription, SubscriptionState> subscriptionInCourse;
 
     private ISubscriptionsDirectory subscriptions;
-    private IAuthorizator m_authorizator;
+    private IAuthorizatorPolicy m_authorizator;
 
     private IMessagesStore m_messagesStore;
 
@@ -94,7 +92,7 @@ public class ProtocolProcessor {
     }
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
-                     IAuthenticator authenticator, boolean allowAnonymous, IAuthorizator authorizator,
+                     IAuthenticator authenticator, boolean allowAnonymous, IAuthorizatorPolicy authorizator,
                      BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
                      boolean reauthorizeSubscriptionsOnConnect) {
         init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, false,
@@ -103,7 +101,7 @@ public class ProtocolProcessor {
 
     public void init(ISubscriptionsDirectory subscriptions, IMessagesStore storageService, ISessionsStore sessionsStore,
                      IAuthenticator authenticator, boolean allowAnonymous, boolean allowZeroByteClientId,
-                     IAuthorizator authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
+                     IAuthorizatorPolicy authorizator, BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
                      boolean reauthorizeSubscriptionsOnConnect) {
         init(new ConnectionDescriptorStore(), subscriptions, storageService, sessionsStore,
              authenticator, allowAnonymous, allowZeroByteClientId, authorizator, interceptor, sessionsRepository,
@@ -130,7 +128,7 @@ public class ProtocolProcessor {
      */
     void init(IConnectionsManager connectionDescriptors, ISubscriptionsDirectory subscriptions,
               IMessagesStore storageService, ISessionsStore sessionsStore, IAuthenticator authenticator,
-              boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizator authorizator,
+              boolean allowAnonymous, boolean allowZeroByteClientId, IAuthorizatorPolicy authorizator,
               BrokerInterceptor interceptor, SessionsRepository sessionsRepository,
               boolean reauthorizeSubscriptionsOnConnect) {
         LOG.info("Initializing MQTT protocol processor..");

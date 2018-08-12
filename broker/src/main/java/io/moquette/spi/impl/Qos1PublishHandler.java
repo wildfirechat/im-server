@@ -18,11 +18,10 @@ package io.moquette.spi.impl;
 
 import io.moquette.connections.IConnectionsManager;
 import io.moquette.server.ConnectionDescriptor;
-import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessageType;
@@ -47,7 +46,7 @@ class Qos1PublishHandler extends QosPublishHandler {
     private final IConnectionsManager connectionDescriptors;
     private final MessagesPublisher publisher;
 
-    Qos1PublishHandler(IAuthorizator authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
+    Qos1PublishHandler(IAuthorizatorPolicy authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
                        IConnectionsManager connectionDescriptors, MessagesPublisher messagesPublisher) {
         super(authorizator);
         this.m_messagesStore = messagesStore;

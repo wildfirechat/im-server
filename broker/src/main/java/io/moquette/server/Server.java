@@ -25,7 +25,7 @@ import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.moquette.spi.security.ISslContextCreator;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
@@ -141,7 +141,7 @@ public class Server {
     }
 
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers, ISslContextCreator sslCtxCreator,
-                            IAuthenticator authenticator, IAuthorizator authorizator) throws IOException {
+                            IAuthenticator authenticator, IAuthorizatorPolicy authorizator) throws IOException {
         final long start = System.currentTimeMillis();
         if (handlers == null) {
             handlers = Collections.emptyList();

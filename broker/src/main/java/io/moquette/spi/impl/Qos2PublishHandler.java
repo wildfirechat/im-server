@@ -18,14 +18,12 @@ package io.moquette.spi.impl;
 
 import io.moquette.connections.IConnectionsManager;
 import io.moquette.server.ConnectionDescriptor;
-import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
@@ -50,7 +48,7 @@ class Qos2PublishHandler extends QosPublishHandler {
     private final MessagesPublisher publisher;
     private final SessionsRepository sessionsRepository;
 
-    Qos2PublishHandler(IAuthorizator authorizator, ISubscriptionsDirectory subscriptions,
+    Qos2PublishHandler(IAuthorizatorPolicy authorizator, ISubscriptionsDirectory subscriptions,
                        IMessagesStore messagesStore, BrokerInterceptor interceptor,
                        IConnectionsManager connectionDescriptors,
                        MessagesPublisher messagesPublisher, SessionsRepository sessionsRepository) {

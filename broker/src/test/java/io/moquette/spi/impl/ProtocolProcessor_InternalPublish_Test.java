@@ -16,9 +16,6 @@
 package io.moquette.spi.impl;
 
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.impl.security.PermitAllAuthorizator;
-import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Before;

@@ -13,7 +13,7 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence
  * */
 
 if (args.size() != 3) {
-    println "usage: <host> <num_serial_connctions> <local client name>"
+    println "usage: <host> <num_serial_connections> <local client name>"
     return
 }
 

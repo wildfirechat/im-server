@@ -15,14 +15,12 @@
  */
 package io.moquette.spi.impl;
 
-import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.security.PermitAllAuthorizator;
+import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.*;
-import io.moquette.spi.security.IAuthorizator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
@@ -81,7 +79,7 @@ abstract class AbstractProtocolProcessorCommonUtils {
         subscriptions.init(sessionsRepository);
         m_processor = new ProtocolProcessor();
         m_processor.init(subscriptions, m_messagesStore, m_sessionStore, m_mockAuthenticator, true,
-                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository, false);
+                         new PermitAllAuthorizatorPolicy(), NO_OBSERVERS_INTERCEPTOR, sessionsRepository, false);
     }
 
     void verifyNoPublishIsReceived() {
@@ -126,14 +124,14 @@ abstract class AbstractProtocolProcessorCommonUtils {
         assertEquals(expectedSubscription, subscription);
     }
 
-    protected MqttSubAckMessage subscribeWithoutVerify(String topic, MqttQoS desiredQos) {
-        MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
-            .addSubscription(desiredQos, topic)
-            .messageId(1)
-            .build();
-        this.m_processor.processSubscribe(m_channel, subscribe);
-        return m_channel.readOutbound();
-    }
+//    protected MqttSubAckMessage subscribeWithoutVerify(String topic, MqttQoS desiredQos) {
+//        MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
+//            .addSubscription(desiredQos, topic)
+//            .messageId(1)
+//            .build();
+//        this.m_processor.processSubscribe(m_channel, subscribe);
+//        return m_channel.readOutbound();
+//    }
 
     protected void subscribeAndNotReadResponse(String topic, MqttQoS desiredQos) {
         MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
@@ -141,16 +139,6 @@ abstract class AbstractProtocolProcessorCommonUtils {
             .messageId(1)
             .build();
         this.m_processor.processSubscribe(m_channel, subscribe);
-    }
-
-    protected void unsubscribe(String topic) {
-        final int messageId = 1;
-        MqttUnsubscribeMessage msg = MqttMessageBuilders.unsubscribe()
-            .addTopicFilter(topic)
-            .messageId(messageId)
-            .build();
-
-        m_processor.processUnsubscribe(m_channel, msg);
     }
 
     protected void unsubscribeAndVerifyAck(String topic) {

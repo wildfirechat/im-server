@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
+import io.netty.handler.codec.mqtt.MqttQoS;
+
 import java.util.*;
 
 class CNode {
@@ -79,8 +81,8 @@ class CNode {
         this.children.remove(node);
     }
 
-    CNode addSubscription(String clientId, Topic topic) {
-        this.subscriptions.add(new Subscription(clientId, topic));
+    CNode addSubscription(Subscription newSubscription) {
+        this.subscriptions.add(new Subscription(newSubscription));
         return this;
     }
 

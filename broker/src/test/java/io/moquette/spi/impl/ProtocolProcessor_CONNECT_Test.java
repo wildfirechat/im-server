@@ -20,7 +20,7 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.security.PermitAllAuthorizator;
+import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -60,7 +60,7 @@ public class ProtocolProcessor_CONNECT_Test {
         subscriptions.init(sessionsRepository);
         processor = new ProtocolProcessor();
         processor.init(subscriptions, m_messagesStore, sessionStore, mockAuthenticator, true,
-                         new PermitAllAuthorizator(), NO_OBSERVERS_INTERCEPTOR,
+                         new PermitAllAuthorizatorPolicy(), NO_OBSERVERS_INTERCEPTOR,
                          new SessionsRepository(this.sessionStore, null), false);
     }
 

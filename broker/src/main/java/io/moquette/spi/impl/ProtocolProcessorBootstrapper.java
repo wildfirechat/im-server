@@ -31,7 +31,7 @@ import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,7 @@ public class ProtocolProcessorBootstrapper {
      * @return the processor created for the broker.
      */
     public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
-            IAuthenticator authenticator, IAuthorizator authorizator, Server server) {
+                                  IAuthenticator authenticator, IAuthorizatorPolicy authorizator, Server server) {
         IMessagesStore messagesStore;
         LOG.info("Initializing messages and sessions stores...");
         String storageClassName = props.getProperty(BrokerConstants.STORAGE_CLASS_NAME, INMEMDB_STORE_CLASS);
@@ -145,13 +145,13 @@ public class ProtocolProcessorBootstrapper {
         LOG.info("Configuring MQTT authorizator...");
         String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
         if (authorizator == null && !authorizatorClassName.isEmpty()) {
-            authorizator = loadClass(authorizatorClassName, IAuthorizator.class, IConfig.class, props);
+            authorizator = loadClass(authorizatorClassName, IAuthorizatorPolicy.class, IConfig.class, props);
         }
 
         if (authorizator == null) {
             String aclFilePath = props.getProperty(BrokerConstants.ACL_FILE_PROPERTY_NAME, "");
             if (aclFilePath != null && !aclFilePath.isEmpty()) {
-                authorizator = new DenyAllAuthorizator();
+                authorizator = new DenyAllAuthorizatorPolicy();
                 try {
                     LOG.info("Parsing ACL file. Path = {}", aclFilePath);
                     authorizator = ACLFileParser.parse(resourceLoader.loadResource(aclFilePath));
@@ -159,7 +159,7 @@ public class ProtocolProcessorBootstrapper {
                     LOG.error("Unable to parse ACL file. path=" + aclFilePath, pex);
                 }
             } else {
-                authorizator = new PermitAllAuthorizator();
+                authorizator = new PermitAllAuthorizatorPolicy();
             }
             LOG.info("An {} authorizator instance will be used", authorizator.getClass().getName());
         }

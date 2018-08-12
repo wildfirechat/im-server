@@ -27,13 +27,13 @@ import static org.junit.Assert.assertTrue;
 /**
  * Some useful assertions used by Netty's EmbeddedChannel in tests.
  */
-final class NettyChannelAssertions {
+public final class NettyChannelAssertions {
 
-    static void assertEqualsConnAck(MqttConnectReturnCode expectedCode, Object connAck) {
+    public static void assertEqualsConnAck(MqttConnectReturnCode expectedCode, Object connAck) {
         assertEqualsConnAck(null, expectedCode, connAck);
     }
 
-    static void assertEqualsConnAck(String msg, MqttConnectReturnCode expectedCode, Object connAck) {
+    public static void assertEqualsConnAck(String msg, MqttConnectReturnCode expectedCode, Object connAck) {
         assertTrue("connAck is not an instance of ConnAckMessage", connAck instanceof MqttConnAckMessage);
         MqttConnAckMessage connAckMsg = (MqttConnAckMessage) connAck;
 
@@ -43,12 +43,12 @@ final class NettyChannelAssertions {
             assertEquals(msg, expectedCode, connAckMsg.variableHeader().connectReturnCode());
     }
 
-    static void assertConnAckAccepted(EmbeddedChannel channel) {
+    public static void assertConnAckAccepted(EmbeddedChannel channel) {
         channel.flush();
         assertEqualsConnAck(CONNECTION_ACCEPTED, channel.readOutbound());
     }
 
-    static void assertEqualsSubAck(/* byte expectedCode, */ Object subAck) {
+    public static void assertEqualsSubAck(/* byte expectedCode, */ Object subAck) {
         assertTrue(subAck instanceof MqttSubAckMessage);
         // SubAckMessage connAckMsg = (SubAckMessage) connAck;
         // assertEquals(expectedCode, connAckMsg.getReturnCode());

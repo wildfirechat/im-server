@@ -24,7 +24,7 @@ import io.moquette.spi.impl.subscriptions.Topic;
  * Create an authorizator that matches topic names with same grammar of subscriptions. The # is
  * always a terminator and its the multilevel matcher. The + sign is the single level matcher.
  */
-public interface IAuthorizator {
+public interface IAuthorizatorPolicy {
 
     /**
      * Ask the implementation of the authorizator if the topic can be used in a publish.

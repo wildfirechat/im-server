@@ -18,10 +18,15 @@ package io.moquette.spi.impl.subscriptions;
 import io.moquette.spi.impl.SessionsRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ISubscriptionsDirectory {
 
     void init(SessionsRepository sessionsRepository);
+
+    Set<Subscription> matchWithoutQosSharpening(Topic topic);
+
+    Set<Subscription> matchQosSharpening(Topic topic);
 
     void add(Subscription newSubscription);
 

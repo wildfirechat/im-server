@@ -20,16 +20,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.channel.Channel;
 
 abstract class QosPublishHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(QosPublishHandler.class);
 
-    protected final IAuthorizator m_authorizator;
+    protected final IAuthorizatorPolicy m_authorizator;
 
-    protected QosPublishHandler(IAuthorizator m_authorizator) {
+    protected QosPublishHandler(IAuthorizatorPolicy m_authorizator) {
         this.m_authorizator = m_authorizator;
     }
 

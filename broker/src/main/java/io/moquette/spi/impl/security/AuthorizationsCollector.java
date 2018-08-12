@@ -17,7 +17,7 @@
 package io.moquette.spi.impl.security;
 
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import java.text.ParseException;
 import java.util.*;
 
@@ -27,7 +27,7 @@ import java.util.*;
  *
  * Not thread safe.
  */
-class AuthorizationsCollector implements IAuthorizator {
+class AuthorizationsCollector implements IAuthorizatorPolicy {
 
     private List<Authorization> m_globalAuthorizations = new ArrayList<>();
     private List<Authorization> m_patternAuthorizations = new ArrayList<>();

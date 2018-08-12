@@ -19,7 +19,7 @@ package io.moquette.spi.impl;
 import io.moquette.server.netty.NettyUtils;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizator;
+import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ class Qos0PublishHandler extends QosPublishHandler {
     private final BrokerInterceptor m_interceptor;
     private final MessagesPublisher publisher;
 
-    public Qos0PublishHandler(IAuthorizator authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
+    public Qos0PublishHandler(IAuthorizatorPolicy authorizator, IMessagesStore messagesStore, BrokerInterceptor interceptor,
                               MessagesPublisher messagesPublisher) {
         super(authorizator);
         this.m_messagesStore = messagesStore;

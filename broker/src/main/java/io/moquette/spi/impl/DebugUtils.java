@@ -20,10 +20,19 @@ import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
 
-final class DebugUtils {
+public final class DebugUtils {
 
-    static String payload2Str(ByteBuf content) {
-        return new String(content.copy().array(), StandardCharsets.UTF_8);
+    public static String payload2Str(ByteBuf content) {
+        final ByteBuf copy = content.copy();
+        final byte[] bytesContent;
+        if (copy.isDirect()) {
+            final int size = copy.readableBytes();
+            bytesContent = new byte[size];
+            copy.readBytes(bytesContent);
+        } else {
+            bytesContent = copy.array();
+        }
+        return new String(bytesContent, StandardCharsets.UTF_8);
     }
 
     private DebugUtils() {
