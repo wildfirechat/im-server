@@ -1,6 +1,7 @@
 package io.moquette.broker;
 
 import io.moquette.broker.Session.SessionStatus;
+import io.moquette.spi.impl.BrokerInterceptor;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
@@ -47,7 +48,7 @@ class SessionRegistry {
     private final ISubscriptionsDirectory subscriptionsDirectory;
     private final ConcurrentMap<String, Queue<SessionRegistry.EnqueuedMessage>> queues = new ConcurrentHashMap<>();
 
-    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory) {
+    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory, BrokerInterceptor m_interceptor) {
         this.subscriptionsDirectory = subscriptionsDirectory;
     }
 

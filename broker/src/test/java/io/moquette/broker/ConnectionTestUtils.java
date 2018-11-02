@@ -1,13 +1,22 @@
 package io.moquette.broker;
 
+import io.moquette.interception.InterceptHandler;
+import io.moquette.spi.impl.BrokerInterceptor;
 import io.moquette.spi.impl.DebugUtils;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.*;
+
+import java.util.Collections;
+import java.util.List;
 
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.junit.Assert.*;
 
 class ConnectionTestUtils {
+
+    public static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
+    public static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
+
 
     static void assertConnectAccepted(EmbeddedChannel channel) {
         MqttConnAckMessage connAck = channel.readOutbound();

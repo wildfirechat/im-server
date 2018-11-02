@@ -43,7 +43,10 @@ import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 
 /**
  * Launch a configured version of the server.
+ *
+ * @deprecated use io.moquette.broker.Server
  */
+@Deprecated
 public class Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);

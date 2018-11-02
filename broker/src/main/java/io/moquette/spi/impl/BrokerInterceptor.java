@@ -39,7 +39,7 @@ import static io.moquette.logging.LoggingUtils.getInterceptorIds;
 /**
  * An interceptor that execute the interception tasks asynchronously.
  */
-final class BrokerInterceptor implements Interceptor {
+public final class BrokerInterceptor implements Interceptor {
 
     private static final Logger LOG = LoggerFactory.getLogger(BrokerInterceptor.class);
     private final Map<Class<?>, List<InterceptHandler>> handlers;
@@ -62,14 +62,14 @@ final class BrokerInterceptor implements Interceptor {
      *
      * @param handlers
      */
-    BrokerInterceptor(List<InterceptHandler> handlers) {
+    public BrokerInterceptor(List<InterceptHandler> handlers) {
         this(1, handlers);
     }
 
     /**
      * Configures a broker interceptor using the pool size specified in the IConfig argument.
      */
-    BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
+    public BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
         this(Integer.parseInt(props.getProperty(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, "1")), handlers);
     }
 

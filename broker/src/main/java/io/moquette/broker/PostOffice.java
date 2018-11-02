@@ -1,5 +1,7 @@
 package io.moquette.broker;
 
+import io.moquette.server.netty.NettyUtils;
+import io.moquette.spi.impl.BrokerInterceptor;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
@@ -26,13 +28,15 @@ class PostOffice {
     private final ISubscriptionsDirectory subscriptions;
     private final IRetainedRepository retainedRepository;
     private SessionRegistry sessionRegistry;
+    private BrokerInterceptor interceptor;
 
     PostOffice(ISubscriptionsDirectory subscriptions, IAuthorizatorPolicy authorizatorPolicy,
-               IRetainedRepository retainedRepository, SessionRegistry sessionRegistry) {
+               IRetainedRepository retainedRepository, SessionRegistry sessionRegistry, BrokerInterceptor interceptor) {
         this.authorizator = new Authorizator(authorizatorPolicy);
         this.subscriptions = subscriptions;
         this.retainedRepository = retainedRepository;
         this.sessionRegistry = sessionRegistry;
+        this.interceptor = interceptor;
     }
 
     public void init(SessionRegistry sessionRegistry) {
@@ -72,10 +76,9 @@ class PostOffice {
 
         publishRetainedMessagesForSubscriptions(clientID, newSubscriptions);
 
-        // TODO notify the Observables
-//        for (Subscription subscription : newSubscriptions) {
-//            m_interceptor.notifyTopicSubscribed(newSubscription, username);
-//        }
+        for (Subscription subscription : newSubscriptions) {
+            interceptor.notifyTopicSubscribed(subscription, username);
+        }
     }
 
     private void publishRetainedMessagesForSubscriptions(String clientID, List<Subscription> newSubscriptions) {
@@ -132,9 +135,8 @@ class PostOffice {
             // TODO remove the subscriptions to Session
 //            clientSession.unsubscribeFrom(topic);
 
-            //TODO notify interceptors
-//            String username = NettyUtils.userName(channel);
-//            m_interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, username);
+            String username = NettyUtils.userName(mqttConnection.channel);
+            interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, username);
         }
 
         // ack the client
@@ -152,8 +154,11 @@ class PostOffice {
             // QoS == 0 && retain => clean old retained
             retainedRepository.cleanRetained(topic);
         }
-// TODO
-//        m_interceptor.notifyTopicPublished(msg, clientID, username);
+
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, AT_MOST_ONCE, false, 0);
+        MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(topic.toString(), 0);
+        MqttPublishMessage msg = new MqttPublishMessage(fixedHeader, varHeader, payload.retainedDuplicate());
+        interceptor.notifyTopicPublished(msg, clientID, username);
     }
 
     void receivedPublishQos1(MQTTConnection connection, Topic topic, String username, ByteBuf payload, int messageID,
@@ -183,8 +188,7 @@ class PostOffice {
                 retainedRepository.retain(topic, msg);
             }
         }
-//TODO
-//        m_interceptor.notifyTopicPublished(msg, clientID, username);
+        interceptor.notifyTopicPublished(msg, clientId, username);
     }
 
     private void publish2Subscribers(ByteBuf origPayload, Topic topic, MqttQoS publishingQos) {
@@ -230,8 +234,9 @@ class PostOffice {
             }
         }
 
-        //TODO here we should notify to the listeners
-        //m_interceptor.notifyTopicPublished(msg, clientID, username);
+        String clientID = connection.getClientId();
+        String username = NettyUtils.userName(connection.channel);
+        interceptor.notifyTopicPublished(mqttPublishMessage, clientID, username);
     }
 
     static MqttQoS lowerQosToTheSubscriptionDesired(Subscription sub, MqttQoS qos) {
@@ -249,11 +254,9 @@ class PostOffice {
      * where it's publishing.
      *
      * @param msg
-     *            the message to publish.
-     * @param clientId
-     *            the clientID
+     *            the message to publish
      */
-    public void internalPublish(MqttPublishMessage msg, final String clientId) {
+    public void internalPublish(MqttPublishMessage msg) {
         final MqttQoS qos = msg.fixedHeader().qosLevel();
         final Topic topic = new Topic(msg.variableHeader().topicName());
         final ByteBuf payload = msg.payload();

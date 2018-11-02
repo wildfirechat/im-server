@@ -74,8 +74,9 @@ public class PostOfficeInternalPublishTest {
         subscriptions.init(sessionsRepository);
         retainedRepository = new MemoryRetainedRepository();
 
-        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions);
-        sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry);
+        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry,
+                             ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         return sessionRegistry;
     }
 
@@ -93,7 +94,7 @@ public class PostOfficeInternalPublishTest {
             .retained(retained)
             .qos(qos)
             .payload(Unpooled.copiedBuffer(PAYLOAD.getBytes(UTF_8))).build();
-        sut.internalPublish(publish, "INTRPUBL");
+        sut.internalPublish(publish);
     }
 
     @Test

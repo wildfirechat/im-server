@@ -81,8 +81,9 @@ public class PostOfficePublishTest {
         subscriptions.init(sessionsRepository);
         retainedRepository = new MemoryRetainedRepository();
 
-        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions);
-        sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry);
+        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry,
+                             ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         return sessionRegistry;
     }
 
