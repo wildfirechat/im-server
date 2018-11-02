@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated
 public class TransientSession extends ClientSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(TransientSession.class);

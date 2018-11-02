@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+@Deprecated
 public class DurableSession extends ClientSession {
 
     class OutboundFlightZone {

@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+@Deprecated
 public class EnqueuedMessage {
 
     public final IMessagesStore.StoredMessage msg;

@@ -18,6 +18,7 @@ package io.moquette.spi;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 class InboundFlightZone {
 
     private final Map<Integer, IMessagesStore.StoredMessage> inboundFlightMessages = new ConcurrentHashMap<>();

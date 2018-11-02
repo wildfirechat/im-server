@@ -3,12 +3,12 @@ package io.moquette.broker;
 import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.MemoryStorageService;
+import io.moquette.server.DefaultMoquetteSslContextCreator;
 import io.moquette.server.config.*;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.BrokerInterceptor;
 import io.moquette.spi.impl.SessionsRepository;
-import io.moquette.spi.impl.security.AcceptAllAuthenticator;
-import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
+import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
 import io.moquette.spi.security.IAuthenticator;
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -136,24 +137,17 @@ public class Server {
             config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp);
         }
         final String persistencePath = config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME);
-        LOG.debug("Configuring Using persistent store file, path={}", persistencePath);
-//        m_processorBootstrapper = new ProtocolProcessorBootstrapper();
-//        final ProtocolProcessor processor = m_processorBootstrapper.init(config, handlers, authenticator, authorizator,
-//            this);
+        LOG.debug("Configuring Using persistent store file, path: {}", persistencePath);
         initInterceptors(config, handlers);
         LOG.debug("Initialized MQTT protocol processor");
-//        if (sslCtxCreator == null) {
-//            LOG.info("Using default SSL context creator");
-//            sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
-//        }
-        // DBG
-        if (authenticator == null) {
-            authenticator = new AcceptAllAuthenticator();
+        if (sslCtxCreator == null) {
+            LOG.info("Using default SSL context creator");
+            sslCtxCreator = new DefaultMoquetteSslContextCreator(config);
         }
-        if (authorizatorPolicy == null) {
-            authorizatorPolicy = new PermitAllAuthorizatorPolicy();
-        }
+        authenticator = initializeAuthenticator(authenticator, config);
+        authorizatorPolicy = initializeAuthorizatorPolicy(authorizatorPolicy, config);
 
+        // TODO user real implementation DBG
         MemoryStorageService memStorage = new MemoryStorageService(null, null);
         ISessionsStore sessionStore = memStorage.sessionsStore();
         SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
@@ -175,6 +169,63 @@ public class Server {
         final long startTime = System.currentTimeMillis() - start;
         LOG.info("Moquette server has been started successfully in {} ms", startTime);
         initialized = true;
+    }
+
+    private IAuthorizatorPolicy initializeAuthorizatorPolicy(IAuthorizatorPolicy authorizatorPolicy, IConfig props) {
+//        if (authorizatorPolicy == null) {
+//            authorizatorPolicy = new PermitAllAuthorizatorPolicy();
+//        }
+//        return authorizatorPolicy;
+
+        LOG.debug("Configuring MQTT authorizator policy");
+        String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");
+        if (authorizatorPolicy == null && !authorizatorClassName.isEmpty()) {
+            authorizatorPolicy = loadClass(authorizatorClassName, IAuthorizatorPolicy.class, IConfig.class, props);
+        }
+
+        if (authorizatorPolicy == null) {
+            String aclFilePath = props.getProperty(BrokerConstants.ACL_FILE_PROPERTY_NAME, "");
+            if (aclFilePath != null && !aclFilePath.isEmpty()) {
+                authorizatorPolicy = new DenyAllAuthorizatorPolicy();
+                try {
+                    LOG.info("Parsing ACL file. Path = {}", aclFilePath);
+                    IResourceLoader resourceLoader = props.getResourceLoader();
+                    authorizatorPolicy = ACLFileParser.parse(resourceLoader.loadResource(aclFilePath));
+                } catch (ParseException pex) {
+                    LOG.error("Unable to parse ACL file. path=" + aclFilePath, pex);
+                }
+            } else {
+                authorizatorPolicy = new PermitAllAuthorizatorPolicy();
+            }
+            LOG.info("Authorizator policy {} instance will be used", authorizatorPolicy.getClass().getName());
+        }
+        return authorizatorPolicy;
+    }
+
+    private IAuthenticator initializeAuthenticator(IAuthenticator authenticator, IConfig props) {
+//        if (authenticator == null) {
+//            authenticator = new AcceptAllAuthenticator();
+//        }
+//        return authenticator;
+
+        LOG.debug("Configuring MQTT authenticator");
+        String authenticatorClassName = props.getProperty(BrokerConstants.AUTHENTICATOR_CLASS_NAME, "");
+
+        if (authenticator == null && !authenticatorClassName.isEmpty()) {
+            authenticator = loadClass(authenticatorClassName, IAuthenticator.class, IConfig.class, props);
+        }
+
+        IResourceLoader resourceLoader = props.getResourceLoader();
+        if (authenticator == null) {
+            String passwdPath = props.getProperty(BrokerConstants.PASSWORD_FILE_PROPERTY_NAME, "");
+            if (passwdPath.isEmpty()) {
+                authenticator = new AcceptAllAuthenticator();
+            } else {
+                authenticator = new ResourceAuthenticator(resourceLoader, passwdPath);
+            }
+            LOG.info("An {} authenticator instance will be used", authenticator.getClass().getName());
+        }
+        return authenticator;
     }
 
     private void initInterceptors(IConfig props, List<? extends InterceptHandler> embeddedObservers) {

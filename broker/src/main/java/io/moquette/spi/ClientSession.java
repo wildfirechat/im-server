@@ -38,6 +38,7 @@ import java.util.Set;
  *     <li>Optionally, QoS 0 messages pending transmission to the Client.</li>
  * </ul>
  */
+@Deprecated
 public abstract class ClientSession {
 
     public final String clientID;

@@ -1,6 +1,5 @@
 package io.moquette.broker;
 
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizatorPolicy;
 import io.netty.handler.codec.mqtt.MqttQoS;

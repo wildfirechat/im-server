@@ -49,13 +49,13 @@ import org.slf4j.LoggerFactory;
  * Moquette server implementation to load SSL certificate from local filesystem path configured in
  * config file.
  */
-class DefaultMoquetteSslContextCreator implements ISslContextCreator {
+public class DefaultMoquetteSslContextCreator implements ISslContextCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMoquetteSslContextCreator.class);
 
     private final IConfig props;
 
-    DefaultMoquetteSslContextCreator(IConfig props) {
+    public DefaultMoquetteSslContextCreator(IConfig props) {
         this.props = Objects.requireNonNull(props);
     }
 
