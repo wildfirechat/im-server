@@ -228,21 +228,20 @@ final class MQTTConnection {
 
     void handleConnectionLost() {
         String clientID = NettyUtils.clientID(channel);
-        if (clientID != null && !clientID.isEmpty()) {
-            LOG.info("Notifying connection lost event. CId = {}, channel: {}", clientID, channel);
-            Session session = sessionRegistry.retrieve(clientID);
-            if (session.hasWill()) {
-                postOffice.fireWill(session.getWill());
-            }
-            if (session.isClean()) {
-                sessionRegistry.remove(clientID);
-            } else {
-                sessionRegistry.disconnect(clientID);
-            }
-            connected = false;
+        if (clientID == null || clientID.isEmpty()) {
+            return;
         }
-//?? this breaks test elapseKeepAliveTime
-//        channel.close().addListener(CLOSE_ON_FAILURE);
+        LOG.info("Notifying connection lost event. CId: {}, channel: {}", clientID, channel);
+        Session session = sessionRegistry.retrieve(clientID);
+        if (session.hasWill()) {
+            postOffice.fireWill(session.getWill());
+        }
+        if (session.isClean()) {
+            sessionRegistry.remove(clientID);
+        } else {
+            sessionRegistry.disconnect(clientID);
+        }
+        connected = false;
     }
 
     void sendConnAck(boolean isSessionAlreadyPresent) {

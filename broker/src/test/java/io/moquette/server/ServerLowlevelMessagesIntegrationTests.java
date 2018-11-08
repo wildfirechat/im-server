@@ -74,7 +74,7 @@ public class ServerLowlevelMessagesIntegrationTests {
     }
 
     @Test
-    public void elapseKeepAliveTime() throws InterruptedException {
+    public void elapseKeepAliveTime() {
         int keepAlive = 2; // secs
 
         MqttConnectMessage connectMessage = createConnectMessage("FAKECLNT", keepAlive);
