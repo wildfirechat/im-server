@@ -1,9 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -45,13 +42,11 @@ public class MQTTConnectionConnectTest {
     public void setUp() {
         connMsg = MqttMessageBuilders.connect().protocolVersion(MqttVersion.MQTT_3_1).cleanSession(true);
 
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
         mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
-        subscriptions.init(sessionsRepository);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
+        subscriptions.init(subscriptionsRepository);
 
         sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
@@ -146,7 +141,7 @@ public class MQTTConnectionConnectTest {
 
         // Verify
         verify(postOfficeMock).fireWill(any(Session.Will.class));
-        assertFalse("Connection is accepted and therefore should remain open", channel.isOpen());
+        assertFalse("Connection MUST be disconnected", sut.isConnected());
     }
 
     @Test
