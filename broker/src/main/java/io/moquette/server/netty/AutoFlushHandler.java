@@ -49,7 +49,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    public void handlerAdded(ChannelHandlerContext ctx) {
         if (ctx.channel().isActive() && ctx.channel().isRegistered()) {
             // channelActive() event has been fired already, which means this.channelActive() will
             // not be invoked. We have to initialize here instead.
@@ -61,7 +61,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    public void handlerRemoved(ChannelHandlerContext ctx) {
         destroy();
     }
 
@@ -111,7 +111,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
         // Avoid the case where destroy() is called before scheduling timeouts.
         // See: https://github.com/netty/netty/issues/143
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing autoflush handler. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+            LOG.debug("Initializing autoflush handler on channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
         }
         switch (state) {
             case 1:
@@ -144,10 +144,10 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
      * @throws Exception
      *             in case of any IO error.
      */
-    protected void channelIdle(ChannelHandlerContext ctx/* , IdleStateEvent evt */) throws Exception {
+    protected void channelIdle(ChannelHandlerContext ctx/* , IdleStateEvent evt */) {
         // ctx.fireUserEventTriggered(evt);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushing idle Netty channel. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+            LOG.debug("Flushing idle Netty channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
         }
         ctx.channel().flush();
     }

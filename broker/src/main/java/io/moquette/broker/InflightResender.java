@@ -128,7 +128,7 @@ public class InflightResender extends ChannelDuplexHandler {
         // Avoid the case where destroy() is called before scheduling timeouts.
         // See: https://github.com/netty/netty/issues/143
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing autoflush handler. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+            LOG.debug("Initializing autoflush handler on channel {}", ctx.channel());
         }
         switch (state) {
             case 1:
@@ -153,9 +153,9 @@ public class InflightResender extends ChannelDuplexHandler {
         }
     }
 
-    private void resendNotAcked(ChannelHandlerContext ctx/* , IdleStateEvent evt */) throws Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushing idle Netty channel. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
+    private void resendNotAcked(ChannelHandlerContext ctx/* , IdleStateEvent evt */) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Flushing idle Netty channel {} for clientId: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
         }
         ctx.fireUserEventTriggered(new ResendNotAckedPublishes());
     }

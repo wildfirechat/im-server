@@ -1,9 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -61,13 +58,11 @@ public class PostOfficeUnsubscribeTest {
     }
 
     private void prepareSUT() {
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
         mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
 
         subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
-        subscriptions.init(sessionsRepository);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
+        subscriptions.init(subscriptionsRepository);
 
         sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
@@ -308,7 +303,7 @@ public class PostOfficeUnsubscribeTest {
             .payload(bytePayload)
             .qos(MqttQoS.EXACTLY_ONCE)
             .retained(true)
-            .topicName(NEWS_TOPIC).build());
+            .topicName(NEWS_TOPIC).build(), "username");
     }
 
     /**

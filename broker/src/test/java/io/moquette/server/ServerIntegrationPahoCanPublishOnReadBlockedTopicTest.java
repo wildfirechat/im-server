@@ -19,6 +19,7 @@ package io.moquette.server;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.broker.Server;
 import io.moquette.spi.impl.security.AcceptAllAuthenticator;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.moquette.spi.security.IAuthorizatorPolicy;
@@ -39,7 +40,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static io.moquette.spi.impl.ProtocolProcessorTest.EMPTY_OBSERVERS;
+
+import static io.moquette.broker.ConnectionTestUtils.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
@@ -115,6 +117,7 @@ public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
         m_server.stopServer();
     }
 
+    // TODO move this functional test into unit/integration
     @Test
     public void shouldNotInternalPublishOnReadBlockedSubscriptionTopic() throws Exception {
         LOG.info("*** shouldNotInternalPublishOnReadBlockedSubscriptionTopic ***");

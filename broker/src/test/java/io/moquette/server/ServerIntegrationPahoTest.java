@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.broker.Server;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.*;
@@ -141,6 +142,7 @@ public class ServerIntegrationPahoTest {
         subscriberA.disconnect();
 
         MqttMessage messageOnB = cbSubscriberB.waitMessage(1);
+        assertNotNull("MUST be a received message", messageOnB);
         assertEquals("Hello world MQTT!!", new String(messageOnB.getPayload(), UTF_8));
         assertEquals(2, messageOnB.getQos());
         subscriberB.disconnect();

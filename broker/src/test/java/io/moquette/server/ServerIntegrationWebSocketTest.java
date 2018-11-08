@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.broker.Server;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.MemoryConfig;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;

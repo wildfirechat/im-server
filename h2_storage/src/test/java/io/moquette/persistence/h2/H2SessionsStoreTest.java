@@ -29,105 +29,105 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.*;
 
-import static io.moquette.persistence.h2.H2MessagesStoreTest.cleanPersistenceFile;
+//import static io.moquette.persistence.h2.H2MessagesStoreTest.cleanPersistenceFile;
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class H2SessionsStoreTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(H2SessionsStoreTest.class);
-
-    private H2PersistentStore storageService;
-    private ScheduledExecutorService scheduler;
-
-    @Before
-    public void setUp() throws Exception {
-        scheduler = Executors.newScheduledThreadPool(1);
-
-        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
-        Properties props = new Properties();
-        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
-        IConfig conf = new MemoryConfig(props);
-        storageService = new H2PersistentStore(conf, scheduler);
-        storageService.initStore();
-    }
-
-    @After
-    public void tearDown() {
-        if (storageService != null) {
-            storageService.close();
-        }
-
-        scheduler.shutdown();
-        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
-    }
-
-    @Test
-    public void testQueryByExpirationDate() {
-        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
-        LocalDateTime sessionCreationTime = LocalDateTime.of(2017, 10, 1, 10, 0, 0);
-        sessionsStore.trackSessionClose(sessionCreationTime, "Sensor1");
-
-        LocalDateTime session2CreationTime = LocalDateTime.of(2017, 11, 1, 10, 0, 0);
-        sessionsStore.trackSessionClose(session2CreationTime, "Sensor2");
-
-        //Exercise
-        LocalDateTime queryPin = LocalDateTime.of(2017, 10, 20, 10, 0, 0);
-        Set<String> sessions = sessionsStore.sessionOlderThan(queryPin);
-
-        //Verify
-        assertThat(sessions).contains("Sensor1");
-    }
-
-    @Test
-    public void testListAllSessionsOlderThan() {
-        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
-        LocalDateTime sessionCreationTime = LocalDateTime.of(2017, 10, 1, 10, 0, 0);
-        sessionsStore.trackSessionClose(sessionCreationTime, "Sensor1");
-
-        LocalDateTime session2CreationTime = LocalDateTime.of(2017, 10, 2, 10, 0, 0);
-        sessionsStore.trackSessionClose(session2CreationTime, "Sensor2");
-
-        //Exercise
-        LocalDateTime queryPin = LocalDateTime.of(2017, 10, 20, 10, 0, 0);
-        Set<String> sessions = sessionsStore.sessionOlderThan(queryPin);
-
-        //Verify
-        assertThat(sessions).contains("Sensor1", "Sensor2");
-    }
-
-    @Test
-    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException,
-                TimeoutException {
-        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
-
-        final ExecutorService executorService = Executors.newFixedThreadPool(2);
-        final Future<?> future1 = executorService.submit(inserterForOffset(sessionsStore, 0));
-        final Future<?> future2 = executorService.submit(inserterForOffset(sessionsStore, 50000));
-        future1.get(2, TimeUnit.SECONDS);
-        future2.get(2, TimeUnit.SECONDS);
-//        //prepare the fixture
-//        for (int i = 0; i < 100000; i++) {
-//            final LocalDateTime timePin = now().minusSeconds(1);
-//            sessionsStore.trackSessionClose(timePin, "Sensor" + i);
+//    private static final Logger LOG = LoggerFactory.getLogger(H2SessionsStoreTest.class);
+//
+//    private H2PersistentStore storageService;
+//    private ScheduledExecutorService scheduler;
+//
+//    @Before
+//    public void setUp() throws Exception {
+//        scheduler = Executors.newScheduledThreadPool(1);
+//
+//        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//        Properties props = new Properties();
+//        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//        IConfig conf = new MemoryConfig(props);
+//        storageService = new H2PersistentStore(conf, scheduler);
+//        storageService.initStore();
+//    }
+//
+//    @After
+//    public void tearDown() {
+//        if (storageService != null) {
+//            storageService.close();
 //        }
-
-        //Exercise
-        LOG.warn("Start search");
-        Set<String> sessions = sessionsStore.sessionOlderThan(now());
-        LOG.warn("Finish search");
-
-        //Verify
-        assertThat(sessions.size()).isEqualTo(100000);
-    }
-
-    private Runnable inserterForOffset(H2SessionsStore sessionsStore, int start) {
-        return () -> {
-            //prepare the fixture
-            for (int i = start; i < start + 50000; i++) {
-                final LocalDateTime timePin = now().minusSeconds(1);
-                sessionsStore.trackSessionClose(timePin, "Sensor" + i);
-            }
-        };
-    }
+//
+//        scheduler.shutdown();
+//        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//    }
+//
+//    @Test
+//    public void testQueryByExpirationDate() {
+//        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
+//        LocalDateTime sessionCreationTime = LocalDateTime.of(2017, 10, 1, 10, 0, 0);
+//        sessionsStore.trackSessionClose(sessionCreationTime, "Sensor1");
+//
+//        LocalDateTime session2CreationTime = LocalDateTime.of(2017, 11, 1, 10, 0, 0);
+//        sessionsStore.trackSessionClose(session2CreationTime, "Sensor2");
+//
+//        //Exercise
+//        LocalDateTime queryPin = LocalDateTime.of(2017, 10, 20, 10, 0, 0);
+//        Set<String> sessions = sessionsStore.sessionOlderThan(queryPin);
+//
+//        //Verify
+//        assertThat(sessions).contains("Sensor1");
+//    }
+//
+//    @Test
+//    public void testListAllSessionsOlderThan() {
+//        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
+//        LocalDateTime sessionCreationTime = LocalDateTime.of(2017, 10, 1, 10, 0, 0);
+//        sessionsStore.trackSessionClose(sessionCreationTime, "Sensor1");
+//
+//        LocalDateTime session2CreationTime = LocalDateTime.of(2017, 10, 2, 10, 0, 0);
+//        sessionsStore.trackSessionClose(session2CreationTime, "Sensor2");
+//
+//        //Exercise
+//        LocalDateTime queryPin = LocalDateTime.of(2017, 10, 20, 10, 0, 0);
+//        Set<String> sessions = sessionsStore.sessionOlderThan(queryPin);
+//
+//        //Verify
+//        assertThat(sessions).contains("Sensor1", "Sensor2");
+//    }
+//
+//    @Test
+//    public void testRetrieve1000ExpiredSessionPerformance() throws InterruptedException, ExecutionException,
+//                TimeoutException {
+//        H2SessionsStore sessionsStore = (H2SessionsStore) storageService.sessionsStore();
+//
+//        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+//        final Future<?> future1 = executorService.submit(inserterForOffset(sessionsStore, 0));
+//        final Future<?> future2 = executorService.submit(inserterForOffset(sessionsStore, 50000));
+//        future1.get(2, TimeUnit.SECONDS);
+//        future2.get(2, TimeUnit.SECONDS);
+////        //prepare the fixture
+////        for (int i = 0; i < 100000; i++) {
+////            final LocalDateTime timePin = now().minusSeconds(1);
+////            sessionsStore.trackSessionClose(timePin, "Sensor" + i);
+////        }
+//
+//        //Exercise
+//        LOG.warn("Start search");
+//        Set<String> sessions = sessionsStore.sessionOlderThan(now());
+//        LOG.warn("Finish search");
+//
+//        //Verify
+//        assertThat(sessions.size()).isEqualTo(100000);
+//    }
+//
+//    private Runnable inserterForOffset(H2SessionsStore sessionsStore, int start) {
+//        return () -> {
+//            //prepare the fixture
+//            for (int i = start; i < start + 50000; i++) {
+//                final LocalDateTime timePin = now().minusSeconds(1);
+//                sessionsStore.trackSessionClose(timePin, "Sensor" + i);
+//            }
+//        };
+//    }
 }

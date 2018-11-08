@@ -104,7 +104,7 @@ public class NewNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if (evt instanceof InflightResender.ResendNotAckedPublishes) {
             final MQTTConnection mqttConnection = mqttConnection(ctx.channel());
             mqttConnection.resendNotAckedPublishes();

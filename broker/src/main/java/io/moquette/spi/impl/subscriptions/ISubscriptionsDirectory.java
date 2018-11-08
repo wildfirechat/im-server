@@ -15,14 +15,14 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.impl.SessionsRepository;
+import io.moquette.broker.ISubscriptionsRepository;
 
 import java.util.List;
 import java.util.Set;
 
 public interface ISubscriptionsDirectory {
 
-    void init(SessionsRepository sessionsRepository);
+    void init(ISubscriptionsRepository sessionsRepository);
 
     Set<Subscription> matchWithoutQosSharpening(Topic topic);
 

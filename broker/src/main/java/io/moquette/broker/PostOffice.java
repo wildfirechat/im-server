@@ -202,6 +202,12 @@ class PostOffice {
             if (isSessionPresent) {
                 LOG.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}",
                           sub.getClientId(), sub.getTopicFilter(), qos);
+                //TODO determine the user bounded to targetSession
+                if (!authorizator.canRead(topic, "TODO", sub.getClientId())) {
+                    LOG.debug("Authorizator prohibit Client {} to be notified on {}", sub.getClientId(), topic);
+                    return;
+                }
+
                 // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
                 ByteBuf payload = origPayload.retainedDuplicate();
                 targetSession.sendPublishOnSessionAtQos(topic, qos, payload);
@@ -218,10 +224,17 @@ class PostOffice {
      * First phase of a publish QoS2 protocol, sent by publisher to the broker. Publish to all interested
      * subscribers.
      */
-    void receivedPublishQos2(MQTTConnection connection, MqttPublishMessage mqttPublishMessage) {
+    void receivedPublishQos2(MQTTConnection connection, MqttPublishMessage mqttPublishMessage, String username) {
         LOG.trace("Processing PUBREL message on connection: {}", connection);
         final Topic topic = new Topic(mqttPublishMessage.variableHeader().topicName());
         final ByteBuf payload = mqttPublishMessage.payload();
+
+        final String clientId = connection.getClientId();
+        if (!authorizator.canWrite(topic, username, clientId)) {
+            LOG.error("MQTT client is not authorized to publish on topic. CId={}, topic: {}", clientId, topic);
+            return;
+        }
+
         publish2Subscribers(payload, topic, EXACTLY_ONCE);
 
         final boolean retained = mqttPublishMessage.fixedHeader().isRetain();
@@ -235,7 +248,6 @@ class PostOffice {
         }
 
         String clientID = connection.getClientId();
-        String username = NettyUtils.userName(connection.channel);
         interceptor.notifyTopicPublished(mqttPublishMessage, clientID, username);
     }
 

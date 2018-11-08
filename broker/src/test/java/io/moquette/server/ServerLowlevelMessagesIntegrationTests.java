@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.broker.Server;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.testclient.Client;
@@ -97,8 +98,8 @@ public class ServerLowlevelMessagesIntegrationTests {
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
             MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
             true, keepAlive);
-        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, (String) null, (byte[]) null, 
-                (String) null, (byte[]) null);
+        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, null, null,
+                                                              null, (byte[]) null);
         return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
     }
 

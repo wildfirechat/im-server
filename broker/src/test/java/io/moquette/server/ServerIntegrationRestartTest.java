@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.broker.Server;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.*;

@@ -16,10 +16,8 @@
 package io.moquette.persistence.h2;
 
 import io.moquette.BrokerConstants;
-import io.moquette.persistence.MessageStoreTCK;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.impl.SessionsRepository;
 import org.junit.After;
 import org.junit.Before;
 
@@ -30,42 +28,42 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.assertFalse;
 
-public class H2MessagesStoreTest extends MessageStoreTCK {
+public class H2MessagesStoreTest /*extends MessageStoreTCK*/ {
 
-    H2PersistentStore storageService;
-
-    private ScheduledExecutorService scheduler;
-
-    @Before
-    public void setUp() throws Exception {
-        scheduler = Executors.newScheduledThreadPool(1);
-
-        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
-        Properties props = new Properties();
-        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
-        IConfig conf = new MemoryConfig(props);
-        storageService = new H2PersistentStore(conf, scheduler);
-        storageService.initStore();
-        messagesStore = storageService.messagesStore();
-        sessionsStore = storageService.sessionsStore();
-        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
-    }
-
-    @After
-    public void tearDown() {
-        if (storageService != null) {
-            storageService.close();
-        }
-
-        scheduler.shutdown();
-        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
-    }
-
-    public static void cleanPersistenceFile(String fileName) {
-        File dbFile = new File(fileName);
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
-        assertFalse(dbFile.exists());
-    }
+//    H2PersistentStore storageService;
+//
+//    private ScheduledExecutorService scheduler;
+//
+//    @Before
+//    public void setUp() throws Exception {
+//        scheduler = Executors.newScheduledThreadPool(1);
+//
+//        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//        Properties props = new Properties();
+//        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//        IConfig conf = new MemoryConfig(props);
+//        storageService = new H2PersistentStore(conf, scheduler);
+//        storageService.initStore();
+//        messagesStore = storageService.messagesStore();
+//        sessionsStore = storageService.sessionsStore();
+//        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
+//    }
+//
+//    @After
+//    public void tearDown() {
+//        if (storageService != null) {
+//            storageService.close();
+//        }
+//
+//        scheduler.shutdown();
+//        cleanPersistenceFile(BrokerConstants.DEFAULT_PERSISTENT_PATH);
+//    }
+//
+//    public static void cleanPersistenceFile(String fileName) {
+//        File dbFile = new File(fileName);
+//        if (dbFile.exists()) {
+//            dbFile.delete();
+//        }
+//        assertFalse(dbFile.exists());
+//    }
 }

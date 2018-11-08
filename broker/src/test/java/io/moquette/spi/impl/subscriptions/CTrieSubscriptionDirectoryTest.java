@@ -14,9 +14,10 @@
  * You may elect to redistribute this code under either of these licenses.
  */package io.moquette.spi.impl.subscriptions;
 
+import io.moquette.broker.ISubscriptionsRepository;
+import io.moquette.broker.MemorySubscriptionsRepository;
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.SessionsRepository;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,9 +36,7 @@ public class CTrieSubscriptionDirectoryTest {
     @Before
     public void setUp() {
         sut = new CTrieSubscriptionDirectory();
-        MemoryStorageService memStore = new MemoryStorageService(null, null);
-        ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
+        ISubscriptionsRepository sessionsRepository = new MemorySubscriptionsRepository();
         sut.init(sessionsRepository);
     }
 

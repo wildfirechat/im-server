@@ -1,9 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -73,12 +70,9 @@ public class PostOfficePublishTest {
     }
 
     private SessionRegistry initPostOfficeAndSubsystems() {
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
-
         subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
-        subscriptions.init(sessionsRepository);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
+        subscriptions.init(subscriptionsRepository);
         retainedRepository = new MemoryRetainedRepository();
 
         SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
@@ -114,7 +108,7 @@ public class PostOfficePublishTest {
             .payload(anyPayload)
             .qos(MqttQoS.EXACTLY_ONCE)
             .retained(false)
-            .topicName(NEWS_TOPIC).build());
+            .topicName(NEWS_TOPIC).build(), "username");
 
         final MQTTConnection clientYA = connectAs("subscriber");
         subscribe(clientYA, NEWS_TOPIC, AT_MOST_ONCE);
@@ -125,7 +119,7 @@ public class PostOfficePublishTest {
             .payload(anyPayload2)
             .qos(MqttQoS.EXACTLY_ONCE)
             .retained(true)
-            .topicName(NEWS_TOPIC).build());
+            .topicName(NEWS_TOPIC).build(), "username");
 
         // Verify
         assertFalse("First 'subscriber' channel MUST be closed by the broker", clientXA.channel.isOpen());
@@ -249,7 +243,7 @@ public class PostOfficePublishTest {
                 .payload(anyPayload)
                 .qos(MqttQoS.EXACTLY_ONCE)
                 .retained(true)
-                .topicName(NEWS_TOPIC).build());
+                .topicName(NEWS_TOPIC).build(), "username");
 
         // Verify
         ConnectionTestUtils.verifyPublishIsReceived(channel, EXACTLY_ONCE, "Any payload");

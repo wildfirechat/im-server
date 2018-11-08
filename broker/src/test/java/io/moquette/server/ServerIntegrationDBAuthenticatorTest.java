@@ -18,6 +18,7 @@ package io.moquette.server;
 
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
+import io.moquette.broker.Server;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.impl.security.DBAuthenticator;
 import io.moquette.spi.impl.security.DBAuthenticatorTest;

@@ -165,7 +165,7 @@ class Session {
         inflightSlots.incrementAndGet();
         if (canSkipQueue()) {
             inflightSlots.decrementAndGet();
-            int pubRelPacketId = mqttConnection.nextPacketId();
+            int pubRelPacketId = packetId/*mqttConnection.nextPacketId()*/;
             inflightWindow.put(pubRelPacketId, new SessionRegistry.PubRelMarker());
             inflightTimeouts.add(new InFlightPacket(pubRelPacketId, FLIGHT_BEFORE_RESEND_MS));
             MqttMessage pubRel = MQTTConnection.pubrel(pubRelPacketId);
@@ -262,17 +262,31 @@ class Session {
         Collection<InFlightPacket> expired = new ArrayList<>(INFLIGHT_WINDOW_SIZE);
         inflightTimeouts.drainTo(expired);
 
+        debugLogPacketIds(expired);
+
         for (InFlightPacket notAckPacketId : expired) {
             if (inflightWindow.containsKey(notAckPacketId.packetId)) {
                 final SessionRegistry.PublishedMessage msg = (SessionRegistry.PublishedMessage) inflightWindow.get(notAckPacketId.packetId);
                 final Topic topic = msg.topic;
                 final MqttQoS qos = msg.publishingQos;
                 final ByteBuf payload = msg.payload;
-
-                MqttPublishMessage publishMsg = publishNotRetainedDuplicated(notAckPacketId, topic, qos, payload);
+                final ByteBuf copiedPayload = payload.retainedDuplicate();
+                MqttPublishMessage publishMsg = publishNotRetainedDuplicated(notAckPacketId, topic, qos, copiedPayload);
                 mqttConnection.sendPublish(publishMsg);
             }
         }
+    }
+
+    private void debugLogPacketIds(Collection<InFlightPacket> expired) {
+        if (!LOG.isDebugEnabled() || expired.isEmpty()) {
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (InFlightPacket packet : expired) {
+            sb.append(packet.packetId).append(", ");
+        }
+        LOG.debug("Resending {} in flight packets [{}]", expired.size(), sb);
     }
 
     private MqttPublishMessage publishNotRetainedDuplicated(InFlightPacket notAckPacketId, Topic topic, MqttQoS qos, ByteBuf payload) {

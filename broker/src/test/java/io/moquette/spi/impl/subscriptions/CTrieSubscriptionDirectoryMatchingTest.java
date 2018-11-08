@@ -15,11 +15,11 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
+import io.moquette.broker.ISubscriptionsRepository;
+import io.moquette.broker.MemorySubscriptionsRepository;
 import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore;
-import io.moquette.spi.impl.SessionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,17 +36,13 @@ import static org.junit.Assert.assertTrue;
 public class CTrieSubscriptionDirectoryMatchingTest {
 
     private CTrieSubscriptionDirectory sut;
-    private ISubscriptionsStore subscriptionsStore;
-    private SessionsRepository sessionsRepository;
+    private ISubscriptionsRepository sessionsRepository;
 
     @Before
     public void setUp() {
         sut = new CTrieSubscriptionDirectory();
 
-        MemoryStorageService storageService = new MemoryStorageService(null, null);
-        ISessionsStore sessionsStore = storageService.sessionsStore();
-        this.subscriptionsStore = sessionsStore.subscriptionStore();
-        this.sessionsRepository = new SessionsRepository(sessionsStore, null);
+        this.sessionsRepository = new MemorySubscriptionsRepository();
         sut.init(this.sessionsRepository);
     }
 
@@ -178,9 +174,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     private void assertMatch(String s, String t) {
         sut = new CTrieSubscriptionDirectory();
-        MemoryStorageService memStore = new MemoryStorageService(null, null);
-        ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
+        ISubscriptionsRepository sessionsRepository = new MemorySubscriptionsRepository();
         sut.init(sessionsRepository);
 
         Subscription sub = clientSubOnTopic("AnySensor1", s);
@@ -191,9 +185,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
 
     private void assertNotMatch(String subscription, String topic) {
         sut = new CTrieSubscriptionDirectory();
-        MemoryStorageService memStore = new MemoryStorageService(null, null);
-        ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
+        ISubscriptionsRepository sessionsRepository = new MemorySubscriptionsRepository();
         sut.init(sessionsRepository);
 
         Subscription sub = clientSubOnTopic("AnySensor1", subscription);
@@ -205,18 +197,15 @@ public class CTrieSubscriptionDirectoryMatchingTest {
     @Test
     public void testOverlappingSubscriptions() {
         Subscription genericSub = new Subscription("Sensor1", asTopic("a/+"), MqttQoS.AT_MOST_ONCE);
-        this.subscriptionsStore.addNewSubscription(genericSub);
-        final ClientSession sensorSession = this.sessionsRepository.createNewSession("Sensor1", false);
-        sensorSession.subscribe(genericSub);
+        this.sessionsRepository.addNewSubscription(genericSub);
         sut.add(genericSub);
 
         Subscription specificSub = new Subscription("Sensor1", asTopic("a/b"), MqttQoS.AT_MOST_ONCE);
-        sensorSession.subscribe(specificSub);
-        this.subscriptionsStore.addNewSubscription(specificSub);
+        this.sessionsRepository.addNewSubscription(specificSub);
         sut.add(specificSub);
 
         //Exercise
-        final Set<Subscription> matchingForSpecific = sut.match(asTopic("a/b"));
+        final Set<Subscription> matchingForSpecific = sut.matchQosSharpening(asTopic("a/b"));
 
         // Verify
         assertThat(matchingForSpecific.size()).isEqualTo(1);
@@ -256,21 +245,16 @@ public class CTrieSubscriptionDirectoryMatchingTest {
      */
     @Test
     public void duplicatedSubscriptionsWithDifferentQos() {
-        ClientSession session2 = this.sessionsRepository.createNewSession("client2", true);
         Subscription client2Sub = new Subscription("client2", asTopic("client/test/b"), MqttQoS.AT_MOST_ONCE);
-        session2.subscribe(client2Sub);
         this.sut.add(client2Sub);
-        ClientSession session1 = this.sessionsRepository.createNewSession("client1", true);
         Subscription client1SubQoS0 = new Subscription("client1", asTopic("client/test/b"), MqttQoS.AT_MOST_ONCE);
-        session1.subscribe(client1SubQoS0);
         this.sut.add(client1SubQoS0);
 
         Subscription client1SubQoS2 = new Subscription("client1", asTopic("client/test/b"), MqttQoS.EXACTLY_ONCE);
-        session1.subscribe(client1SubQoS2);
         this.sut.add(client1SubQoS2);
 
         // Verify
-        Set<Subscription> subscriptions = this.sut.match(asTopic("client/test/b"));
+        Set<Subscription> subscriptions = this.sut.matchQosSharpening(asTopic("client/test/b"));
         assertThat(subscriptions).contains(client1SubQoS2);
         assertThat(subscriptions).contains(client2Sub);
 

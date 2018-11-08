@@ -25,6 +25,7 @@ import io.moquette.persistence.MemoryStorageService;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizatorPolicy;
+import io.moquette.broker.Server;
 import org.junit.After;
 import org.junit.Test;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         m_server.stopServer();
     }
 
@@ -63,15 +64,15 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
         assertTrue(true);
     }
 
-    @Test
-    public void loadStorage() throws Exception {
-        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
-        props.setProperty(BrokerConstants.STORAGE_CLASS_NAME, MemoryStorageService.class.getName());
-
-        startServer(props);
-        assertTrue(m_server.getProcessor().getMessagesStore() instanceof MemoryMessagesStore);
-        assertTrue(m_server.getProcessor().getSessionsStore() instanceof MemorySessionStore);
-    }
+//    @Test
+//    public void loadStorage() throws Exception {
+//        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
+//        props.setProperty(BrokerConstants.STORAGE_CLASS_NAME, MemoryStorageService.class.getName());
+//
+//        startServer(props);
+//        assertTrue(m_server.getProcessor().getMessagesStore() instanceof MemoryMessagesStore);
+//        assertTrue(m_server.getProcessor().getSessionsStore() instanceof MemorySessionStore);
+//    }
 
     @Override
     public boolean checkValid(String clientID, String username, byte[] password) {

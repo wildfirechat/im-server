@@ -18,6 +18,7 @@ package io.moquette.server;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.util.concurrent.*;
 
@@ -89,7 +90,7 @@ public class MessageCollector implements MqttCallback {
     }
 
     @Override
-    public void messageArrived(String topic, MqttMessage message) throws Exception {
+    public void messageArrived(String topic, MqttMessage message) {
         m_messages.offer(new ReceivedMessage(message, topic));
     }
 
@@ -98,10 +99,11 @@ public class MessageCollector implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        // try {
-        // m_messages.offer(new ReceivedMessage(token.waitMessage(), token.getTopics()[0]));
-        // } catch (MqttException e) {
-        // e.printStackTrace();
-        // }
+//        try {
+//            token.waitForCompletion(1_000);
+//            m_messages.offer(new ReceivedMessage(token.getMessage(), token.getTopics()[0]));
+//        } catch (MqttException e) {
+//            e.printStackTrace();
+//        }
     }
 }

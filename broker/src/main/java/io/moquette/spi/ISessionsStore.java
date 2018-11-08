@@ -18,7 +18,6 @@ package io.moquette.spi;
 
 import io.moquette.persistence.PersistentSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.moquette.spi.impl.WillMessage;
 
 import java.time.LocalDateTime;
 import java.util.Collection;

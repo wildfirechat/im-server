@@ -12,7 +12,7 @@ import java.util.List;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.junit.Assert.*;
 
-class ConnectionTestUtils {
+public class ConnectionTestUtils {
 
     public static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     public static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);

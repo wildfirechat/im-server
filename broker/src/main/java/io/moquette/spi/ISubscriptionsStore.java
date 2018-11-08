@@ -22,31 +22,32 @@ import io.moquette.spi.impl.subscriptions.Topic;
 import java.util.Collection;
 import java.util.List;
 
+
+/**
+ * @deprecated look at ISubscriptionsRepository
+ */
+@Deprecated
 public interface ISubscriptionsStore {
 
     /**
      * Add a new subscription to the session
      *
-     * @param newSubscription
-     *            the subscription to add.
+     * @param newSubscription the subscription to add.
      */
     void addNewSubscription(Subscription newSubscription);
 
     /**
      * Removed a specific subscription
      *
-     * @param topic
-     *            the topic of the subscription.
-     * @param clientID
-     *            the session client.
+     * @param topic    the topic of the subscription.
+     * @param clientID the session client.
      */
     void removeSubscription(Topic topic, String clientID);
 
     /**
      * Remove all the subscriptions of the session
      *
-     * @param clientID
-     *            the client ID
+     * @param clientID the client ID
      */
     void wipeSubscriptions(String clientID);
 
@@ -57,12 +58,11 @@ public interface ISubscriptionsStore {
 
     /**
      * Load from storage all the subscriptions of the specified client.
-     * */
+     */
     Collection<Subscription> listClientSubscriptions(String clientID);
 
     /**
-     * @param subcription
-     *            the subscription to reaload from storage.
+     * @param subcription the subscription to reaload from storage.
      * @return the subscription stored by clientID and topicFilter, if any else null;
      */
     Subscription reload(Subscription subcription);

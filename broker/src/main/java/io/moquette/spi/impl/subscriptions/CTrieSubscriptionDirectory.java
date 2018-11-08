@@ -15,14 +15,11 @@
  */
 package io.moquette.spi.impl.subscriptions;
 
-import io.moquette.spi.ClientSession;
-import io.moquette.spi.impl.SessionsRepository;
+import io.moquette.broker.ISubscriptionsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-
-import static java.lang.String.format;
 
 public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
 
@@ -32,7 +29,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     private static final INode NO_PARENT = null;
 
     INode root;
-    private volatile SessionsRepository sessionsRepository;
+    private volatile ISubscriptionsRepository sessionsRepository;
 
     interface IVisitor<T> {
 
@@ -46,7 +43,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     }
 
     @Override
-    public void init(SessionsRepository sessionsRepository) {
+    public void init(ISubscriptionsRepository sessionsRepository) {
         LOG.info("Initializing CTrie");
         final CNode mainNode = new CNode();
         mainNode.token = ROOT;
@@ -58,12 +55,11 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}", dumpTree());
         }
-        for (ClientSession session : this.sessionsRepository.getAllSessions()) {
-            for (Subscription subscription : session.getSubscriptions()) {
-                LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", subscription.clientId,
-                    subscription.topicFilter);
-                add(subscription);
-            }
+
+        for (Subscription subscription : this.sessionsRepository.listAllSubscriptions()) {
+            LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", subscription.clientId,
+                     subscription.topicFilter);
+            add(subscription);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("Stored subscriptions have been reloaded. SubscriptionTree = {}", dumpTree());
@@ -86,7 +82,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
 
     @Override
     public List<Subscription> matches(Topic topic) {
-        return new ArrayList<>(match(topic));
+        return new ArrayList<>(matchQosSharpening(topic));
     }
 
     /**
@@ -116,47 +112,6 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
             }
         }
         return new HashSet<>(subsGroupedByClient.values());
-    }
-
-    /**
-     * Given a topic string return the clients subscriptions that matches it. Topic string can't
-     * contain character # and + because they are reserved to listeners subscriptions, and not topic
-     * publishing.
-     *
-     * @param topic
-     *            to use fo searching matching subscriptions.
-     * @return the list of matching subscriptions, or empty if not matching.
-     */
-    @Deprecated
-    Set<Subscription> match(Topic topic) {
-        final Set<Subscription> matchingSubs = matchWithoutQosSharpening(topic);
-        // remove the overlapping subscriptions, selecting ones with greatest qos
-        Map<String, Subscription> subsForClient = loadSubscriptionsFromStorage(matchingSubs);
-        return new HashSet<>(subsForClient.values());
-    }
-
-    @Deprecated
-    private Map<String, Subscription> loadSubscriptionsFromStorage(Set<Subscription> matchingSubs) {
-        Map<String, Subscription> subsForClient = new HashMap<>();
-        for (Subscription matchingSub : matchingSubs) {
-            Subscription existingSub = subsForClient.get(matchingSub.clientId);
-            final ClientSession subscribedSession = this.sessionsRepository.sessionForClient(matchingSub.clientId);
-            if (subscribedSession == null) {
-                //clean session disconnected
-                continue;
-            }
-            Subscription sub = subscribedSession.findSubscriptionByTopicFilter(matchingSub);
-            if (sub == null) {
-                final String excpMesg = format("Target session %s is connected but doesn't anymore subscribed to %s",
-                    matchingSub.clientId, matchingSub);
-                throw new IllegalStateException(excpMesg);
-            }
-            // update the selected subscriptions if not present or if has a greater qos
-            if (existingSub == null || existingSub.qosLessThan(sub)) {
-                subsForClient.put(sub.clientId, sub);
-            }
-        }
-        return subsForClient;
     }
 
     Set<Subscription> recursiveMatch(Topic topic, INode inode) {

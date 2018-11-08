@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import io.moquette.broker.Server;
 import static org.junit.Assert.assertFalse;
 import java.io.File;
 import java.io.IOException;

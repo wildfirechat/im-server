@@ -1,9 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -66,12 +63,9 @@ public class PostOfficeInternalPublishTest {
     }
 
     private SessionRegistry initPostOfficeAndSubsystems() {
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
-
         subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
-        subscriptions.init(sessionsRepository);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
+        subscriptions.init(subscriptionsRepository);
         retainedRepository = new MemoryRetainedRepository();
 
         SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);

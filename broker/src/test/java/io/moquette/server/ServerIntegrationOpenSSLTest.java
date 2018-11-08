@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import io.moquette.BrokerConstants;
+import io.moquette.broker.Server;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslProvider;
 import org.junit.BeforeClass;

@@ -18,6 +18,7 @@ package io.moquette.broker;
 
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
+import io.moquette.server.netty.AutoFlushHandler;
 import io.moquette.server.netty.BugSnagErrorsHandler;
 import io.moquette.server.netty.MoquetteIdleTimeoutHandler;
 import io.moquette.server.netty.metrics.*;
@@ -56,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 import static io.moquette.BrokerConstants.*;
 import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 
-public class NewNettyAcceptor {
+class NewNettyAcceptor {
 
     private static final String MQTT_SUBPROTOCOL_CSV_LIST = "mqtt, mqttv3.1, mqttv3.1.1";
 
@@ -215,6 +216,7 @@ public class NewNettyAcceptor {
                     pipeline.addLast("bugsnagCatcher", errorsCather.get());
                 }
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
+                pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
                 pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
                 pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -255,6 +257,7 @@ public class NewNettyAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
+                pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
                 pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
                 pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -291,6 +294,7 @@ public class NewNettyAcceptor {
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 // pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.ERROR));
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
+                pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
                 pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
                 pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));
@@ -330,6 +334,7 @@ public class NewNettyAcceptor {
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
                 pipeline.addAfter("idleStateHandler", "idleEventHandler", timeoutHandler);
                 pipeline.addFirst("bytemetrics", new BytesMetricsHandler(m_bytesMetricsCollector));
+                pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
                 pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
                 pipeline.addLast("encoder", MqttEncoder.INSTANCE);
                 pipeline.addLast("metrics", new MessageMetricsHandler(m_metricsCollector));

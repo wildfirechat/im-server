@@ -1,9 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -49,13 +46,11 @@ public class MQTTConnectionPublishTest {
     }
 
     private MQTTConnection createMQTTConnection(BrokerConfiguration config, Channel channel) {
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
         IAuthenticator mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
-        subscriptions.init(sessionsRepository);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
+        subscriptions.init(subscriptionsRepository);
 
         sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         final PostOffice postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(),

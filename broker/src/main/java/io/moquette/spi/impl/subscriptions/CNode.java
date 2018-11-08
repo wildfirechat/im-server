@@ -82,7 +82,18 @@ class CNode {
     }
 
     CNode addSubscription(Subscription newSubscription) {
-        this.subscriptions.add(new Subscription(newSubscription));
+        // if already contains one with same topic and same client, keep that with higher QoS
+        if (subscriptions.contains(newSubscription)) {
+            final Subscription existing = subscriptions.stream()
+                .filter(s -> s.equals(newSubscription))
+                .findFirst().get();
+            if (existing.getRequestedQos().value() < newSubscription.getRequestedQos().value()) {
+                subscriptions.remove(existing);
+                subscriptions.add(new Subscription(newSubscription));
+            }
+        } else {
+            this.subscriptions.add(new Subscription(newSubscription));
+        }
         return this;
     }
 

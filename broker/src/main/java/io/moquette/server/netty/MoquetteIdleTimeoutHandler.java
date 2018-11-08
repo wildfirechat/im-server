@@ -38,15 +38,14 @@ public class MoquetteIdleTimeoutHandler extends ChannelDuplexHandler {
             if (e == IdleState.READER_IDLE) {
                 LOG.info("Firing channel inactive event. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
                 // fire a channelInactive to trigger publish of Will
-                ctx.fireChannelInactive();
+//??
+//                ctx.fireChannelInactive();
                 ctx.close().addListener(CLOSE_ON_FAILURE);
             }
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "Firing Netty event. MqttClientId = {}, eventClass = {}.",
-                        NettyUtils.clientID(ctx.channel()),
-                        evt.getClass().getName());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Firing Netty event CId = {}, eventClass = {}", NettyUtils.clientID(ctx.channel()),
+                          evt.getClass().getName());
             }
             super.userEventTriggered(ctx, evt);
         }

@@ -7,7 +7,6 @@ import io.moquette.server.DefaultMoquetteSslContextCreator;
 import io.moquette.server.config.*;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.BrokerInterceptor;
-import io.moquette.spi.impl.SessionsRepository;
 import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
@@ -150,11 +149,11 @@ public class Server {
         // TODO user real implementation DBG
         MemoryStorageService memStorage = new MemoryStorageService(null, null);
         ISessionsStore sessionStore = memStorage.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(sessionStore, null);
+        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         // DBG
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
-        subscriptions.init(sessionsRepository);
+        subscriptions.init(subscriptionsRepository);
         SessionRegistry sessions = new SessionRegistry(subscriptions, interceptor);
         dispatcher = new PostOffice(subscriptions, authorizatorPolicy, new MemoryRetainedRepository(), sessions,
                                     interceptor);
@@ -288,13 +287,13 @@ public class Server {
      * @throws IllegalStateException if the server is not yet started
      */
     public void internalPublish(MqttPublishMessage msg, final String clientId) {
-        final int messageID = msg.variableHeader().messageId();
+        final int messageID = msg.variableHeader().packetId();
         if (!initialized) {
-            LOG.error("Moquette is not started, internal message cannot be published. CId={}, messageId={}", clientId,
-                messageID);
+            LOG.error("Moquette is not started, internal message cannot be published. CId: {}, messageId: {}", clientId,
+                      messageID);
             throw new IllegalStateException("Can't publish on a server is not yet started");
         }
-        LOG.debug("Publishing message. CId={}, messageId={}", clientId, messageID);
+        LOG.trace("Internal publishing message CId: {}, messageId: {}", clientId, messageID);
         dispatcher.internalPublish(msg);
     }
 
@@ -302,7 +301,6 @@ public class Server {
         LOG.info("Unbinding server from the configured ports");
         acceptor.close();
         LOG.trace("Stopping MQTT protocol processor");
-//        m_processorBootstrapper.shutdown();
         initialized = false;
 
         // calling shutdown() does not actually stop tasks that are not cancelled,

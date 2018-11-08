@@ -16,7 +16,6 @@
 
 package io.moquette.testclient;
 
-import io.moquette.server.netty.NettyMQTTHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -29,7 +28,7 @@ import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 @ChannelHandler.Sharable
 class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NettyMQTTHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientNettyMQTTHandler.class);
     private Client m_client;
 
     @Override

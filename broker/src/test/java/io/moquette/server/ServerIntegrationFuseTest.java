@@ -18,6 +18,7 @@ package io.moquette.server;
 
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.broker.Server;
 import org.fusesource.mqtt.client.*;
 import org.junit.After;
 import org.junit.Before;
@@ -97,7 +98,7 @@ public class ServerIntegrationFuseTest {
         m_publisher.kill();
 
         // Verify, that the testament is fired
-        Message msg = m_subscriber.receive(500, TimeUnit.MILLISECONDS);
+        Message msg = m_subscriber.receive(1, TimeUnit.SECONDS); // wait the flush interval (1 sec)
         assertNotNull("We should get notified with 'Will' message", msg);
         msg.ack();
         assertEquals(willTestamentMsg, new String(msg.getPayload(), UTF_8));

@@ -15,10 +15,10 @@
  */
 package io.moquette.testembedded;
 
+import io.moquette.broker.Server;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;
-import io.moquette.server.Server;
 import io.moquette.server.config.ClasspathResourceLoader;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.IResourceLoader;

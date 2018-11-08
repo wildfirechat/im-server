@@ -76,4 +76,7 @@ final class Authorizator {
         return policy.canWrite(topic, user, client);
     }
 
+    boolean canRead(Topic topic, String user, String client) {
+        return policy.canRead(topic, user, client);
+    }
 }

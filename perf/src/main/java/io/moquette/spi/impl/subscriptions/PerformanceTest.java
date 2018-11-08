@@ -20,9 +20,10 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 
+import io.moquette.broker.ISubscriptionsRepository;
+import io.moquette.broker.MemorySubscriptionsRepository;
 import io.moquette.persistence.MemoryStorageService;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.SessionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 
 public final class PerformanceTest {
@@ -34,11 +35,11 @@ public final class PerformanceTest {
        cpufreq-set -g performance -u 800MHz -c 2
        cpufreq-set -g performance -u 800MHz -c 3
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         ISubscriptionsDirectory store = new CTrieSubscriptionDirectory();
         MemoryStorageService memStore = new MemoryStorageService(null, null);
         ISessionsStore aSessionsStore = memStore.sessionsStore();
-        SessionsRepository sessionsRepository = new SessionsRepository(aSessionsStore, null);
+        ISubscriptionsRepository sessionsRepository = new MemorySubscriptionsRepository();
         store.init(sessionsRepository);
 
         int times = 10000;
