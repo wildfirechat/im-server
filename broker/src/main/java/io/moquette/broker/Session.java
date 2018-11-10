@@ -20,7 +20,7 @@ class Session {
     private static final int FLIGHT_BEFORE_RESEND_MS = 5_000;
     private static final int INFLIGHT_WINDOW_SIZE = 10;
 
-    class InFlightPacket implements Delayed {
+    static class InFlightPacket implements Delayed {
 
         final int packetId;
         private long startTime;

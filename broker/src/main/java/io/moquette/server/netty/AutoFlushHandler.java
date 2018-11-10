@@ -49,7 +49,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception  {
         if (ctx.channel().isActive() && ctx.channel().isRegistered()) {
             // channelActive() event has been fired already, which means this.channelActive() will
             // not be invoked. We have to initialize here instead.
@@ -141,10 +141,8 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
      *
      * @param ctx
      *            the channel context.
-     * @throws Exception
-     *             in case of any IO error.
      */
-    protected void channelIdle(ChannelHandlerContext ctx/* , IdleStateEvent evt */) {
+    private void channelIdle(ChannelHandlerContext ctx) {
         // ctx.fireUserEventTriggered(evt);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushing idle Netty channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
