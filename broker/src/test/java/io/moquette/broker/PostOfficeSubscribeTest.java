@@ -1,8 +1,6 @@
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
@@ -225,7 +223,12 @@ public class PostOfficeSubscribeTest {
         assertEquals("After a reconnect, subscription MUST be still present", 1, subscriptions.size());
 
         final ByteBuf payload = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false,
+            MqttMessageBuilders.publish()
+                .payload(payload.retainedDuplicate())
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyPublishIsReceived(anotherChannel, AT_MOST_ONCE, "Hello world!");
     }
@@ -265,7 +268,12 @@ public class PostOfficeSubscribeTest {
 
         // publish on /news
         final ByteBuf payload = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false,
+            MqttMessageBuilders.publish()
+                .payload(payload)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         // verify no publish is fired
         ConnectionTestUtils.verifyNoPublishIsReceived(channel);

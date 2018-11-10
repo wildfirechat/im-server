@@ -42,8 +42,16 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
-        logMQTTMessage(ctx, message, "C->B");
+        logMQTTMessageRead(ctx, message);
         ctx.fireChannelRead(message);
+    }
+
+    private void logMQTTMessageRead(ChannelHandlerContext ctx, Object message) throws Exception {
+        logMQTTMessage(ctx, message, "C->B");
+    }
+
+    private void logMQTTMessageWrite(ChannelHandlerContext ctx, Object message) throws Exception {
+        logMQTTMessage(ctx, message, "C<-B");
     }
 
     private void logMQTTMessage(ChannelHandlerContext ctx, Object message, String direction) throws Exception {
@@ -106,7 +114,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        logMQTTMessage(ctx, msg, "C<-B");
+        logMQTTMessageWrite(ctx, msg);
         ctx.write(msg, promise).addListener(CLOSE_ON_FAILURE);
     }
 }

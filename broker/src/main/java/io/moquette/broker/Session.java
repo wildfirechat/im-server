@@ -4,6 +4,7 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -335,12 +336,13 @@ class Session {
 
     public void receivedPublishQos2(int messageID, MqttPublishMessage msg) {
         qos2Receiving.put(messageID, msg);
-        msg.retain();
+        msg.retain(); // retain to put in the inflight map
         mqttConnection.sendPublishReceived(messageID);
     }
 
     public void receivedPubRelQos2(int messageID) {
-        qos2Receiving.remove(messageID);
+        final MqttPublishMessage removedMsg = qos2Receiving.remove(messageID);
+        ReferenceCountUtil.release(removedMsg);
     }
 
     @Override

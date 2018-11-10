@@ -143,7 +143,7 @@ class PostOffice {
         mqttConnection.sendUnsubAckMessage(topics, clientID, messageId);
     }
 
-    void receivedPublishQos0(Topic topic, String username, String clientID, ByteBuf payload, boolean retain) {
+    void receivedPublishQos0(Topic topic, String username, String clientID, ByteBuf payload, boolean retain, MqttPublishMessage msg) {
         if (!authorizator.canWrite(topic, username, clientID)) {
             LOG.error("MQTT client is not authorized to publish on topic. CId={}, topic: {}", clientID, topic);
             return;
@@ -155,9 +155,6 @@ class PostOffice {
             retainedRepository.cleanRetained(topic);
         }
 
-        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, false, AT_MOST_ONCE, false, 0);
-        MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(topic.toString(), 0);
-        MqttPublishMessage msg = new MqttPublishMessage(fixedHeader, varHeader, payload.retainedDuplicate());
         interceptor.notifyTopicPublished(msg, clientID, username);
     }
 

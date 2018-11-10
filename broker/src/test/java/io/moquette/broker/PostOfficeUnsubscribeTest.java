@@ -124,7 +124,12 @@ public class PostOfficeUnsubscribeTest {
 
         // publish on /news
         final ByteBuf payload = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false,
+            MqttMessageBuilders.publish()
+                .payload(payload.retainedDuplicate())
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyPublishIsReceived(channel, AT_MOST_ONCE, "Hello world!");
 
@@ -132,7 +137,12 @@ public class PostOfficeUnsubscribeTest {
 
         // publish on /news
         final ByteBuf payload2 = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false,
+            MqttMessageBuilders.publish()
+                .payload(payload)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyNoPublishIsReceived(channel);
     }
@@ -152,7 +162,12 @@ public class PostOfficeUnsubscribeTest {
         subscribe(connection, NEWS_TOPIC, AT_MOST_ONCE);
         // publish on /news
         final ByteBuf payload = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false,
+            MqttMessageBuilders.publish()
+                .payload(payload.retainedDuplicate())
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyPublishIsReceived(channel, AT_MOST_ONCE, "Hello world!");
 
@@ -167,7 +182,12 @@ public class PostOfficeUnsubscribeTest {
 
         // publish on /news
         final ByteBuf payload2 = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false,
+            MqttMessageBuilders.publish()
+                .payload(payload2)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyNoPublishIsReceived(anotherChannel);
     }
@@ -242,7 +262,12 @@ public class PostOfficeUnsubscribeTest {
         subscribe(connection, NEWS_TOPIC, AT_MOST_ONCE);
         // publish on /news
         final ByteBuf payload = Unpooled.copiedBuffer("Hello world!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload, false,
+            MqttMessageBuilders.publish()
+                .payload(payload.retainedDuplicate())
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyPublishIsReceived((EmbeddedChannel) connection.channel, AT_MOST_ONCE, "Hello world!");
 
@@ -257,7 +282,12 @@ public class PostOfficeUnsubscribeTest {
         subscribe(subscriberConnection, NEWS_TOPIC, AT_MOST_ONCE);
         // publish on /news
         final ByteBuf payload2 = Unpooled.copiedBuffer("Hello world2!", Charset.defaultCharset());
-        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false);
+        sut.receivedPublishQos0(new Topic(NEWS_TOPIC), TEST_USER, TEST_PWD, payload2, false,
+            MqttMessageBuilders.publish()
+                .payload(payload2.retainedDuplicate())
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .retained(false)
+                .topicName(NEWS_TOPIC).build());
 
         ConnectionTestUtils.verifyPublishIsReceived(subscriberChannel, AT_MOST_ONCE, "Hello world2!");
 
