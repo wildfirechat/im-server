@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.server.netty.NettyUtils;
@@ -166,7 +181,6 @@ public class PostOfficeSubscribeTest {
         verifyFailureQos(subAckMsg);
     }
 
-
     private void verifyFailureQos(MqttSubAckMessage subAckMsg) {
         List<Integer> grantedQoSes = subAckMsg.payload().grantedQoSLevels();
         assertEquals(1, grantedQoSes.size());
@@ -179,7 +193,7 @@ public class PostOfficeSubscribeTest {
         ConnectionTestUtils.assertConnectAccepted(channel);
         assertEquals("After CONNECT subscription MUST be empty", 0, subscriptions.size());
         subscribe(channel, NEWS_TOPIC, AT_MOST_ONCE);
-        assertEquals("After /news subscribe, subscription MUST contain it",1, subscriptions.size());
+        assertEquals("After /news subscribe, subscription MUST contain it", 1, subscriptions.size());
 
         //Exercise & verify
         subscribe(channel, NEWS_TOPIC, AT_MOST_ONCE);
@@ -199,7 +213,7 @@ public class PostOfficeSubscribeTest {
         this.sut.subscribeClientToTopics(subscribe, FAKE_CLIENT_ID, FAKE_USER_NAME, connection);
         MqttSubAckMessage subAckMsg = channel.readOutbound();
 
-        assertEquals("Bad topic CAN'T add any subscription",0, subscriptions.size());
+        assertEquals("Bad topic CAN'T add any subscription", 0, subscriptions.size());
         verifyFailureQos(subAckMsg);
     }
 

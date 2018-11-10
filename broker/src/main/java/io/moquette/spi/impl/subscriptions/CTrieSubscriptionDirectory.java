@@ -148,9 +148,9 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
      * We roughly follow this theory above, but we allow CNode with no Subscriptions to linger (for now).
      *
      *
-     * @param inode
-     * @param iParent
-     * @return
+     * @param inode inode that handle to the tomb node.
+     * @param iParent inode parent.
+     * @return REPEAT if the this methods wasn't successful or OK.
      */
     public Action cleanTomb(INode inode, INode iParent) {
         CNode updatedCnode = iParent.mainNode().copy();
@@ -225,8 +225,8 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
      * Removes subscription from CTrie, adds TNode when the last client unsubscribes, then calls for cleanTomb in a
      * separate atomic CAS operation.
      *
-     * @param topic
-     * @param clientID
+     * @param topic the subscription's topic to remove.
+     * @param clientID the Id of client owning the subscription.
      */
     @Override
     public void removeSubscription(Topic topic, String clientID) {

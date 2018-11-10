@@ -41,6 +41,9 @@ public class Topic implements Serializable {
 
     /**
      * Factory method
+     *
+     * @param s the topic string (es "/a/b").
+     * @return the created Topic instance.
      * */
     public static Topic asTopic(String s) {
         return new Topic(s);

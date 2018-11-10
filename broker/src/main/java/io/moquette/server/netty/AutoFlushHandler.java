@@ -111,7 +111,8 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
         // Avoid the case where destroy() is called before scheduling timeouts.
         // See: https://github.com/netty/netty/issues/143
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing autoflush handler on channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
+            LOG.debug("Initializing autoflush handler on channel {} Cid: {}", ctx.channel(),
+                      NettyUtils.clientID(ctx.channel()));
         }
         switch (state) {
             case 1:

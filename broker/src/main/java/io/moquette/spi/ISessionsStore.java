@@ -27,6 +27,7 @@ import java.util.Set;
 /**
  * Store used to handle the persistence of the subscriptions tree.
  */
+@Deprecated
 public interface ISessionsStore {
 
     void initStore();

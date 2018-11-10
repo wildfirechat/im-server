@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.spi.impl.MockAuthenticator;
@@ -229,7 +244,7 @@ public class PostOfficeUnsubscribeTest {
 
         // publish from another channel
         final ByteBuf anyPayload = Unpooled.copiedBuffer(firstPayload, Charset.defaultCharset());
-        sut.receivedPublishQos1(anotherConnection, new Topic(topic), TEST_USER, anyPayload, 1,false,
+        sut.receivedPublishQos1(anotherConnection, new Topic(topic), TEST_USER, anyPayload, 1, false,
             MqttMessageBuilders.publish()
                 .payload(Unpooled.copiedBuffer(firstPayload, Charset.defaultCharset()))
                 .qos(MqttQoS.AT_LEAST_ONCE)
@@ -319,7 +334,7 @@ public class PostOfficeUnsubscribeTest {
 
     private void publishQos1(MQTTConnection publisher, String topic, String payload, int messageID) {
         final ByteBuf bytePayload = Unpooled.copiedBuffer(payload, Charset.defaultCharset());
-        sut.receivedPublishQos1(publisher, new Topic(topic), TEST_USER, bytePayload, messageID,false,
+        sut.receivedPublishQos1(publisher, new Topic(topic), TEST_USER, bytePayload, messageID, false,
             MqttMessageBuilders.publish()
                 .payload(Unpooled.copiedBuffer(payload, Charset.defaultCharset()))
                 .qos(MqttQoS.AT_LEAST_ONCE)

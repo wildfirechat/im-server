@@ -60,7 +60,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         }
         MqttMessage msg = (MqttMessage) message;
         if (msg.fixedHeader() == null) {
-        	throw new IOException("Unknown packet");
+            throw new IOException("Unknown packet");
         }
         String clientID = NettyUtils.clientID(ctx.channel());
         MqttMessageType messageType = msg.fixedHeader().messageType();
@@ -69,7 +69,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
             case PINGREQ:
             case PINGRESP:
                 LOG.debug("{} {} <{}>", direction, messageType, clientID);
-                break;        
+                break;
             case CONNECT:
             case DISCONNECT:
                 LOG.info("{} {} <{}>", direction, messageType, clientID);

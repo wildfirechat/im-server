@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.spi.impl.subscriptions.Subscription;
@@ -185,8 +200,8 @@ class Session {
         drainQueueToConnection();
 
         // TODO notify the interceptor
-//                final InterceptAcknowledgedMessage interceptAckMsg = new InterceptAcknowledgedMessage(inflightMsg, topic,
-//                    username, messageID);
+//                final InterceptAcknowledgedMessage interceptAckMsg = new InterceptAcknowledgedMessage(inflightMsg,
+// topic, username, messageID);
 //                m_interceptor.notifyMessageAcknowledged(interceptAckMsg);
     }
 
@@ -219,7 +234,8 @@ class Session {
             int packetId = mqttConnection.nextPacketId();
             inflightWindow.put(packetId, new SessionRegistry.PublishedMessage(topic, qos, payload));
             inflightTimeouts.add(new InFlightPacket(packetId, FLIGHT_BEFORE_RESEND_MS));
-            MqttPublishMessage publishMsg = MQTTConnection.notRetainedPublishWithMessageId(topic.toString(), qos, payload, packetId);
+            MqttPublishMessage publishMsg = MQTTConnection.notRetainedPublishWithMessageId(topic.toString(), qos,
+                                                                                           payload, packetId);
             mqttConnection.sendPublish(publishMsg);
 
             // TODO drainQueueToConnection();?
@@ -235,7 +251,8 @@ class Session {
             int packetId = mqttConnection.nextPacketId();
             inflightWindow.put(packetId, new SessionRegistry.PublishedMessage(topic, qos, payload));
             inflightTimeouts.add(new InFlightPacket(packetId, FLIGHT_BEFORE_RESEND_MS));
-            MqttPublishMessage publishMsg = MQTTConnection.notRetainedPublishWithMessageId(topic.toString(), qos, payload, packetId);
+            MqttPublishMessage publishMsg = MQTTConnection.notRetainedPublishWithMessageId(topic.toString(), qos,
+                                                                                           payload, packetId);
             mqttConnection.sendPublish(publishMsg);
 
             drainQueueToConnection();
@@ -267,7 +284,8 @@ class Session {
 
         for (InFlightPacket notAckPacketId : expired) {
             if (inflightWindow.containsKey(notAckPacketId.packetId)) {
-                final SessionRegistry.PublishedMessage msg = (SessionRegistry.PublishedMessage) inflightWindow.get(notAckPacketId.packetId);
+                final SessionRegistry.PublishedMessage msg =
+                    (SessionRegistry.PublishedMessage) inflightWindow.get(notAckPacketId.packetId);
                 final Topic topic = msg.topic;
                 final MqttQoS qos = msg.publishingQos;
                 final ByteBuf payload = msg.payload;
@@ -290,7 +308,8 @@ class Session {
         LOG.debug("Resending {} in flight packets [{}]", expired.size(), sb);
     }
 
-    private MqttPublishMessage publishNotRetainedDuplicated(InFlightPacket notAckPacketId, Topic topic, MqttQoS qos, ByteBuf payload) {
+    private MqttPublishMessage publishNotRetainedDuplicated(InFlightPacket notAckPacketId, Topic topic, MqttQoS qos,
+                                                            ByteBuf payload) {
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, 0);
         MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(topic.toString(), notAckPacketId.packetId);
         return new MqttPublishMessage(fixedHeader, varHeader, payload);

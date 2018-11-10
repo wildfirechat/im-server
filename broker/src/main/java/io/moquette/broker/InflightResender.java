@@ -155,7 +155,8 @@ public class InflightResender extends ChannelDuplexHandler {
 
     private void resendNotAcked(ChannelHandlerContext ctx/* , IdleStateEvent evt */) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Flushing idle Netty channel {} for clientId: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
+            LOG.trace("Flushing idle Netty channel {} for clientId: {}", ctx.channel(),
+                      NettyUtils.clientID(ctx.channel()));
         }
         ctx.fireUserEventTriggered(new ResendNotAckedPublishes());
     }

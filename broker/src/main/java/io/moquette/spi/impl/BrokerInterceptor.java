@@ -60,7 +60,7 @@ public final class BrokerInterceptor implements Interceptor {
     /**
      * Configures a broker interceptor, with a thread pool of one thread.
      *
-     * @param handlers
+     * @param handlers InterceptHandlers listeners.
      */
     public BrokerInterceptor(List<InterceptHandler> handlers) {
         this(1, handlers);
@@ -68,6 +68,9 @@ public final class BrokerInterceptor implements Interceptor {
 
     /**
      * Configures a broker interceptor using the pool size specified in the IConfig argument.
+     * @param props configuration properties.
+     * @param handlers InterceptHandlers listeners.
+     *
      */
     public BrokerInterceptor(IConfig props, List<InterceptHandler> handlers) {
         this(Integer.parseInt(props.getProperty(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, "1")), handlers);

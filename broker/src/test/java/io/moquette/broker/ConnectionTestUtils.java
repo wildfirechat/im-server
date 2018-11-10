@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
+
 package io.moquette.broker;
 
 import io.moquette.interception.InterceptHandler;
@@ -12,11 +28,13 @@ import java.util.List;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.CONNECTION_ACCEPTED;
 import static org.junit.Assert.*;
 
-public class ConnectionTestUtils {
+public final class ConnectionTestUtils {
 
     public static final List<InterceptHandler> EMPTY_OBSERVERS = Collections.emptyList();
     public static final BrokerInterceptor NO_OBSERVERS_INTERCEPTOR = new BrokerInterceptor(EMPTY_OBSERVERS);
 
+    private ConnectionTestUtils() {
+    }
 
     static void assertConnectAccepted(EmbeddedChannel channel) {
         MqttConnAckMessage connAck = channel.readOutbound();
@@ -29,14 +47,16 @@ public class ConnectionTestUtils {
         assertPublishIsCorrect(expectedTopic, expectedContent, receivedPublish);
     }
 
-    private static void assertPublishIsCorrect(String expectedTopic, String expectedContent, MqttPublishMessage receivedPublish) {
+    private static void assertPublishIsCorrect(String expectedTopic, String expectedContent,
+                                               MqttPublishMessage receivedPublish) {
         assertNotNull("Expecting a PUBLISH message", receivedPublish);
         final String decodedPayload = DebugUtils.payload2Str(receivedPublish.payload());
         assertEquals(expectedContent, decodedPayload);
         assertEquals(expectedTopic, receivedPublish.variableHeader().topicName());
     }
 
-    static void verifyReceiveRetainedPublish(EmbeddedChannel embeddedChannel, String expectedTopic, String expectedContent) {
+    static void verifyReceiveRetainedPublish(EmbeddedChannel embeddedChannel, String expectedTopic,
+                                             String expectedContent) {
         MqttPublishMessage receivedPublish = embeddedChannel.readOutbound();
         assertPublishIsCorrect(expectedTopic, expectedContent, receivedPublish);
         assertTrue("MUST be retained publish", receivedPublish.fixedHeader().isRetain());

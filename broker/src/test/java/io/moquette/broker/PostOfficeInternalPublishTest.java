@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.spi.impl.MockAuthenticator;
@@ -68,7 +83,8 @@ public class PostOfficeInternalPublishTest {
         subscriptions.init(subscriptionsRepository);
         retainedRepository = new MemoryRetainedRepository();
 
-        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions,
+                                                              ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry,
                              ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         return sessionRegistry;
@@ -284,7 +300,6 @@ public class PostOfficeInternalPublishTest {
         final Subscription onlyMatchedSubscription = matchedSubscriptions.iterator().next();
         assertEquals(expectedSubscription, onlyMatchedSubscription);
     }
-
 
     private void verifyNoPublishIsReceived(EmbeddedChannel channel) {
         final Object messageReceived = channel.readOutbound();

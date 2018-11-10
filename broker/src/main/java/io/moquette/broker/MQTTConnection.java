@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.server.netty.NettyUtils;
@@ -77,8 +92,8 @@ final class MQTTConnection {
                 processPubAck(msg);
                 break;
             case PINGREQ:
-                MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGRESP,false, AT_MOST_ONCE,
-                                                                false,0);
+                MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGRESP, false, AT_MOST_ONCE,
+                                                                false, 0);
                 MqttMessage pingResp = new MqttMessage(pingHeader);
                 channel.writeAndFlush(pingResp).addListener(CLOSE_ON_FAILURE);
                 break;
@@ -125,20 +140,22 @@ final class MQTTConnection {
         final boolean cleanSession = msg.variableHeader().isCleanSession();
         if (clientId == null || clientId.length() == 0) {
             if (!brokerConfig.isAllowZeroByteClientId()) {
-                LOG.warn("Broker doesn't permit MQTT client ID empty. Username={}, channel: {}", username, channel);
+                LOG.warn("Broker doesn't permit MQTT empty client ID. Username: {}, channel: {}", username, channel);
                 abortConnection(CONNECTION_REFUSED_IDENTIFIER_REJECTED);
                 return;
             }
 
             if (!cleanSession) {
-                LOG.warn("MQTT client ID cannot be empty for persistent session. Username={}, channel: {}", username, channel);
+                LOG.warn("MQTT client ID cannot be empty for persistent session. Username: {}, channel: {}",
+                         username, channel);
                 abortConnection(CONNECTION_REFUSED_IDENTIFIER_REJECTED);
                 return;
             }
 
             // Generating client id.
             clientId = UUID.randomUUID().toString().replace("-", "");
-            LOG.debug("Client has connected with server generated id={}, username={}, channel: {}", clientId, username, channel);
+            LOG.debug("Client has connected with server generated id: {}, username: {}, channel: {}", clientId,
+                      username, channel);
         }
 
         if (!login(msg, clientId)) {
@@ -247,7 +264,7 @@ final class MQTTConnection {
     void sendConnAck(boolean isSessionAlreadyPresent) {
         connected = true;
         final MqttConnAckMessage ackMessage = connAck(CONNECTION_ACCEPTED, isSessionAlreadyPresent);
-        channel.writeAndFlush(ackMessage);
+        channel.writeAndFlush(ackMessage).addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     boolean isConnected() {
@@ -255,7 +272,7 @@ final class MQTTConnection {
     }
 
     void dropConnection() {
-        channel.close();
+        channel.close().addListener(FIRE_EXCEPTION_ON_FAILURE);
     }
 
     void processDisconnect(MqttMessage msg) {
@@ -267,7 +284,7 @@ final class MQTTConnection {
         }
         sessionRegistry.disconnect(clientID);
         connected = false;
-        channel.close();
+        channel.close().addListener(FIRE_EXCEPTION_ON_FAILURE);
         LOG.trace("Processed DISCONNECT CId={}, channel: {}", clientID, channel);
     }
 
@@ -377,7 +394,7 @@ final class MQTTConnection {
             LOG.debug("OUT {} on channel {}", msg.fixedHeader().messageType(), channel);
         }
         if (channel.isWritable()) {
-            channel.write(msg);
+            channel.write(msg).addListener(FIRE_EXCEPTION_ON_FAILURE);
         }
     }
 

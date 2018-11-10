@@ -29,11 +29,18 @@ public abstract class IConfig {
 
     /**
      * Same semantic of Properties
+     *
+     * @param name property name.
+     * @return property value.
      * */
     public abstract String getProperty(String name);
 
     /**
      * Same semantic of Properties
+     *
+     * @param name property name.
+     * @param defaultValue default value to return in case the property doesn't exists.
+     * @return property value.
      * */
     public abstract String getProperty(String name, String defaultValue);
 

@@ -47,7 +47,8 @@ import static org.junit.Assert.*;
 
 public class ServerIntegrationPahoCanPublishOnReadBlockedTopicTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationPahoCanPublishOnReadBlockedTopicTest.class);
+    private static final Logger LOG =
+        LoggerFactory.getLogger(ServerIntegrationPahoCanPublishOnReadBlockedTopicTest.class);
 
     static MqttClientPersistence s_dataStore;
     static MqttClientPersistence s_pubDataStore;

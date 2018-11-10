@@ -1,8 +1,21 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
-import io.moquette.persistence.MemoryStorageService;
 import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.MockAuthenticator;
 import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
 import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
@@ -22,23 +35,12 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class SessionRegistryTest {
 
     static final String FAKE_CLIENT_ID = "FAKE_123";
-    static final String FAKE_CLIENT_ID2 = "FAKE_456";
-    static final String PUBLISHER_ID = "Publisher";
-    private static final String SUBSCRIBER_ID = "Subscriber";
-    static final String NEWS_TOPIC = "/news";
-    static final String BAD_FORMATTED_TOPIC = "#MQTTClient";
-
     static final String TEST_USER = "fakeuser";
     static final String TEST_PWD = "fakepwd";
-    static final String EVIL_TEST_USER = "eviluser";
-    static final String EVIL_TEST_PWD = "unsecret";
 
     private MQTTConnection connection;
     private EmbeddedChannel channel;
@@ -60,7 +62,8 @@ public class SessionRegistryTest {
     }
 
     private MQTTConnection createMQTTConnection(BrokerConfiguration config, Channel channel) {
-        IAuthenticator mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID), singletonMap(TEST_USER, TEST_PWD));
+        IAuthenticator mockAuthenticator = new MockAuthenticator(singleton(FAKE_CLIENT_ID),
+                                                                 singletonMap(TEST_USER, TEST_PWD));
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();

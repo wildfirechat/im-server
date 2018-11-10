@@ -47,6 +47,9 @@ public final class Subscription implements Serializable {
 
     /**
      * Constructor with undefined maximum QoS
+     *
+     * @param clientId id of client owning this subscription.
+     * @param topicFilter the topic to subscribe to.
      * */
     public Subscription(String clientId, Topic topicFilter) {
         this.requestedQos = null;

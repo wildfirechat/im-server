@@ -44,7 +44,6 @@ public interface IMessagesStore {
             m_topic = topic;
         }
 
-
         public void setQos(MqttQoS qos) {
             this.m_qos = qos;
         }

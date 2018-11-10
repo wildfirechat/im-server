@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2012-2018 The original author or authors
+ * ------------------------------------------------------
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Apache License v2.0 which accompanies this distribution.
+ *
+ * The Eclipse Public License is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * The Apache License v2.0 is available at
+ * http://www.opensource.org/licenses/apache2.0.php
+ *
+ * You may elect to redistribute this code under either of these licenses.
+ */
 package io.moquette.broker;
 
 import io.moquette.broker.Session.SessionStatus;
@@ -19,7 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 
 class SessionRegistry {
 
-    static abstract class EnqueuedMessage {
+    abstract static class EnqueuedMessage {
     }
 
     static class PublishedMessage extends EnqueuedMessage {
@@ -75,7 +90,7 @@ class SessionRegistry {
             isSessionAlreadyStored = true;
         }
         final boolean msgCleanSessionFlag = msg.variableHeader().isCleanSession();
-        boolean isSessionAlreadyPresent = (!msgCleanSessionFlag && isSessionAlreadyStored);
+        boolean isSessionAlreadyPresent = !msgCleanSessionFlag && isSessionAlreadyStored;
         mqttConnection.sendConnAck(isSessionAlreadyPresent);
 
         if (postConnectAction == PostConnectAction.SEND_STORED_MESSAGES) {
@@ -163,7 +178,8 @@ class SessionRegistry {
     }
 
     private Session createNewSession(MQTTConnection mqttConnection, MqttConnectMessage msg, String clientId) {
-        final Queue<SessionRegistry.EnqueuedMessage> sessionQueue = queues.computeIfAbsent(clientId, (String cli) -> new ConcurrentLinkedQueue<>());
+        final Queue<SessionRegistry.EnqueuedMessage> sessionQueue =
+                    queues.computeIfAbsent(clientId, (String cli) -> new ConcurrentLinkedQueue<>());
         final boolean clean = msg.variableHeader().isCleanSession();
         final Session newSession;
         if (msg.variableHeader().isWillFlag()) {

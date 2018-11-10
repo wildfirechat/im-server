@@ -26,6 +26,7 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -109,7 +110,7 @@ public class Client {
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(
                 this.clientId,
                 willTestamentTopic,
-                willTestamentMsg.getBytes(),
+                willTestamentMsg.getBytes(Charset.forName("UTF-8")),
                 null,
                 null);
         MqttConnectMessage connectMessage = new MqttConnectMessage(
