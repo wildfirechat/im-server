@@ -15,7 +15,7 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Subscription;
 
 import java.util.List;
 

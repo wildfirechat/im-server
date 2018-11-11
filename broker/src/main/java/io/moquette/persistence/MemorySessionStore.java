@@ -16,12 +16,11 @@
 
 package io.moquette.persistence;
 
-import io.moquette.server.Constants;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.ISubscriptionsStore;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +32,13 @@ public class MemorySessionStore implements ISessionsStore, ISubscriptionsStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
+    static final int MAX_MESSAGE_QUEUE = 1024; // number of messages
+
     static class Session {
         final String clientID;
         final Map<Topic, Subscription> subscriptions = new ConcurrentHashMap<>();
         boolean cleanSession;
-        final BlockingQueue<StoredMessage> queue = new ArrayBlockingQueue<>(Constants.MAX_MESSAGE_QUEUE);
+        final BlockingQueue<StoredMessage> queue = new ArrayBlockingQueue<>(MAX_MESSAGE_QUEUE);
         final Map<Integer, StoredMessage> secondPhaseStore = new ConcurrentHashMap<>();
         final Map<Integer, StoredMessage> outboundFlightMessages =
                 Collections.synchronizedMap(new HashMap<Integer, StoredMessage>());

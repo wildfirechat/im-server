@@ -15,12 +15,11 @@
  */
 package io.moquette.broker;
 
-import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.impl.BrokerInterceptor;
-import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthorizatorPolicy;
+import io.moquette.interception.BrokerInterceptor;
+import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
+import io.moquette.broker.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Topic;
+import io.moquette.broker.security.IAuthorizatorPolicy;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.moquette.spi.impl.Utils.messageId;
+import static io.moquette.broker.Utils.messageId;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.*;
 

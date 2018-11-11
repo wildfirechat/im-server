@@ -15,17 +15,6 @@
  */
 package io.moquette.persistence.h2;
 
-import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.config.MemoryConfig;
-import org.junit.After;
-import org.junit.Before;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 import static org.junit.Assert.assertFalse;
 
 public class H2MessagesStoreTest /*extends MessageStoreTCK*/ {

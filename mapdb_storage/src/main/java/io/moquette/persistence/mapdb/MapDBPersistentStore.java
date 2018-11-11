@@ -17,7 +17,7 @@
 package io.moquette.persistence.mapdb;
 
 import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
+import io.moquette.broker.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.IStore;

@@ -16,24 +16,6 @@
 
 package io.moquette.persistence.mapdb;
 
-import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.IMessagesStore.StoredMessage;
-import io.netty.handler.codec.mqtt.MqttQoS;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
 /**
  *
  * @author andrea

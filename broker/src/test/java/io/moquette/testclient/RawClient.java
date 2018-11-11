@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 /**
- * This class is used to have a fluent interface to interact with a server. Inspired by
+ * This class is used to have a fluent interface to interact with a integration. Inspired by
  * org.kaazing.robot
  */
 public final class RawClient {

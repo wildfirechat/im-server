@@ -15,20 +15,6 @@
  */
 package io.moquette.persistence.mapdb;
 
-import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.config.MemoryConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.*;
-
 //import static io.moquette.persistence.mapdb.MapDBPersistentStoreTest.cleanPersistenceFile;
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;

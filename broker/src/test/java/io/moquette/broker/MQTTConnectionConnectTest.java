@@ -15,11 +15,10 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.impl.MockAuthenticator;
-import io.moquette.spi.impl.security.PermitAllAuthorizatorPolicy;
-import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
-import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
-import io.moquette.spi.security.IAuthenticator;
+import io.moquette.broker.security.PermitAllAuthorizatorPolicy;
+import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
+import io.moquette.broker.security.IAuthenticator;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
@@ -28,7 +27,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import org.junit.Before;
 import org.junit.Test;
 
-import static io.moquette.spi.impl.NettyChannelAssertions.assertEqualsConnAck;
+import static io.moquette.broker.NettyChannelAssertions.assertEqualsConnAck;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;

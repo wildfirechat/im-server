@@ -17,12 +17,8 @@
 package io.moquette.broker;
 
 import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.netty.AutoFlushHandler;
-import io.moquette.server.netty.BugSnagErrorsHandler;
-import io.moquette.server.netty.MoquetteIdleTimeoutHandler;
-import io.moquette.server.netty.metrics.*;
-import io.moquette.spi.security.ISslContextCreator;
+import io.moquette.broker.config.IConfig;
+import io.moquette.broker.metrics.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -172,7 +168,7 @@ class NewNettyAcceptor {
     }
 
     private void initFactory(String host, int port, String protocol, final PipelineInitializer pipelieInitializer) {
-        LOG.debug("Initializing server. Protocol={}", protocol);
+        LOG.debug("Initializing integration. Protocol={}", protocol);
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup).channel(channelClass)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -187,13 +183,13 @@ class NewNettyAcceptor {
                 .childOption(ChannelOption.TCP_NODELAY, nettyTcpNodelay)
                 .childOption(ChannelOption.SO_KEEPALIVE, nettySoKeepalive);
         try {
-            LOG.debug("Binding server. host={}, port={}", host, port);
+            LOG.debug("Binding integration. host={}, port={}", host, port);
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
             LOG.info("Server bound to host={}, port={}, protocol={}", host, port, protocol);
             f.sync().addListener(FIRE_EXCEPTION_ON_FAILURE);
         } catch (InterruptedException ex) {
-            LOG.error("An interruptedException was caught while initializing server. Protocol={}", protocol, ex);
+            LOG.error("An interruptedException was caught while initializing integration. Protocol={}", protocol, ex);
         }
     }
 

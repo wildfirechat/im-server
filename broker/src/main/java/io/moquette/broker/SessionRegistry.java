@@ -16,10 +16,10 @@
 package io.moquette.broker;
 
 import io.moquette.broker.Session.SessionStatus;
-import io.moquette.spi.impl.BrokerInterceptor;
-import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.interception.BrokerInterceptor;
+import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
+import io.moquette.broker.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;

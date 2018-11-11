@@ -18,7 +18,7 @@ package io.moquette.persistence;
 
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

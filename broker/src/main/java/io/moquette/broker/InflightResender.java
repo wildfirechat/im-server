@@ -16,7 +16,6 @@
 
 package io.moquette.broker;
 
-import io.moquette.server.netty.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;

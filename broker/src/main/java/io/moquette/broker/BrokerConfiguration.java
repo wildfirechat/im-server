@@ -16,7 +16,7 @@
 package io.moquette.broker;
 
 import io.moquette.BrokerConstants;
-import io.moquette.server.config.IConfig;
+import io.moquette.broker.config.IConfig;
 
 class BrokerConfiguration {
 

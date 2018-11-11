@@ -15,10 +15,8 @@
  */
 package io.moquette.broker;
 
-import io.moquette.server.netty.NettyUtils;
-import io.moquette.spi.impl.DebugUtils;
-import io.moquette.spi.impl.subscriptions.Topic;
-import io.moquette.spi.security.IAuthenticator;
+import io.moquette.broker.subscriptions.Topic;
+import io.moquette.broker.security.IAuthenticator;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
@@ -154,7 +152,7 @@ final class MQTTConnection {
 
             // Generating client id.
             clientId = UUID.randomUUID().toString().replace("-", "");
-            LOG.debug("Client has connected with server generated id: {}, username: {}, channel: {}", clientId,
+            LOG.debug("Client has connected with integration generated id: {}, username: {}, channel: {}", clientId,
                       username, channel);
         }
 

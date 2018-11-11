@@ -15,7 +15,7 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.security.IAuthenticator;
+import io.moquette.broker.security.IAuthenticator;
 import io.netty.channel.Channel;
 
 class MQTTConnectionFactory {

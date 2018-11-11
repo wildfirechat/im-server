@@ -15,11 +15,10 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Subscription;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 public class MemorySubscriptionsRepository implements ISubscriptionsRepository {

@@ -16,7 +16,7 @@
 
 package io.moquette.spi;
 
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Topic;
 
 public interface IMatchingCondition {
 

@@ -16,8 +16,8 @@
 
 package io.moquette.spi;
 
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Topic;
 
 import java.util.Collection;
 import java.util.List;

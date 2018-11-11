@@ -16,7 +16,6 @@
 
 package io.moquette.broker;
 
-import io.moquette.server.netty.NettyUtils;
 import io.netty.channel.*;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.mqtt.MqttMessage;

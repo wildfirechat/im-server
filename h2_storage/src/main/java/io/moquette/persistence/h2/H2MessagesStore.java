@@ -18,7 +18,7 @@ package io.moquette.persistence.h2;
 
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Topic;
 import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;

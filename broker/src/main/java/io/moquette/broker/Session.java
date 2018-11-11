@@ -15,8 +15,8 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.util.ReferenceCountUtil;

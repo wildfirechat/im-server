@@ -16,18 +16,16 @@
 package io.moquette.broker;
 
 import io.moquette.BrokerConstants;
+import io.moquette.broker.config.*;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.MemoryStorageService;
-import io.moquette.server.DefaultMoquetteSslContextCreator;
-import io.moquette.server.config.*;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.BrokerInterceptor;
-import io.moquette.spi.impl.security.*;
-import io.moquette.spi.impl.subscriptions.CTrieSubscriptionDirectory;
-import io.moquette.spi.impl.subscriptions.ISubscriptionsDirectory;
-import io.moquette.spi.security.IAuthenticator;
-import io.moquette.spi.security.IAuthorizatorPolicy;
-import io.moquette.spi.security.ISslContextCreator;
+import io.moquette.interception.BrokerInterceptor;
+import io.moquette.broker.security.*;
+import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
+import io.moquette.broker.security.IAuthenticator;
+import io.moquette.broker.security.IAuthorizatorPolicy;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +68,7 @@ public class Server {
      */
     public void startServer() throws IOException {
         File defaultConfigurationFile = defaultConfigFile();
-        LOG.info("Starting Moquette server. Configuration file path={}", defaultConfigurationFile.getAbsolutePath());
+        LOG.info("Starting Moquette integration. Configuration file path={}", defaultConfigurationFile.getAbsolutePath());
         IResourceLoader filesystemLoader = new FileResourceLoader(defaultConfigurationFile);
         final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
@@ -88,14 +86,14 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(File configFile) throws IOException {
-        LOG.info("Starting Moquette server. Configuration file path: {}", configFile.getAbsolutePath());
+        LOG.info("Starting Moquette integration. Configuration file path: {}", configFile.getAbsolutePath());
         IResourceLoader filesystemLoader = new FileResourceLoader(configFile);
         final IConfig config = new ResourceLoaderConfig(filesystemLoader);
         startServer(config);
     }
 
     /**
-     * Starts the server with the given properties.
+     * Starts the integration with the given properties.
      * <p>
      * Its suggested to at least have the following properties:
      * <ul>
@@ -107,7 +105,7 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(Properties configProps) throws IOException {
-        LOG.debug("Starting Moquette server using properties object");
+        LOG.debug("Starting Moquette integration using properties object");
         final IConfig config = new MemoryConfig(configProps);
         startServer(config);
     }
@@ -119,7 +117,7 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config) throws IOException {
-        LOG.debug("Starting Moquette server using IConfig instance");
+        LOG.debug("Starting Moquette integration using IConfig instance");
         startServer(config, null);
     }
 
@@ -132,7 +130,7 @@ public class Server {
      * @throws IOException in case of any IO Error.
      */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
-        LOG.debug("Starting moquette server using IConfig instance and intercept handlers");
+        LOG.debug("Starting moquette integration using IConfig instance and intercept handlers");
         startServer(config, handlers, null, null, null);
     }
 
@@ -181,7 +179,7 @@ public class Server {
         acceptor.initialize(mqttHandler, config, sslCtxCreator);
 
         final long startTime = System.currentTimeMillis() - start;
-        LOG.info("Moquette server has been started successfully in {} ms", startTime);
+        LOG.info("Moquette integration has been started successfully in {} ms", startTime);
         initialized = true;
     }
 
@@ -296,25 +294,25 @@ public class Server {
 
     /**
      * Use the broker to publish a message. It's intended for embedding applications. It can be used
-     * only after the server is correctly started with startServer.
+     * only after the integration is correctly started with startServer.
      *
      * @param msg      the message to forward.
-     * @param clientId the id of the sending server.
-     * @throws IllegalStateException if the server is not yet started
+     * @param clientId the id of the sending integration.
+     * @throws IllegalStateException if the integration is not yet started
      */
     public void internalPublish(MqttPublishMessage msg, final String clientId) {
         final int messageID = msg.variableHeader().packetId();
         if (!initialized) {
             LOG.error("Moquette is not started, internal message cannot be published. CId: {}, messageId: {}", clientId,
                       messageID);
-            throw new IllegalStateException("Can't publish on a server is not yet started");
+            throw new IllegalStateException("Can't publish on a integration is not yet started");
         }
         LOG.trace("Internal publishing message CId: {}, messageId: {}", clientId, messageID);
         dispatcher.internalPublish(msg);
     }
 
     public void stopServer() {
-        LOG.info("Unbinding server from the configured ports");
+        LOG.info("Unbinding integration from the configured ports");
         acceptor.close();
         LOG.trace("Stopping MQTT protocol processor");
         initialized = false;
@@ -323,7 +321,7 @@ public class Server {
         // and SessionsRepository does not stop its tasks. Thus shutdownNow().
         scheduler.shutdownNow();
 
-        LOG.info("Moquette server has been stopped.");
+        LOG.info("Moquette integration has been stopped.");
     }
 
     /**
@@ -349,7 +347,7 @@ public class Server {
         if (!initialized) {
             LOG.error("Moquette is not started, MQTT message interceptor cannot be added. InterceptorId={}",
                 interceptHandler.getID());
-            throw new IllegalStateException("Can't register interceptors on a server that is not yet started");
+            throw new IllegalStateException("Can't register interceptors on a integration that is not yet started");
         }
         LOG.info("Adding MQTT message interceptor. InterceptorId={}", interceptHandler.getID());
         interceptor.addInterceptHandler(interceptHandler);
@@ -364,7 +362,7 @@ public class Server {
         if (!initialized) {
             LOG.error("Moquette is not started, MQTT message interceptor cannot be removed. InterceptorId={}",
                 interceptHandler.getID());
-            throw new IllegalStateException("Can't deregister interceptors from a server that is not yet started");
+            throw new IllegalStateException("Can't deregister interceptors from a integration that is not yet started");
         }
         LOG.info("Removing MQTT message interceptor. InterceptorId={}", interceptHandler.getID());
         interceptor.removeInterceptHandler(interceptHandler);

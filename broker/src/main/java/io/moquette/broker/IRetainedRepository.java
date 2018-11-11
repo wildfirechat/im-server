@@ -15,7 +15,7 @@
  */
 package io.moquette.broker;
 
-import io.moquette.spi.impl.subscriptions.Topic;
+import io.moquette.broker.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 public interface IRetainedRepository {

@@ -4,7 +4,7 @@ description = 'Moquette - distribution'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 
-mainClassName = "io.moquette.server.Server"
+mainClassName = "io.moquette.integration.Server"
 
 dependencies {
   compile project(':moquette-broker')

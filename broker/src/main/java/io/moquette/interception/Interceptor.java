@@ -17,7 +17,7 @@
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
-import io.moquette.spi.impl.subscriptions.Subscription;
+import io.moquette.broker.subscriptions.Subscription;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
