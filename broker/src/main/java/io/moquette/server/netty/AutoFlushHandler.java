@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +50,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception  {
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         if (ctx.channel().isActive() && ctx.channel().isRegistered()) {
             // channelActive() event has been fired already, which means this.channelActive() will
             // not be invoked. We have to initialize here instead.
@@ -68,9 +69,9 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         // Initialize early if channel is active already.
-        if (ctx.channel().isActive()) {
-            initialize(ctx);
-        }
+//        if (ctx.channel().isActive()) {
+//            initialize(ctx);
+//        }
         super.channelRegistered(ctx);
     }
 
@@ -79,7 +80,7 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
         // This method will be invoked only if this handler was added
         // before channelActive() event is fired. If a user adds this handler
         // after the channelActive() event, initialize() will be called by beforeAdd().
-        initialize(ctx);
+//        initialize(ctx);
         super.channelActive(ctx);
     }
 
@@ -88,24 +89,6 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
         destroy();
         super.channelInactive(ctx);
     }
-
-    // @Override
-    // public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    // if (writerrIdleTimeNanos > 0) {
-    // reading = true;
-    // firstReaderIdleEvent = true;
-    // }
-    // ctx.fireChannelRead(msg);
-    // }
-    //
-    // @Override
-    // public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-    // if (writerrIdleTimeNanos > 0) {
-    // lastReadTime = System.nanoTime();
-    // reading = false;
-    // }
-    // ctx.fireChannelReadComplete();
-    // }
 
     private void initialize(ChannelHandlerContext ctx) {
         // Avoid the case where destroy() is called before scheduling timeouts.
@@ -140,13 +123,12 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
     /**
      * Is called when the write timeout expire.
      *
-     * @param ctx
-     *            the channel context.
+     * @param ctx the channel context.
      */
     private void channelIdle(ChannelHandlerContext ctx) {
         // ctx.fireUserEventTriggered(evt);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushing idle Netty channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Flushing idle Netty channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
         }
         ctx.channel().flush();
     }
