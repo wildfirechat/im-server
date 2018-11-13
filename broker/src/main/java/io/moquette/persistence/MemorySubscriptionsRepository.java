@@ -13,8 +13,9 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.broker;
+package io.moquette.persistence;
 
+import io.moquette.broker.ISubscriptionsRepository;
 import io.moquette.broker.subscriptions.Subscription;
 
 import java.util.ArrayList;
@@ -33,5 +34,13 @@ public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
     @Override
     public void addNewSubscription(Subscription subscription) {
         subscriptions.add(subscription);
+    }
+
+    @Override
+    public void removeSubscription(String topic, String clientID) {
+        subscriptions.stream()
+            .filter(s -> s.getTopicFilter().toString().equals(topic) && s.getClientId().equals(clientID))
+            .findFirst()
+            .ifPresent(subscriptions::remove);
     }
 }

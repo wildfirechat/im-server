@@ -29,33 +29,17 @@ public final class Subscription implements Serializable {
     private final MqttQoS requestedQos; // max QoS acceptable
     final String clientId;
     final Topic topicFilter;
-    private final boolean active;
 
     public Subscription(String clientId, Topic topicFilter, MqttQoS requestedQos) {
         this.requestedQos = requestedQos;
         this.clientId = clientId;
         this.topicFilter = topicFilter;
-        this.active = true;
     }
 
     public Subscription(Subscription orig) {
         this.requestedQos = orig.requestedQos;
         this.clientId = orig.clientId;
         this.topicFilter = orig.topicFilter;
-        this.active = orig.active;
-    }
-
-    /**
-     * Constructor with undefined maximum QoS
-     *
-     * @param clientId id of client owning this subscription.
-     * @param topicFilter the topic to subscribe to.
-     * */
-    public Subscription(String clientId, Topic topicFilter) {
-        this.requestedQos = null;
-        this.clientId = clientId;
-        this.topicFilter = topicFilter;
-        this.active = true;
     }
 
     public String getClientId() {
@@ -68,10 +52,6 @@ public final class Subscription implements Serializable {
 
     public Topic getTopicFilter() {
         return topicFilter;
-    }
-
-    public boolean isActive() {
-        return active;
     }
 
     public boolean qosLessThan(Subscription sub) {
@@ -101,12 +81,7 @@ public final class Subscription implements Serializable {
 
     @Override
     public String toString() {
-        return String.format(
-                "[filter:%s, cliID: %s, qos: %s, active: %s]",
-                this.topicFilter,
-                this.clientId,
-                this.requestedQos,
-                this.active);
+        return String.format("[filter:%s, clientID: %s, qos: %s]", topicFilter, clientId, requestedQos);
     }
 
     @Override

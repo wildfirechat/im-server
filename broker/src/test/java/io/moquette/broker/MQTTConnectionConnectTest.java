@@ -19,6 +19,7 @@ import io.moquette.broker.security.PermitAllAuthorizatorPolicy;
 import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
 import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
 import io.moquette.broker.security.IAuthenticator;
+import io.moquette.persistence.MemorySubscriptionsRepository;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;

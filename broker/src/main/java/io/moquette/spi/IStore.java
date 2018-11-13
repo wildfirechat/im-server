@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+@Deprecated
 public interface IStore {
 
     void initStore();

@@ -24,4 +24,6 @@ public interface ISubscriptionsRepository {
     List<Subscription> listAllSubscriptions();
 
     void addNewSubscription(Subscription subscription);
+
+    void removeSubscription(String topic, String clientID);
 }

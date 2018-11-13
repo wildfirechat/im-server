@@ -23,6 +23,7 @@ import io.moquette.spi.IStore;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+@Deprecated
 public class MemoryStorageService implements IStore {
 
     private MemorySessionStore m_sessionsStore;

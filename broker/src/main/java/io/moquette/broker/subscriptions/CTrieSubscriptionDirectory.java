@@ -28,8 +28,8 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     private static final Token ROOT = new Token("root");
     private static final INode NO_PARENT = null;
 
-    INode root;
-    private volatile ISubscriptionsRepository sessionsRepository;
+    private INode root;
+    private volatile ISubscriptionsRepository subscriptionsRepository;
 
     interface IVisitor<T> {
 
@@ -43,23 +43,22 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     }
 
     @Override
-    public void init(ISubscriptionsRepository sessionsRepository) {
+    public void init(ISubscriptionsRepository subscriptionsRepository) {
         LOG.info("Initializing CTrie");
         final CNode mainNode = new CNode();
         mainNode.token = ROOT;
         this.root = new INode(mainNode);
 
         LOG.info("Initializing subscriptions store...");
-        this.sessionsRepository = sessionsRepository;
+        this.subscriptionsRepository = subscriptionsRepository;
         // reload any subscriptions persisted
         if (LOG.isTraceEnabled()) {
             LOG.trace("Reloading all stored subscriptions. SubscriptionTree = {}", dumpTree());
         }
 
-        for (Subscription subscription : this.sessionsRepository.listAllSubscriptions()) {
-            LOG.info("Re-subscribing client to topic CId={}, topicFilter={}", subscription.clientId,
-                     subscription.topicFilter);
-            add(subscription);
+        for (Subscription subscription : this.subscriptionsRepository.listAllSubscriptions()) {
+            LOG.debug("Re-subscribing {}", subscription);
+            addToTree(subscription);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("Stored subscriptions have been reloaded. SubscriptionTree = {}", dumpTree());
@@ -160,6 +159,11 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
 
     @Override
     public void add(Subscription newSubscription) {
+        addToTree(newSubscription);
+        subscriptionsRepository.addNewSubscription(newSubscription);
+    }
+
+    private void addToTree(Subscription newSubscription) {
         Action res;
         do {
             res = insert(newSubscription.topicFilter, this.root, newSubscription);
@@ -230,6 +234,11 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
      */
     @Override
     public void removeSubscription(Topic topic, String clientID) {
+        removeFromTree(topic, clientID);
+        this.subscriptionsRepository.removeSubscription(topic.toString(), clientID);
+    }
+
+    private void removeFromTree(Topic topic, String clientID) {
         Action res;
         do {
             res = remove(clientID, topic, this.root, NO_PARENT);

@@ -18,8 +18,8 @@ package io.moquette.broker;
 import io.moquette.BrokerConstants;
 import io.moquette.broker.config.*;
 import io.moquette.interception.InterceptHandler;
-import io.moquette.persistence.MemoryStorageService;
-import io.moquette.spi.ISessionsStore;
+import io.moquette.persistence.H2Builder;
+import io.moquette.persistence.MemorySubscriptionsRepository;
 import io.moquette.interception.BrokerInterceptor;
 import io.moquette.broker.security.*;
 import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
@@ -159,11 +159,14 @@ public class Server {
         authenticator = initializeAuthenticator(authenticator, config);
         authorizatorPolicy = initializeAuthorizatorPolicy(authorizatorPolicy, config);
 
-        // TODO user real implementation DBG
-        MemoryStorageService memStorage = new MemoryStorageService(null, null);
-        ISessionsStore sessionStore = memStorage.sessionsStore();
-        ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
-        // DBG
+        final ISubscriptionsRepository subscriptionsRepository;
+        if (persistencePath != null && !persistencePath.isEmpty()) {
+            LOG.trace("Configuring H2 subscriptions store to {}", persistencePath);
+            subscriptionsRepository = new H2Builder(config, scheduler).initStore().subscriptionsRepository();
+        } else {
+            LOG.trace("Configuring in-memory subscriptions store");
+            subscriptionsRepository = new MemorySubscriptionsRepository();
+        }
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         subscriptions.init(subscriptionsRepository);
