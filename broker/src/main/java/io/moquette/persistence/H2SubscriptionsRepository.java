@@ -42,7 +42,7 @@ public class H2SubscriptionsRepository implements ISubscriptionsRepository {
     }
 
     @Override
-    public void removeSubscription(String topic, String clientID) {
-
+    public void removeSubscription(String topicFilter, String clientID) {
+        subscriptions.remove(topicFilter + "-" + clientID);
     }
 }
