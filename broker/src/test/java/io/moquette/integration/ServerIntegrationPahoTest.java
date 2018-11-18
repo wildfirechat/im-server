@@ -80,6 +80,8 @@ public class ServerIntegrationPahoTest {
         }
 
         stopServer();
+
+        IntegrationUtils.clearTestStorage();
     }
 
     private void stopServer() {

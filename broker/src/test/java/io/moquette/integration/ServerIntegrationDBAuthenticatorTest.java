@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ServerIntegrationDBAuthenticatorTest {
@@ -99,6 +101,8 @@ public class ServerIntegrationDBAuthenticatorTest {
         }
 
         stopServer();
+
+        IntegrationUtils.clearTestStorage();
     }
 
     @AfterClass

@@ -18,54 +18,37 @@ package io.moquette.integration;
 
 import java.io.File;
 import java.util.Properties;
-import static io.moquette.BrokerConstants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+import static io.moquette.BrokerConstants.DEFAULT_MOQUETTE_STORE_H2_DB_FILENAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Used to carry integration configurations.
  */
 public final class IntegrationUtils {
 
-    static String localMapDBPath() {
+    static String localH2MvStoreDBPath() {
         String currentDir = System.getProperty("user.dir");
-        return currentDir + File.separator + "target" + File.separator + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
-    }
-
-    static String localClusterMapDBPath(int port) {
-        String currentDir = System.getProperty("user.dir");
-        return currentDir + File.separator + "target" + File.separator + port + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
+        return currentDir + File.separator + "target" + File.separator + DEFAULT_MOQUETTE_STORE_H2_DB_FILENAME;
     }
 
     public static Properties prepareTestProperties() {
         Properties testProperties = new Properties();
-        testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
+        testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localH2MvStoreDBPath());
         testProperties.put(PORT_PROPERTY_NAME, "1883");
         return testProperties;
     }
 
-    public static Properties prepareTestClusterProperties(int port) {
-        Properties testProperties = new Properties();
-        testProperties.put(PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localClusterMapDBPath(port));
-        testProperties.put(PORT_PROPERTY_NAME, Integer.toString(port));
-        return testProperties;
+    private IntegrationUtils() {
     }
 
-    /*public static void cleanPersistenceFile(IConfig config) {
-        String fileName = config.getProperty(PERSISTENT_STORE_PROPERTY_NAME);
-        cleanPersistenceFile(fileName);
-    }
-
-    public static void cleanPersistenceFile(String fileName) {
-        File dbFile = new File(fileName);
+    public static void clearTestStorage() {
+        String dbPath = localH2MvStoreDBPath();
+        File dbFile = new File(dbPath);
         if (dbFile.exists()) {
             dbFile.delete();
-            new File(fileName + ".p").delete();
-            new File(fileName + ".t").delete();
         }
         assertFalse(dbFile.exists());
-    }*/
-
-    private IntegrationUtils() {
     }
 }

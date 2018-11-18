@@ -52,6 +52,7 @@ public class Server {
     private volatile boolean initialized;
     private PostOffice dispatcher;
     private BrokerInterceptor interceptor;
+    private H2Builder h2Builder;
 
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
@@ -162,7 +163,8 @@ public class Server {
         final ISubscriptionsRepository subscriptionsRepository;
         if (persistencePath != null && !persistencePath.isEmpty()) {
             LOG.trace("Configuring H2 subscriptions store to {}", persistencePath);
-            subscriptionsRepository = new H2Builder(config, scheduler).initStore().subscriptionsRepository();
+            h2Builder = new H2Builder(config, scheduler);
+            subscriptionsRepository = h2Builder.initStore().subscriptionsRepository();
         } else {
             LOG.trace("Configuring in-memory subscriptions store");
             subscriptionsRepository = new MemorySubscriptionsRepository();
@@ -323,6 +325,11 @@ public class Server {
         // calling shutdown() does not actually stop tasks that are not cancelled,
         // and SessionsRepository does not stop its tasks. Thus shutdownNow().
         scheduler.shutdownNow();
+
+        if (h2Builder != null) {
+            LOG.trace("Shutting down H2 persistence {}");
+            h2Builder.closeStore();
+        }
 
         LOG.info("Moquette integration has been stopped.");
     }

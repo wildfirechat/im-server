@@ -68,6 +68,8 @@ public class ServerIntegrationFuseTest {
         }
 
         m_server.stopServer();
+
+        IntegrationUtils.clearTestStorage();
     }
 
     @Test

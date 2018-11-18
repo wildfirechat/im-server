@@ -82,6 +82,8 @@ public class ServerIntegrationRestartTest {
         }
 
         m_server.stopServer();
+
+        IntegrationUtils.clearTestStorage();
     }
 
     @Test

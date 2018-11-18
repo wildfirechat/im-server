@@ -48,4 +48,8 @@ public class H2Builder {
     public ISubscriptionsRepository subscriptionsRepository() {
         return new H2SubscriptionsRepository(mvStore);
     }
+
+    public void closeStore() {
+        mvStore.close();
+    }
 }

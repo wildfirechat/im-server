@@ -90,13 +90,13 @@ public class ServerIntegrationSSLTest {
         sslProps.put(BrokerConstants.JKS_PATH_PROPERTY_NAME, "serverkeystore.jks");
         sslProps.put(BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
         sslProps.put(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
-        sslProps.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localMapDBPath());
+        sslProps.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, IntegrationUtils.localH2MvStoreDBPath());
         m_server.startServer(sslProps);
     }
 
     @Before
     public void setUp() throws Exception {
-        String dbPath = IntegrationUtils.localMapDBPath();
+        String dbPath = IntegrationUtils.localH2MvStoreDBPath();
         File dbFile = new File(dbPath);
         assertFalse(String.format("The DB storagefile %s already exists", dbPath), dbFile.exists());
 
@@ -118,12 +118,7 @@ public class ServerIntegrationSSLTest {
         if (m_server != null) {
             m_server.stopServer();
         }
-        String dbPath = IntegrationUtils.localMapDBPath();
-        File dbFile = new File(dbPath);
-        if (dbFile.exists()) {
-            dbFile.delete();
-        }
-        assertFalse(dbFile.exists());
+        IntegrationUtils.clearTestStorage();
     }
 
     @Test
