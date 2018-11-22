@@ -79,11 +79,6 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return Optional.of(inode.mainNode());
     }
 
-    @Override
-    public List<Subscription> matches(Topic topic) {
-        return new ArrayList<>(matchQosSharpening(topic));
-    }
-
     /**
      * Given a topic string return the clients subscriptions that matches it. Topic string can't
      * contain character # and + because they are reserved to listeners subscriptions, and not topic
@@ -113,7 +108,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return new HashSet<>(subsGroupedByClient.values());
     }
 
-    Set<Subscription> recursiveMatch(Topic topic, INode inode) {
+    private Set<Subscription> recursiveMatch(Topic topic, INode inode) {
         CNode cnode = inode.mainNode();
         if (Token.MULTI.equals(cnode.token)) {
             return cnode.subscriptions;

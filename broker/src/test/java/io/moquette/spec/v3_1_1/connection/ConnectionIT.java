@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import io.moquette.BrokerConstants;
+import io.moquette.integration.IntegrationUtils;
 import io.moquette.testclient.RawClient;
 import org.junit.After;
 import org.junit.Before;
@@ -53,6 +54,7 @@ public class ConnectionIT {
                     dbFile.delete());
         }
         assertFalse(dbFile.exists());
+        IntegrationUtils.clearTestStorage();
     }
 
     @Test(timeout = 3000)

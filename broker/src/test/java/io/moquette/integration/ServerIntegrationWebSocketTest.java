@@ -62,8 +62,8 @@ public class ServerIntegrationWebSocketTest {
     @After
     public void tearDown() throws Exception {
         client.stop();
-
         m_server.stopServer();
+        IntegrationUtils.clearTestStorage();
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")

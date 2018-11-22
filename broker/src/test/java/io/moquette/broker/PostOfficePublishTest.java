@@ -241,7 +241,7 @@ public class PostOfficePublishTest {
                 .topicName(NEWS_TOPIC).build());
 
         // Verify
-        assertTrue("QoS0 MUST clean retained message for topic", retainedRepository.isEmtpy());
+        assertTrue("QoS0 MUST clean retained message for topic", retainedRepository.isEmpty());
     }
 
     @Test
@@ -403,7 +403,7 @@ public class PostOfficePublishTest {
                 .topicName(NEWS_TOPIC).build());
 
         // Verify
-        assertTrue("Retained message for topic /news must be cleared", retainedRepository.isEmtpy());
+        assertTrue("Retained message for topic /news must be cleared", retainedRepository.isEmpty());
     }
 
     private void assertMessageIsRetained(String expectedTopicName) {

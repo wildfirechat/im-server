@@ -39,7 +39,7 @@ final class MemoryRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public boolean isEmtpy() {
+    public boolean isEmpty() {
         return storage.isEmpty();
     }
 

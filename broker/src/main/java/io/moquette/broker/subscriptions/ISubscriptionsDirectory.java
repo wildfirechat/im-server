@@ -32,8 +32,6 @@ public interface ISubscriptionsDirectory {
 
     void removeSubscription(Topic topic, String clientID);
 
-    List<Subscription> matches(Topic topic);
-
     int size();
 
     String dumpTree();

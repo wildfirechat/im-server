@@ -19,11 +19,12 @@ import io.moquette.broker.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 public interface IRetainedRepository {
+
     void cleanRetained(Topic topic);
 
     void retain(Topic topic, MqttPublishMessage msg);
 
-    boolean isEmtpy();
+    boolean isEmpty();
 
     MqttPublishMessage retainedOnTopic(String topic);
 }
