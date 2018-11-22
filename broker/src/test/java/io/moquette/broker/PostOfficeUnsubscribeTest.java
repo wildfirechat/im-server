@@ -56,6 +56,7 @@ public class PostOfficeUnsubscribeTest {
     private IAuthenticator mockAuthenticator;
     private SessionRegistry sessionRegistry;
     public static final BrokerConfiguration CONFIG = new BrokerConfiguration(true, true, false);
+    private MemoryQueueRepository queueRepository;
 
     @Before
     public void setUp() {
@@ -78,8 +79,9 @@ public class PostOfficeUnsubscribeTest {
         subscriptions = new CTrieSubscriptionDirectory();
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         subscriptions.init(subscriptionsRepository);
+        queueRepository = new MemoryQueueRepository();
 
-        sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
         sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
                              sessionRegistry, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
     }

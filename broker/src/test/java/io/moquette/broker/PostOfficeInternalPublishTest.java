@@ -54,6 +54,7 @@ public class PostOfficeInternalPublishTest {
     private static final BrokerConfiguration ALLOW_ANONYMOUS_AND_ZERO_BYTES_CLID =
         new BrokerConfiguration(true, true, false);
     private MemoryRetainedRepository retainedRepository;
+    private MemoryQueueRepository queueRepository;
 
     @Before
     public void setUp() {
@@ -82,9 +83,9 @@ public class PostOfficeInternalPublishTest {
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         subscriptions.init(subscriptionsRepository);
         retainedRepository = new MemoryRetainedRepository();
+        queueRepository = new MemoryQueueRepository();
 
-        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions,
-                                                              ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        SessionRegistry sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
         sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), retainedRepository, sessionRegistry,
                              ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
         return sessionRegistry;

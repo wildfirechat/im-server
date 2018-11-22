@@ -47,6 +47,7 @@ public class SessionRegistryTest {
     private MqttMessageBuilders.ConnectBuilder connMsg;
     private static final BrokerConfiguration ALLOW_ANONYMOUS_AND_ZEROBYTE_CLIENT_ID =
         new BrokerConfiguration(true, true, false);
+    private MemoryQueueRepository queueRepository;
 
     @Before
     public void setUp() {
@@ -67,8 +68,9 @@ public class SessionRegistryTest {
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         subscriptions.init(subscriptionsRepository);
+        queueRepository = new MemoryQueueRepository();
 
-        sut = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sut = new SessionRegistry(subscriptions, queueRepository);
         final PostOffice postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(),
                                                      new MemoryRetainedRepository(), sut,
                                                      ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);

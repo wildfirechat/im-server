@@ -16,7 +16,6 @@
 package io.moquette.broker;
 
 import io.moquette.broker.Session.SessionStatus;
-import io.moquette.interception.BrokerInterceptor;
 import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
 import io.moquette.broker.subscriptions.Subscription;
 import io.moquette.broker.subscriptions.Topic;
@@ -32,9 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
-class SessionRegistry {
+public class SessionRegistry {
 
-    abstract static class EnqueuedMessage {
+    public abstract static class EnqueuedMessage {
     }
 
     static class PublishedMessage extends EnqueuedMessage {
@@ -61,10 +60,12 @@ class SessionRegistry {
 
     private final ConcurrentMap<String, Session> pool = new ConcurrentHashMap<>();
     private final ISubscriptionsDirectory subscriptionsDirectory;
+    private final IQueueRepository queueRepository;
     private final ConcurrentMap<String, Queue<SessionRegistry.EnqueuedMessage>> queues = new ConcurrentHashMap<>();
 
-    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory, BrokerInterceptor m_interceptor) {
+    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory, IQueueRepository queueRepository) {
         this.subscriptionsDirectory = subscriptionsDirectory;
+        this.queueRepository = queueRepository;
     }
 
     void bindToSession(MQTTConnection mqttConnection, MqttConnectMessage msg, String clientId) {
@@ -178,9 +179,9 @@ class SessionRegistry {
     }
 
     private Session createNewSession(MQTTConnection mqttConnection, MqttConnectMessage msg, String clientId) {
-        final Queue<SessionRegistry.EnqueuedMessage> sessionQueue =
-                    queues.computeIfAbsent(clientId, (String cli) -> new ConcurrentLinkedQueue<>());
         final boolean clean = msg.variableHeader().isCleanSession();
+        final Queue<SessionRegistry.EnqueuedMessage> sessionQueue =
+                    queues.computeIfAbsent(clientId, (String cli) -> queueRepository.createQueue(cli, clean));
         final Session newSession;
         if (msg.variableHeader().isWillFlag()) {
             final Session.Will will = createWill(msg);

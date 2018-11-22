@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.persistence.h2;
+package io.moquette.persistence;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -88,6 +88,7 @@ class H2PersistentQueue<T> extends AbstractQueue<T> {
         }
         final long nextTail = tail.getAndIncrement();
         final T tail = this.queueMap.get(nextTail);
+        queueMap.remove(nextTail);
         this.metadataMap.put("tail", nextTail + 1);
         return tail;
     }

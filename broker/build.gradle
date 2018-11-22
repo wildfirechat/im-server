@@ -33,7 +33,7 @@ dependencies {
     testCompile group: 'org.fusesource.mqtt-client', name: 'mqtt-client', version:'1.12'
     testCompile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version:'1.2.0'
     testCompile group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version:'9.2.0.M1'
-    testCompile group: 'com.h2database', name: 'h2', version:'1.4.191'
+    testCompile group: 'com.h2database', name: 'h2', version:'1.4.192'
 
     testRuntime group: 'io.netty', name: 'netty-tcnative', version: '2.0.10.Final', classifier: 'linux-x86_64'
 }

@@ -45,6 +45,7 @@ public class MQTTConnectionPublishTest {
     private EmbeddedChannel channel;
     private SessionRegistry sessionRegistry;
     private MqttMessageBuilders.ConnectBuilder connMsg;
+    private MemoryQueueRepository queueRepository;
 
     @Before
     public void setUp() {
@@ -67,8 +68,9 @@ public class MQTTConnectionPublishTest {
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         subscriptions.init(subscriptionsRepository);
+        queueRepository = new MemoryQueueRepository();
 
-        sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
         final PostOffice postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(),
                                                      new MemoryRetainedRepository(), sessionRegistry,
                                                      ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);

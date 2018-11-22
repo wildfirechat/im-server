@@ -97,10 +97,8 @@ class Session {
     private final AtomicInteger inflightSlots = new AtomicInteger(INFLIGHT_WINDOW_SIZE); // this should be configurable
 
     Session(String clientId, boolean clean, Will will, Queue<SessionRegistry.EnqueuedMessage> sessionQueue) {
-        this.clientId = clientId;
-        this.clean = clean;
+        this(clean, clientId, sessionQueue);
         this.will = will;
-        this.sessionQueue = sessionQueue;
     }
 
     Session(boolean clean, String clientId, Queue<SessionRegistry.EnqueuedMessage> sessionQueue) {

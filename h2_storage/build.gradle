@@ -1,9 +1,0 @@
-
-description = 'Moquette - H2 storage'
-
-dependencies {
-  compile project(':moquette-broker')
-  compile group: 'com.h2database', name: 'h2-mvstore', version: '1.4.192'
-
-  testCompile project(path:':moquette-broker', configuration: 'archives')
-}

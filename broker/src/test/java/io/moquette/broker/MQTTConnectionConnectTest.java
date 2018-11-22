@@ -52,6 +52,7 @@ public class MQTTConnectionConnectTest {
     private static final BrokerConfiguration CONFIG = new BrokerConfiguration(true, true, false);
     private IAuthenticator mockAuthenticator;
     private PostOffice postOffice;
+    private MemoryQueueRepository queueRepository;
 
     @Before
     public void setUp() {
@@ -62,8 +63,9 @@ public class MQTTConnectionConnectTest {
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         ISubscriptionsRepository subscriptionsRepository = new MemorySubscriptionsRepository();
         subscriptions.init(subscriptionsRepository);
+        queueRepository = new MemoryQueueRepository();
 
-        sessionRegistry = new SessionRegistry(subscriptions, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
         postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
                                     sessionRegistry, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
 

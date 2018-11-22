@@ -13,7 +13,7 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.persistence.h2;
+package io.moquette.persistence;
 
 import io.moquette.BrokerConstants;
 import org.h2.mvstore.MVStore;
