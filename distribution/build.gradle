@@ -32,7 +32,6 @@ def packageSet = project.copySpec {
   into ('config') {
     from 'src/main/resources/moquette.conf'
     from 'src/main/resources/password_file.conf'
-    from 'src/main/resources/hazelcast.xml'
     // from 'src/main/resources/acl.conf'
   }
 
