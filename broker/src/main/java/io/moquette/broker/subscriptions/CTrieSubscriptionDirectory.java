@@ -28,7 +28,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
     private static final Token ROOT = new Token("root");
     private static final INode NO_PARENT = null;
 
-    private INode root;
+    INode root;
     private volatile ISubscriptionsRepository subscriptionsRepository;
 
     interface IVisitor<T> {
@@ -108,7 +108,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         return new HashSet<>(subsGroupedByClient.values());
     }
 
-    private Set<Subscription> recursiveMatch(Topic topic, INode inode) {
+    Set<Subscription> recursiveMatch(Topic topic, INode inode) {
         CNode cnode = inode.mainNode();
         if (Token.MULTI.equals(cnode.token)) {
             return cnode.subscriptions;
