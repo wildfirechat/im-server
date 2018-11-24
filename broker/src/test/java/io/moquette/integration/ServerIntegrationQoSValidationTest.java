@@ -21,16 +21,14 @@ import io.moquette.broker.config.IConfig;
 import io.moquette.broker.config.MemoryConfig;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -42,20 +40,11 @@ public class ServerIntegrationQoSValidationTest {
     private static final Logger LOG = LoggerFactory.getLogger(ServerIntegrationPahoTest.class);
 
     Server m_server;
-    static MqttClientPersistence s_subDataStore;
-    static MqttClientPersistence s_pubDataStore;
 
     IMqttClient m_subscriber;
     IMqttClient m_publisher;
     MessageCollector m_callback;
     IConfig m_config;
-
-    @BeforeClass
-    public static void beforeTests() {
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        s_subDataStore = new MqttDefaultFilePersistence(tmpDir + File.separator + "subscriber");
-        s_pubDataStore = new MqttDefaultFilePersistence(tmpDir + File.separator + "publisher");
-    }
 
     protected void startServer() throws IOException {
         m_server = new Server();
@@ -68,12 +57,12 @@ public class ServerIntegrationQoSValidationTest {
     public void setUp() throws Exception {
         startServer();
 
-        m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", s_subDataStore);
+        m_subscriber = new MqttClient("tcp://localhost:1883", "Subscriber", new MemoryPersistence());
         m_callback = new MessageCollector();
         m_subscriber.setCallback(m_callback);
         m_subscriber.connect();
 
-        m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", s_pubDataStore);
+        m_publisher = new MqttClient("tcp://localhost:1883", "Publisher", new MemoryPersistence());
         m_publisher.connect();
     }
 
@@ -88,6 +77,7 @@ public class ServerIntegrationQoSValidationTest {
         }
 
         m_server.stopServer();
+        IntegrationUtils.clearTestStorage();
     }
 
     @Test
