@@ -85,4 +85,4 @@ set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
 set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=10M"
 
-%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dmoquette.path=%MOQUETTE_PATH% -cp %MOQUETTE_HOME%\lib\* io.moquette.integration.Server
+%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dmoquette.path=%MOQUETTE_PATH% -cp %MOQUETTE_HOME%\lib\* io.moquette.broker.Server
