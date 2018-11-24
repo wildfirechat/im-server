@@ -17,7 +17,7 @@ package io.moquette.broker.subscriptions;
 
 import io.netty.util.internal.StringUtil;
 
-class DumpTreeVisitor implements CTrieSubscriptionDirectory.IVisitor<String> {
+class DumpTreeVisitor implements CTrie.IVisitor<String> {
 
     String s = "";
 

@@ -17,7 +17,7 @@ package io.moquette.broker.subscriptions;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-class SubscriptionCounterVisitor implements CTrieSubscriptionDirectory.IVisitor<Integer> {
+class SubscriptionCounterVisitor implements CTrie.IVisitor<Integer> {
 
     private AtomicInteger accumulator = new AtomicInteger(0);
 

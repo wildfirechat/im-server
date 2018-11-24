@@ -16,8 +16,6 @@
 package io.moquette.broker.subscriptions;
 
 
-import io.moquette.broker.ISubscriptionsRepository;
-import io.moquette.persistence.MemorySubscriptionsRepository;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,21 +28,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class CTrieSubscriptionDirectoryTest {
+public class CTrieTest {
 
-    private CTrieSubscriptionDirectory sut;
+    private CTrie sut;
 
     @Before
     public void setUp() {
-        sut = new CTrieSubscriptionDirectory();
-        ISubscriptionsRepository sessionsRepository = new MemorySubscriptionsRepository();
-        sut.init(sessionsRepository);
+        sut = new CTrie();
     }
 
     @Test
     public void testAddOnSecondLayerWithEmptyTokenOnEmptyTree() {
         //Exercise
-        sut.add(clientSubOnTopic("TempSensor1", "/"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/"));
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/"));
@@ -65,7 +61,7 @@ public class CTrieSubscriptionDirectoryTest {
     @Test
     public void testAddFirstLayerNodeOnEmptyTree() {
         //Exercise
-        sut.add(clientSubOnTopic("TempSensor1", "/temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp"));
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
@@ -76,7 +72,7 @@ public class CTrieSubscriptionDirectoryTest {
     @Test
     public void testLookup() {
         final Subscription existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
-        sut.add(existingSubscription);
+        sut.addToTree(existingSubscription);
 
         //Exercise
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/humidity"));
@@ -88,11 +84,11 @@ public class CTrieSubscriptionDirectoryTest {
     @Test
     public void testAddNewSubscriptionOnExistingNode() {
         final Subscription existingSubscription = clientSubOnTopic("TempSensor1", "/temp");
-        sut.add(existingSubscription);
+        sut.addToTree(existingSubscription);
 
         //Exercise
         final Subscription newSubscription = clientSubOnTopic("TempSensor2", "/temp");
-        sut.add(newSubscription);
+        sut.addToTree(newSubscription);
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
@@ -103,11 +99,11 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testAddNewDeepNodes() {
-        sut.add(clientSubOnTopic("TempSensorRM", "/italy/roma/temp"));
-        sut.add(clientSubOnTopic("TempSensorFI", "/italy/firenze/temp"));
-        sut.add(clientSubOnTopic("HumSensorFI", "/italy/roma/humidity"));
+        sut.addToTree(clientSubOnTopic("TempSensorRM", "/italy/roma/temp"));
+        sut.addToTree(clientSubOnTopic("TempSensorFI", "/italy/firenze/temp"));
+        sut.addToTree(clientSubOnTopic("HumSensorFI", "/italy/roma/humidity"));
         final Subscription happinessSensor = clientSubOnTopic("HappinessSensor", "/italy/happiness");
-        sut.add(happinessSensor);
+        sut.addToTree(happinessSensor);
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/italy/happiness"));
@@ -122,10 +118,10 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithSomeNodeWhenRemoveContainedSubscriptionThenNodeIsUpdated() {
-        sut.add(clientSubOnTopic("TempSensor1", "/temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp"));
 
         //Exercise
-        sut.removeSubscription(asTopic("/temp"), "TempSensor1");
+        sut.removeFromTree(asTopic("/temp"), "TempSensor1");
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
@@ -134,22 +130,22 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithSomeNodeUnsubscribeAndResubscribeCleanTomb() {
-        sut.add(clientSubOnTopic("TempSensor1", "test"));
-        sut.removeSubscription(asTopic("test"), "TempSensor1");
+        sut.addToTree(clientSubOnTopic("TempSensor1", "test"));
+        sut.removeFromTree(asTopic("test"), "TempSensor1");
 
-        sut.add(clientSubOnTopic("TempSensor1", "test"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "test"));
         assertTrue(sut.root.mainNode().allChildren().size() == 1);  // looking to see if TNode is cleaned up
     }
 
     @Test
     public void givenTreeWithSomeNodeWhenRemoveMultipleTimes() {
-        sut.add(clientSubOnTopic("TempSensor1", "test"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "test"));
 
         // make sure no TNode exceptions
-        sut.removeSubscription(asTopic("test"), "TempSensor1");
-        sut.removeSubscription(asTopic("test"), "TempSensor1");
-        sut.removeSubscription(asTopic("test"), "TempSensor1");
-        sut.removeSubscription(asTopic("test"), "TempSensor1");
+        sut.removeFromTree(asTopic("test"), "TempSensor1");
+        sut.removeFromTree(asTopic("test"), "TempSensor1");
+        sut.removeFromTree(asTopic("test"), "TempSensor1");
+        sut.removeFromTree(asTopic("test"), "TempSensor1");
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
@@ -158,12 +154,12 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithSomeDeepNodeWhenRemoveMultipleTimes() {
-        sut.add(clientSubOnTopic("TempSensor1", "/test/me/1/2/3"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/test/me/1/2/3"));
 
         // make sure no TNode exceptions
-        sut.removeSubscription(asTopic("/test/me/1/2/3"), "TempSensor1");
-        sut.removeSubscription(asTopic("/test/me/1/2/3"), "TempSensor1");
-        sut.removeSubscription(asTopic("/test/me/1/2/3"), "TempSensor1");
+        sut.removeFromTree(asTopic("/test/me/1/2/3"), "TempSensor1");
+        sut.removeFromTree(asTopic("/test/me/1/2/3"), "TempSensor1");
+        sut.removeFromTree(asTopic("/test/me/1/2/3"), "TempSensor1");
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/temp"));
@@ -172,14 +168,14 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithSomeNodeHierarchWhenRemoveContainedSubscriptionThenNodeIsUpdated() {
-        sut.add(clientSubOnTopic("TempSensor1", "/temp/1"));
-        sut.add(clientSubOnTopic("TempSensor1", "/temp/2"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp/1"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp/2"));
 
         //Exercise
-        sut.removeSubscription(asTopic("/temp/1"), "TempSensor1");
+        sut.removeFromTree(asTopic("/temp/1"), "TempSensor1");
 
-        sut.removeSubscription(asTopic("/temp/1"), "TempSensor1");
-        final Set<Subscription> matchingSubs = sut.recursiveMatch(asTopic("/temp/2"), sut.root);
+        sut.removeFromTree(asTopic("/temp/1"), "TempSensor1");
+        final Set<Subscription> matchingSubs = sut.recursiveMatch(asTopic("/temp/2"));
 
         //Verify
         final Subscription expectedMatchingsub = new Subscription("TempSensor1", asTopic("/temp/2"), MqttQoS.AT_MOST_ONCE);
@@ -188,14 +184,14 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithSomeNodeHierarchWhenRemoveContainedSubscriptionSmallerThenNodeIsNotUpdated() {
-        sut.add(clientSubOnTopic("TempSensor1", "/temp/1"));
-        sut.add(clientSubOnTopic("TempSensor1", "/temp/2"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp/1"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp/2"));
 
         //Exercise
-        sut.removeSubscription(asTopic("/temp"), "TempSensor1");
+        sut.removeFromTree(asTopic("/temp"), "TempSensor1");
 
-        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("/temp/1"), sut.root);
-        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("/temp/2"), sut.root);
+        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("/temp/1"));
+        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("/temp/2"));
 
         //Verify
         // not clear to me, but I believe /temp unsubscribe should not unsub you from downstream /temp/1 or /temp/2
@@ -207,9 +203,9 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void givenTreeWithDeepNodeWhenRemoveContainedSubscriptionThenNodeIsUpdated() {
-        sut.add(clientSubOnTopic("TempSensor1", "/bah/bin/bash"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/bah/bin/bash"));
 
-        sut.removeSubscription(asTopic("/bah/bin/bash"), "TempSensor1");
+        sut.removeFromTree(asTopic("/bah/bin/bash"), "TempSensor1");
 
         //Verify
         final Optional<CNode> matchedNode = sut.lookup(asTopic("/bah/bin/bash"));
@@ -218,10 +214,10 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testMatchSubscriptionNoWildcards() {
-        sut.add(clientSubOnTopic("TempSensor1", "/temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "/temp"));
 
         //Exercise
-        final Set<Subscription> matchingSubs = sut.recursiveMatch(asTopic("/temp"), sut.root);
+        final Set<Subscription> matchingSubs = sut.recursiveMatch(asTopic("/temp"));
 
         //Verify
         final Subscription expectedMatchingsub = new Subscription("TempSensor1", asTopic("/temp"), MqttQoS.AT_MOST_ONCE);
@@ -230,12 +226,12 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testRemovalInnerTopicOffRootSameClient() {
-        sut.add(clientSubOnTopic("TempSensor1", "temp"));
-        sut.add(clientSubOnTopic("TempSensor1", "temp/1"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "temp/1"));
 
         //Exercise
-        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"));
 
         //Verify
         final Subscription expectedMatchingsub1 = new Subscription("TempSensor1", asTopic("temp"), MqttQoS.AT_MOST_ONCE);
@@ -244,11 +240,11 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp"), "TempSensor1");
+        sut.removeFromTree(asTopic("temp"), "TempSensor1");
 
         //Exercise
-        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"));
 
         assertThat(matchingSubs3).doesNotContain(expectedMatchingsub1);
         assertThat(matchingSubs4).contains(expectedMatchingsub2);
@@ -256,12 +252,12 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testRemovalInnerTopicOffRootDiffClient() {
-        sut.add(clientSubOnTopic("TempSensor1", "temp"));
-        sut.add(clientSubOnTopic("TempSensor2", "temp/1"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor2", "temp/1"));
 
         //Exercise
-        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"));
 
         //Verify
         final Subscription expectedMatchingsub1 = new Subscription("TempSensor1", asTopic("temp"), MqttQoS.AT_MOST_ONCE);
@@ -270,11 +266,11 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp"), "TempSensor1");
+        sut.removeFromTree(asTopic("temp"), "TempSensor1");
 
         //Exercise
-        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"));
 
         assertThat(matchingSubs3).doesNotContain(expectedMatchingsub1);
         assertThat(matchingSubs4).contains(expectedMatchingsub2);
@@ -282,12 +278,12 @@ public class CTrieSubscriptionDirectoryTest {
 
     @Test
     public void testRemovalOuterTopicOffRootDiffClient() {
-        sut.add(clientSubOnTopic("TempSensor1", "temp"));
-        sut.add(clientSubOnTopic("TempSensor2", "temp/1"));
+        sut.addToTree(clientSubOnTopic("TempSensor1", "temp"));
+        sut.addToTree(clientSubOnTopic("TempSensor2", "temp/1"));
 
         //Exercise
-        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs1 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs2 = sut.recursiveMatch(asTopic("temp/1"));
 
         //Verify
         final Subscription expectedMatchingsub1 = new Subscription("TempSensor1", asTopic("temp"), MqttQoS.AT_MOST_ONCE);
@@ -296,11 +292,11 @@ public class CTrieSubscriptionDirectoryTest {
         assertThat(matchingSubs1).contains(expectedMatchingsub1);
         assertThat(matchingSubs2).contains(expectedMatchingsub2);
 
-        sut.removeSubscription(asTopic("temp/1"), "TempSensor2");
+        sut.removeFromTree(asTopic("temp/1"), "TempSensor2");
 
         //Exercise
-        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"), sut.root);
-        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"), sut.root);
+        final Set<Subscription> matchingSubs3 = sut.recursiveMatch(asTopic("temp"));
+        final Set<Subscription> matchingSubs4 = sut.recursiveMatch(asTopic("temp/1"));
 
         assertThat(matchingSubs3).contains(expectedMatchingsub1);
         assertThat(matchingSubs4).doesNotContain(expectedMatchingsub2);

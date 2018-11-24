@@ -25,7 +25,7 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.moquette.broker.subscriptions.CTrieSubscriptionDirectoryTest.clientSubOnTopic;
+import static io.moquette.broker.subscriptions.CTrieTest.clientSubOnTopic;
 import static io.moquette.broker.subscriptions.Topic.asTopic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -48,25 +48,25 @@ public class CTrieSubscriptionDirectoryMatchingTest {
     public void testMatchSimple() {
         Subscription slashSub = clientSubOnTopic("TempSensor1", "/");
         sut.add(slashSub);
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).isEmpty();
 
         Subscription slashFinanceSub = clientSubOnTopic("TempSensor1", "/finance");
         sut.add(slashFinanceSub);
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).isEmpty();
 
-        assertThat(sut.recursiveMatch(asTopic("/finance"), sut.root)).contains(slashFinanceSub);
-        assertThat(sut.recursiveMatch(asTopic("/"), sut.root)).contains(slashSub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/finance"))).contains(slashFinanceSub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/"))).contains(slashSub);
     }
 
     @Test
     public void testMatchSimpleMulti() {
         Subscription anySub = clientSubOnTopic("TempSensor1", "#");
         sut.add(anySub);
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).contains(anySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).contains(anySub);
 
         Subscription financeAnySub = clientSubOnTopic("TempSensor1", "finance/#");
         sut.add(financeAnySub);
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).containsExactlyInAnyOrder(financeAnySub, anySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).containsExactlyInAnyOrder(financeAnySub, anySub);
     }
 
     @Test
@@ -77,9 +77,9 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(financeAnySub);
 
         // Verify
-        assertThat(sut.recursiveMatch(asTopic("finance/stock"), sut.root))
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance/stock")))
             .containsExactlyInAnyOrder(financeAnySub, anySub);
-        assertThat(sut.recursiveMatch(asTopic("finance/stock/ibm"), sut.root))
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance/stock/ibm")))
             .containsExactlyInAnyOrder(financeAnySub, anySub);
 //        System.out.println(sut.dumpTree());
     }
@@ -90,18 +90,18 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(financeAnySub);
 
         // Verify
-        assertThat(sut.recursiveMatch(asTopic("finance/stock/ibm"), sut.root)).containsExactly(financeAnySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance/stock/ibm"))).containsExactly(financeAnySub);
     }
 
     @Test
     public void testMatchSimpleSingle() {
         Subscription anySub = clientSubOnTopic("AnySensor", "+");
         sut.add(anySub);
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).containsExactly(anySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).containsExactly(anySub);
 
         Subscription financeOne = clientSubOnTopic("AnySensor", "finance/+");
         sut.add(financeOne);
-        assertThat(sut.recursiveMatch(asTopic("finance/stock"), sut.root)).containsExactly(financeOne);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance/stock"))).containsExactly(financeOne);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(manySub);
 
         // verify
-        assertThat(sut.recursiveMatch(asTopic("/finance"), sut.root)).contains(manySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/finance"))).contains(manySub);
     }
 
     @Test
@@ -121,8 +121,8 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(anySub);
 
         // Verify
-        assertThat(sut.recursiveMatch(asTopic("/finance"), sut.root)).containsOnly(slashPlusSub);
-        assertThat(sut.recursiveMatch(asTopic("/finance"), sut.root)).doesNotContain(anySub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/finance"))).containsOnly(slashPlusSub);
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/finance"))).doesNotContain(anySub);
     }
 
     @Test
@@ -133,7 +133,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.add(slashPlusDeepSub);
 
         // Verify
-        assertThat(sut.recursiveMatch(asTopic("/finance/stock/ibm"), sut.root))
+        assertThat(sut.matchWithoutQosSharpening(asTopic("/finance/stock/ibm")))
             .containsExactlyInAnyOrder(slashPlusSub, slashPlusDeepSub);
     }
 
@@ -142,8 +142,8 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         Subscription sub = clientSubOnTopic("AnySensor1", "#");
         sut.add(sub);
 
-        assertThat(sut.recursiveMatch(asTopic("finance"), sut.root)).isNotEmpty();
-        assertThat(sut.recursiveMatch(asTopic("finance/ibm"), sut.root)).isNotEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance"))).isNotEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic("finance/ibm"))).isNotEmpty();
     }
 
     @Test
@@ -178,7 +178,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         Subscription sub = clientSubOnTopic("AnySensor1", s);
         sut.add(sub);
 
-        assertThat(sut.recursiveMatch(asTopic(t), sut.root)).isNotEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic(t))).isNotEmpty();
     }
 
     private void assertNotMatch(String subscription, String topic) {
@@ -189,7 +189,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         Subscription sub = clientSubOnTopic("AnySensor1", subscription);
         sut.add(sub);
 
-        assertThat(sut.recursiveMatch(asTopic(topic), sut.root)).isEmpty();
+        assertThat(sut.matchWithoutQosSharpening(asTopic(topic))).isEmpty();
     }
 
     @Test
@@ -220,7 +220,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.removeSubscription(asTopic("/topic"), slashSub2.clientId);
 
         // Verify
-        Subscription remainedSubscription = sut.recursiveMatch(asTopic("/topic"), sut.root).iterator().next();
+        Subscription remainedSubscription = sut.matchWithoutQosSharpening(asTopic("/topic")).iterator().next();
         assertThat(remainedSubscription.clientId).isEqualTo(slashSub.clientId);
         assertEquals(slashSub.clientId, remainedSubscription.clientId);
     }
@@ -234,7 +234,7 @@ public class CTrieSubscriptionDirectoryMatchingTest {
         sut.removeSubscription(asTopic("/topic"), slashSub.clientId);
 
         // Verify
-        final Set<Subscription> matchingSubscriptions = sut.recursiveMatch(asTopic("/topic"), sut.root);
+        final Set<Subscription> matchingSubscriptions = sut.matchWithoutQosSharpening(asTopic("/topic"));
         assertThat(matchingSubscriptions).isEmpty();
     }
 
