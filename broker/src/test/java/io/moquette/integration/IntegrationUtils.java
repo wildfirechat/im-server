@@ -30,7 +30,7 @@ public final class IntegrationUtils {
 
     static String localH2MvStoreDBPath() {
         String currentDir = System.getProperty("user.dir");
-        return currentDir + File.separator + "out" + File.separator + DEFAULT_MOQUETTE_STORE_H2_DB_FILENAME;
+        return currentDir + File.separator + "build" + File.separator + DEFAULT_MOQUETTE_STORE_H2_DB_FILENAME;
     }
 
     public static Properties prepareTestProperties() {
