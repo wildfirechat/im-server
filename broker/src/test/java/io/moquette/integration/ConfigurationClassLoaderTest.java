@@ -17,17 +17,19 @@
 package io.moquette.integration;
 
 import io.moquette.BrokerConstants;
+import io.moquette.broker.Server;
 import io.moquette.broker.config.IConfig;
 import io.moquette.broker.config.MemoryConfig;
-import io.moquette.broker.subscriptions.Topic;
 import io.moquette.broker.security.IAuthenticator;
 import io.moquette.broker.security.IAuthorizatorPolicy;
-import io.moquette.broker.Server;
+import io.moquette.broker.subscriptions.Topic;
 import org.junit.After;
 import org.junit.Test;
+
 import java.io.IOException;
 import java.util.Properties;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertTrue;
 
 public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizatorPolicy {
 
@@ -60,16 +62,6 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
         startServer(props);
         assertTrue(true);
     }
-
-//    @Test
-//    public void loadStorage() throws Exception {
-//        Properties props = new Properties(IntegrationUtils.prepareTestProperties());
-//        props.setProperty(BrokerConstants.STORAGE_CLASS_NAME, MemoryStorageService.class.getName());
-//
-//        startServer(props);
-//        assertTrue(m_server.getProcessor().getMessagesStore() instanceof MemoryMessagesStore);
-//        assertTrue(m_server.getProcessor().getSessionsStore() instanceof MemorySessionStore);
-//    }
 
     @Override
     public boolean checkValid(String clientID, String username, byte[] password) {
