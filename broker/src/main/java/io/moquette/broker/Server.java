@@ -162,21 +162,24 @@ public class Server {
 
         final ISubscriptionsRepository subscriptionsRepository;
         final IQueueRepository queueRepository;
+        final IRetainedRepository retainedRepository;
         if (persistencePath != null && !persistencePath.isEmpty()) {
             LOG.trace("Configuring H2 subscriptions store to {}", persistencePath);
             h2Builder = new H2Builder(config, scheduler).initStore();
             subscriptionsRepository = h2Builder.subscriptionsRepository();
             queueRepository = h2Builder.queueRepository();
+            retainedRepository = h2Builder.retainedRepository();
         } else {
             LOG.trace("Configuring in-memory subscriptions store");
             subscriptionsRepository = new MemorySubscriptionsRepository();
             queueRepository = new MemoryQueueRepository();
+            retainedRepository = new MemoryRetainedRepository();
         }
 
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         subscriptions.init(subscriptionsRepository);
         SessionRegistry sessions = new SessionRegistry(subscriptions, queueRepository);
-        dispatcher = new PostOffice(subscriptions, authorizatorPolicy, new MemoryRetainedRepository(), sessions,
+        dispatcher = new PostOffice(subscriptions, authorizatorPolicy, retainedRepository, sessions,
                                     interceptor);
         final BrokerConfiguration brokerConfig = new BrokerConfiguration(config);
         MQTTConnectionFactory connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessions,

@@ -18,6 +18,8 @@ package io.moquette.broker;
 import io.moquette.broker.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
+import java.util.List;
+
 public interface IRetainedRepository {
 
     void cleanRetained(Topic topic);
@@ -26,5 +28,5 @@ public interface IRetainedRepository {
 
     boolean isEmpty();
 
-    MqttPublishMessage retainedOnTopic(String topic);
+    List<RetainedMessage> retainedOnTopic(String topic);
 }

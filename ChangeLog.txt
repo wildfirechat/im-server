@@ -1,6 +1,8 @@
 Version 0.12:
    Fixed issue #415
    Dropped Hazelcast because at the moment Moquette is not designed to be clusterizable
+   Rewritten completly the broker to introduce the concept of MqttConnection
+   Dropped suppoert for MapDB and keeped only H2 MvStore for persistence
 
 Version 0.10:
     Netty epoll system added

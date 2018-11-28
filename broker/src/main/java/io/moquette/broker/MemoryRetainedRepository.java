@@ -16,8 +16,12 @@
 package io.moquette.broker;
 
 import io.moquette.broker.subscriptions.Topic;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -26,16 +30,20 @@ import java.util.concurrent.ConcurrentMap;
 * */
 final class MemoryRetainedRepository implements IRetainedRepository {
 
-    private final ConcurrentMap<String, MqttPublishMessage> storage = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Topic, RetainedMessage> storage = new ConcurrentHashMap<>();
 
     @Override
     public void cleanRetained(Topic topic) {
-        storage.remove(topic.toString());
+        storage.remove(topic);
     }
 
     @Override
     public void retain(Topic topic, MqttPublishMessage msg) {
-        storage.put(topic.toString(), msg);
+        final ByteBuf payload = msg.content();
+        byte[] rawPayload = new byte[payload.readableBytes()];
+        payload.getBytes(0, rawPayload);
+        final RetainedMessage toStore = new RetainedMessage(msg.fixedHeader().qosLevel(), rawPayload);
+        storage.put(topic, toStore);
     }
 
     @Override
@@ -44,7 +52,15 @@ final class MemoryRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public MqttPublishMessage retainedOnTopic(String topic) {
-        return storage.get(topic);
+    public List<RetainedMessage> retainedOnTopic(String topic) {
+        final Topic searchTopic = new Topic(topic);
+        final List<RetainedMessage> matchingMessages = new ArrayList<>();
+        for (Map.Entry<Topic, RetainedMessage> entry : storage.entrySet()) {
+            final Topic scanTopic = entry.getKey();
+            if (searchTopic.match(scanTopic)) {
+                matchingMessages.add(entry.getValue());
+            }
+        }
+        return matchingMessages;
     }
 }

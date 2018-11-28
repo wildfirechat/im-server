@@ -390,7 +390,7 @@ public class PostOfficePublishTest {
         sut.receivedPublishQos1(connection, new Topic(NEWS_TOPIC), TEST_USER, anyPayload, 1, true,
                                 publishMsg);
 
-        assertMessageIsRetained(NEWS_TOPIC);
+        assertMessageIsRetained(NEWS_TOPIC, anyPayload);
 
         // publish a QoS0 retained message
         // Exercise
@@ -406,8 +406,10 @@ public class PostOfficePublishTest {
         assertTrue("Retained message for topic /news must be cleared", retainedRepository.isEmpty());
     }
 
-    private void assertMessageIsRetained(String expectedTopicName) {
-        MqttPublishMessage msg = retainedRepository.retainedOnTopic(expectedTopicName);
-        assertEquals(expectedTopicName, msg.variableHeader().topicName());
+    private void assertMessageIsRetained(String expectedTopicName, ByteBuf expectedPayload) {
+        List<RetainedMessage> msgs = retainedRepository.retainedOnTopic(expectedTopicName);
+        assertEquals(1, msgs.size());
+        RetainedMessage msg = msgs.get(0);
+        assertEquals(ByteBufUtil.hexDump(expectedPayload), ByteBufUtil.hexDump(msg.getPayload()));
     }
 }

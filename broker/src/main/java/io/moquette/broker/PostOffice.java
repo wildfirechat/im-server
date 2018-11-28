@@ -21,6 +21,7 @@ import io.moquette.broker.subscriptions.Subscription;
 import io.moquette.broker.subscriptions.Topic;
 import io.moquette.broker.security.IAuthorizatorPolicy;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,19 +100,21 @@ class PostOffice {
         Session targetSession = this.sessionRegistry.retrieve(clientID);
         for (Subscription subscription : newSubscriptions) {
             final String topicFilter = subscription.getTopicFilter().toString();
-            final MqttPublishMessage retainedMsg = retainedRepository.retainedOnTopic(topicFilter);
+            final List<RetainedMessage> retainedMsgs = retainedRepository.retainedOnTopic(topicFilter);
 
-            if (retainedMsg == null) {
+            if (retainedMsgs.isEmpty()) {
                 // not found
                 continue;
             }
+            for (RetainedMessage retainedMsg : retainedMsgs) {
+                final MqttQoS retainedQos = retainedMsg.qosLevel();
+                MqttQoS qos = lowerQosToTheSubscriptionDesired(subscription, retainedQos);
 
-            final MqttQoS retainedQos = retainedMsg.fixedHeader().qosLevel();
-            MqttQoS qos = lowerQosToTheSubscriptionDesired(subscription, retainedQos);
-
-            final ByteBuf origPayload = retainedMsg.payload();
-            ByteBuf payload = origPayload.retainedDuplicate();
-            targetSession.sendRetainedPublishOnSessionAtQos(subscription.getTopicFilter(), qos, payload);
+//                final ByteBuf origPayload = retainedMsg.getPayload();
+                final ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
+//                ByteBuf payload = origPayload.retainedDuplicate();
+                targetSession.sendRetainedPublishOnSessionAtQos(subscription.getTopicFilter(), qos, payloadBuf);
+            }
         }
     }
 
