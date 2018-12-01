@@ -25,11 +25,11 @@ Point your browser to [cloud instance](http://broker.moquette.io), request an ac
 
 ## 1 minute set up
 
-Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/moquette-distribution-0.11.tar) ,
+Start play with it, download the self distribution tar from [BinTray](https://bintray.com/artifact/download/andsel/generic/moquette-0.12.tar.gz) ,
 the un untar and start the broker listening on `1883` port and enjoy!
 
 ```
-tar xvf moquette-distribution-0.11.tar
+tar xvf moquette-distribution-0.12.tar.gz
 cd bin
 ./moquette.sh
 ```
@@ -66,7 +66,7 @@ Include dependency in your project:
 <dependency>
       <groupId>io.moquette</groupId>
       <artifactId>moquette-broker</artifactId>
-      <version>0.11</version>
+      <version>0.12</version>
 </dependency>
 ```
 
