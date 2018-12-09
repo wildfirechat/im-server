@@ -3,7 +3,7 @@ allprojects  {
   apply plugin: 'maven-publish'
 
   group = 'io.moquette'
-  version = '0.12'
+  version = '0.12.1-SNAPSHOT'
 }
 
 buildscript {
@@ -92,7 +92,7 @@ subprojects {
         from components.java
         groupId "$project.group"
         artifactId "${project.name}"
-        version '0.12'
+        version '0.12.1-SNAPSHOT'
       }
     }
   }

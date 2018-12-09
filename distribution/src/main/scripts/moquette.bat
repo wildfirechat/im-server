@@ -13,7 +13,7 @@ echo "  \_|  |_/\___/ \__, |\__,_|\___|\__|\__\___| \_|  |_/\_/\_\ \_/   \_/   "
 echo "                   | |                                                   "
 echo "                   |_|                                                   "
 echo "                                                                         "
-echo "                                               version: 0.12             "
+echo "                                               version: 0.12.1-SNAPSHOT  "
 
 set "CURRENT_DIR=%cd%"
 if not "%MOQUETTE_HOME%" == "" goto gotHome
