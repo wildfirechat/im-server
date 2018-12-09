@@ -179,8 +179,7 @@ public class Server {
         ISubscriptionsDirectory subscriptions = new CTrieSubscriptionDirectory();
         subscriptions.init(subscriptionsRepository);
         SessionRegistry sessions = new SessionRegistry(subscriptions, queueRepository);
-        dispatcher = new PostOffice(subscriptions, authorizatorPolicy, retainedRepository, sessions,
-                                    interceptor);
+        dispatcher = new PostOffice(subscriptions, authorizatorPolicy, retainedRepository, sessions, interceptor);
         final BrokerConfiguration brokerConfig = new BrokerConfiguration(config);
         MQTTConnectionFactory connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessions,
                                                                             dispatcher);

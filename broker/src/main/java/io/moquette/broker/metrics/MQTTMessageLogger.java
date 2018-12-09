@@ -38,7 +38,7 @@ import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 @Sharable
 public class MQTTMessageLogger extends ChannelDuplexHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger("messageLogger");
+    private static final Logger LOG = LoggerFactory.getLogger(MQTTMessageLogger.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) throws Exception {
