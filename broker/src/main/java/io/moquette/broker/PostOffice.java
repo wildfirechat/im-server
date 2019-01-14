@@ -301,4 +301,20 @@ class PostOffice {
         }
         retainedRepository.retain(topic, msg);
     }
+
+    /**
+     * notify MqttConnectMessage after connection established (already pass login).
+     * @param msg
+     */
+    void dispatchConnection(MqttConnectMessage msg){
+        interceptor.notifyClientConnected(msg);
+    }
+
+    void dispatchDisconnection(String clientId,String userName){
+        interceptor.notifyClientDisconnected(clientId,userName);
+    }
+
+    void dispatchConnectionLost(String clientId,String userName){
+        interceptor.notifyClientConnectionLost(clientId,userName);
+    }
 }

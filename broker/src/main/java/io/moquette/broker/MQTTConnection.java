@@ -171,6 +171,8 @@ final class MQTTConnection {
 
             NettyUtils.clientID(channel, clientId);
             LOG.trace("CONNACK sent, channel: {}", channel);
+            postOffice.dispatchConnection(msg);
+            LOG.trace("dispatch connection: {}", msg.toString());
         } catch (SessionCorruptedException scex) {
             LOG.warn("MQTT session for client ID {} cannot be created, channel: {}", clientId, channel);
             abortConnection(CONNECTION_REFUSED_SERVER_UNAVAILABLE);
@@ -257,6 +259,10 @@ final class MQTTConnection {
             sessionRegistry.disconnect(clientID);
         }
         connected = false;
+        //dispatch connection lost to intercept.
+        String userName= NettyUtils.userName(channel);
+        postOffice.dispatchConnectionLost(clientID,userName);
+        LOG.trace("dispatch disconnection: clientId={}, userName={}", clientID, userName);
     }
 
     void sendConnAck(boolean isSessionAlreadyPresent) {
@@ -284,6 +290,9 @@ final class MQTTConnection {
         connected = false;
         channel.close().addListener(FIRE_EXCEPTION_ON_FAILURE);
         LOG.trace("Processed DISCONNECT CId={}, channel: {}", clientID, channel);
+        String userName=NettyUtils.userName(channel);
+        postOffice.dispatchDisconnection(clientID,userName);
+        LOG.trace("dispatch disconnection: clientId={}, userName={}", clientID, userName);
     }
 
     void processSubscribe(MqttSubscribeMessage msg) {
