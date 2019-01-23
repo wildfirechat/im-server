@@ -65,9 +65,11 @@ public class MQTTConnectionConnectTest {
         subscriptions.init(subscriptionsRepository);
         queueRepository = new MemoryQueueRepository();
 
-        sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
-        postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
-                                    sessionRegistry, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        final PermitAllAuthorizatorPolicy authorizatorPolicy = new PermitAllAuthorizatorPolicy();
+        final Authorizator permitAll = new Authorizator(authorizatorPolicy);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository, permitAll);
+        postOffice = new PostOffice(subscriptions, new MemoryRetainedRepository(), sessionRegistry,
+                                    ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR, permitAll);
 
         sut = createMQTTConnection(CONFIG);
         channel = (EmbeddedChannel) sut.channel;

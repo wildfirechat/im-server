@@ -362,6 +362,14 @@ class Session {
         ReferenceCountUtil.release(removedMsg);
     }
 
+//    public String login() {
+//        if (!connected()) {
+//            throw new IllegalStateException("Can't ask login on disconnected session");
+//        }
+//
+//        return NettyUtils.userName(mqttConnection.channel);
+//    }
+
     @Override
     public String toString() {
         return "Session{" +

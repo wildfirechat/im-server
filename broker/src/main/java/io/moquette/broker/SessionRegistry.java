@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 public class SessionRegistry {
@@ -61,11 +60,15 @@ public class SessionRegistry {
     private final ConcurrentMap<String, Session> pool = new ConcurrentHashMap<>();
     private final ISubscriptionsDirectory subscriptionsDirectory;
     private final IQueueRepository queueRepository;
+    private final Authorizator authorizator;
     private final ConcurrentMap<String, Queue<SessionRegistry.EnqueuedMessage>> queues = new ConcurrentHashMap<>();
 
-    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory, IQueueRepository queueRepository) {
+    SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory,
+                    IQueueRepository queueRepository,
+                    Authorizator authorizator) {
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.queueRepository = queueRepository;
+        this.authorizator = authorizator;
     }
 
     void bindToSession(MQTTConnection mqttConnection, MqttConnectMessage msg, String clientId) {
@@ -129,7 +132,8 @@ public class SessionRegistry {
             LOG.trace("case 2, oldSession with same CId {} disconnected", clientId);
         } else if (!newIsClean && oldSession.disconnected()) {
             // case 3
-            reactivateSubscriptions(oldSession);
+            final String username = mqttConnection.getUsername();
+            reactivateSubscriptions(oldSession, username);
 
             // mark as connected
             final boolean connecting = oldSession.assignState(SessionStatus.DISCONNECTED, SessionStatus.CONNECTING);
@@ -165,8 +169,14 @@ public class SessionRegistry {
         return postConnectAction;
     }
 
-    private void reactivateSubscriptions(Session session) {
+    private void reactivateSubscriptions(Session session, String username) {
+        //verify if subscription still satisfy read ACL permissions
         for (Subscription existingSub : session.getSubscriptions()) {
+            final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilter(), username,
+                                                               session.getClientID());
+            if (!topicReadable) {
+                subscriptionsDirectory.removeSubscription(existingSub.getTopicFilter(), session.getClientID());
+            }
             // TODO
 //            subscriptionsDirectory.reactivate(existingSub.getTopicFilter(), session.getClientID());
         }

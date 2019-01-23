@@ -81,9 +81,11 @@ public class PostOfficeUnsubscribeTest {
         subscriptions.init(subscriptionsRepository);
         queueRepository = new MemoryQueueRepository();
 
-        sessionRegistry = new SessionRegistry(subscriptions, queueRepository);
-        sut = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(), new MemoryRetainedRepository(),
-                             sessionRegistry, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        final PermitAllAuthorizatorPolicy authorizatorPolicy = new PermitAllAuthorizatorPolicy();
+        final Authorizator permitAll = new Authorizator(authorizatorPolicy);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository, permitAll);
+        sut = new PostOffice(subscriptions, new MemoryRetainedRepository(), sessionRegistry,
+                             ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR, permitAll);
     }
 
     private MQTTConnection createMQTTConnection(BrokerConfiguration config, Channel channel) {

@@ -260,7 +260,7 @@ final class MQTTConnection {
         }
         connected = false;
         //dispatch connection lost to intercept.
-        String userName= NettyUtils.userName(channel);
+        String userName = NettyUtils.userName(channel);
         postOffice.dispatchConnectionLost(clientID,userName);
         LOG.trace("dispatch disconnection: clientId={}, userName={}", clientID, userName);
     }
@@ -290,7 +290,7 @@ final class MQTTConnection {
         connected = false;
         channel.close().addListener(FIRE_EXCEPTION_ON_FAILURE);
         LOG.trace("Processed DISCONNECT CId={}, channel: {}", clientID, channel);
-        String userName=NettyUtils.userName(channel);
+        String userName = NettyUtils.userName(channel);
         postOffice.dispatchDisconnection(clientID,userName);
         LOG.trace("dispatch disconnection: clientId={}, userName={}", clientID, userName);
     }
@@ -430,6 +430,10 @@ final class MQTTConnection {
 
     String getClientId() {
         return NettyUtils.clientID(channel);
+    }
+
+    String getUsername() {
+        return NettyUtils.userName(channel);
     }
 
     public void sendPublishRetainedQos0(Topic topic, MqttQoS qos, ByteBuf payload) {

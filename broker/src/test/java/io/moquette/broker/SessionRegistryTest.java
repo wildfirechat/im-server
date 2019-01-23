@@ -70,10 +70,11 @@ public class SessionRegistryTest {
         subscriptions.init(subscriptionsRepository);
         queueRepository = new MemoryQueueRepository();
 
-        sut = new SessionRegistry(subscriptions, queueRepository);
-        final PostOffice postOffice = new PostOffice(subscriptions, new PermitAllAuthorizatorPolicy(),
-                                                     new MemoryRetainedRepository(), sut,
-                                                     ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR);
+        final PermitAllAuthorizatorPolicy authorizatorPolicy = new PermitAllAuthorizatorPolicy();
+        final Authorizator permitAll = new Authorizator(authorizatorPolicy);
+        sut = new SessionRegistry(subscriptions, queueRepository, permitAll);
+        final PostOffice postOffice = new PostOffice(subscriptions,
+            new MemoryRetainedRepository(), sut, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR, permitAll);
         return new MQTTConnection(channel, config, mockAuthenticator, sut, postOffice);
     }
 
