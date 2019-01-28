@@ -58,10 +58,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
         if (!(message instanceof MqttMessage)) {
             return;
         }
-        MqttMessage msg = (MqttMessage) message;
-        if (msg.fixedHeader() == null) {
-            throw new IOException("Unknown packet");
-        }
+        MqttMessage msg = NettyUtils.validateMessage(message);
         String clientID = NettyUtils.clientID(ctx.channel());
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {
