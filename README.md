@@ -1,7 +1,7 @@
 
 ## What is Moquette?
 
-[![Build Status](https://api.travis-ci.org/andsel/moquette.svg?branch=master)](https://travis-ci.org/andsel/moquette)
+[![Build Status](https://api.travis-ci.org/andsel/moquette.svg?branch=master)](https://travis-ci.org/moquette-io/moquette)
 
 * [Documentation reference guide](http://moquette-io.github.io/moquette/) Guide on how to use and configure Moquette
 * [Google Group](https://groups.google.com/forum/#!forum/moquette-mqtt) Google Group to participate in development discussions.
