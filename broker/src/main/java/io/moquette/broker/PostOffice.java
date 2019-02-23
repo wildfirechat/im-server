@@ -216,12 +216,6 @@ class PostOffice {
             if (isSessionPresent) {
                 LOG.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}",
                           sub.getClientId(), sub.getTopicFilter(), qos);
-//                final String login = targetSession.login();
-//                if (!authorizator.canRead(topic, login, sub.getClientId())) {
-//                    LOG.debug("Authorizator prohibit Client {} to be notified on {}", sub.getClientId(), topic);
-//                    return;
-//                }
-
                 // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
                 ByteBuf payload = origPayload.retainedDuplicate();
                 targetSession.sendPublishOnSessionAtQos(topic, qos, payload);

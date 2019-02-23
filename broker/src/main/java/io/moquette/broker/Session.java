@@ -97,11 +97,11 @@ class Session {
     private final AtomicInteger inflightSlots = new AtomicInteger(INFLIGHT_WINDOW_SIZE); // this should be configurable
 
     Session(String clientId, boolean clean, Will will, Queue<SessionRegistry.EnqueuedMessage> sessionQueue) {
-        this(clean, clientId, sessionQueue);
+        this(clientId, clean, sessionQueue);
         this.will = will;
     }
 
-    Session(boolean clean, String clientId, Queue<SessionRegistry.EnqueuedMessage> sessionQueue) {
+    Session(String clientId, boolean clean, Queue<SessionRegistry.EnqueuedMessage> sessionQueue) {
         this.clientId = clientId;
         this.clean = clean;
         this.sessionQueue = sessionQueue;
@@ -267,6 +267,12 @@ class Session {
             mqttConnection.channel.isWritable();
     }
 
+    private boolean inflighHasSlotsAndConnectionIsUp() {
+        return inflightSlots.get() > 0 &&
+            connected() &&
+            mqttConnection.channel.isWritable();
+    }
+
     void pubAckReceived(int ackPacketId) {
         // TODO remain to invoke in somehow m_interceptor.notifyMessageAcknowledged
         inflightWindow.remove(ackPacketId);
@@ -315,7 +321,7 @@ class Session {
 
     private void drainQueueToConnection() {
         // consume the queue
-        while (!canSkipQueue()) {
+        while (!sessionQueue.isEmpty() && inflighHasSlotsAndConnectionIsUp()) {
             final SessionRegistry.EnqueuedMessage msg = sessionQueue.remove();
             inflightSlots.decrementAndGet();
             int sendPacketId = mqttConnection.nextPacketId();
@@ -361,14 +367,6 @@ class Session {
         final MqttPublishMessage removedMsg = qos2Receiving.remove(messageID);
         ReferenceCountUtil.release(removedMsg);
     }
-
-//    public String login() {
-//        if (!connected()) {
-//            throw new IllegalStateException("Can't ask login on disconnected session");
-//        }
-//
-//        return NettyUtils.userName(mqttConnection.channel);
-//    }
 
     @Override
     public String toString() {

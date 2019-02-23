@@ -197,7 +197,7 @@ public class SessionRegistry {
             final Session.Will will = createWill(msg);
             newSession = new Session(clientId, clean, will, sessionQueue);
         } else {
-            newSession = new Session(clean, clientId, sessionQueue);
+            newSession = new Session(clientId, clean, sessionQueue);
         }
 
         newSession.markConnected();
