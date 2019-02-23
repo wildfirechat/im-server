@@ -340,6 +340,14 @@ public class Server {
         LOG.info("Moquette integration has been stopped.");
     }
 
+    public int getPort() {
+        return acceptor.getPort();
+    }
+
+    public int getSslPort() {
+        return acceptor.getSslPort();
+    }
+
     /**
      * SPI method used by Broker embedded applications to get list of subscribers. Returns null if
      * the broker is not started.
