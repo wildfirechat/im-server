@@ -1,7 +1,0 @@
-# to install Graphviz
-sudo apt-get install graphviz
-
-#to create svg or others like pdf, ps
-dot -Tps connect_fsm.dot -o connect_fsm.svg
-dot -Tps disconnect_fsm.dot -o disconnect_fsm.svg
-
