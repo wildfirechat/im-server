@@ -33,7 +33,7 @@ class MQTTConnectionFactory {
         this.postOffice = postOffice;
     }
 
-    public MQTTConnection create(Channel channel) {
+    MQTTConnection create(Channel channel) {
         return new MQTTConnection(channel, brokerConfig, authenticator, sessionRegistry, postOffice);
     }
 }
