@@ -1,0 +1,112 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netty.version>4.1.12.Final</netty.version>
+        <source.version>1.8</source.version>
+        <target.version>1.8</target.version>
+    </properties>
+
+    <groupId>cn.wildfirechat</groupId>
+    <artifactId>wildfirechat-parent</artifactId>
+
+    <packaging>pom</packaging>
+    <version>0.10</version>
+    <name>Wildfire Chat</name>
+    <description>Wildfire Chat Server</description>
+    <inceptionYear>2018</inceptionYear>
+    <url>https://www.wildfirechat.cn</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+        <license>
+            <name>Eclipse Public License - Version 1.0</name>
+            <url>http://www.eclipse.org/org/documents/epl-v10.php</url>
+        </license>
+    </licenses>
+
+
+
+    <modules>
+        <module>broker</module>
+        <module>distribution</module>
+        <module>wildfire_jmeter</module>
+        <module>client</module>
+    </modules>
+
+    <build>
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${source.version}</source>
+                    <target>${target.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-checkstyle-plugin</artifactId>
+              <version>2.17</version>
+              <configuration>
+                  <configLocation>checkstyle.xml</configLocation>
+                  <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+                  <!--
+                     <configLocation>/google_checks.xml</configLocation>
+                   -->
+                  <failOnViolation>true</failOnViolation>
+                  <consoleOutput>true</consoleOutput>
+              </configuration>
+              <executions>
+                <execution>
+                  <phase>validate</phase>
+                  <goals>
+                    <goal>check</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </pluginManagement>    
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

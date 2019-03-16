@@ -1,5 +1,0 @@
-
-description = 'Moquette - Embedded test'
-dependencies {
-  compile project(':moquette-broker')
-}

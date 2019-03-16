@@ -1,0 +1,3 @@
+import "google/protobuf/any.proto";
+import weak "NOT_FOUND";
+import "weak-other.proto";

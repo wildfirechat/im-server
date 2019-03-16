@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 The original author or authors
+ * Copyright (c) 2012-2017 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,6 @@
 package io.moquette.interception.messages;
 
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
-
-import java.nio.charset.StandardCharsets;
 
 public class InterceptConnectMessage extends InterceptAbstractMessage {
 
@@ -74,7 +72,7 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
     }
 
     public byte[] getPassword() {
-        return msg.payload().password().getBytes(StandardCharsets.UTF_8);
+        return msg.payload().password();
     }
 
     public String getWillTopic() {
@@ -82,6 +80,6 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
     }
 
     public byte[] getWillMessage() {
-        return msg.payload().willMessage().getBytes(StandardCharsets.UTF_8);
+        return msg.payload().willMessage().getBytes();
     }
 }

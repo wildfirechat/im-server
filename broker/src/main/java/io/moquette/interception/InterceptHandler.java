@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 The original author or authors
+ * Copyright (c) 2012-2017 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@
 package io.moquette.interception;
 
 import io.moquette.interception.messages.*;
-import io.moquette.broker.subscriptions.Subscription;
 import io.netty.handler.codec.mqtt.MqttMessage;
 
 /**
@@ -32,17 +31,20 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 public interface InterceptHandler {
 
     Class<?>[] ALL_MESSAGE_TYPES = {InterceptConnectMessage.class, InterceptDisconnectMessage.class,
-            InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptSubscribeMessage.class,
-            InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class};
+            InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptAcknowledgedMessage.class};
 
     /**
-     * @return the identifier of this intercept handler.
+     * Returns the identifier of this intercept handler.
+     *
+     * @return
      */
     String getID();
 
     /**
-     * @return the InterceptMessage subtypes that this handler can process. If the result is null or
+     * Returns the InterceptMessage subtypes that this handler can process. If the result is null or
      * equal to ALL_MESSAGE_TYPES, all the message types will be processed.
+     *
+     * @return
      */
     Class<?>[] getInterceptedMessageTypes();
 
@@ -53,10 +55,6 @@ public interface InterceptHandler {
     void onConnectionLost(InterceptConnectionLostMessage msg);
 
     void onPublish(InterceptPublishMessage msg);
-
-    void onSubscribe(InterceptSubscribeMessage msg);
-
-    void onUnsubscribe(InterceptUnsubscribeMessage msg);
 
     void onMessageAcknowledged(InterceptAcknowledgedMessage msg);
 }

@@ -43,11 +43,11 @@
     <property name="message" value="missing copyright header"/>
   </module>
   <!-- Unmaintainable Javadoc tags -->
-  <!--module name="RegexpSingleline">
+  <module name="RegexpSingleline">
     <property name="format" value="(@(author|version)|\(non-Javadoc\))"/>
     <property name="ignoreCase" value="true"/>
     <property name="message" value="unmaintainable Javadoc tags: @author, @version, or (non-Javadoc)"/>
-  </module-->
+  </module>
   <!-- IDE-generated comment -->
   <module name="RegexpSingleline">
     <property name="format" value="File \| Settings \| File Templates"/>

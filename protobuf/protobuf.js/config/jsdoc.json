@@ -1,0 +1,50 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": [
+            "./src/",
+            "./lib/aspromise/index.js",
+            "./lib/base64/index.js",
+            "./lib/codegen/index.js",
+            "./lib/eventemitter/index.js",
+            "./lib/fetch/index.js",
+            "./lib/inquire/index.js",
+            "./lib/path/index.js",
+            "./lib/pool/index.js",
+            "./lib/utf8/index.js"
+        ],
+        "exclude": [],
+        "includePattern": ".+\\.js(doc)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "plugins": [
+        "./node_modules/jsdoc/plugins/markdown"
+    ],
+    "templates": {
+        "cleverLinks"   : false,
+        "monospaceLinks": false,
+        "default"       : {
+            "outputSourceFiles" : false
+        },
+        "applicationName": "protobuf.js",
+        "googleAnalytics": "UA-40277577-3",
+        "linenums"      : true
+    },
+    "markdown"  : {
+        "parser"        : "gfm",
+        "hardwrap"      : true,
+        "idInHeadings"  : true
+    },
+    "opts": {
+        "encoding"      : "utf8",
+        "recurse"       : true,
+        "private"       : false,
+        "lenient"       : false,
+        "destination"   : "./docs",
+        "template"      : "./node_modules/jaguarjs-jsdoc",
+        "sourceRoot"    : "https://github.com/dcodeIO/protobuf.js/blob/master/src/",
+        "repo"          : "https://github.com/dcodeIO/protobuf.js"
+    }
+}

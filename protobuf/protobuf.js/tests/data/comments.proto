@@ -1,0 +1,51 @@
+/**
+ * File with a comment. (TODO)
+ */
+
+syntax = "proto3";
+
+/**
+ * Message
+ * with
+a
+ ** comment.
+ */
+message Test1 { /// not a valid comment
+
+    /**
+     * Field with a comment.
+     */
+    string field1 = 1;
+
+    // Field with no comment.
+    uint32 field2 = 2;
+
+    bool field3 = 3; /// Field with a comment and a <a href="http://example.com/foo/">link</a>
+}
+
+// Message
+// with
+// no
+// comment.
+message Test2 {
+}
+
+/*
+ * Message
+ * with
+ * no
+ * comment
+ */
+enum Test3 {
+
+    /** Value with a comment. */
+    ONE = 1;
+
+    // Value with no comment.
+    TWO = 2;
+
+    /// Preferred value with a comment.
+    THREE = 3; /// Value with a comment.
+
+    FOUR = 4; /// Other value with a comment.
+}

@@ -1,0 +1,130 @@
+<hazelcast
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.hazelcast.com/schema/config
+  http://www.hazelcast.com/schema/config/hazelcast-config-3.5.xsd"
+    xmlns="http://www.hazelcast.com/schema/config">
+
+    <group>
+        <!--<name>wfc-dev</name>-->
+        <name>wfc-pro</name>
+    </group>
+
+    <network>
+        <join>
+            <multicast enabled="true"/>
+        </join>
+    </network>
+
+    <!-- map eviction -->
+    <!-- http://docs.hazelcast.org/docs/latest-development/manual/html/Distributed_Data_Structures/Map/Map_Eviction.html -->
+    <map name="messages_map">
+        <!-- 7 days -->
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.MessageLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <map name="groups_map">
+        <!-- 7 days -->
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.GroupLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <map name="users">
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.UserLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <map name="user_status">
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.UserStatusLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <set name="node_ids"/>
+
+    <multimap name="user_setting">
+    </multimap>
+
+    <multimap name="group_members">
+    </multimap>
+
+    <map name="chatrooms">
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.ChatroomLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <map name="user_chatroom">
+    </map>
+
+    <map name="robots">
+        <!-- 7 days -->
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.RobotLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <map name="things">
+    </map>
+
+    <multimap name="user_robots">
+    </multimap>
+
+    <multimap name="user_things">
+    </multimap>
+
+    <multimap name="chatroom_members">
+    </multimap>
+
+    <multimap name="user_friends">
+    </multimap>
+
+    <multimap name="user_friends_request">
+    </multimap>
+
+    <map name="channels_map">
+        <!-- 7 days -->
+        <time-to-live-seconds>604800</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+        <map-store enabled="true">
+            <class-name>io.moquette.persistence.ChannelLoader</class-name>
+            <write-delay-seconds>0</write-delay-seconds>
+        </map-store>
+    </map>
+
+    <multimap name="channel_listeners">
+    </multimap>
+</hazelcast>

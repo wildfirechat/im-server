@@ -1,8 +1,0 @@
-rootProject.name = 'moquette-parent'
-include ':moquette-broker'
-include ':moquette-distribution'
-include ':moquette-embedded-test'
-
-project(':moquette-broker').projectDir = "$rootDir/broker" as File
-project(':moquette-distribution').projectDir = "$rootDir/distribution" as File
-project(':moquette-embedded-test').projectDir = "$rootDir/embedding_moquette" as File

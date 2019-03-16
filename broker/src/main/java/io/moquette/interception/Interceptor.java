@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 The original author or authors
+ * Copyright (c) 2012-2017 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,6 @@
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
-import io.moquette.broker.subscriptions.Subscription;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
@@ -38,12 +37,6 @@ public interface Interceptor {
     void notifyClientDisconnected(String clientID, String username);
 
     void notifyClientConnectionLost(String clientID, String username);
-
-    void notifyTopicPublished(MqttPublishMessage msg, String clientID, String username);
-
-    void notifyTopicSubscribed(Subscription sub, String username);
-
-    void notifyTopicUnsubscribed(String topic, String clientID, String username);
 
     void notifyMessageAcknowledged(InterceptAcknowledgedMessage msg);
 
