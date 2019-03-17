@@ -19,8 +19,8 @@ public class DES {
     public static String decryptDES(String decryptString) throws Exception {
         byte[] byteMi = Base64.getDecoder().decode(decryptString);
         IvParameterSpec zeroIv = new IvParameterSpec(iv);
-        SecretKeySpec key = new SecretKeySpec(Encrypt_Password.getBytes(), "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec key = new SecretKeySpec(Encrypt_Password.getBytes(), "DES");
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, zeroIv);
         byte decryptedData[] = cipher.doFinal(byteMi);
 
@@ -38,8 +38,8 @@ public class DES {
     }
     public static String encryptDES(String encryptString) throws Exception {
         IvParameterSpec zeroIv = new IvParameterSpec(iv);
-        SecretKeySpec key = new SecretKeySpec(Encrypt_Password.getBytes(), "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec key = new SecretKeySpec(Encrypt_Password.getBytes(), "DES");
+        Cipher cipher = Cipher.getInstance("DES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, key, zeroIv);
         byte[] encryptedData = cipher.doFinal(encryptString.getBytes());
         return new String(Base64.getEncoder().encode(encryptedData));
@@ -49,10 +49,10 @@ public class DES {
 		SecureRandom random = new SecureRandom();
 		DESKeySpec desKey = new DESKeySpec(Encrypt_Password.getBytes());
 		// 创建一个密匙工厂，然后用它把DESKeySpec转换成
-		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("AES");
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
 		SecretKey securekey = keyFactory.generateSecret(desKey);
 		// Cipher对象实际完成加密操作
-		Cipher cipher = Cipher.getInstance("AES");
+		Cipher cipher = Cipher.getInstance("DES");
 		// 用密匙初始化Cipher对象
 		cipher.init(Cipher.ENCRYPT_MODE, securekey, random);
 		// 现在，获取数据并加密
@@ -75,11 +75,11 @@ public class DES {
 		// 创建一个DESKeySpec对象
 		DESKeySpec desKey = new DESKeySpec(Encrypt_Password.getBytes());
 		// 创建一个密匙工厂
-		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("AES");
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
 		// 将DESKeySpec对象转换成SecretKey对象
 		SecretKey securekey = keyFactory.generateSecret(desKey);
 		// Cipher对象实际完成解密操作
-		Cipher cipher = Cipher.getInstance("AES");
+		Cipher cipher = Cipher.getInstance("DES");
 		// 用密匙初始化Cipher对象
 		cipher.init(Cipher.DECRYPT_MODE, securekey, random);
 		// 真正开始解密操作
