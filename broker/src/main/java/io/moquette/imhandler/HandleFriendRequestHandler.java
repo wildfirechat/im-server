@@ -29,22 +29,29 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
             if (errorCode == ERROR_CODE_SUCCESS) {
                 long messageId = MessageShardingUtil.generateId();
+                long timestamp = System.currentTimeMillis();
                 builder.setMessageId(messageId);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), System.currentTimeMillis());
+                builder.setServerTimestamp(timestamp);
+                saveAndPublish(request.getTargetUid(), null, builder.build(), timestamp);
 
                 WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent("以上是打招呼信息");
                 builder = WFCMessage.Message.newBuilder();
                 builder.setFromUser(request.getTargetUid());
                 builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
                 builder.setContent(contentBuilder);
+                timestamp = System.currentTimeMillis();
+                builder.setServerTimestamp(timestamp);
+
                 messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), System.currentTimeMillis());
+                saveAndPublish(request.getTargetUid(), null, builder.build(), timestamp);
 
                 contentBuilder.setContent("你们已经成为好友了，现在可以开始聊天了");
                 builder.setContent(contentBuilder);
                 messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);
+                timestamp = System.currentTimeMillis();
+                builder.setServerTimestamp(timestamp);
                 saveAndPublish(request.getTargetUid(), null, builder.build(), System.currentTimeMillis());
 
                 publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
