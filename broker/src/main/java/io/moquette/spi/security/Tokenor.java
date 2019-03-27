@@ -1,10 +1,17 @@
 package io.moquette.spi.security;
 
 
+import com.hazelcast.util.StringUtil;
 import io.moquette.spi.impl.security.AES;
 
 public class Tokenor {
-	private static final String KEY = "testim";
+	private static String KEY = "testim";
+
+	public static void setKey(String key) {
+	    if (!StringUtil.isNullOrEmpty(key)) {
+            KEY = key;
+        }
+    }
 
     public static String getUserId(byte[] password) {
         try {

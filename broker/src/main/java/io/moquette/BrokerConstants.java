@@ -101,6 +101,7 @@ public final class BrokerConstants {
     public static final String HZ_Cluster_Node_ID = "node_id";
     public static final String HTTP_SERVER_SECRET_KEY = "http.admin.secret_key";
     public static final String CLIENT_PROTO_SECRET_KEY = "client.proto.secret_key";
+    public static final String TOKEN_SECRET_KEY = "token.key ";
 
     public static final String EMBED_DB_PROPERTY_NAME = "embed.db";
 

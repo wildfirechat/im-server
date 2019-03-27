@@ -38,6 +38,7 @@ import io.moquette.spi.impl.security.AES;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
+import io.moquette.spi.security.Tokenor;
 import io.netty.util.ResourceLeakDetector;
 import win.liyufan.im.DBUtil;
 
@@ -379,6 +380,7 @@ public class Server {
         hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_Short_Port, shortPort);
         hazelcastInstance.getCluster().getLocalMember().setIntAttribute(HZ_Cluster_Node_ID, nodeId);
         hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_IP, serverIp);
+        Tokenor.setKey(config.getProperty(BrokerConstants.TOKEN_SECRET_KEY));
         RPCCenter.getInstance().init(this);
         return true;
     }
