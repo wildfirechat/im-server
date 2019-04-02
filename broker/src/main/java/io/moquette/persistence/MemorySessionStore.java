@@ -46,10 +46,6 @@ public class MemorySessionStore implements ISessionsStore {
         private String secret;
         private String dbSecret;
 
-        private Map<String, String> slientConvs = new ConcurrentHashMap<>();
-        private boolean globalSlient = false;
-        private boolean hiddenNotifyDetail = false;
-
         private long lastActiveTime;
 
         private long lastChatroomActiveTime;
@@ -157,26 +153,6 @@ public class MemorySessionStore implements ISessionsStore {
             this.clientID = clientID;
             this.clientSession = clientSession;
             this.username = username;
-        }
-
-        public boolean isHiddenNotifyDetail() {
-            return hiddenNotifyDetail;
-        }
-
-        public void setHiddenNotifyDetail(boolean hiddenNotifyDetail) {
-            this.hiddenNotifyDetail = hiddenNotifyDetail;
-        }
-
-        public Map<String, String> getSlientConvs() {
-            return slientConvs;
-        }
-
-        public boolean isGlobalSlient() {
-            return globalSlient;
-        }
-
-        public void setGlobalSlient(boolean globalSlient) {
-            this.globalSlient = globalSlient;
         }
 
         public String getAppName() {
@@ -326,21 +302,6 @@ public class MemorySessionStore implements ISessionsStore {
             session = databaseStore.createSession(username, clientID, clientSession);
         }
 
-        List<WFCMessage.UserSettingEntry> settings = mServer.getStore().messagesStore().getUserSetting(username, UserSettingScope.kUserSettingConversationSilent);
-        for (WFCMessage.UserSettingEntry entry : settings) {
-            if (!StringUtil.isNullOrEmpty(entry.getValue()) && !entry.getValue().equals("0")) {
-                session.slientConvs.put(entry.getKey(), entry.getValue());
-                break;
-            }
-        }
-
-        List<WFCMessage.UserSettingEntry> settings2 = mServer.getStore().messagesStore().getUserSetting(username, UserSettingScope.kUserSettingGlobalSilent);
-        for (WFCMessage.UserSettingEntry entry : settings2) {
-            if (!StringUtil.isNullOrEmpty(entry.getValue()) && !entry.getValue().equals("0")) {
-                session.globalSlient = true;
-                break;
-            }
-        }
         sessions.put(clientID, session);
         ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);
         if (sessionSet == null) {

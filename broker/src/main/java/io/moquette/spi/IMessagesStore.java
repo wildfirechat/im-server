@@ -161,9 +161,13 @@ public interface IMessagesStore {
     ErrorCode handleQuitChatroom(String userId, String clientId, String chatroomId);
 
     ErrorCode getUserSettings(String userId, long version, WFCMessage.GetUserSettingResult.Builder builder);
+    WFCMessage.UserSettingEntry getUserSetting(String userId, int scope, String key);
     List<WFCMessage.UserSettingEntry> getUserSetting(String userId, int scope);
     long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request);
 
+    boolean getUserGlobalSlient(String userId);
+    boolean getUserPushHiddenDetail(String userId);
+    boolean getUserConversationSlient(String userId, WFCMessage.Conversation conversation);
 
     ErrorCode createChannel(String operator, WFCMessage.ChannelInfo channelInfo);
     ErrorCode modifyChannelInfo(String operator, String channelId, int modifyType, String value);

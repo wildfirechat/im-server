@@ -112,6 +112,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     private SensitiveFilter mSensitiveFilter;
     private volatile long lastUpdateSensitiveTime = 0;
 
+    private ConcurrentHashMap<String, Boolean> userGlobalSlientMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -1684,6 +1687,28 @@ public class MemoryMessagesStore implements IMessagesStore {
         return datas;
     }
 
+
+    @Override
+    public WFCMessage.UserSettingEntry getUserSetting(String userId, int scope, String key) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+
+        Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
+        if (entries == null || entries.size() == 0) {
+            entries = loadPersistedUserSettings(userId, userSettingMap);
+        }
+
+        if (entries != null) {
+            for (WFCMessage.UserSettingEntry entry : entries) {
+                if (entry.getScope() == scope && (key== null || key.equals(entry.getKey()))) {
+                    return entry;
+                }
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public List<WFCMessage.UserSettingEntry> getUserSetting(String userId, int scope) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
@@ -1720,29 +1745,6 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        if (request.getScope() == UserSettingScope.kUserSettingConversationSilent || request.getScope() == UserSettingScope.kUserSettingGlobalSilent || request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
-            Collection<MemorySessionStore.Session> sessions = m_Server.getStore().sessionsStore().sessionForUser(userId);
-            for (MemorySessionStore.Session targetSession : sessions) {
-                if (StringUtil.isNullOrEmpty(request.getValue()) || request.getValue().equals("0")) {
-                    if(request.getScope() == UserSettingScope.kUserSettingConversationSilent) {
-                        targetSession.getSlientConvs().remove(request.getKey());
-                    } else if(request.getScope() == UserSettingScope.kUserSettingGlobalSilent) {
-                        targetSession.setGlobalSlient(false);
-                    } else if(request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
-                        targetSession.setHiddenNotifyDetail(false);
-                    }
-                } else {
-                    if(request.getScope() == UserSettingScope.kUserSettingConversationSilent) {
-                        targetSession.getSlientConvs().put(request.getKey(), request.getValue());
-                    } else if(request.getScope() == UserSettingScope.kUserSettingGlobalSilent) {
-                        targetSession.setGlobalSlient(true);
-                    } else if(request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
-                        targetSession.setHiddenNotifyDetail(true);
-                    }
-                }
-            }
-        }
-
         long updateDt = System.currentTimeMillis();
         WFCMessage.UserSettingEntry settingEntry = WFCMessage.UserSettingEntry.newBuilder().setScope(request.getScope()).setKey(request.getKey()).setValue(request.getValue()).setUpdateDt(updateDt).build();
         databaseStore.persistUserSetting(userId, settingEntry);
@@ -1757,7 +1759,56 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         userSettingMap.put(userId, settingEntry);
+        userGlobalSlientMap.remove(userId);
+        userConvSlientMap.remove(userId);
         return updateDt;
+    }
+
+    @Override
+    public boolean getUserGlobalSlient(String userId) {
+        Boolean slient = userGlobalSlientMap.get(userId);
+        if (slient == null) {
+            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingGlobalSilent, null);
+            if (entry == null || !entry.getValue().equals("1")) {
+                slient = false;
+            } else {
+                slient = true;
+            }
+            userGlobalSlientMap.put(userId, slient);
+        }
+        return slient;
+    }
+
+    @Override
+    public boolean getUserPushHiddenDetail(String userId) {
+        Boolean hidden = userPushHiddenDetail.get(userId);
+        if (hidden == null) {
+            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingGlobalSilent, null);
+            if (entry == null || !entry.getValue().equals("1")) {
+                hidden = false;
+            } else {
+                hidden = true;
+            }
+            userPushHiddenDetail.put(userId, hidden);
+        }
+        return hidden;
+    }
+
+    @Override
+    public boolean getUserConversationSlient(String userId, WFCMessage.Conversation conversation) {
+        String key = userId + "|" + conversation.getType() + "|" + conversation.getTarget() + "|" + conversation.getLine();
+        Boolean slient = userConvSlientMap.get(key);
+        if (slient == null) {
+            String convSlientKey = conversation.getType() + "-" + conversation.getLine() + "-" + conversation.getTarget();
+            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingConversationSilent, convSlientKey);
+            if (entry == null || !entry.getValue().equals("1")) {
+                slient = false;
+            } else {
+                slient = true;
+            }
+            userConvSlientMap.put(userId, slient);
+        }
+        return slient;
     }
 
     @Override
