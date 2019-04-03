@@ -26,13 +26,13 @@ abstract public class GroupHandler<T> extends IMHandler<T> {
         }
 
         for (int line : lines) {
-            WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder().setContent(content);
-            builder.setConversation(builder.getConversationBuilder().setType(ProtoConstants.ConversationType.ConversationType_Group).setTarget(targetId).setLine(line));
             long timestamp = System.currentTimeMillis();
+            WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder().setContent(content).setServerTimestamp(timestamp);
+            builder.setConversation(builder.getConversationBuilder().setType(ProtoConstants.ConversationType.ConversationType_Group).setTarget(targetId).setLine(line));
             builder.setFromUser(fromUser);
             long messageId = MessageShardingUtil.generateId();
             builder.setMessageId(messageId);
-            saveAndPublish(fromUser, null, builder.build(), timestamp);
+            saveAndPublish(fromUser, null, builder.build());
         }
     }
 

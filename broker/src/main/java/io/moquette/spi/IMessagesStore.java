@@ -97,7 +97,7 @@ public interface IMessagesStore {
     }
 
     DatabaseStore getDatabaseStore();
-    WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message, long timestamp);
+    WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message);
 	int getNotifyReceivers(String fromUser, WFCMessage.Message message, Set<String> notifyReceivers);
     WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType);
     long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String userId, long messageId);

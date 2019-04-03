@@ -99,7 +99,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
 
                 if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                     if (!ignoreMsg) {
-                        saveAndPublish(fromUser, clientID, message, timestamp);
+                        saveAndPublish(fromUser, clientID, message);
                     }
                     ackPayload = ackPayload.capacity(20);
                     ackPayload.writeLong(messageId);

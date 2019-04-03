@@ -47,3 +47,5 @@ broker/nbactions-Server.xml
 maven-metadata.xml
 /.gradle/
 /bin/
+broker/config/git.properties
+distribution/src/main/resources/git.properties

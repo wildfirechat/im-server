@@ -150,7 +150,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message, long timestamp) {
+    public WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 

@@ -32,7 +32,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 long timestamp = System.currentTimeMillis();
                 builder.setMessageId(messageId);
                 builder.setServerTimestamp(timestamp);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), timestamp);
+                saveAndPublish(request.getTargetUid(), null, builder.build());
 
                 WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent("以上是打招呼信息");
                 builder = WFCMessage.Message.newBuilder();
@@ -44,7 +44,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
                 messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), timestamp);
+                saveAndPublish(request.getTargetUid(), null, builder.build());
 
                 contentBuilder.setContent("你们已经成为好友了，现在可以开始聊天了");
                 builder.setContent(contentBuilder);
@@ -52,7 +52,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 builder.setMessageId(messageId);
                 timestamp = System.currentTimeMillis();
                 builder.setServerTimestamp(timestamp);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), System.currentTimeMillis());
+                saveAndPublish(request.getTargetUid(), null, builder.build());
 
                 publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
                 publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);

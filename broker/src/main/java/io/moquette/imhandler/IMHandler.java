@@ -240,10 +240,10 @@ abstract public class IMHandler<T> {
 
     }
 
-    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message, long timestamp) {
+    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message) {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
-        message = m_messagesStore.storeMessage(username, clientID, message, timestamp);
+        message = m_messagesStore.storeMessage(username, clientID, message);
         int pullType = m_messagesStore.getNotifyReceivers(username, message, notifyReceivers);
         this.publisher.publish2Receivers(message, notifyReceivers, clientID, pullType);
         return message.getMessageId();
