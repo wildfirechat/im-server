@@ -53,3 +53,10 @@
 <img src="http://static.wildfirechat.cn/ios-location-view.png" width = 50% height = 50% />
 
 <img src="http://static.wildfirechat.cn/ios-voip-view.png" width = 50% height = 50% />
+
+
+
+## License
+
+1. Under the Creative Commons Attribution-NoDerivs 3.0 Unported license. See the [LICENSE](https://github.com/wildfirechat/server/blob/wildfirechat/LICENSE) file for details.
+2. Under the Anti 996 License. See the [Anti 996 LICENSE](https://github.com/wildfirechat/server/blob/wildfirechat/LICENSE_996) file for details.
