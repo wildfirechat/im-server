@@ -39,7 +39,7 @@ abstract public class RobotAction extends Action {
             return ErrorCode.INVALID_PARAMETER;
         }
 
-        if (mLimitCounter.isGranted(rid)) {
+        if (!mLimitCounter.isGranted(rid)) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
 
