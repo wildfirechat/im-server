@@ -1480,9 +1480,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        if (existRequest != null) {
-            if (existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted && System.currentTimeMillis() - existRequest.getUpdateDt() > 7 * 24 * 60 * 60 * 1000) {
-                if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected) {
+        if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
+            if (System.currentTimeMillis() - existRequest.getUpdateDt() > 7 * 24 * 60 * 60 * 1000) {
+                if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
+                    && System.currentTimeMillis() - existRequest.getUpdateDt() < 30 * 24 * 60 * 60 * 1000) {
                     return ErrorCode.ERROR_CODE_FRIEND_REQUEST_BLOCKED;
                 }
                 requestMap.remove(userId, existRequest);
