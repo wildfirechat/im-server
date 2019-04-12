@@ -41,7 +41,7 @@ public class VersionAction extends Action {
                 response.setContent(new Gson().toJson(GitRepositoryState.getGitRepositoryState()));
             } catch (IOException e) {
                 e.printStackTrace();
-                response.setContent("No version info!");
+                response.setContent("{\"version\":\"unknown\"}");
             }
         }
     }

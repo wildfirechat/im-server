@@ -227,21 +227,25 @@ public class MessagesPublisher {
                     isSlient = true;
                 } else {
                     isSlient = false;
-                    WFCMessage.Conversation conversation;
-                    if (conversationType == ProtoConstants.ConversationType.ConversationType_Private) {
-                        conversation = WFCMessage.Conversation.newBuilder().setType(conversationType).setLine(line).setTarget(sender).build();
-                    } else {
-                        conversation = WFCMessage.Conversation.newBuilder().setType(conversationType).setLine(line).setTarget(target).build();
-                    }
 
-                    if (m_messagesStore.getUserConversationSlient(user, conversation)) {
-                        LOG.info("The conversation {}-{}-{} is slient", conversation.getType(), conversation.getTarget(), conversation.getLine());
-                        isSlient = true;
-                    }
+                    if (!user.equals(sender)) {
+                        WFCMessage.Conversation conversation;
+                        if (conversationType == ProtoConstants.ConversationType.ConversationType_Private) {
+                            conversation = WFCMessage.Conversation.newBuilder().setType(conversationType).setLine(line).setTarget(sender).build();
+                        } else {
+                            conversation = WFCMessage.Conversation.newBuilder().setType(conversationType).setLine(line).setTarget(target).build();
+                        }
 
-                    if (m_messagesStore.getUserGlobalSlient(user)) {
-                        LOG.info("The user {} is global sliented", user);
-                        isSlient = true;
+
+                        if (m_messagesStore.getUserConversationSlient(user, conversation)) {
+                            LOG.info("The conversation {}-{}-{} is slient", conversation.getType(), conversation.getTarget(), conversation.getLine());
+                            isSlient = true;
+                        }
+
+                        if (m_messagesStore.getUserGlobalSlient(user)) {
+                            LOG.info("The user {} is global sliented", user);
+                            isSlient = true;
+                        }
                     }
 
                     if (!StringUtil.isNullOrEmpty(pushContent) || messageContentType == 400 || messageContentType == 402) {
