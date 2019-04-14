@@ -319,7 +319,7 @@ public class Server {
 
     	MediaServerConfig.SERVER_IP = getServerIp(config);
 
-        MediaServerConfig.HTTP_SERVER_PORT = config.getProperty(BrokerConstants.HTTP_SERVER_PORT);
+        MediaServerConfig.HTTP_SERVER_PORT = Integer.parseInt(config.getProperty(BrokerConstants.HTTP_SERVER_PORT));
 
         MediaServerConfig.FILE_STROAGE_ROOT = config.getProperty(BrokerConstants.FILE_STORAGE_ROOT, MediaServerConfig.FILE_STROAGE_ROOT);
         File file = new File(MediaServerConfig.FILE_STROAGE_ROOT);

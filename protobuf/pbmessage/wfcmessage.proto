@@ -147,6 +147,7 @@ message GetUploadTokenResult {
     required string domain = 1;
     required string token = 2;
     required string server = 3;
+    optional int32 port = 4;
 }
 
 message HandleFriendRequest {
@@ -168,7 +169,9 @@ message Message {
     required MessageContent content = 3;
     optional int64 message_id = 4;
     optional int64 server_timestamp = 5;
+    //not use anymore
     optional string to_user = 6;
+    repeated string to = 7;
 }
 
 message User {

@@ -17123,6 +17123,16 @@ public final class WFCMessage {
      */
     com.google.protobuf.ByteString
         getServerBytes();
+
+    // optional int32 port = 4;
+    /**
+     * <code>optional int32 port = 4;</code>
+     */
+    boolean hasPort();
+    /**
+     * <code>optional int32 port = 4;</code>
+     */
+    int getPort();
   }
   /**
    * Protobuf type {@code GetUploadTokenResult}
@@ -17188,6 +17198,11 @@ public final class WFCMessage {
             case 26: {
               bitField0_ |= 0x00000004;
               server_ = input.readBytes();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              port_ = input.readInt32();
               break;
             }
           }
@@ -17359,10 +17374,27 @@ public final class WFCMessage {
       }
     }
 
+    // optional int32 port = 4;
+    public static final int PORT_FIELD_NUMBER = 4;
+    private int port_;
+    /**
+     * <code>optional int32 port = 4;</code>
+     */
+    public boolean hasPort() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 port = 4;</code>
+     */
+    public int getPort() {
+      return port_;
+    }
+
     private void initFields() {
       domain_ = "";
       token_ = "";
       server_ = "";
+      port_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -17397,6 +17429,9 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getServerBytes());
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, port_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -17417,6 +17452,10 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getServerBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, port_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -17540,6 +17579,8 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000002);
         server_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        port_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -17580,6 +17621,10 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000004;
         }
         result.server_ = server_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.port_ = port_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -17610,6 +17655,9 @@ public final class WFCMessage {
           bitField0_ |= 0x00000004;
           server_ = other.server_;
           onChanged();
+        }
+        if (other.hasPort()) {
+          setPort(other.getPort());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -17868,6 +17916,39 @@ public final class WFCMessage {
   }
   bitField0_ |= 0x00000004;
         server_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 port = 4;
+      private int port_ ;
+      /**
+       * <code>optional int32 port = 4;</code>
+       */
+      public boolean hasPort() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 port = 4;</code>
+       */
+      public int getPort() {
+        return port_;
+      }
+      /**
+       * <code>optional int32 port = 4;</code>
+       */
+      public Builder setPort(int value) {
+        bitField0_ |= 0x00000008;
+        port_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 port = 4;</code>
+       */
+      public Builder clearPort() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        port_ = 0;
         onChanged();
         return this;
       }
@@ -19496,17 +19577,49 @@ public final class WFCMessage {
     // optional string to_user = 6;
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     boolean hasToUser();
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     java.lang.String getToUser();
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     com.google.protobuf.ByteString
         getToUserBytes();
+
+    // repeated string to = 7;
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    java.util.List<java.lang.String>
+    getToList();
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    int getToCount();
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    java.lang.String getTo(int index);
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getToBytes(int index);
   }
   /**
    * Protobuf type {@code Message}
@@ -19605,6 +19718,14 @@ public final class WFCMessage {
               toUser_ = input.readBytes();
               break;
             }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                to_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              to_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -19613,6 +19734,9 @@ public final class WFCMessage {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_ = new com.google.protobuf.UnmodifiableLazyStringList(to_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -19769,12 +19893,20 @@ public final class WFCMessage {
     private java.lang.Object toUser_;
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     public boolean hasToUser() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     public java.lang.String getToUser() {
       java.lang.Object ref = toUser_;
@@ -19792,6 +19924,10 @@ public final class WFCMessage {
     }
     /**
      * <code>optional string to_user = 6;</code>
+     *
+     * <pre>
+     *not use anymore
+     * </pre>
      */
     public com.google.protobuf.ByteString
         getToUserBytes() {
@@ -19807,6 +19943,36 @@ public final class WFCMessage {
       }
     }
 
+    // repeated string to = 7;
+    public static final int TO_FIELD_NUMBER = 7;
+    private com.google.protobuf.LazyStringList to_;
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    public java.util.List<java.lang.String>
+        getToList() {
+      return to_;
+    }
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    public int getToCount() {
+      return to_.size();
+    }
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    public java.lang.String getTo(int index) {
+      return to_.get(index);
+    }
+    /**
+     * <code>repeated string to = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getToBytes(int index) {
+      return to_.getByteString(index);
+    }
+
     private void initFields() {
       conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
       fromUser_ = "";
@@ -19814,6 +19980,7 @@ public final class WFCMessage {
       messageId_ = 0L;
       serverTimestamp_ = 0L;
       toUser_ = "";
+      to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -19865,6 +20032,9 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeBytes(6, getToUserBytes());
       }
+      for (int i = 0; i < to_.size(); i++) {
+        output.writeBytes(7, to_.getByteString(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -19897,6 +20067,15 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(6, getToUserBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < to_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(to_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getToList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -20036,6 +20215,8 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000010);
         toUser_ = "";
         bitField0_ = (bitField0_ & ~0x00000020);
+        to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -20096,6 +20277,12 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000020;
         }
         result.toUser_ = toUser_;
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          to_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              to_);
+          bitField0_ = (bitField0_ & ~0x00000040);
+        }
+        result.to_ = to_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -20132,6 +20319,16 @@ public final class WFCMessage {
         if (other.hasToUser()) {
           bitField0_ |= 0x00000020;
           toUser_ = other.toUser_;
+          onChanged();
+        }
+        if (!other.to_.isEmpty()) {
+          if (to_.isEmpty()) {
+            to_ = other.to_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            ensureToIsMutable();
+            to_.addAll(other.to_);
+          }
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -20559,12 +20756,20 @@ public final class WFCMessage {
       private java.lang.Object toUser_ = "";
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public boolean hasToUser() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public java.lang.String getToUser() {
         java.lang.Object ref = toUser_;
@@ -20579,6 +20784,10 @@ public final class WFCMessage {
       }
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public com.google.protobuf.ByteString
           getToUserBytes() {
@@ -20595,6 +20804,10 @@ public final class WFCMessage {
       }
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public Builder setToUser(
           java.lang.String value) {
@@ -20608,6 +20821,10 @@ public final class WFCMessage {
       }
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public Builder clearToUser() {
         bitField0_ = (bitField0_ & ~0x00000020);
@@ -20617,6 +20834,10 @@ public final class WFCMessage {
       }
       /**
        * <code>optional string to_user = 6;</code>
+       *
+       * <pre>
+       *not use anymore
+       * </pre>
        */
       public Builder setToUserBytes(
           com.google.protobuf.ByteString value) {
@@ -20625,6 +20846,99 @@ public final class WFCMessage {
   }
   bitField0_ |= 0x00000020;
         toUser_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated string to = 7;
+      private com.google.protobuf.LazyStringList to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureToIsMutable() {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          to_ = new com.google.protobuf.LazyStringArrayList(to_);
+          bitField0_ |= 0x00000040;
+         }
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public java.util.List<java.lang.String>
+          getToList() {
+        return java.util.Collections.unmodifiableList(to_);
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public int getToCount() {
+        return to_.size();
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public java.lang.String getTo(int index) {
+        return to_.get(index);
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getToBytes(int index) {
+        return to_.getByteString(index);
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public Builder setTo(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public Builder addTo(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public Builder addAllTo(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureToIsMutable();
+        super.addAll(values, to_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public Builder clearTo() {
+        to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 7;</code>
+       */
+      public Builder addToBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.add(value);
         onChanged();
         return this;
       }
@@ -55865,102 +56179,102 @@ public final class WFCMessage {
       "to_uid\030\002 \002(\t\022\016\n\006reason\030\003 \002(\t\022\016\n\006status\030\004" +
       " \001(\005\022\021\n\tupdate_dt\030\005 \001(\003\022\030\n\020from_read_sta" +
       "tus\030\006 \001(\010\022\026\n\016to_read_status\030\007 \001(\010\"#\n\rGen" +
-      "eralResult\022\022\n\nerror_code\030\001 \002(\005\"E\n\024GetUpl" +
+      "eralResult\022\022\n\nerror_code\030\001 \002(\005\"S\n\024GetUpl" +
       "oadTokenResult\022\016\n\006domain\030\001 \002(\t\022\r\n\005token\030" +
-      "\002 \002(\t\022\016\n\006server\030\003 \002(\t\"9\n\023HandleFriendReq",
-      "uest\022\022\n\ntarget_uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005" +
-      "\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tIDListBuf\022\n\n\002id" +
-      "\030\001 \003(\t\"\242\001\n\007Message\022#\n\014conversation\030\001 \002(\013" +
-      "2\r.Conversation\022\021\n\tfrom_user\030\002 \002(\t\022 \n\007co" +
-      "ntent\030\003 \002(\0132\017.MessageContent\022\022\n\nmessage_" +
-      "id\030\004 \001(\003\022\030\n\020server_timestamp\030\005 \001(\003\022\017\n\007to" +
-      "_user\030\006 \001(\t\"\332\001\n\004User\022\013\n\003uid\030\001 \002(\t\022\014\n\004nam" +
-      "e\030\002 \001(\t\022\024\n\014display_name\030\003 \001(\t\022\020\n\010portrai" +
-      "t\030\004 \001(\t\022\016\n\006mobile\030\005 \001(\t\022\r\n\005email\030\006 \001(\t\022\017" +
-      "\n\007address\030\007 \001(\t\022\017\n\007company\030\010 \001(\t\022\r\n\005extr",
-      "a\030\t \001(\t\022\021\n\tupdate_dt\030\n \001(\003\022\016\n\006gender\030\013 \001" +
-      "(\005\022\016\n\006social\030\014 \001(\t\022\014\n\004type\030\r \001(\005\"c\n\005Robo" +
-      "t\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r\n\005owner\030\003" +
-      " \001(\t\022\016\n\006secret\030\004 \001(\t\022\020\n\010callback\030\005 \001(\t\022\r" +
-      "\n\005extra\030\006 \001(\t\"(\n\017GetRobotsResult\022\025\n\005entr" +
-      "y\030\001 \003(\0132\006.Robot\"P\n\005Thing\022\013\n\003uid\030\001 \002(\t\022\r\n" +
-      "\005state\030\002 \002(\005\022\r\n\005token\030\003 \002(\t\022\r\n\005owner\030\004 \001" +
-      "(\t\022\r\n\005extra\030\005 \001(\t\"(\n\017GetThingsResult\022\025\n\005" +
-      "entry\030\001 \003(\0132\006.Thing\"g\n\030UploadDeviceToken" +
-      "Request\022\020\n\010platform\030\001 \002(\005\022\020\n\010app_name\030\002 ",
-      "\002(\t\022\024\n\014device_token\030\003 \002(\t\022\021\n\tpush_type\030\004" +
-      " \002(\005\"\201\001\n\026ModifyGroupInfoRequest\022\020\n\010group" +
-      "_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\022\017" +
-      "\n\007to_line\030\004 \003(\005\022\'\n\016notify_content\030\005 \001(\0132" +
-      "\017.MessageContent\"(\n\tInfoEntry\022\014\n\004type\030\001 " +
-      "\002(\005\022\r\n\005value\030\002 \002(\t\"0\n\023ModifyMyInfoReques" +
-      "t\022\031\n\005entry\030\001 \003(\0132\n.InfoEntry\";\n\rNotifyMe" +
-      "ssage\022\014\n\004type\030\001 \002(\005\022\014\n\004head\030\002 \002(\003\022\016\n\006tar" +
-      "get\030\003 \001(\t\"=\n\022PullMessageRequest\022\n\n\002id\030\001 " +
-      "\002(\003\022\014\n\004type\030\002 \002(\005\022\r\n\005delay\030\003 \001(\003\"M\n\021Pull",
-      "MessageResult\022\031\n\007message\030\001 \003(\0132\010.Message" +
-      "\022\017\n\007current\030\002 \002(\003\022\014\n\004head\030\003 \002(\003\"/\n\023PullG" +
-      "roupInfoResult\022\030\n\004info\030\001 \003(\0132\n.GroupInfo" +
-      "\"6\n\026PullGroupMemberRequest\022\016\n\006target\030\001 \002" +
-      "(\t\022\014\n\004head\030\002 \002(\003\"5\n\025PullGroupMemberResul" +
-      "t\022\034\n\006member\030\001 \003(\0132\014.GroupMember\"-\n\013UserR" +
-      "equest\022\013\n\003uid\030\001 \002(\t\022\021\n\tupdate_dt\030\002 \001(\003\"0" +
-      "\n\017PullUserRequest\022\035\n\007request\030\001 \003(\0132\014.Use" +
-      "rRequest\"/\n\nUserResult\022\023\n\004user\030\001 \002(\0132\005.U" +
-      "ser\022\014\n\004code\030\002 \002(\005\"-\n\016PullUserResult\022\033\n\006r",
-      "esult\030\001 \003(\0132\013.UserResult\"^\n\020QuitGroupReq" +
-      "uest\022\020\n\010group_id\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022" +
-      "\'\n\016notify_content\030\003 \001(\0132\017.MessageContent" +
-      "\"~\n\030RemoveGroupMemberRequest\022\020\n\010group_id" +
-      "\030\001 \002(\t\022\026\n\016removed_member\030\002 \003(\t\022\017\n\007to_lin" +
-      "e\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.Messag" +
-      "eContent\"u\n\024TransferGroupRequest\022\020\n\010grou" +
-      "p_id\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002(\t\022\017\n\007to_line" +
-      "\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.Message" +
-      "Content\"s\n\026ModifyGroupMemberAlias\022\020\n\010gro",
-      "up_id\030\001 \002(\t\022\r\n\005alias\030\002 \002(\t\022\017\n\007to_line\030\003 " +
-      "\003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.MessageCon" +
-      "tent\"P\n\020UserSettingEntry\022\r\n\005scope\030\001 \002(\005\022" +
-      "\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 \002(\t\022\021\n\tupdate_dt" +
-      "\030\004 \002(\003\"A\n\024ModifyUserSettingReq\022\r\n\005scope\030" +
-      "\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 \002(\t\"\032\n\007Ver" +
-      "sion\022\017\n\007version\030\001 \002(\003\"8\n\024GetUserSettingR" +
-      "esult\022 \n\005entry\030\001 \003(\0132\021.UserSettingEntry\"" +
-      "7\n\006Friend\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\021\n" +
-      "\tupdate_dt\030\003 \002(\003\"*\n\020GetFriendsResult\022\026\n\005",
-      "entry\030\001 \003(\0132\007.Friend\"7\n\026GetFriendRequest" +
-      "Result\022\035\n\005entry\030\001 \003(\0132\016.FriendRequest\"\243\001" +
-      "\n\021ConnectAckPayload\022\020\n\010msg_head\030\001 \001(\003\022\023\n" +
-      "\013friend_head\030\002 \001(\003\022\026\n\016friend_rq_head\030\003 \001" +
-      "(\003\022\024\n\014setting_head\030\004 \001(\003\022\021\n\tnode_addr\030\005 " +
-      "\001(\t\022\021\n\tnode_port\030\006 \001(\005\022\023\n\013server_time\030\007 " +
-      "\001(\003\"P\n\rIMHttpWrapper\022\r\n\005token\030\001 \002(\t\022\021\n\tc" +
-      "lient_id\030\002 \002(\t\022\017\n\007request\030\003 \002(\t\022\014\n\004data\030" +
-      "\004 \001(\014\"A\n\021SearchUserRequest\022\017\n\007keyword\030\001 " +
-      "\002(\t\022\r\n\005fuzzy\030\002 \001(\005\022\014\n\004page\030\003 \001(\005\"(\n\020Sear",
-      "chUserResult\022\024\n\005entry\030\001 \003(\0132\005.User\"@\n\026Ge" +
-      "tChatroomInfoRequest\022\023\n\013chatroom_id\030\001 \002(" +
-      "\t\022\021\n\tupdate_dt\030\002 \001(\003\"\227\001\n\014ChatroomInfo\022\r\n" +
-      "\005title\030\001 \002(\t\022\014\n\004desc\030\002 \001(\t\022\020\n\010portrait\030\003" +
-      " \001(\t\022\024\n\014member_count\030\004 \001(\005\022\021\n\tcreate_dt\030" +
-      "\005 \001(\003\022\021\n\tupdate_dt\030\006 \001(\003\022\r\n\005extra\030\007 \001(\t\022" +
-      "\r\n\005state\030\010 \001(\005\"F\n\034GetChatroomMemberInfoR" +
-      "equest\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n\tmax_count" +
-      "\030\002 \001(\005\";\n\022ChatroomMemberInfo\022\024\n\014member_c" +
-      "ount\030\001 \001(\005\022\017\n\007members\030\002 \003(\t\"\026\n\010INT64Buf\022",
-      "\n\n\002id\030\001 \002(\003\"4\n\023NotifyRecallMessage\022\n\n\002id" +
-      "\030\001 \002(\003\022\021\n\tfrom_user\030\002 \002(\t\"/\n\020BlackUserRe" +
-      "quest\022\013\n\003uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005\"\323\001\n\014R" +
-      "outeRequest\022\013\n\003app\030\001 \001(\t\022\020\n\010platform\030\002 \001" +
-      "(\005\022\021\n\tpush_type\030\003 \001(\005\022\023\n\013device_name\030\004 \001" +
-      "(\t\022\026\n\016device_version\030\005 \001(\t\022\022\n\nphone_name" +
-      "\030\006 \001(\t\022\020\n\010language\030\007 \001(\t\022\024\n\014carrier_name" +
-      "\030\010 \001(\t\022\023\n\013app_version\030\t \001(\t\022\023\n\013sdk_versi" +
-      "on\030\n \001(\t\"D\n\rRouteResponse\022\014\n\004host\030\001 \002(\t\022" +
-      "\021\n\tlong_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"5",
-      "\n\017GetTokenRequest\022\017\n\007user_id\030\001 \002(\t\022\021\n\tcl" +
-      "ient_id\030\002 \002(\tB#\n\025cn.wildfirechat.protoB\n" +
-      "WFCMessage"
+      "\002 \002(\t\022\016\n\006server\030\003 \002(\t\022\014\n\004port\030\004 \001(\005\"9\n\023H",
+      "andleFriendRequest\022\022\n\ntarget_uid\030\001 \002(\t\022\016" +
+      "\n\006status\030\002 \002(\005\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tI" +
+      "DListBuf\022\n\n\002id\030\001 \003(\t\"\256\001\n\007Message\022#\n\014conv" +
+      "ersation\030\001 \002(\0132\r.Conversation\022\021\n\tfrom_us" +
+      "er\030\002 \002(\t\022 \n\007content\030\003 \002(\0132\017.MessageConte" +
+      "nt\022\022\n\nmessage_id\030\004 \001(\003\022\030\n\020server_timesta" +
+      "mp\030\005 \001(\003\022\017\n\007to_user\030\006 \001(\t\022\n\n\002to\030\007 \003(\t\"\332\001" +
+      "\n\004User\022\013\n\003uid\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\024\n\014dis" +
+      "play_name\030\003 \001(\t\022\020\n\010portrait\030\004 \001(\t\022\016\n\006mob" +
+      "ile\030\005 \001(\t\022\r\n\005email\030\006 \001(\t\022\017\n\007address\030\007 \001(",
+      "\t\022\017\n\007company\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\021\n\tupd" +
+      "ate_dt\030\n \001(\003\022\016\n\006gender\030\013 \001(\005\022\016\n\006social\030\014" +
+      " \001(\t\022\014\n\004type\030\r \001(\005\"c\n\005Robot\022\013\n\003uid\030\001 \002(\t" +
+      "\022\r\n\005state\030\002 \002(\005\022\r\n\005owner\030\003 \001(\t\022\016\n\006secret" +
+      "\030\004 \001(\t\022\020\n\010callback\030\005 \001(\t\022\r\n\005extra\030\006 \001(\t\"" +
+      "(\n\017GetRobotsResult\022\025\n\005entry\030\001 \003(\0132\006.Robo" +
+      "t\"P\n\005Thing\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r" +
+      "\n\005token\030\003 \002(\t\022\r\n\005owner\030\004 \001(\t\022\r\n\005extra\030\005 " +
+      "\001(\t\"(\n\017GetThingsResult\022\025\n\005entry\030\001 \003(\0132\006." +
+      "Thing\"g\n\030UploadDeviceTokenRequest\022\020\n\010pla",
+      "tform\030\001 \002(\005\022\020\n\010app_name\030\002 \002(\t\022\024\n\014device_" +
+      "token\030\003 \002(\t\022\021\n\tpush_type\030\004 \002(\005\"\201\001\n\026Modif" +
+      "yGroupInfoRequest\022\020\n\010group_id\030\001 \002(\t\022\014\n\004t" +
+      "ype\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\022\017\n\007to_line\030\004 \003(" +
+      "\005\022\'\n\016notify_content\030\005 \001(\0132\017.MessageConte" +
+      "nt\"(\n\tInfoEntry\022\014\n\004type\030\001 \002(\005\022\r\n\005value\030\002" +
+      " \002(\t\"0\n\023ModifyMyInfoRequest\022\031\n\005entry\030\001 \003" +
+      "(\0132\n.InfoEntry\";\n\rNotifyMessage\022\014\n\004type\030" +
+      "\001 \002(\005\022\014\n\004head\030\002 \002(\003\022\016\n\006target\030\003 \001(\t\"=\n\022P" +
+      "ullMessageRequest\022\n\n\002id\030\001 \002(\003\022\014\n\004type\030\002 ",
+      "\002(\005\022\r\n\005delay\030\003 \001(\003\"M\n\021PullMessageResult\022" +
+      "\031\n\007message\030\001 \003(\0132\010.Message\022\017\n\007current\030\002 " +
+      "\002(\003\022\014\n\004head\030\003 \002(\003\"/\n\023PullGroupInfoResult" +
+      "\022\030\n\004info\030\001 \003(\0132\n.GroupInfo\"6\n\026PullGroupM" +
+      "emberRequest\022\016\n\006target\030\001 \002(\t\022\014\n\004head\030\002 \002" +
+      "(\003\"5\n\025PullGroupMemberResult\022\034\n\006member\030\001 " +
+      "\003(\0132\014.GroupMember\"-\n\013UserRequest\022\013\n\003uid\030" +
+      "\001 \002(\t\022\021\n\tupdate_dt\030\002 \001(\003\"0\n\017PullUserRequ" +
+      "est\022\035\n\007request\030\001 \003(\0132\014.UserRequest\"/\n\nUs" +
+      "erResult\022\023\n\004user\030\001 \002(\0132\005.User\022\014\n\004code\030\002 ",
+      "\002(\005\"-\n\016PullUserResult\022\033\n\006result\030\001 \003(\0132\013." +
+      "UserResult\"^\n\020QuitGroupRequest\022\020\n\010group_" +
+      "id\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_cont" +
+      "ent\030\003 \001(\0132\017.MessageContent\"~\n\030RemoveGrou" +
+      "pMemberRequest\022\020\n\010group_id\030\001 \002(\t\022\026\n\016remo" +
+      "ved_member\030\002 \003(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016not" +
+      "ify_content\030\004 \001(\0132\017.MessageContent\"u\n\024Tr" +
+      "ansferGroupRequest\022\020\n\010group_id\030\001 \002(\t\022\021\n\t" +
+      "new_owner\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016noti" +
+      "fy_content\030\004 \001(\0132\017.MessageContent\"s\n\026Mod",
+      "ifyGroupMemberAlias\022\020\n\010group_id\030\001 \002(\t\022\r\n" +
+      "\005alias\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_" +
+      "content\030\004 \001(\0132\017.MessageContent\"P\n\020UserSe" +
+      "ttingEntry\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r" +
+      "\n\005value\030\003 \002(\t\022\021\n\tupdate_dt\030\004 \002(\003\"A\n\024Modi" +
+      "fyUserSettingReq\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002" +
+      " \002(\t\022\r\n\005value\030\003 \002(\t\"\032\n\007Version\022\017\n\007versio" +
+      "n\030\001 \002(\003\"8\n\024GetUserSettingResult\022 \n\005entry" +
+      "\030\001 \003(\0132\021.UserSettingEntry\"7\n\006Friend\022\013\n\003u" +
+      "id\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\021\n\tupdate_dt\030\003 \002",
+      "(\003\"*\n\020GetFriendsResult\022\026\n\005entry\030\001 \003(\0132\007." +
+      "Friend\"7\n\026GetFriendRequestResult\022\035\n\005entr" +
+      "y\030\001 \003(\0132\016.FriendRequest\"\243\001\n\021ConnectAckPa" +
+      "yload\022\020\n\010msg_head\030\001 \001(\003\022\023\n\013friend_head\030\002" +
+      " \001(\003\022\026\n\016friend_rq_head\030\003 \001(\003\022\024\n\014setting_" +
+      "head\030\004 \001(\003\022\021\n\tnode_addr\030\005 \001(\t\022\021\n\tnode_po" +
+      "rt\030\006 \001(\005\022\023\n\013server_time\030\007 \001(\003\"P\n\rIMHttpW" +
+      "rapper\022\r\n\005token\030\001 \002(\t\022\021\n\tclient_id\030\002 \002(\t" +
+      "\022\017\n\007request\030\003 \002(\t\022\014\n\004data\030\004 \001(\014\"A\n\021Searc" +
+      "hUserRequest\022\017\n\007keyword\030\001 \002(\t\022\r\n\005fuzzy\030\002",
+      " \001(\005\022\014\n\004page\030\003 \001(\005\"(\n\020SearchUserResult\022\024" +
+      "\n\005entry\030\001 \003(\0132\005.User\"@\n\026GetChatroomInfoR" +
+      "equest\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n\tupdate_dt" +
+      "\030\002 \001(\003\"\227\001\n\014ChatroomInfo\022\r\n\005title\030\001 \002(\t\022\014" +
+      "\n\004desc\030\002 \001(\t\022\020\n\010portrait\030\003 \001(\t\022\024\n\014member" +
+      "_count\030\004 \001(\005\022\021\n\tcreate_dt\030\005 \001(\003\022\021\n\tupdat" +
+      "e_dt\030\006 \001(\003\022\r\n\005extra\030\007 \001(\t\022\r\n\005state\030\010 \001(\005" +
+      "\"F\n\034GetChatroomMemberInfoRequest\022\023\n\013chat" +
+      "room_id\030\001 \002(\t\022\021\n\tmax_count\030\002 \001(\005\";\n\022Chat" +
+      "roomMemberInfo\022\024\n\014member_count\030\001 \001(\005\022\017\n\007",
+      "members\030\002 \003(\t\"\026\n\010INT64Buf\022\n\n\002id\030\001 \002(\003\"4\n" +
+      "\023NotifyRecallMessage\022\n\n\002id\030\001 \002(\003\022\021\n\tfrom" +
+      "_user\030\002 \002(\t\"/\n\020BlackUserRequest\022\013\n\003uid\030\001" +
+      " \002(\t\022\016\n\006status\030\002 \002(\005\"\323\001\n\014RouteRequest\022\013\n" +
+      "\003app\030\001 \001(\t\022\020\n\010platform\030\002 \001(\005\022\021\n\tpush_typ" +
+      "e\030\003 \001(\005\022\023\n\013device_name\030\004 \001(\t\022\026\n\016device_v" +
+      "ersion\030\005 \001(\t\022\022\n\nphone_name\030\006 \001(\t\022\020\n\010lang" +
+      "uage\030\007 \001(\t\022\024\n\014carrier_name\030\010 \001(\t\022\023\n\013app_" +
+      "version\030\t \001(\t\022\023\n\013sdk_version\030\n \001(\t\"D\n\rRo" +
+      "uteResponse\022\014\n\004host\030\001 \002(\t\022\021\n\tlong_port\030\002",
+      " \002(\005\022\022\n\nshort_port\030\003 \002(\005\"5\n\017GetTokenRequ" +
+      "est\022\017\n\007user_id\030\001 \002(\t\022\021\n\tclient_id\030\002 \002(\tB" +
+      "#\n\025cn.wildfirechat.protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -56086,7 +56400,7 @@ public final class WFCMessage {
           internal_static_GetUploadTokenResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetUploadTokenResult_descriptor,
-              new java.lang.String[] { "Domain", "Token", "Server", });
+              new java.lang.String[] { "Domain", "Token", "Server", "Port", });
           internal_static_HandleFriendRequest_descriptor =
             getDescriptor().getMessageTypes().get(20);
           internal_static_HandleFriendRequest_fieldAccessorTable = new
@@ -56110,7 +56424,7 @@ public final class WFCMessage {
           internal_static_Message_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Message_descriptor,
-              new java.lang.String[] { "Conversation", "FromUser", "Content", "MessageId", "ServerTimestamp", "ToUser", });
+              new java.lang.String[] { "Conversation", "FromUser", "Content", "MessageId", "ServerTimestamp", "ToUser", "To", });
           internal_static_User_descriptor =
             getDescriptor().getMessageTypes().get(24);
           internal_static_User_fieldAccessorTable = new

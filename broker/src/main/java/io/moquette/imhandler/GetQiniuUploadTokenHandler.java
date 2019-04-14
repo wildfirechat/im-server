@@ -76,10 +76,12 @@ public class GetQiniuUploadTokenHandler extends IMHandler<Byte> {
             token = auth.uploadToken(bucketName);
             resultBuilder.setDomain(bucketDomain)
                 .setServer(MediaServerConfig.QINIU_SERVER_URL);
+            resultBuilder.setPort(80);
         } else {
             token = UploadFileAction.getToken(type);
             resultBuilder.setDomain("http://" + MediaServerConfig.SERVER_IP + ":" + MediaServerConfig.HTTP_SERVER_PORT)
                 .setServer(MediaServerConfig.SERVER_IP);
+            resultBuilder.setPort(MediaServerConfig.HTTP_SERVER_PORT);
         }
 
         resultBuilder.setToken(token);

@@ -181,6 +181,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
             if (!StringUtil.isNullOrEmpty(message.getToUser())) {
                 notifyReceivers.add(message.getToUser());
+            } else if(!message.getToList().isEmpty()) {
+                notifyReceivers.addAll(message.getToList());
             } else {
                 MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
