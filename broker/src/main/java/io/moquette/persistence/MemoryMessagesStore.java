@@ -155,7 +155,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 
 
-
         MessageBundle messageBundle = new MessageBundle(message.getMessageId(), fromUser, fromClientId, message);
         if (message.getContent().getPersistFlag() ==  Transparent) {
             mIMap.put(message.getMessageId(), messageBundle, 10, TimeUnit.SECONDS);
@@ -344,6 +343,17 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         builder.setCurrent(current);
         builder.setHead(head);
+        return builder.build();
+    }
+
+    @Override
+    public WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
+        WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();
+        List<WFCMessage.Message> messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
+        builder.setCurrent(0).setHead(0);
+        if(messages != null) {
+            builder.addAllMessage(messages);
+        }
         return builder.build();
     }
 

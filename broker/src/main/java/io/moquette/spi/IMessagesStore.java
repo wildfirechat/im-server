@@ -100,6 +100,7 @@ public interface IMessagesStore {
     WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message);
 	int getNotifyReceivers(String fromUser, WFCMessage.Message message, Set<String> notifyReceivers);
     WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType);
+    WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count);
     long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String userId, long messageId);
     WFCMessage.GroupInfo createGroup(String operator, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList);
     ErrorCode addGroupMembers(String operator, String groupId, List<WFCMessage.GroupMember> memberList);

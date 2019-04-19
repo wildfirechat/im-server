@@ -60,4 +60,22 @@ public class MessageShardingUtil {
         year %= 3;
         return "t_messages_" + (year * 12 + month);
     }
+
+    public static String getPreviousMessageTable(long mid) {
+        if (DBUtil.IsEmbedDB) {
+            return null;
+        }
+
+        mid >>= (nodeIdWidth + rotateIdWidth);
+        Date date = new Date(mid + T201801010000);
+        int month = date.getMonth();
+        int year = date.getYear();
+        year %= 3;
+        month = month + 1;
+        if (month == 12) {
+            month = 0;
+            year = (year + 3 -1)%3;
+        }
+        return "t_messages_" + (year * 12 + month);
+    }
 }

@@ -8,6 +8,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.hazelcast.core.HazelcastInstance;
@@ -528,6 +529,74 @@ public class DatabaseStore {
             Utility.printExecption(LOG, e);
         } finally {
             DBUtil.closeDB(connection, statement);
+        }
+        return null;
+    }
+
+    List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
+        List<WFCMessage.Message> messages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count, MessageShardingUtil.getMessageTable(beforeUid));
+        if (messages != null && messages.size() < count) {
+            String nexTable = MessageShardingUtil.getPreviousMessageTable(beforeUid);
+            List<WFCMessage.Message> nextMessages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count-messages.size(), nexTable);
+            if (nextMessages != null) {
+                messages.addAll(nextMessages);
+            }
+        }
+        return messages;
+    }
+
+    List<WFCMessage.Message> loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long beforeUid, int count, String table) {
+        String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + table +" where";
+        if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
+            sql += " _type = ? and _line = ? and _mid > ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?)";
+        } else {
+            sql += " _type = ? and _line = ? and _mid > ? and _target = ?";
+        }
+
+        sql += " limit ?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        List<WFCMessage.Message> out = new ArrayList<>();
+        try {
+            connection = DBUtil.getConnection();
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setInt(index++, conversation.getType());
+            statement.setInt(index++, conversation.getLine());
+            statement.setLong(index++, beforeUid);
+            statement.setString(index++, conversation.getTarget());
+            if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
+                statement.setString(index++, user);
+                statement.setString(index++, user);
+                statement.setString(index++, conversation.getTarget());
+            }
+            statement.setInt(index++, count);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
+                index = 1;
+                builder.setMessageId(resultSet.getLong(index++));
+                builder.setFromUser(resultSet.getString(index++));
+                WFCMessage.Conversation.Builder cb = WFCMessage.Conversation.newBuilder();
+                cb.setType(resultSet.getInt(index++));
+                cb.setTarget(resultSet.getString(index++));
+                cb.setLine(resultSet.getInt(index++));
+                builder.setConversation(cb.build());
+                Blob blob = resultSet.getBlob(index++);
+
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                builder.setContent(messageContent);
+                builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
+                WFCMessage.Message message = builder.build();
+                out.add(message);
+            }
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return null;
     }
