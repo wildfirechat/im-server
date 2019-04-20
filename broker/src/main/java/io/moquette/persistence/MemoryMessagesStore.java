@@ -591,7 +591,6 @@ public class MemoryMessagesStore implements IMessagesStore {
             .build();
 
         mIMap.put(groupId, groupInfo);
-        databaseStore.persistGroupInfo(groupInfo);
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
         for (WFCMessage.GroupMember member : memberList) {
@@ -767,8 +766,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         groupMembers.remove(groupId);
         mIMap.remove(groupId);
-
-        databaseStore.removeGroupInfoFromDB(groupId);
+        
         databaseStore.removeGroupMemberFromDB(groupId);
 
         return ErrorCode.ERROR_CODE_SUCCESS;

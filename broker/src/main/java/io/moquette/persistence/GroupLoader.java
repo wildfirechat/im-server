@@ -10,12 +10,13 @@ package io.moquette.persistence;
 
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.core.MapLoader;
+import com.hazelcast.core.MapStore;
 import io.moquette.server.Server;
 
 import java.util.Collection;
 import java.util.Map;
 
-public class GroupLoader implements MapLoader<String, WFCMessage.GroupInfo> {
+public class GroupLoader implements MapStore<String, WFCMessage.GroupInfo> {
     private DatabaseStore getDatabaseStore() {
         return Server.getServer().getStore().messagesStore().getDatabaseStore();
     }
@@ -51,18 +52,31 @@ public class GroupLoader implements MapLoader<String, WFCMessage.GroupInfo> {
         return null;
     }
 
-    /**
-     * Loads all of the keys from the store. The returned {@link Iterable} may return the keys lazily
-     * by loading them in batches. The {@link Iterator} of this {@link Iterable} may implement the
-     * {@link Closeable} interface in which case it will be closed once iteration is over.
-     * This is intended for releasing resources such as closing a JDBC result set.
-     * <p>
-     * The returned Iterable should not contain any <code>null</code> keys.
-     *
-     * @return all the keys. Keys inside the Iterable cannot be null.
-     */
+
     @Override
     public Iterable<String> loadAllKeys() {
         return null;
+    }
+
+    @Override
+    public void store(String key, WFCMessage.GroupInfo value) {
+        getDatabaseStore().persistGroupInfo(value);
+    }
+
+    @Override
+    public void storeAll(Map<String, WFCMessage.GroupInfo> map) {
+        for (WFCMessage.GroupInfo value : map.values()) {
+            getDatabaseStore().persistGroupInfo(value);
+        }
+    }
+
+    @Override
+    public void delete(String key) {
+        getDatabaseStore().removeGroupInfoFromDB(key);
+    }
+
+    @Override
+    public void deleteAll(Collection<String> keys) {
+
     }
 }

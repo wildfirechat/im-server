@@ -49,3 +49,5 @@ maven-metadata.xml
 /bin/
 broker/config/git.properties
 distribution/src/main/resources/git.properties
+broker/h2db
+broker/media

@@ -732,12 +732,31 @@ public class DatabaseStore {
                     ", `_extra`" +
                     ", `_dt`" +
                     ", `_member_count`" +
-                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    " ON DUPLICATE KEY UPDATE " +
+                    "`_name` = ?," +
+                    "`_portrait` = ?," +
+                    "`_owner` = ?," +
+                    "`_type` = ?," +
+                    "`_extra` = ?," +
+                    "`_dt` = ?," +
+                    "`_member_count` = ?," +
+                    "`_member_dt` = ?";
+
 
                 statement = connection.prepareStatement(sql);
 
                 int index = 1;
                 statement.setString(index++, groupInfo.getTargetId());
+                statement.setString(index++, groupInfo.getName());
+                statement.setString(index++, groupInfo.getPortrait());
+                statement.setString(index++, groupInfo.getOwner());
+                statement.setInt(index++, groupInfo.getType());
+                statement.setString(index++, groupInfo.getExtra());
+                statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+                statement.setInt(index++, groupInfo.getMemberCount());
+                statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+
                 statement.setString(index++, groupInfo.getName());
                 statement.setString(index++, groupInfo.getPortrait());
                 statement.setString(index++, groupInfo.getOwner());
