@@ -23,11 +23,6 @@
         </file>
 
         <file>
-            <source>src/main/scripts/machinecode.sh</source>
-            <outputDirectory>bin</outputDirectory>
-        </file>
-
-        <file>
             <source>src/main/resources/log4j.properties</source>
             <outputDirectory>config/</outputDirectory>
             <destName>log4j.properties</destName>
@@ -76,10 +71,6 @@
             <outputDirectory>config/</outputDirectory>
         </file>
 
-        <file>
-            <source>src/main/resources/register.py</source>
-            <outputDirectory>tools/</outputDirectory>
-        </file>
 
         <file>
             <source>../broker/h2/create_table.sql</source>
