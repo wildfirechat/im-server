@@ -33,7 +33,7 @@ fi
 
 
 mysql -u${USER} -p${PASSWORD} -e"source 1_create_database.sql;"
-mysql -u${USER} -p${PASSWORD} -e"use wfchat; source 2_create_table.sql; source 3_create_default_chatroom.sql;"
+mysql -u${USER} -p${PASSWORD} -e"use wfchat; source 2_create_table.sql; source 3_create_default_chatroom.sql; source 4_create_default_robot.sql;"
 
 for((i=0;i<36;i++));
 do
