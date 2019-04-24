@@ -55,6 +55,11 @@
 <img src="http://static.wildfirechat.cn/ios-voip-view.png" width = 50% height = 50% />
 
 
+## 特别感谢
+1. [moquette](https://github.com/moquette-io/moquette) 本项目是基于此项目二次开发而来，处理MQTT相关业务。
+2. [loServer](https://github.com/looly/loServer) 本项目使用loServer处理HTTP相关业务。
+
+*** 对他们表示诚挚的感谢🙏 ***
 
 ## License
 
