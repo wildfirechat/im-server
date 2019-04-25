@@ -57,6 +57,8 @@ public interface ISessionsStore {
     Session sessionForClientAndUser(String username, String clientID);
 
     ClientSession sessionForClient(String clientID);
+
+    void loadUserSession(String username, String clientID);
     
     Collection<Session> sessionForUser(String username);
 

@@ -368,10 +368,21 @@ public class MemorySessionStore implements ISessionsStore {
         }
 
         Session session = sessions.get(clientID);
-        ClientSession clientSession = new ClientSession(clientID, this);
-        return clientSession;
+
+        return session.getClientSession();
     }
-    
+
+    @Override
+    public void loadUserSession(String username, String clientID) {
+        if (sessions.containsKey(clientID)) {
+            return;
+        }
+        Session session = databaseStore.getSession(username, clientID, new ClientSession(clientID, this));
+        if (session != null) {
+            sessions.put(clientID, session);
+        }
+    }
+
     @Override
     public Collection<Session> sessionForUser(String username) {
     	ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);

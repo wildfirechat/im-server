@@ -343,7 +343,7 @@ public class ProtocolProcessor {
             return null;
         }
 
-
+        m_sessionsStore.loadUserSession(username, clientId);
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
         boolean isSessionAlreadyStored = clientSession != null;
         if (isSessionAlreadyStored) {
