@@ -40,10 +40,10 @@ public class GetChatroomInfoAction extends AdminAction {
                 WFCMessage.ChatroomInfo info = messagesStore.getChatroomInfo(chatroomid);
 
                 RestResult result;
-                if (info == null) {
+                if (info != null) {
                     result = RestResult.ok(new OutputGetChatroomInfo(chatroomid, messagesStore.getChatroomMemberCount(chatroomid), info));
                 } else {
-                    result = RestResult.resultOf(ErrorCode.ERROR_CODE_SUCCESS);
+                    result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 }
                 response.setStatus(HttpResponseStatus.OK);
 
