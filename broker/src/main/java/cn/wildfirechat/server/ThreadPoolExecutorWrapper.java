@@ -30,14 +30,14 @@ public class ThreadPoolExecutorWrapper {
 
     public void execute(Runnable task) {
         int startCount = runCounter.incrementAndGet();
-        LOG.info("Submit task and current taskcount {}", startCount);
+        LOG.debug("Submit task and current task count {}", startCount);
         final long startTime = System.currentTimeMillis();
         executor.execute(() -> {
             try {
                 task.run();
             } finally {
                 int endCount = runCounter.decrementAndGet();
-                LOG.info("Finish task and current taskcount {} use time {}", endCount, System.currentTimeMillis()-startTime);
+                LOG.debug("Finish task and current task count {} use time {}", endCount, System.currentTimeMillis()-startTime);
             }
         });
     }
