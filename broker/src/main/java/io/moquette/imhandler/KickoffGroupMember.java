@@ -19,7 +19,7 @@ import static win.liyufan.im.IMTopic.KickoffGroupMemberTopic;
 @Handler(value = KickoffGroupMemberTopic)
 public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMemberRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.RemoveGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.RemoveGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode;
         WFCMessage.GroupInfo groupInfo = m_messagesStore.getGroupInfo(request.getGroupId());
         if (groupInfo == null) {

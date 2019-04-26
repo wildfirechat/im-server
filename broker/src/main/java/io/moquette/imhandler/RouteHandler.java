@@ -23,7 +23,7 @@ import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_Short_Port;
 @Handler(IMTopic.RouteTopic)
 public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.RouteRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.RouteRequest request, Qos1PublishHandler.IMCallback callback) {
         Member member = mServer.getHazelcastInstance().getCluster().getLocalMember();
         String serverIp = member.getStringAttribute(HZ_Cluster_Node_External_IP);
         String longPort = member.getStringAttribute(HZ_Cluster_Node_External_Long_Port);

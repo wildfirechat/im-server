@@ -19,7 +19,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.BlackListUserTopic)
 public class BlackListRequestHandler extends GroupHandler<WFCMessage.BlackUserRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.BlackUserRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.BlackUserRequest request, Qos1PublishHandler.IMCallback callback) {
         long[] head = new long[1];
         ErrorCode errorCode = m_messagesStore.blackUserRequest(fromUser, request.getUid(), request.getStatus(), head);
         if (errorCode == ERROR_CODE_SUCCESS) {

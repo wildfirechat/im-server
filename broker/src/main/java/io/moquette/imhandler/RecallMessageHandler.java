@@ -20,7 +20,7 @@ import java.util.Set;
 @Handler(value = IMTopic.RecallMessageTopic)
 public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.INT64Buf int64Buf, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.INT64Buf int64Buf, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.recallMessage(int64Buf.getId(), fromUser);
 
         if(errorCode != ErrorCode.ERROR_CODE_SUCCESS) {

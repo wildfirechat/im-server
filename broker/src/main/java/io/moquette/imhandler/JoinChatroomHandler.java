@@ -18,7 +18,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.JoinChatroomTopic)
 public class JoinChatroomHandler extends IMHandler<WFCMessage.IDBuf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
         return m_messagesStore.handleJoinChatroom(fromUser, clientID, request.getId());
     }
 }

@@ -20,7 +20,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.GetQiniuUploadTokenTopic)
 public class GetQiniuUploadTokenHandler extends IMHandler<Byte> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, Byte request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, Byte request, Qos1PublishHandler.IMCallback callback) {
         int type = request;
         String token;
 

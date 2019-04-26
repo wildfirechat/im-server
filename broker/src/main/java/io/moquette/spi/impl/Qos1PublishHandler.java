@@ -198,7 +198,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
 
         IMHandler handler = m_imHandlers.get(topic);
         if (handler != null) {
-            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper);
+            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper, isAdmin);
         } else {
             LOG.error("imHandler unknown topic={}", topic);
             ByteBuf ackPayload = Unpooled.buffer();

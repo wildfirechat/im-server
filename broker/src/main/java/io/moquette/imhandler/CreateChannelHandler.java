@@ -25,7 +25,7 @@ import static win.liyufan.im.UserSettingScope.kUserSettingMyChannels;
 @Handler(value = IMTopic.CreateChannelTopic)
 public class CreateChannelHandler extends GroupHandler<WFCMessage.ChannelInfo> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.ChannelInfo request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ChannelInfo request, Qos1PublishHandler.IMCallback callback) {
         WFCMessage.ChannelInfo.Builder builder = request.toBuilder();
         if (StringUtil.isNullOrEmpty(request.getTargetId())) {
             builder.setTargetId(m_messagesStore.getShortUUID());

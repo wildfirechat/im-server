@@ -19,7 +19,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.RriendRequestUnreadSyncTopic)
 public class SyncFriendRequestUnreadHandler extends GroupHandler<WFCMessage.Version> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
             long[] head = new long[1];
             ErrorCode errorCode = m_messagesStore.SyncFriendRequestUnread(fromUser, request.getVersion(), head);
             if (errorCode == ERROR_CODE_SUCCESS) {

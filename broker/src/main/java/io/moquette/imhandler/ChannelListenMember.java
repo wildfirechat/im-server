@@ -23,7 +23,7 @@ import static win.liyufan.im.UserSettingScope.kUserSettingListenedChannels;
 public class ChannelListenMember extends IMHandler<WFCMessage.ListenChannel> {
 
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.ListenChannel request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ListenChannel request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.listenChannel(fromUser, request.getChannelId(), request.getListen()>0);
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingListenedChannels).setKey(request.getChannelId()).setValue(request.getListen() > 0 ? "1" : "0").build();

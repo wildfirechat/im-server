@@ -19,7 +19,7 @@ import java.util.List;
 @Handler(IMTopic.FriendRequestPullTopic)
 public class FriendRequestPullHandler extends IMHandler<WFCMessage.Version> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
             List<WFCMessage.FriendRequest> friendDatas = m_messagesStore.getFriendRequestList(fromUser, request.getVersion());
             WFCMessage.GetFriendRequestResult.Builder builder = WFCMessage.GetFriendRequestResult.newBuilder();
             builder.addAllEntry(friendDatas);

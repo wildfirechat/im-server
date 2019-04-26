@@ -17,7 +17,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.QuitChatroomTopic)
 public class QuitChatroomHandler extends IMHandler<WFCMessage.IDBuf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
         m_messagesStore.handleQuitChatroom(fromUser, clientID, request.getId());
         return ErrorCode.ERROR_CODE_SUCCESS;
     }

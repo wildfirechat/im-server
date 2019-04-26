@@ -20,7 +20,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.UploadDeviceTokenTopic)
 public class UploadDeviceTokenHandler extends IMHandler<WFCMessage.UploadDeviceTokenRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.UploadDeviceTokenRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.UploadDeviceTokenRequest request, Qos1PublishHandler.IMCallback callback) {
             MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
             session.setPlatform(request.getPlatform());
             session.setAppName(request.getAppName());

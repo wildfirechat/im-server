@@ -22,7 +22,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.GetGroupMemberTopic)
 public class GetGroupMemberHandler extends IMHandler<WFCMessage.PullGroupMemberRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.PullGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
         List<WFCMessage.GroupMember> members = new ArrayList<>();
         ErrorCode errorCode = m_messagesStore.getGroupMembers(request.getTarget(), request.getHead(), members);
 

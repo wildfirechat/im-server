@@ -17,7 +17,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.GetChatroomInfoTopic)
 public class GetChatroomInfoHandler extends IMHandler<WFCMessage.GetChatroomInfoRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.GetChatroomInfoRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.GetChatroomInfoRequest request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         WFCMessage.ChatroomInfo info = m_messagesStore.getChatroomInfo(request.getChatroomId());
         if (info == null) {

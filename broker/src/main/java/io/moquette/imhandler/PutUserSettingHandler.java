@@ -17,7 +17,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.PutUserSettingTopic)
 public class PutUserSettingHandler extends IMHandler<WFCMessage.ModifyUserSettingReq> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.ModifyUserSettingReq request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ModifyUserSettingReq request, Qos1PublishHandler.IMCallback callback) {
             long timestamp = m_messagesStore.updateUserSettings(fromUser, request);
             publisher.publishNotification(IMTopic.NotifyUserSettingTopic, fromUser, timestamp);
             return ErrorCode.ERROR_CODE_SUCCESS;

@@ -20,7 +20,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.TransferChannelInfoTopic)
 public class TransferChannelHandler extends GroupHandler<WFCMessage.TransferChannel> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.TransferChannel request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.TransferChannel request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.transferChannel(fromUser, request.getChannelId(), request.getNewOwner());
         return errorCode;
     }

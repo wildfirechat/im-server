@@ -43,7 +43,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     }
 
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.Message message, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Message message, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         if (message != null) {
             int userStatus = m_messagesStore.getUserStatus(fromUser);

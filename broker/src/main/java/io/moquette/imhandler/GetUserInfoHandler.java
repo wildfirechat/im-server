@@ -19,7 +19,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.GetUserInfoTopic)
 public class GetUserInfoHandler extends IMHandler<WFCMessage.PullUserRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
         WFCMessage.PullUserResult.Builder resultBuilder = WFCMessage.PullUserResult.newBuilder();
 
         ErrorCode errorCode = m_messagesStore.getUserInfo(request.getRequestList(), resultBuilder);

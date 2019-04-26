@@ -19,7 +19,7 @@ import static win.liyufan.im.IMTopic.QuitGroupTopic;
 @Handler(value = QuitGroupTopic)
 public class QuitGroupHandler extends GroupHandler<WFCMessage.QuitGroupRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.QuitGroupRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.QuitGroupRequest request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         WFCMessage.GroupInfo groupInfo = m_messagesStore.getGroupInfo(request.getGroupId());
         if (groupInfo == null) {

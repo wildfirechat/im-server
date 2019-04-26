@@ -20,7 +20,7 @@ import static win.liyufan.im.UserSettingScope.kUserSettingMyChannels;
 @Handler(value = IMTopic.DestoryChannelInfoTopic)
 public class DistoryChannelHandler extends GroupHandler<WFCMessage.IDBuf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.distoryChannel(fromUser, request.getId());
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingMyChannels).setKey(request.getId()).setValue("0").build();

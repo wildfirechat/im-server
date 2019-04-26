@@ -19,7 +19,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.GetTokenTopic)
 public class GetTokenHandler extends IMHandler<WFCMessage.GetTokenRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.GetTokenRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.GetTokenRequest request, Qos1PublishHandler.IMCallback callback) {
         MemorySessionStore.Session session = m_sessionsStore.createUserSession(fromUser, clientID);
         TokenAuthenticator authenticator = new TokenAuthenticator();
         String strToken = authenticator.generateToken(fromUser);

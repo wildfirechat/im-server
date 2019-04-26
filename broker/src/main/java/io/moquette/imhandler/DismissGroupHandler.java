@@ -20,7 +20,7 @@ import static win.liyufan.im.IMTopic.DismissGroupTopic;
 @Handler(value = DismissGroupTopic)
 public class DismissGroupHandler extends GroupHandler<WFCMessage.DismissGroupRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.DismissGroupRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.DismissGroupRequest request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.GroupInfo groupInfo = m_messagesStore.getGroupInfo(request.getGroupId());
             ErrorCode errorCode;
             if (groupInfo == null) {

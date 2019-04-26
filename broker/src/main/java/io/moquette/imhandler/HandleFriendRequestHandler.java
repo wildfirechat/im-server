@@ -21,7 +21,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.HandleFriendRequestTopic)
 public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFriendRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.HandleFriendRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.HandleFriendRequest request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
             builder.setFromUser(request.getTargetUid());
             long[] heads = new long[2];

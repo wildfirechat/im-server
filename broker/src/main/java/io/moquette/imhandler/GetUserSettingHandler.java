@@ -19,7 +19,7 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.GetUserSettingTopic)
 public class GetUserSettingHandler extends IMHandler<WFCMessage.Version> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.GetUserSettingResult.Builder builder = WFCMessage.GetUserSettingResult.newBuilder();
             ErrorCode errorCode = m_messagesStore.getUserSettings(fromUser, request.getVersion(), builder);
             if (errorCode == ERROR_CODE_SUCCESS) {
