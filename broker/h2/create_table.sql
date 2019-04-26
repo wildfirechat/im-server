@@ -181,6 +181,7 @@ CREATE TABLE `t_robot` (
   `_owner` varchar(64) DEFAULT '',
   `_secret` varchar(64) DEFAULT '',
   `_callback` varchar(1024) DEFAULT '',
+  `_state` tinyint DEFAULT 0,
   `_extra` TEXT DEFAULT NULL,
   `_dt` bigint(20) NOT NULL,
   UNIQUE INDEX `robot_uid_index` (`_uid` ASC),
