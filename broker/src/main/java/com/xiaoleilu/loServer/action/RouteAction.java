@@ -132,7 +132,7 @@ public class RouteAction extends Action {
                                 ctx.executor().execute(command);
                             };
                         }
-                    });
+                    }, false);
                 }
             } catch (InvalidProtocolBufferException e) {
                 sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, false);

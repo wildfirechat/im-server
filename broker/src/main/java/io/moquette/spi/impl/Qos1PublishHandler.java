@@ -105,7 +105,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         }
     }
 
-    public void onRpcMsg(String fromUser, String clientId, byte[] message, int requestId, String from, String request) {
+    public void onRpcMsg(String fromUser, String clientId, byte[] message, int requestId, String from, String request, boolean isAdmin) {
         if (request.equals(RPCCenter.CHECK_USER_ONLINE_REQUEST)) {
             checkUserOnlineHandler(message, ackPayload -> RPCCenter.getInstance().sendResponse(ERROR_CODE_SUCCESS.getCode(), ackPayload, from, requestId));
         } else {
@@ -116,7 +116,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                     ReferenceCountUtil.release(ackPayload);
                     RPCCenter.getInstance().sendResponse(ERROR_CODE_SUCCESS.getCode(), response, from, requestId);
                 }
-            });
+            }, isAdmin);
         }
     }
 
@@ -145,7 +145,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         });
     }
 
-	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback) {
+	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin) {
         LOG.info("imHandler fromUser={}, topic={}", fromUser, topic);
         if(!mLimitCounter.isGranted(clientID + fromUser + topic)) {
             ByteBuf ackPayload = Unpooled.buffer();
@@ -237,7 +237,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         byte[] payloadContent = readBytesAndRewind(payload);
         MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
         payloadContent = AES.AESDecrypt(payloadContent, session.getSecret(), true);
-        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode));
+        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), false);
     }
 
     private void sendPubAck(String clientId, int messageID, ByteBuf payload, ErrorCode errorCode) {

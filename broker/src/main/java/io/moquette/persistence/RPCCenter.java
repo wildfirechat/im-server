@@ -48,7 +48,7 @@ public class RPCCenter {
 
     protected RPCCenter() {}
 
-    public void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback) {
+    public void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin) {
         int requestId = 0;
 
         if (callback != null) {
@@ -61,7 +61,7 @@ public class RPCCenter {
             requestMap.put(requestId, new RequestInfo(fromUser, clientId, callback, message, requestId, request));
         }
 
-        server.internalRpcMsg(fromUser, clientId, message, requestId, "", request);
+        server.internalRpcMsg(fromUser, clientId, message, requestId, "", request, isAdmin);
     }
 
     public void sendResponse(int errorCode, byte[] message, String toUuid, int requestId) {

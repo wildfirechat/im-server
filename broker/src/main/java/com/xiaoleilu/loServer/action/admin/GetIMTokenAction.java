@@ -75,7 +75,7 @@ public class GetIMTokenAction extends AdminAction {
                         ctx.executor().execute(command);
                     };
                 }
-            });
+            }, true);
         }
     }
 }

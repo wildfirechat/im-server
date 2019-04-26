@@ -27,7 +27,7 @@ public class ChannelListenMember extends IMHandler<WFCMessage.ListenChannel> {
         ErrorCode errorCode = m_messagesStore.listenChannel(fromUser, request.getChannelId(), request.getListen()>0);
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingListenedChannels).setKey(request.getChannelId()).setValue(request.getListen() > 0 ? "1" : "0").build();
-            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic);
+            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic, false);
 
             publisher.notifyChannelListenStatusChanged(m_messagesStore.getChannelInfo(request.getChannelId()), fromUser, request.getListen() > 0);
         }

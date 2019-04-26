@@ -389,14 +389,14 @@ public class Server {
         return hazelcastInstance;
     }
 
-    public void internalRpcMsg(String fromUser, String clientId, byte[] message, int messageId, String from, String request) {
+    public void internalRpcMsg(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin) {
 
         if (!m_initialized) {
             LOG.error("Moquette is not started, internal message cannot be notify");
             return;
         }
         LOG.debug("internalNotifyMsg");
-        m_processor.onRpcMsg(fromUser, clientId, message, messageId, from, request);
+        m_processor.onRpcMsg(fromUser, clientId, message, messageId, from, request, isAdmin);
     }
 
     public void stopServer() {

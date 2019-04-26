@@ -44,7 +44,7 @@ public class CreateChannelHandler extends GroupHandler<WFCMessage.ChannelInfo> {
 
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingMyChannels).setKey(request.getTargetId()).setValue("1").build();
-            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic);
+            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic, false);
             byte[] data = request.getTargetId().getBytes();
             ackPayload.ensureWritable(data.length).writeBytes(data);
             return ErrorCode.ERROR_CODE_SUCCESS;

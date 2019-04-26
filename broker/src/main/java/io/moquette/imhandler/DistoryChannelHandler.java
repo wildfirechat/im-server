@@ -24,7 +24,7 @@ public class DistoryChannelHandler extends GroupHandler<WFCMessage.IDBuf> {
         ErrorCode errorCode = m_messagesStore.distoryChannel(fromUser, request.getId());
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingMyChannels).setKey(request.getId()).setValue("0").build();
-            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic);
+            mServer.internalRpcMsg(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic, false);
         }
         return errorCode;
     }

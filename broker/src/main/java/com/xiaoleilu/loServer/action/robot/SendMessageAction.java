@@ -76,7 +76,7 @@ public class SendMessageAction extends RobotAction {
                             ctx.executor().execute(command);
                         };
                     }
-                });
+                }, false);
             } else {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
