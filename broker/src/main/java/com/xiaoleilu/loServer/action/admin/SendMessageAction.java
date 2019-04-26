@@ -10,6 +10,7 @@ package com.xiaoleilu.loServer.action.admin;
 
 
 import com.google.gson.Gson;
+import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -41,7 +42,7 @@ public class SendMessageAction extends AdminAction {
     public void action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
-            if (SendMessageData.isValide(sendMessageData)) {
+            if (SendMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {
                 RPCCenter.getInstance().sendRequest(sendMessageData.getSender(), null, IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
