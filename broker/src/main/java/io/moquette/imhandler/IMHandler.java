@@ -89,8 +89,8 @@ abstract public class IMHandler<T> {
             for (Method method : getClass().getDeclaredMethods()
                  ) {
 
-                if (method.getName() == actionName && method.getParameterCount() == 5) {
-                    dataCls = method.getParameterTypes()[3];
+                if (method.getName() == actionName && method.getParameterCount() == 6) {
+                    dataCls = method.getParameterTypes()[4];
                     break;
                 }
             }
