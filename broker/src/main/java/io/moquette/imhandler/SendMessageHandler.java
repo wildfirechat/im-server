@@ -46,65 +46,64 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Message message, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         if (message != null) {
-            int userStatus = m_messagesStore.getUserStatus(fromUser);
-            if (userStatus == 1 || userStatus == 2) {
-                return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
-            }
+            if (!isAdmin) {  //admin do not check the right
+                int userStatus = m_messagesStore.getUserStatus(fromUser);
+                if (userStatus == 1 || userStatus == 2) {
+                    return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
+                }
 
-            if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Private) {
-                if (m_messagesStore.isBlacked(message.getConversation().getTarget(), fromUser)) {
-                    return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
+                if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Private) {
+                    if (m_messagesStore.isBlacked(message.getConversation().getTarget(), fromUser)) {
+                        return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
+                    }
+                }
+
+
+                if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group && !m_messagesStore.isMemberInGroup(fromUser, message.getConversation().getTarget())) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group && m_messagesStore.isForbiddenInGroup(fromUser, message.getConversation().getTarget())) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_ChatRoom && !m_messagesStore.checkUserClientInChatroom(fromUser, clientID, message.getConversation().getTarget())) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_CHATROOM;
+                } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel && !m_messagesStore.checkUserInChannel(fromUser, message.getConversation().getTarget())) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
                 }
             }
 
             long timestamp = System.currentTimeMillis();
-            if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group &&
-                !m_messagesStore.isMemberInGroup(fromUser, message.getConversation().getTarget())) {
-                errorCode = ErrorCode.ERROR_CODE_NOT_IN_GROUP;
-            } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group &&
-                m_messagesStore.isForbiddenInGroup(fromUser, message.getConversation().getTarget())) {
-                errorCode = ErrorCode.ERROR_CODE_NOT_RIGHT;
-            } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_ChatRoom &&
-                !m_messagesStore.checkUserClientInChatroom(fromUser, clientID, message.getConversation().getTarget())) {
-                errorCode = ErrorCode.ERROR_CODE_NOT_IN_CHATROOM;
-            } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel &&
-                !m_messagesStore.checkUserInChannel(fromUser, message.getConversation().getTarget())) {
-                errorCode = ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
-            } else {
-                long messageId = MessageShardingUtil.generateId();
-                message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
+            long messageId = MessageShardingUtil.generateId();
+            message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
 
-                if (mForwardUrl != null) {
-                    publisher.forwardMessage(message, mForwardUrl);
-                }
+            if (mForwardUrl != null) {
+                publisher.forwardMessage(message, mForwardUrl);
+            }
 
-                boolean ignoreMsg = false;
-                if (message.getContent().getType() == Text) {
-                    Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
-                    if (matched != null && !matched.isEmpty()) {
-                        if (mSensitiveType == 0) {
-                            errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
-                        } else if(mSensitiveType == 1) {
-                            ignoreMsg = true;
-                        } else {
-                            String text = message.getContent().getSearchableContent();
-                            for (String word : matched) {
-                                text = text.replace(word, "***");
-                            }
-
-                            message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
+            boolean ignoreMsg = false;
+            if (!isAdmin && message.getContent().getType() == Text) {
+                Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
+                if (matched != null && !matched.isEmpty()) {
+                    if (mSensitiveType == 0) {
+                        errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
+                    } else if(mSensitiveType == 1) {
+                        ignoreMsg = true;
+                    } else {
+                        String text = message.getContent().getSearchableContent();
+                        for (String word : matched) {
+                            text = text.replace(word, "***");
                         }
-                    }
-                }
 
-                if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                    if (!ignoreMsg) {
-                        saveAndPublish(fromUser, clientID, message);
+                        message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
                     }
-                    ackPayload = ackPayload.capacity(20);
-                    ackPayload.writeLong(messageId);
-                    ackPayload.writeLong(timestamp);
                 }
+            }
+
+            if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                if (!ignoreMsg) {
+                    saveAndPublish(fromUser, clientID, message);
+                }
+                ackPayload = ackPayload.capacity(20);
+                ackPayload.writeLong(messageId);
+                ackPayload.writeLong(timestamp);
             }
         } else {
             errorCode = ErrorCode.ERROR_CODE_INVALID_MESSAGE;
