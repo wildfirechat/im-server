@@ -9,6 +9,7 @@
 package win.liyufan.im;
 
 import io.netty.util.internal.StringUtil;
+import okhttp3.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -20,73 +21,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 
 public class HttpUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
+    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    static private OkHttpClient client = new OkHttpClient();
 
-    public static boolean httpJsonPost(String url, String jsonStr){
-        boolean isSuccess = false;
-
+    public static void httpJsonPost(final String url, final String jsonStr){
         LOG.info("POST to {} with data {}", url, jsonStr);
         if (StringUtil.isNullOrEmpty(url)) {
             LOG.error("http post failure with empty url");
-            return false;
+            return;
         }
 
-        HttpPost post = null;
-        try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
-//            // 设置超时时间
-//            httpClient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 2000);
-//            httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 2000);
-
-            post = new HttpPost(url);
-            // 构造消息头
-            post.setHeader("Content-type", "application/json; charset=utf-8");
-            post.setHeader("Connection", "Keep-Alive");
-
-            // 构建消息实体
-            StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));
-            entity.setContentEncoding("UTF-8");
-            // 发送Json格式的数据请求
-            entity.setContentType("application/json");
-            post.setEntity(entity);
-
-            HttpResponse response = httpClient.execute(post);
-
-            // 检验返回码
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode != HttpStatus.SC_OK){
-                LOG.info("请求出错: "+statusCode);
-                isSuccess = false;
-            }else{
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity()
-                    .getContent(),"utf-8"));
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
-                String NL = System.getProperty("line.separator");
-                while ((line = in.readLine()) != null) {
-                    sb.append(line + NL);
-                }
-
-                in.close();
-
-                String content = sb.toString();
-                LOG.info("http request response content: {}", content);
+        RequestBody body = RequestBody.create(JSON, jsonStr);
+        Request request = new Request.Builder()
+            .url(url)
+            .post(body)
+            .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                LOG.info("POST to {} with data {} failure", url, jsonStr);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Utility.printExecption(LOG, e);
-            isSuccess = false;
-        }finally{
-            if(post != null){
-                post.releaseConnection();
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                LOG.info("POST to {} success with response", url, response.body().string());
             }
-        }
-        return isSuccess;
+        });
     }
 
 }
