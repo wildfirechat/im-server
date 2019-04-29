@@ -15,10 +15,15 @@ import org.fusesource.hawtbuf.Buffer;
 import org.fusesource.hawtbuf.UTF8Buffer;
 import org.fusesource.mqtt.client.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
+
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connected;
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connecting;
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Unconnected;
 
 
 public class IMClient implements Listener {
@@ -38,17 +43,23 @@ public class IMClient implements Listener {
     private long messageHead;
 
     interface ReceiveMessageCallback {
-        void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore);
-        void onRecallMessage(long messageUid);
+        void onReceiveMessages(IMClient client, List<WFCMessage.Message> messageList, boolean hasMore);
+        void onRecallMessage(IMClient client, long messageUid);
     }
 
     interface ConnectionStatusCallback {
-        void onConnectionStatusChanged(int newStatus);
+        void onConnectionStatusChanged(IMClient client, ConnectionStatus newStatus);
     }
 
     interface SendMessageCallback {
-        void onSuccess(long messageUid);
+        void onSuccess(long messageUid, long timestamp);
         void onFailure(int errorCode);
+    }
+
+    public enum ConnectionStatus {
+        ConnectionStatus_Unconnected,
+        ConnectionStatus_Connecting,
+        ConnectionStatus_Connected,
     }
 
     public IMClient(String userId, String token, String clientId, String host, int port, ReceiveMessageCallback messageCallback, ConnectionStatusCallback connectionStatusCallback) {
@@ -76,7 +87,7 @@ public class IMClient implements Listener {
         if(route(userId, token)) {
             try {
                 mqtt.setHost("tcp://" + mqttServerIp + ":" + mqttServerPort);
-                mqtt.setVersion("1.1");
+                mqtt.setVersion("3.1.1");
                 mqtt.setKeepAlive((short)180);
 
                 mqtt.setClientId(clientId);
@@ -90,6 +101,9 @@ public class IMClient implements Listener {
 
                 connection = mqtt.callbackConnection();
                 connection.listener(this);
+
+                //connecting
+                connectionStatusCallback.onConnectionStatusChanged(this, ConnectionStatus_Connecting);
                 connection.connect(new Callback<byte[]>() {
                     @Override
                     public void onSuccess(byte[] value) {
@@ -103,12 +117,16 @@ public class IMClient implements Listener {
                             }
 
                         }
+
                         System.out.println("on connect success");
+                        //connected
+                        connectionStatusCallback.onConnectionStatusChanged(IMClient.this, ConnectionStatus_Connected);
                     }
 
                     @Override
                     public void onFailure(Throwable value) {
                         System.out.println("on connect failure");
+                        connectionStatusCallback.onConnectionStatusChanged(IMClient.this, ConnectionStatus_Unconnected);
                     }
                 });
 
@@ -127,7 +145,17 @@ public class IMClient implements Listener {
             @Override
             public void onSuccess(byte[] value) {
                 if (value[0] == 0) {
-                    callback.onSuccess(0L);
+                    byte[] data = new byte[value.length-1];
+                    for (int i = 0; i < data.length; i++) {
+                        data[i] = value[i+1];
+                    }
+
+                    data = AES.AESDecrypt(data, privateSecret, true);
+                    ByteBuffer buffer = ByteBuffer.wrap(data, 0,16);
+
+                    long messageUid = buffer.getLong();
+                    long timestamp = buffer.getLong();
+                    callback.onSuccess(messageUid, timestamp);
                 } else {
                     callback.onFailure(value[0]);
                 }
@@ -150,7 +178,9 @@ public class IMClient implements Listener {
             inputRoute.setClientId(clientId);
             inputRoute.setToken(token);
 
-            WFCMessage.IMHttpWrapper request = WFCMessage.IMHttpWrapper.newBuilder().setClientId(clientId).setToken(token).setRequest("ROUTE").setData(ByteString.copyFrom(token.getBytes())).build();
+            WFCMessage.RouteRequest routeRequest = WFCMessage.RouteRequest.newBuilder().setPlatform(0).build();
+
+            WFCMessage.IMHttpWrapper request = WFCMessage.IMHttpWrapper.newBuilder().setClientId(clientId).setToken(token).setRequest("ROUTE").setData(ByteString.copyFrom(routeRequest.toByteArray())).build();
             byte[] data = AES.AESEncrypt(request.toByteArray(), privateSecret);
             data = Base64.getEncoder().encode(data);
 
@@ -186,7 +216,7 @@ public class IMClient implements Listener {
                             for (int i = 0; i < bytes1.length; i++) {
                                 bytes1[i] = bytes[i+1];
                             }
-                            byte[] rawData = AES.AESDecrypt(bytes1, "", true);
+                            byte[] rawData = AES.AESDecrypt(bytes1, privateSecret, true);
                             WFCMessage.RouteResponse routeResponse = WFCMessage.RouteResponse.parseFrom(rawData);
                             mqttServerIp = routeResponse.getHost();
                             mqttServerPort = routeResponse.getLongPort();
@@ -237,8 +267,9 @@ public class IMClient implements Listener {
                             try {
                                 WFCMessage.PullMessageResult result = WFCMessage.PullMessageResult.parseFrom(data);
                                 if (receiveMessageCallback != null) {
-                                    receiveMessageCallback.onReceiveMessages(result.getMessageList(), false);
+                                    receiveMessageCallback.onReceiveMessages(IMClient.this, result.getMessageList(), false);
                                 }
+                                messageHead = result.getHead();
                             } catch (InvalidProtocolBufferException e) {
                                 e.printStackTrace();
                             }
@@ -267,20 +298,33 @@ public class IMClient implements Listener {
     }
 
     public static void main(String[] args) {
-        IMClient client = new IMClient("cgc8c8VV", "oOVX4iTM/JSDtWPTqRYVDSDdSwLSjSgtU99gTYd73PLMRZQAxce1IEyEvYVHt05ar7A8M3cTlxQHh1TywGcb8WmXn3zu5BZAAZIE4QpDwhaXf1p6OiF5IDL6Ksa1KgAyMQf4Q7UHK3COkg8XBGf2TRo8AIpligitH2loeyh0Ol4=", "DD72C212-26C7-4B38-A5FC-88550896B170", "wildfirechat.cn", 80, new ReceiveMessageCallback() {
+        //token与userid和clientid是绑定的，使用时一定要传入正确的userid和clientid，不然会认为token非法
+        IMClient client = new IMClient("yzyOyOKK", "7SJk13q+YdHHe6EwDzry9BKogxTNf3UgtYj50cBTZgWNkNuxEkiqg2koKg0lXViONIX1LmwCR1jN0Mw8hvk6KGpiSKFi+IRaRkIb3mNzgIfrq4afhyIHaQfa2HOfsi6Ws+9YobkdDgdq7W70bEdVfiCSU9+JOIY449nxZzfg2Zw=", "DD72C212-26C7-4B38-A5FC-88550896B170", "192.168.1.101", 80, new ReceiveMessageCallback() {
             @Override
-            public void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore) {
+            public void onReceiveMessages(IMClient client, List<WFCMessage.Message> messageList, boolean hasMore) {
 
             }
 
             @Override
-            public void onRecallMessage(long messageUid) {
+            public void onRecallMessage(IMClient client, long messageUid) {
 
             }
         }, new ConnectionStatusCallback() {
             @Override
-            public void onConnectionStatusChanged(int newStatus) {
+            public void onConnectionStatusChanged(IMClient client, ConnectionStatus newStatus) {
+                if (newStatus == ConnectionStatus_Connected) {
+                    client.sendMessage(WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build(), WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build(), new SendMessageCallback() {
+                        @Override
+                        public void onSuccess(long messageUid, long timestamp) {
+                            System.out.println("send success");
+                        }
 
+                        @Override
+                        public void onFailure(int errorCode) {
+                            System.out.println("send failure");
+                        }
+                    });
+                }
             }
         });
 
