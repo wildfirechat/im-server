@@ -244,18 +244,19 @@ public abstract class AbstractMQTTSampler extends AbstractSampler implements Con
 
                 OutputGetIMTokenData out = result.getResult();
                 if (out != null && out.getToken() != null) {
-                    byte[] data = Base64.getDecoder().decode(out.getToken());
+                    byte[] data = Base64.getDecoder().decode(token);
                     if (data != null) {
-                        data = AES.AESDecrypt(data, null, true);
+                        data = AES.AESDecrypt(data, commonSecret, false);
+
                         if (data != null) {
-                            String tokensecrets = new String(data);
-                            String[] keys = tokensecrets.split("\\|");
-                            if (keys.length == 3) {
-                                token = keys[0];
-                                privateSecret = keys[1];
+                            String s = new String(data);
+                            String[] ss = s.split("\\|");
+                            if (ss.length == 3) {
+                                this.token = ss[0];
+                                this.privateSecret = ss[1];
                                 return true;
                             } else {
-                                logger.info("get token keys not correct (" + tokensecrets + ")");
+                                logger.info("get token keys not correct (" + s + ")");
                             }
                         } else {
                             logger.info("get token decode token failure");
