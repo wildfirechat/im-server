@@ -51,7 +51,7 @@ public class IMAction extends Action {
 
             String cid = fullHttpRequest.headers().get("cid");
             byte[] cbytes = Base64.getDecoder().decode(cid);
-            cbytes = AES.AESDecrypt(cbytes, null, true);
+            cbytes = AES.AESDecrypt(cbytes, "", true);
             if (cbytes == null) {
                 sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
                 return;

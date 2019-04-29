@@ -18,6 +18,7 @@ import org.fusesource.mqtt.client.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.List;
 
 
 public class IMClient implements Listener {
@@ -26,6 +27,8 @@ public class IMClient implements Listener {
     private final String clientId;
     private final String host;
     private final int port;
+    private final ConnectionStatusCallback connectionStatusCallback;
+    private final ReceiveMessageCallback receiveMessageCallback;
 
     protected String mqttServerIp;
     protected long mqttServerPort;
@@ -34,12 +37,35 @@ public class IMClient implements Listener {
 
     private long messageHead;
 
-    public IMClient(String userId, String token, String clientId, String host, int port) {
+    interface ReceiveMessageCallback {
+        void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore);
+        void onRecallMessage(long messageUid);
+    }
+
+    interface ConnectionStatusCallback {
+        void onConnectionStatusChanged(int newStatus);
+    }
+
+    interface SendMessageCallback {
+        void onSuccess(long messageUid);
+        void onFailure(int errorCode);
+    }
+
+    public IMClient(String userId, String token, String clientId, String host, int port, ReceiveMessageCallback messageCallback, ConnectionStatusCallback connectionStatusCallback) {
         this.userId = userId;
-        this.token = token;
+
+        byte[] data = Base64.getDecoder().decode(token);
+        data = AES.AESDecrypt(data, commonSecret, false);
+        String s = new String(data);
+        String[] ss = s.split("\\|");
+
+        this.token = ss[0];
+        this.privateSecret = ss[1];
         this.clientId = clientId;
         this.host = host;
         this.port = port;
+        this.connectionStatusCallback = connectionStatusCallback;
+        this.receiveMessageCallback = messageCallback;
         AES.init(commonSecret);
     }
 
@@ -93,19 +119,23 @@ public class IMClient implements Listener {
         }
     }
 
-    public void sendMessage(WFCMessage.Conversation conversation, WFCMessage.MessageContent messageContent) {
+    public void sendMessage(WFCMessage.Conversation conversation, WFCMessage.MessageContent messageContent, final SendMessageCallback callback) {
         WFCMessage.Message message = WFCMessage.Message.newBuilder().setConversation(conversation).setContent(messageContent).setFromUser(userId).build();
         byte[] data = message.toByteArray();
         data = AES.AESEncrypt(data, privateSecret);
         connection.publish("MS", data, QoS.AT_LEAST_ONCE, false, new Callback<byte[]>() {
             @Override
             public void onSuccess(byte[] value) {
-
+                if (value[0] == 0) {
+                    callback.onSuccess(0L);
+                } else {
+                    callback.onFailure(value[0]);
+                }
             }
 
             @Override
             public void onFailure(Throwable value) {
-
+                callback.onFailure(-1);
             }
         });
     }
@@ -121,13 +151,23 @@ public class IMClient implements Listener {
             inputRoute.setToken(token);
 
             WFCMessage.IMHttpWrapper request = WFCMessage.IMHttpWrapper.newBuilder().setClientId(clientId).setToken(token).setRequest("ROUTE").setData(ByteString.copyFrom(token.getBytes())).build();
-            byte[] data = AES.AESEncrypt(request.toByteArray(), commonSecret);
+            byte[] data = AES.AESEncrypt(request.toByteArray(), privateSecret);
             data = Base64.getEncoder().encode(data);
 
             StringEntity entity = new StringEntity(new String(data), Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
             entity.setContentType("application/json");
             httpPost.setEntity(entity);
+
+            byte[] cidByte = AES.AESEncrypt(clientId.getBytes(), commonSecret);
+            cidByte = Base64.getEncoder().encode(cidByte);
+            String cid = new String(cidByte);
+            httpPost.setHeader("cid", cid);
+
+            byte[] uidByte = AES.AESEncrypt(userId.getBytes(), commonSecret);
+            uidByte = Base64.getEncoder().encode(uidByte);
+            String uid = new String(uidByte);
+            httpPost.setHeader("uid", uid);
 
 
             HttpResponse response = httpClient.execute(httpPost);
@@ -196,9 +236,13 @@ public class IMClient implements Listener {
                             byte[] data = AES.AESDecrypt(value, privateSecret, true);
                             try {
                                 WFCMessage.PullMessageResult result = WFCMessage.PullMessageResult.parseFrom(data);
+                                if (receiveMessageCallback != null) {
+                                    receiveMessageCallback.onReceiveMessages(result.getMessageList(), false);
+                                }
                             } catch (InvalidProtocolBufferException e) {
                                 e.printStackTrace();
                             }
+
                             System.out.println("onSuccess");
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -223,8 +267,26 @@ public class IMClient implements Listener {
     }
 
     public static void main(String[] args) {
-        IMClient client = new IMClient("-C-3-3KK","hN0AF2XX6+o1vf6UIC4Fo5O6E+EWC2nmnZd7xZi4SlU=", "1234", "im.liyufan.win", 80);
+        IMClient client = new IMClient("cgc8c8VV", "oOVX4iTM/JSDtWPTqRYVDSDdSwLSjSgtU99gTYd73PLMRZQAxce1IEyEvYVHt05ar7A8M3cTlxQHh1TywGcb8WmXn3zu5BZAAZIE4QpDwhaXf1p6OiF5IDL6Ksa1KgAyMQf4Q7UHK3COkg8XBGf2TRo8AIpligitH2loeyh0Ol4=", "DD72C212-26C7-4B38-A5FC-88550896B170", "wildfirechat.cn", 80, new ReceiveMessageCallback() {
+            @Override
+            public void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore) {
+
+            }
+
+            @Override
+            public void onRecallMessage(long messageUid) {
+
+            }
+        }, new ConnectionStatusCallback() {
+            @Override
+            public void onConnectionStatusChanged(int newStatus) {
+
+            }
+        });
+
         client.connect();
+
+
         try {
             Thread.sleep(1000000);
         } catch (InterruptedException e) {

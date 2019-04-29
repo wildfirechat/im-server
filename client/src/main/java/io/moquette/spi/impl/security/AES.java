@@ -107,18 +107,20 @@ public class AES {
         }
         return key;
     }
-
     public static byte[] AESDecrypt(byte[] sSrc, String userKey, boolean checkTime) {
+        byte[] aesKey = aes_key;
+        if (userKey != null && !userKey.isEmpty()) {
+            aesKey = convertUserKey(userKey);
+        }
+        return AESDecrypt(sSrc, aesKey, checkTime);
+    }
+
+    public static byte[] AESDecrypt(byte[] sSrc, byte[] aesKey, boolean checkTime) {
         try {
 
-            byte[] aesKey = aes_key;
-            if (userKey != null && !userKey.isEmpty()) {
-                aesKey = convertUserKey(userKey);
-            }
             // 判断Key是否正确
             if (aesKey == null) {
-                System.out.print("Key为空null");
-                return null;
+                aesKey = aes_key;
             }
             // 判断Key是否为16位
             if (aesKey.length != 16) {
