@@ -21,7 +21,11 @@ public class LoadRemoteMessagesHandler extends IMHandler<WFCMessage.LoadRemoteMe
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.LoadRemoteMessages request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
 
-        WFCMessage.PullMessageResult result = m_messagesStore.loadRemoteMessages(fromUser, request.getConversation(), request.getBeforeUid(), request.getCount());
+        long beforeUid = request.getBeforeUid();
+        if (beforeUid == 0) {
+            beforeUid = Long.MAX_VALUE;
+        }
+        WFCMessage.PullMessageResult result = m_messagesStore.loadRemoteMessages(fromUser, request.getConversation(), beforeUid, request.getCount());
         byte[] data = result.toByteArray();
         LOG.info("User {} load message with count({}), payload size({})", fromUser, result.getMessageCount(), data.length);
         ackPayload.ensureWritable(data.length).writeBytes(data);

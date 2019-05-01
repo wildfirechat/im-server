@@ -537,23 +537,25 @@ public class DatabaseStore {
         List<WFCMessage.Message> messages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count, MessageShardingUtil.getMessageTable(beforeUid));
         if (messages != null && messages.size() < count) {
             String nexTable = MessageShardingUtil.getPreviousMessageTable(beforeUid);
-            List<WFCMessage.Message> nextMessages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count-messages.size(), nexTable);
-            if (nextMessages != null) {
-                messages.addAll(nextMessages);
+            if (!StringUtil.isNullOrEmpty(nexTable)) {
+                List<WFCMessage.Message> nextMessages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count - messages.size(), nexTable);
+                if (nextMessages != null) {
+                    messages.addAll(nextMessages);
+                }
             }
         }
         return messages;
     }
 
     List<WFCMessage.Message> loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long beforeUid, int count, String table) {
-        String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + table +" where";
+        String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + table +" where";
         if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
-            sql += " _type = ? and _line = ? and _mid > ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?)";
+            sql += " _type = ? and _line = ? and _mid < ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?)";
         } else {
-            sql += " _type = ? and _line = ? and _mid > ? and _target = ?";
+            sql += " _type = ? and _line = ? and _mid < ? and _target = ?";
         }
 
-        sql += " limit ?";
+        sql += "order by `_mid` DESC limit ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -598,7 +600,7 @@ public class DatabaseStore {
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
-        return null;
+        return out;
     }
 
     void persistUserMessage(final String userId, final long messageId, final long messageSeq) {
