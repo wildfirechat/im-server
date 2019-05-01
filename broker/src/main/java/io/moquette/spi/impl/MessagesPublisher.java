@@ -212,7 +212,7 @@ public class MessagesPublisher {
                 }
 
                 if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
-                    if (exceptClientId.equals(targetSession.getClientID())) {
+                    if (exceptClientId != null && exceptClientId.equals(targetSession.getClientID())) {
                         targetSession.refreshLastChatroomActiveTime();
                     }
 
