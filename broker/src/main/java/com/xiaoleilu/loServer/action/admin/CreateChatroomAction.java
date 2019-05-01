@@ -34,7 +34,7 @@ public class CreateChatroomAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
@@ -67,5 +67,6 @@ public class CreateChatroomAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

@@ -39,8 +39,6 @@ abstract public class Action {
 
     public ChannelHandlerContext ctx;
 
-    protected boolean isSync = true;
-
     public ErrorCode preAction(Request request, Response response) {
         if (getClass().getAnnotation(RequireAuthentication.class) != null) {
             //do authentication
@@ -50,6 +48,7 @@ abstract public class Action {
     }
 	public boolean doAction(Request request, Response response) {
         ErrorCode errorCode = preAction(request, response);
+        boolean isSync = true;
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             //事务逻辑有缺陷，先注释掉
 //            if (isTransactionAction() && !(this instanceof IMAction)) {
@@ -63,9 +62,8 @@ abstract public class Action {
 //                    throw e;
 //                }
 //            } else {
-                action(request, response);
+            isSync = action(request, response);
 //            }
-            afterAction(request, response);
         } else {
             response.setStatus(HttpResponseStatus.OK);
             if (errorCode == null) {
@@ -77,19 +75,12 @@ abstract public class Action {
             response.send();
         }
 
-        if(this instanceof IMAction || this instanceof RouteAction || this instanceof GetIMTokenAction) {
-            isSync = false;
-        }
         return isSync;
     }
     public boolean isTransactionAction() {
         return false;
     }
-    abstract public void action(Request request, Response response);
-    public void afterAction(Request request, Response response) {
-
-    }
-
+    abstract public boolean action(Request request, Response response);
 
     protected <T> T getRequestBody(HttpRequest request, Class<T> cls) {
         if (request instanceof FullHttpRequest) {

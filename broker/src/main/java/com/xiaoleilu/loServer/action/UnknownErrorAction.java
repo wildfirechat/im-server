@@ -27,7 +27,8 @@ public class UnknownErrorAction extends Action{
 	private final static String TEMPLATE_ERROR = "<!DOCTYPE html><html><head><title>LoServer - Error report</title><style>h1,h3 {color:white; background-color: gray;}</style></head><body><h1>HTTP Status {} - {}</h1><hr size=\"1\" noshade=\"noshade\" /><p>{}</p><hr size=\"1\" noshade=\"noshade\" /><h3>LoServer</h3></body></html>";
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        return true;
     }
 }

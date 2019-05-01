@@ -73,7 +73,7 @@ public class UploadFileAction extends Action {
     }
 
     @Override
-    public void action(Request r, Response response) {
+    public boolean action(Request r, Response response) {
         if (r.getNettyRequest() instanceof FullHttpRequest) {
 
             FullHttpRequest request = (FullHttpRequest) r.getNettyRequest();
@@ -84,12 +84,13 @@ public class UploadFileAction extends Action {
                 logger.warn("http decode failed!");
                 response.setStatus(HttpResponseStatus.BAD_REQUEST);
                 response.setContent("http decode failed");
-                return;
+                return true;
             }
 
             multipartUpload(request, requestId, response);
 
         }
+        return true;
     }
 
 

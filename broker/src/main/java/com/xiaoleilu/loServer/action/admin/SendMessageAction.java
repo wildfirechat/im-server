@@ -39,7 +39,7 @@ public class SendMessageAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
             if (SendMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {
@@ -75,11 +75,13 @@ public class SendMessageAction extends AdminAction {
                         };
                     }
                 }, true);
+                return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
                 response.setContent(new Gson().toJson(result));
             }
         }
+        return true;
     }
 }

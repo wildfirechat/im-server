@@ -33,7 +33,7 @@ public class GetUserAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId != null
@@ -64,5 +64,6 @@ public class GetUserAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

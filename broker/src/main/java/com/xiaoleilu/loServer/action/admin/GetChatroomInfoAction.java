@@ -31,7 +31,7 @@ public class GetChatroomInfoAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
 
             String chatroomid = request.getParam("id");
@@ -56,5 +56,6 @@ public class GetChatroomInfoAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

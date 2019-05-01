@@ -27,11 +27,12 @@ public class GetUserBlockListAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             response.setStatus(HttpResponseStatus.OK);
             RestResult result = RestResult.ok(messagesStore.getUserStatusList());
             response.setContent(new Gson().toJson(result));
         }
+        return true;
     }
 }

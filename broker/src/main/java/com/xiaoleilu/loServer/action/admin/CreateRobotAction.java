@@ -33,7 +33,7 @@ public class CreateRobotAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateRobot inputCreateRobot = getRequestBody(request.getNettyRequest(), InputCreateRobot.class);
             if (inputCreateRobot != null
@@ -76,5 +76,6 @@ public class CreateRobotAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

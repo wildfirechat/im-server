@@ -42,7 +42,7 @@ public class SendMessageAction extends ChannelAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
             sendMessageData.setConv(new Conversation());
@@ -82,11 +82,13 @@ public class SendMessageAction extends ChannelAction {
                         };
                     }
                 }, false);
+                return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
                 response.setContent(new Gson().toJson(result));
             }
         }
+        return true;
     }
 }

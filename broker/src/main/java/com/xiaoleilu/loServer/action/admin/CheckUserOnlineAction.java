@@ -30,16 +30,17 @@ public class CheckUserOnlineAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId == null || !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
                 RPCCenter.getInstance().sendRequest(null, null, RPCCenter.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), inputUserId.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
-                return;
+                return true;
             } else {
                 sendResponse(response, ErrorCode.INVALID_PARAMETER, null);
             }
 
         }
+        return true;
     }
 }

@@ -29,7 +29,7 @@ public class SensitiveWordDeleteAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputOutputSensitiveWords input = getRequestBody(request.getNettyRequest(), InputOutputSensitiveWords.class);
             if (input != null && input.getWords() != null && !input.getWords().isEmpty()) {
@@ -44,5 +44,6 @@ public class SensitiveWordDeleteAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

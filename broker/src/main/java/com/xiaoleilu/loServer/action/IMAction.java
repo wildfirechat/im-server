@@ -35,7 +35,7 @@ import java.util.concurrent.Executor;
 public class IMAction extends Action {
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
 
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();
@@ -46,7 +46,7 @@ public class IMAction extends Action {
                 bytes = Base64.getDecoder().decode(str);
             } catch (IllegalArgumentException e) {
                 sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
-                return;
+                return true;
             }
 
             String cid = fullHttpRequest.headers().get("cid");
@@ -54,7 +54,7 @@ public class IMAction extends Action {
             cbytes = AES.AESDecrypt(cbytes, "", true);
             if (cbytes == null) {
                 sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
-                return;
+                return true;
             }
             cid = new String(cbytes);
 
@@ -64,13 +64,13 @@ public class IMAction extends Action {
                 bytes = AES.AESDecrypt(bytes, session.getSecret(), true);
             } else {
                 sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
-                return;
+                return true;
             }
 
 
             if (bytes == null) {
                 sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
-                return;
+                return true;
             }
 
             try {
@@ -103,11 +103,13 @@ public class IMAction extends Action {
                             };
                         }
                     }, false);
+                    return false;
                 }
             } catch (InvalidProtocolBufferException e) {
                 sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null);
             }
         }
+        return true;
     }
 
     private void sendResponse(Response response, ErrorCode errorCode, byte[] contents) {

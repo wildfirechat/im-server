@@ -12,7 +12,8 @@ import io.moquette.spi.IMessagesStore;
  */
 public class DefaultIndexAction extends Action{
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         response.setContent("Welcome to LoServer.");
+        return true;
     }
 }

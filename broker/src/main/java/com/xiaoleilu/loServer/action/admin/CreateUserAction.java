@@ -33,7 +33,7 @@ public class CreateUserAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateUser inputCreateUser = getRequestBody(request.getNettyRequest(), InputCreateUser.class);
             if (inputCreateUser != null
@@ -90,5 +90,6 @@ public class CreateUserAction extends AdminAction {
             }
 
         }
+        return true;
     }
 }

@@ -31,12 +31,13 @@ public class SensitiveWordQueryAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
                 List<String> words = messagesStore.getAllSensitiveWords();
                 InputOutputSensitiveWords out = new InputOutputSensitiveWords();
                 out.setWords(words);
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, out);
         }
+        return true;
     }
 }

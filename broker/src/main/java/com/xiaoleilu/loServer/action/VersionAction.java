@@ -33,7 +33,7 @@ public class VersionAction extends Action {
 
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             response.setStatus(HttpResponseStatus.OK);
 
@@ -44,5 +44,6 @@ public class VersionAction extends Action {
                 response.setContent("{\"version\":\"unknown\"}");
             }
         }
+        return true;
     }
 }

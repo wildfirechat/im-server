@@ -38,7 +38,7 @@ public class RecallMessageAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             RecallMessageData recallMessageData = getRequestBody(request.getNettyRequest(), RecallMessageData.class);
             if (recallMessageData != null && !StringUtil.isNullOrEmpty(recallMessageData.getOperator())) {
@@ -70,11 +70,13 @@ public class RecallMessageAction extends AdminAction {
                         };
                     }
                 }, true);
+                return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
                 response.setContent(new Gson().toJson(result));
             }
         }
+        return true;
     }
 }

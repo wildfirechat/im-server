@@ -34,15 +34,15 @@ public class FileAction extends Action {
     private static final org.slf4j.Logger Logger = LoggerFactory.getLogger(FileAction.class);
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (false == Request.METHOD_GET.equalsIgnoreCase(request.getMethod())) {
             response.sendError(HttpResponseStatus.METHOD_NOT_ALLOWED, "Please use GET method to request file!");
-            return;
+            return true;
         }
 
         if(ServerSetting.isRootAvailable() == false){
             response.sendError(HttpResponseStatus.NOT_FOUND, "404 Root dir not avaliable!");
-            return;
+            return true;
         }
 
         final File file = getFileByPath(request.getPath());
@@ -51,13 +51,13 @@ public class FileAction extends Action {
         // 隐藏文件，跳过
         if (file.isHidden() || !file.exists()) {
             response.sendError(HttpResponseStatus.NOT_FOUND, "404 File not found!");
-            return;
+            return true;
         }
 
         // 非文件，跳过
         if (false == file.isFile()) {
             response.sendError(HttpResponseStatus.FORBIDDEN, "403 Forbidden!");
-            return;
+            return true;
         }
 
         // Cache Validation
@@ -76,12 +76,13 @@ public class FileAction extends Action {
                 if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
                     Logger.debug("File {} not modified.", file.getPath());
                     response.sendNotModified();
-                    return;
+                    return true;
                 }
             }
         }
 
         response.setContent(file);
+        return true;
     }
 
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");

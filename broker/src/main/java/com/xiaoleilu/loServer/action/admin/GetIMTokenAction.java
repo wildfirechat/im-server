@@ -34,7 +34,7 @@ public class GetIMTokenAction extends AdminAction {
     }
 
     @Override
-    public void action(Request request, Response response) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetToken input = getRequestBody(request.getNettyRequest(), InputGetToken.class);
             String userId = input.getUserId();
@@ -76,6 +76,8 @@ public class GetIMTokenAction extends AdminAction {
                     };
                 }
             }, true);
+            return false;
         }
+        return true;
     }
 }
