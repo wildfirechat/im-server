@@ -32,8 +32,8 @@ public class IMClient implements Listener {
     private final String clientId;
     private final String host;
     private final int port;
-    private final ConnectionStatusCallback connectionStatusCallback;
-    private final ReceiveMessageCallback receiveMessageCallback;
+    private ConnectionStatusCallback connectionStatusCallback;
+    private ReceiveMessageCallback receiveMessageCallback;
 
     protected String mqttServerIp;
     protected long mqttServerPort;
@@ -42,13 +42,16 @@ public class IMClient implements Listener {
 
     private long messageHead;
 
+    private transient MQTT mqtt = new MQTT();
+    private transient CallbackConnection connection = null;
+
     interface ReceiveMessageCallback {
-        void onReceiveMessages(IMClient client, List<WFCMessage.Message> messageList, boolean hasMore);
-        void onRecallMessage(IMClient client, long messageUid);
+        void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore);
+        void onRecallMessage(long messageUid);
     }
 
     interface ConnectionStatusCallback {
-        void onConnectionStatusChanged(IMClient client, ConnectionStatus newStatus);
+        void onConnectionStatusChanged(ConnectionStatus newStatus);
     }
 
     interface SendMessageCallback {
@@ -62,7 +65,7 @@ public class IMClient implements Listener {
         ConnectionStatus_Connected,
     }
 
-    public IMClient(String userId, String token, String clientId, String host, int port, ReceiveMessageCallback messageCallback, ConnectionStatusCallback connectionStatusCallback) {
+    public IMClient(String userId, String token, String clientId, String host, int port) {
         this.userId = userId;
 
         byte[] data = Base64.getDecoder().decode(token);
@@ -75,13 +78,9 @@ public class IMClient implements Listener {
         this.clientId = clientId;
         this.host = host;
         this.port = port;
-        this.connectionStatusCallback = connectionStatusCallback;
-        this.receiveMessageCallback = messageCallback;
         AES.init(commonSecret);
     }
 
-    private transient MQTT mqtt = new MQTT();
-    private transient CallbackConnection connection = null;
 
     public void connect() {
         if(route(userId, token)) {
@@ -103,7 +102,9 @@ public class IMClient implements Listener {
                 connection.listener(this);
 
                 //connecting
-                connectionStatusCallback.onConnectionStatusChanged(this, ConnectionStatus_Connecting);
+                if(connectionStatusCallback != null) {
+                    connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connecting);
+                }
                 connection.connect(new Callback<byte[]>() {
                     @Override
                     public void onSuccess(byte[] value) {
@@ -120,13 +121,17 @@ public class IMClient implements Listener {
 
                         System.out.println("on connect success");
                         //connected
-                        connectionStatusCallback.onConnectionStatusChanged(IMClient.this, ConnectionStatus_Connected);
+                        if(connectionStatusCallback != null) {
+                            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connected);
+                        }
                     }
 
                     @Override
                     public void onFailure(Throwable value) {
                         System.out.println("on connect failure");
-                        connectionStatusCallback.onConnectionStatusChanged(IMClient.this, ConnectionStatus_Unconnected);
+                        if(connectionStatusCallback != null) {
+                            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Unconnected);
+                        }
                     }
                 });
 
@@ -244,11 +249,17 @@ public class IMClient implements Listener {
     @Override
     public void onConnected() {
         System.out.println("onConnected");
+        if(connectionStatusCallback != null) {
+            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connecting);
+        }
     }
 
     @Override
     public void onDisconnected() {
         System.out.println("onDisconnected");
+        if(connectionStatusCallback != null) {
+            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Unconnected);
+        }
     }
 
     @Override
@@ -267,7 +278,7 @@ public class IMClient implements Listener {
                             try {
                                 WFCMessage.PullMessageResult result = WFCMessage.PullMessageResult.parseFrom(data);
                                 if (receiveMessageCallback != null) {
-                                    receiveMessageCallback.onReceiveMessages(IMClient.this, result.getMessageList(), false);
+                                    receiveMessageCallback.onReceiveMessages(result.getMessageList(), false);
                                 }
                                 messageHead = result.getHead();
                             } catch (InvalidProtocolBufferException e) {
@@ -295,41 +306,52 @@ public class IMClient implements Listener {
     @Override
     public void onFailure(Throwable value) {
         System.out.println("onDisconnected" + value.toString());
+        if(connectionStatusCallback != null) {
+            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Unconnected);
+        }
+    }
+
+    public void setConnectionStatusCallback(ConnectionStatusCallback connectionStatusCallback) {
+        this.connectionStatusCallback = connectionStatusCallback;
+    }
+
+    public void setReceiveMessageCallback(ReceiveMessageCallback receiveMessageCallback) {
+        this.receiveMessageCallback = receiveMessageCallback;
     }
 
     public static void main(String[] args) {
         //token与userid和clientid是绑定的，使用时一定要传入正确的userid和clientid，不然会认为token非法
-        IMClient client = new IMClient("yzyOyOKK", "7SJk13q+YdHHe6EwDzry9BKogxTNf3UgtYj50cBTZgWNkNuxEkiqg2koKg0lXViONIX1LmwCR1jN0Mw8hvk6KGpiSKFi+IRaRkIb3mNzgIfrq4afhyIHaQfa2HOfsi6Ws+9YobkdDgdq7W70bEdVfiCSU9+JOIY449nxZzfg2Zw=", "DD72C212-26C7-4B38-A5FC-88550896B170", "192.168.1.101", 80, new ReceiveMessageCallback() {
+        IMClient client = new IMClient("yzyOyOKK", "7SJk13q+YdHHe6EwDzry9BKogxTNf3UgtYj50cBTZgWNkNuxEkiqg2koKg0lXViONIX1LmwCR1jN0Mw8hvk6KGpiSKFi+IRaRkIb3mNzgIfrq4afhyIHaQfa2HOfsi6Ws+9YobkdDgdq7W70bEdVfiCSU9+JOIY449nxZzfg2Zw=", "DD72C212-26C7-4B38-A5FC-88550896B170", "192.168.1.101", 80);
+
+        client.setReceiveMessageCallback(new ReceiveMessageCallback() {
             @Override
-            public void onReceiveMessages(IMClient client, List<WFCMessage.Message> messageList, boolean hasMore) {
+            public void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore) {
 
             }
 
             @Override
-            public void onRecallMessage(IMClient client, long messageUid) {
+            public void onRecallMessage(long messageUid) {
 
             }
-        }, new ConnectionStatusCallback() {
-            @Override
-            public void onConnectionStatusChanged(IMClient client, ConnectionStatus newStatus) {
-                if (newStatus == ConnectionStatus_Connected) {
-                    client.sendMessage(WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build(), WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build(), new SendMessageCallback() {
-                        @Override
-                        public void onSuccess(long messageUid, long timestamp) {
-                            System.out.println("send success");
-                        }
+        });
 
-                        @Override
-                        public void onFailure(int errorCode) {
-                            System.out.println("send failure");
-                        }
-                    });
-                }
+        client.setConnectionStatusCallback((ConnectionStatus newStatus) -> {
+            if (newStatus == ConnectionStatus_Connected) {
+                client.sendMessage(WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build(), WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build(), new SendMessageCallback() {
+                    @Override
+                    public void onSuccess(long messageUid, long timestamp) {
+                        System.out.println("send success");
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+                        System.out.println("send failure");
+                    }
+                });
             }
         });
 
         client.connect();
-
 
         try {
             Thread.sleep(1000000);
