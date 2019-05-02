@@ -157,6 +157,7 @@ public interface IMessagesStore {
     ErrorCode blackUserRequest(String fromUser, String targetUserId, int status, long[] head);
     ErrorCode SyncFriendRequestUnread(String userId, long unreadDt, long[] head);
     boolean isBlacked(String fromUser, String userId);
+    ErrorCode setFriendAliasRequest(String fromUser, String targetUserId, String alias, long[] head);
 
     ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId);
     ErrorCode handleQuitChatroom(String userId, String clientId, String chatroomId);

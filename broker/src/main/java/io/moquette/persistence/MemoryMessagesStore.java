@@ -1567,11 +1567,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
                 MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
-                FriendData friendData1 = new FriendData(userId, request.getTargetUid(), 0, System.currentTimeMillis());
+                FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", 0, System.currentTimeMillis());
                 friendsMap.put(userId, friendData1);
                 databaseStore.persistOrUpdateFriendData(friendData1);
 
-                FriendData friendData2 = new FriendData(request.getTargetUid(), userId, 0, friendData1.getTimestamp());
+                FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", 0, friendData1.getTimestamp());
                 friendsMap.put(request.getTargetUid(), friendData2);
                 databaseStore.persistOrUpdateFriendData(friendData2);
 
@@ -1588,15 +1588,58 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode blackUserRequest(String fromUser, String targetUserId, int status, long[] heads) {
+    public ErrorCode blackUserRequest(String fromUser, String targetUserId, int state, long[] heads) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
-        FriendData friendData1 = new FriendData(fromUser, targetUserId, status, System.currentTimeMillis());
-        friendsMap.put(fromUser, friendData1);
-        databaseStore.persistOrUpdateFriendData(friendData1);
+        FriendData friendData = null;
+        Collection<FriendData> friends = friendsMap.get(fromUser);
+        for (FriendData fd:friends) {
+            if (fd.getFriendUid().equals(targetUserId)) {
+                friendData = fd;
+                break;
+            }
+        }
 
-        heads[0] = friendData1.getTimestamp();
+        if (friendData == null) {
+            friendData = new FriendData(fromUser, targetUserId, "", state, System.currentTimeMillis());
+        }
+        friendData.setState(state);
+        friendData.setTimestamp(System.currentTimeMillis());
+
+        friendsMap.put(fromUser, friendData);
+        databaseStore.persistOrUpdateFriendData(friendData);
+
+        heads[0] = friendData.getTimestamp();
+
+        return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public ErrorCode setFriendAliasRequest(String fromUser, String targetUserId, String alias, long[] heads){
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+        FriendData friendData = null;
+        Collection<FriendData> friends = friendsMap.get(fromUser);
+        for (FriendData fd:friends) {
+            if (fd.getFriendUid().equals(targetUserId)) {
+                friendData = fd;
+                break;
+            }
+        }
+
+        if (friendData == null) {
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
+        }
+
+        friendData.setAlias(alias);
+        friendData.setTimestamp(System.currentTimeMillis());
+
+        friendsMap.put(fromUser, friendData);
+        databaseStore.persistOrUpdateFriendData(friendData);
+
+        heads[0] = friendData.getTimestamp();
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }

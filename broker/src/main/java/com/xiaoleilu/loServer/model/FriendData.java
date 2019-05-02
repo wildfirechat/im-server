@@ -13,13 +13,15 @@ import java.io.Serializable;
 public class FriendData implements Serializable {
     private String userId;
     private String friendUid;
+    private String alias;
     private int state;
     private long timestamp;
 
 
-    public FriendData(String userId, String friendUid, int state, long timestamp) {
+    public FriendData(String userId, String friendUid, String alias, int state, long timestamp) {
         this.userId = userId;
         this.friendUid = friendUid;
+        this.alias = alias;
         this.state = state;
         this.timestamp = timestamp;
     }
@@ -41,6 +43,14 @@ public class FriendData implements Serializable {
 
     public void setFriendUid(String friendUid) {
         this.friendUid = friendUid;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public int getState() {
