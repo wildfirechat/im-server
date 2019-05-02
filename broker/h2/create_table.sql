@@ -230,4 +230,7 @@ insert into t_chatroom (`_cid`, `_title`, `_desc`,`_dt`) values ('chatroom3','�
 
 insert into t_user (`_uid`,`_name`,`_display_name`,`_portrait`,`_type`,`_dt`) values ('FireRobot','FireRobot','小火','http://cdn2.wildfirechat.cn/robot.png',1,1);
 
-insert into t_robot (`_uid`,`_owner`,`_secret`,`_callback`,`_state`,`_dt`) values ('FireRobot', 'FireRobot', '123456', 'http://192.168.0.10:8883/robot/recvmsg', 0, 1);
+insert into t_robot (`_uid`,`_owner`,`_secret`,`_callback`,`_state`,`_dt`) values ('FireRobot', 'FireRobot', '123456', 'http://127.0.0.1:8883/robot/recvmsg', 0, 1);
+
+
+alter table t_friend add column `_alias` varchar(64) DEFAULT NULL;

@@ -67,6 +67,11 @@
         </file>
 
         <file>
+            <source>../broker/sql/5_add_friend_alias.sql</source>
+            <outputDirectory>sql/</outputDirectory>
+        </file>
+
+        <file>
             <source>../broker/sql/initialize_db.sh</source>
             <outputDirectory>sql/</outputDirectory>
         </file>
