@@ -19,9 +19,9 @@ import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.SetFriendAliasTopic)
 public class SetFriendAliasRequestHandler extends GroupHandler<WFCMessage.AddFriendRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddFriendRequest request, Qos1PublishHandler.IMCallback callback) {
         long[] head = new long[1];
-        ErrorCode errorCode = m_messagesStore.blackUserRequest(fromUser, request.getUid(), request.getStatus(), head);
+        ErrorCode errorCode = m_messagesStore.setFriendAliasRequest(fromUser, request.getTargetUid(), request.getReason(), head);
         if (errorCode == ERROR_CODE_SUCCESS) {
             publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, head[0]);
         }
