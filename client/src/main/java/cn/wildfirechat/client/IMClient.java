@@ -337,7 +337,9 @@ public class IMClient implements Listener {
 
         client.setConnectionStatusCallback((ConnectionStatus newStatus) -> {
             if (newStatus == ConnectionStatus_Connected) {
-                client.sendMessage(WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build(), WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build(), new SendMessageCallback() {
+                WFCMessage.Conversation conversation = WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build();
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build();
+                client.sendMessage(conversation, messageContent, new SendMessageCallback() {
                     @Override
                     public void onSuccess(long messageUid, long timestamp) {
                         System.out.println("send success");
