@@ -62,6 +62,11 @@
         </file>
 
         <file>
+            <source>../broker/sql/4_create_default_robot.sql</source>
+            <outputDirectory>sql/</outputDirectory>
+        </file>
+
+        <file>
             <source>../broker/sql/initialize_db.sh</source>
             <outputDirectory>sql/</outputDirectory>
         </file>
