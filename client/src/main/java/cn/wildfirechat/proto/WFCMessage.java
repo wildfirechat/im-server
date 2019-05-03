@@ -55939,6 +55939,707 @@ public final class WFCMessage {
     // @@protoc_insertion_point(class_scope:GetTokenRequest)
   }
 
+  public interface LoadRemoteMessagesOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required .Conversation conversation = 1;
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    boolean hasConversation();
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.Conversation getConversation();
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder getConversationOrBuilder();
+
+    // required int64 before_uid = 2;
+    /**
+     * <code>required int64 before_uid = 2;</code>
+     */
+    boolean hasBeforeUid();
+    /**
+     * <code>required int64 before_uid = 2;</code>
+     */
+    long getBeforeUid();
+
+    // required int32 count = 3;
+    /**
+     * <code>required int32 count = 3;</code>
+     */
+    boolean hasCount();
+    /**
+     * <code>required int32 count = 3;</code>
+     */
+    int getCount();
+  }
+  /**
+   * Protobuf type {@code LoadRemoteMessages}
+   */
+  public static final class LoadRemoteMessages extends
+      com.google.protobuf.GeneratedMessage
+      implements LoadRemoteMessagesOrBuilder {
+    // Use LoadRemoteMessages.newBuilder() to construct.
+    private LoadRemoteMessages(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private LoadRemoteMessages(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final LoadRemoteMessages defaultInstance;
+    public static LoadRemoteMessages getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public LoadRemoteMessages getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private LoadRemoteMessages(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              cn.wildfirechat.proto.WFCMessage.Conversation.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = conversation_.toBuilder();
+              }
+              conversation_ = input.readMessage(cn.wildfirechat.proto.WFCMessage.Conversation.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(conversation_);
+                conversation_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              beforeUid_ = input.readInt64();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              count_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_LoadRemoteMessages_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_LoadRemoteMessages_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.class, cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<LoadRemoteMessages> PARSER =
+        new com.google.protobuf.AbstractParser<LoadRemoteMessages>() {
+      public LoadRemoteMessages parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new LoadRemoteMessages(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LoadRemoteMessages> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required .Conversation conversation = 1;
+    public static final int CONVERSATION_FIELD_NUMBER = 1;
+    private cn.wildfirechat.proto.WFCMessage.Conversation conversation_;
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    public boolean hasConversation() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.Conversation getConversation() {
+      return conversation_;
+    }
+    /**
+     * <code>required .Conversation conversation = 1;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder getConversationOrBuilder() {
+      return conversation_;
+    }
+
+    // required int64 before_uid = 2;
+    public static final int BEFORE_UID_FIELD_NUMBER = 2;
+    private long beforeUid_;
+    /**
+     * <code>required int64 before_uid = 2;</code>
+     */
+    public boolean hasBeforeUid() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int64 before_uid = 2;</code>
+     */
+    public long getBeforeUid() {
+      return beforeUid_;
+    }
+
+    // required int32 count = 3;
+    public static final int COUNT_FIELD_NUMBER = 3;
+    private int count_;
+    /**
+     * <code>required int32 count = 3;</code>
+     */
+    public boolean hasCount() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int32 count = 3;</code>
+     */
+    public int getCount() {
+      return count_;
+    }
+
+    private void initFields() {
+      conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
+      beforeUid_ = 0L;
+      count_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasConversation()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasBeforeUid()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasCount()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getConversation().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, conversation_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(2, beforeUid_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, count_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, conversation_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, beforeUid_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, count_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code LoadRemoteMessages}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.LoadRemoteMessagesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_LoadRemoteMessages_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_LoadRemoteMessages_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.class, cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getConversationFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (conversationBuilder_ == null) {
+          conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
+        } else {
+          conversationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        beforeUid_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        count_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_LoadRemoteMessages_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages build() {
+        cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages result = new cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (conversationBuilder_ == null) {
+          result.conversation_ = conversation_;
+        } else {
+          result.conversation_ = conversationBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.beforeUid_ = beforeUid_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.count_ = count_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages.getDefaultInstance()) return this;
+        if (other.hasConversation()) {
+          mergeConversation(other.getConversation());
+        }
+        if (other.hasBeforeUid()) {
+          setBeforeUid(other.getBeforeUid());
+        }
+        if (other.hasCount()) {
+          setCount(other.getCount());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasConversation()) {
+          
+          return false;
+        }
+        if (!hasBeforeUid()) {
+          
+          return false;
+        }
+        if (!hasCount()) {
+          
+          return false;
+        }
+        if (!getConversation().isInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required .Conversation conversation = 1;
+      private cn.wildfirechat.proto.WFCMessage.Conversation conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.Conversation, cn.wildfirechat.proto.WFCMessage.Conversation.Builder, cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder> conversationBuilder_;
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public boolean hasConversation() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.Conversation getConversation() {
+        if (conversationBuilder_ == null) {
+          return conversation_;
+        } else {
+          return conversationBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public Builder setConversation(cn.wildfirechat.proto.WFCMessage.Conversation value) {
+        if (conversationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          conversation_ = value;
+          onChanged();
+        } else {
+          conversationBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public Builder setConversation(
+          cn.wildfirechat.proto.WFCMessage.Conversation.Builder builderForValue) {
+        if (conversationBuilder_ == null) {
+          conversation_ = builderForValue.build();
+          onChanged();
+        } else {
+          conversationBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public Builder mergeConversation(cn.wildfirechat.proto.WFCMessage.Conversation value) {
+        if (conversationBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              conversation_ != cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance()) {
+            conversation_ =
+              cn.wildfirechat.proto.WFCMessage.Conversation.newBuilder(conversation_).mergeFrom(value).buildPartial();
+          } else {
+            conversation_ = value;
+          }
+          onChanged();
+        } else {
+          conversationBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public Builder clearConversation() {
+        if (conversationBuilder_ == null) {
+          conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
+          onChanged();
+        } else {
+          conversationBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.Conversation.Builder getConversationBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getConversationFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder getConversationOrBuilder() {
+        if (conversationBuilder_ != null) {
+          return conversationBuilder_.getMessageOrBuilder();
+        } else {
+          return conversation_;
+        }
+      }
+      /**
+       * <code>required .Conversation conversation = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.Conversation, cn.wildfirechat.proto.WFCMessage.Conversation.Builder, cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder> 
+          getConversationFieldBuilder() {
+        if (conversationBuilder_ == null) {
+          conversationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              cn.wildfirechat.proto.WFCMessage.Conversation, cn.wildfirechat.proto.WFCMessage.Conversation.Builder, cn.wildfirechat.proto.WFCMessage.ConversationOrBuilder>(
+                  conversation_,
+                  getParentForChildren(),
+                  isClean());
+          conversation_ = null;
+        }
+        return conversationBuilder_;
+      }
+
+      // required int64 before_uid = 2;
+      private long beforeUid_ ;
+      /**
+       * <code>required int64 before_uid = 2;</code>
+       */
+      public boolean hasBeforeUid() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int64 before_uid = 2;</code>
+       */
+      public long getBeforeUid() {
+        return beforeUid_;
+      }
+      /**
+       * <code>required int64 before_uid = 2;</code>
+       */
+      public Builder setBeforeUid(long value) {
+        bitField0_ |= 0x00000002;
+        beforeUid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 before_uid = 2;</code>
+       */
+      public Builder clearBeforeUid() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        beforeUid_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // required int32 count = 3;
+      private int count_ ;
+      /**
+       * <code>required int32 count = 3;</code>
+       */
+      public boolean hasCount() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int32 count = 3;</code>
+       */
+      public int getCount() {
+        return count_;
+      }
+      /**
+       * <code>required int32 count = 3;</code>
+       */
+      public Builder setCount(int value) {
+        bitField0_ |= 0x00000004;
+        count_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 count = 3;</code>
+       */
+      public Builder clearCount() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        count_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:LoadRemoteMessages)
+    }
+
+    static {
+      defaultInstance = new LoadRemoteMessages(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:LoadRemoteMessages)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_AddFriendRequest_descriptor;
   private static
@@ -56279,6 +56980,11 @@ public final class WFCMessage {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_GetTokenRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_LoadRemoteMessages_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_LoadRemoteMessages_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -56430,8 +57136,10 @@ public final class WFCMessage {
       "ion\030\n \001(\t\"D\n\rRouteResponse\022\014\n\004host\030\001 \002(\t",
       "\022\021\n\tlong_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"" +
       "5\n\017GetTokenRequest\022\017\n\007user_id\030\001 \002(\t\022\021\n\tc" +
-      "lient_id\030\002 \002(\tB#\n\025cn.wildfirechat.protoB" +
-      "\nWFCMessage"
+      "lient_id\030\002 \002(\t\"\\\n\022LoadRemoteMessages\022#\n\014" +
+      "conversation\030\001 \002(\0132\r.Conversation\022\022\n\nbef" +
+      "ore_uid\030\002 \002(\003\022\r\n\005count\030\003 \002(\005B#\n\025cn.wildf" +
+      "irechat.protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -56846,6 +57554,12 @@ public final class WFCMessage {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenRequest_descriptor,
               new java.lang.String[] { "UserId", "ClientId", });
+          internal_static_LoadRemoteMessages_descriptor =
+            getDescriptor().getMessageTypes().get(68);
+          internal_static_LoadRemoteMessages_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_LoadRemoteMessages_descriptor,
+              new java.lang.String[] { "Conversation", "BeforeUid", "Count", });
           return null;
         }
       };
