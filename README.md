@@ -55,7 +55,7 @@
 <img src="http://static.wildfirechat.cn/ios-voip-view.png" width = 50% height = 50% />
 
 ## 编译
-在安装JDK1.8以上及maven的前提下，在命令行中执行```mvn clean install -Dmaven.test.skip=true```，生成的目标文件在```./distribution/target/distribution-xxxx-bundle-tar.tar.gz```
+在安装JDK1.8以上及maven的前提下，在命令行中执行```mvn clean compile package```，生成的目标文件在```./distribution/target/distribution-xxxx-bundle-tar.tar.gz```
 
 ## 特别感谢
 1. [moquette](https://github.com/moquette-io/moquette) 本项目是基于此项目二次开发而来，处理MQTT相关业务。
