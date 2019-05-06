@@ -8,6 +8,7 @@
 
 package win.liyufan.im;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class MessageShardingUtil {
@@ -55,8 +56,10 @@ public class MessageShardingUtil {
 
         mid >>= (nodeIdWidth + rotateIdWidth);
         Date date = new Date(mid + T201801010000);
-        int month = date.getMonth();
-        int year = date.getYear();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
         year %= 3;
         return "t_messages_" + (year * 12 + month);
     }
@@ -68,13 +71,15 @@ public class MessageShardingUtil {
 
         mid >>= (nodeIdWidth + rotateIdWidth);
         Date date = new Date(mid + T201801010000);
-        int month = date.getMonth();
-        int year = date.getYear();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
         year %= 3;
-        month = month + 1;
-        if (month == 12) {
-            month = 0;
-            year = (year + 3 -1)%3;
+        month = month - 1;
+        if (month == -1) {
+            month = 11;
+            year = (year + 3 - 1)%3;
         }
         return "t_messages_" + (year * 12 + month);
     }
