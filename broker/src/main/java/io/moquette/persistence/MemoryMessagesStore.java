@@ -455,7 +455,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (lastEntry != null) {
                 messageSeq = (lastEntry.getKey() + 1);
             }
-            Long maxPullSeq = userMaxPullSeq.get(sender);
+            Long maxPullSeq = userMaxPullSeq.get(user);
             if (maxPullSeq != null && maxPullSeq > messageSeq) {
                 messageSeq = maxPullSeq + 1;
             }
