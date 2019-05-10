@@ -9,6 +9,18 @@
     <includeBaseDirectory>false
     </includeBaseDirectory> <!-- disable the creation of root's distribution dir in the archive -->
 
+    <fileSets>
+        <fileSet>
+            <directory>../broker/migrate/mysql/</directory>
+            <outputDirectory>/migrate/mysql</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>../broker/migrate/h2/</directory>
+            <outputDirectory>/migrate/h2</outputDirectory>
+        </fileSet>
+    </fileSets>
+
     <files>
         <!-- executables scripts-->
         <file>
@@ -47,44 +59,8 @@
         </file>
 
         <file>
-            <source>../broker/sql/1_create_database.sql</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
-            <source>../broker/sql/2_create_table.sql</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
-            <source>../broker/sql/3_create_default_chatroom.sql</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
-            <source>../broker/sql/4_create_default_robot.sql</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
-            <source>../broker/sql/5_add_friend_alias.sql</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
-            <source>../broker/sql/initialize_db.sh</source>
-            <outputDirectory>sql/</outputDirectory>
-        </file>
-
-        <file>
             <source>src/main/resources/git.properties</source>
             <outputDirectory>config/</outputDirectory>
-        </file>
-
-
-        <file>
-            <source>../broker/h2/create_table.sql</source>
-            <outputDirectory>h2/</outputDirectory>
         </file>
 
         <file>
