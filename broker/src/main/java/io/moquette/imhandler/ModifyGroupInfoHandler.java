@@ -30,9 +30,9 @@ public class ModifyGroupInfoHandler extends GroupHandler<WFCMessage.ModifyGroupI
             } else {
                 WFCMessage.MessageContent content = null;
                 if (request.getType() == Modify_Group_Name) {
-                    content = new GroupNotificationBinaryContent(fromUser, request.getValue(), "").getChangeGroupNameNotifyContent();
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupNameNotifyContent();
                 } else if(request.getType() == Modify_Group_Portrait) {
-                    content = new GroupNotificationBinaryContent(fromUser, null, "").getChangeGroupPortraitNotifyContent();
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getChangeGroupPortraitNotifyContent();
                 }
 
                 if (content != null) {

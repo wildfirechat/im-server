@@ -16,6 +16,9 @@ import io.moquette.BrokerConstants;
 import java.util.List;
 
 public class GroupNotificationBinaryContent {
+    //groupId
+    private String g;
+
     //operator
     private String o;
 
@@ -28,19 +31,33 @@ public class GroupNotificationBinaryContent {
     //members
     private String m;
 
-    public GroupNotificationBinaryContent(String o, String n, String m) {
+    public GroupNotificationBinaryContent(String g, String o, String n, String m) {
         this.o = o;
         this.n = n;
         this.m = m;
     }
 
-    public GroupNotificationBinaryContent(String operator, String name, List<String> members) {
+    public GroupNotificationBinaryContent(String g, String operator, String name, List<String> members) {
         this.o = operator;
         this.n = name;
         this.ms = members;
     }
 
+    public String getG() {
+        return g;
+    }
 
+    public void setG(String g) {
+        this.g = g;
+    }
+
+    public String getM() {
+        return m;
+    }
+
+    public void setM(String m) {
+        this.m = m;
+    }
 
     public String getO() {
         return o;

@@ -26,7 +26,7 @@ public class ModifyGroupAliasHandler extends GroupHandler<WFCMessage.ModifyGroup
             if (request.hasNotifyContent()&& request.getNotifyContent().getType() > 0) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());
             } else {
-                WFCMessage.MessageContent content = new GroupNotificationBinaryContent(fromUser, request.getAlias(), "").getModifyGroupMemberAliasNotifyContent();
+                WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getAlias(), "").getModifyGroupMemberAliasNotifyContent();
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content);
             }
         }

@@ -33,7 +33,7 @@ public class DismissGroupHandler extends GroupHandler<WFCMessage.DismissGroupReq
                 if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
                     sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());
                 } else {
-                    WFCMessage.MessageContent content = new GroupNotificationBinaryContent(fromUser, null, "").getDismissGroupNotifyContent();
+                    WFCMessage.MessageContent content = new GroupNotificationBinaryContent(groupInfo.getTargetId(), fromUser, null, "").getDismissGroupNotifyContent();
                     sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content);
                 }
                 errorCode = m_messagesStore.dismissGroup(fromUser, request.getGroupId());
