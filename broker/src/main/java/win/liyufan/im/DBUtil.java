@@ -12,9 +12,7 @@ package win.liyufan.im;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,11 +20,11 @@ import com.hazelcast.util.StringUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.configuration.FlywayConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.Connection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DBUtil {
@@ -53,9 +51,10 @@ public class DBUtil {
                 LOG.info("Use mysql database");
             }
 
-
             if (comboPooledDataSource == null) {
+                String migrateLocation;
                 if (IsEmbedDB) {
+                    migrateLocation = "filesystem:./migrate/h2";
                     comboPooledDataSource = new ComboPooledDataSource();
 
                     comboPooledDataSource.setJdbcUrl( "jdbc:h2:./h2db/wfchat;AUTO_SERVER=TRUE;MODE=MySQL" );
@@ -74,48 +73,34 @@ public class DBUtil {
                     } catch (PropertyVetoException e) {
                         e.printStackTrace();
                         Utility.printExecption(LOG, e);
-                    }
-
-                    ResultSet rs = null;
-                    Connection connection = null;
-                    try {
-                        connection = comboPooledDataSource.getConnection();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        Utility.printExecption(LOG, e);
-                    }
-                    Statement stmt = null;
-                    try {
-                        connection = DBUtil.getConnection();
-                        rs  = connection.getMetaData().getTables(null, null,  "t_user_setting", null );
-                        if (!rs.next()) {
-                            List<String> creatsqls = getCreateSql();
-                            for (String createsql : creatsqls) {
-                                if (StringUtil.isNullOrEmpty(createsql)) {
-                                    break;
-                                }
-                                stmt = connection.createStatement();
-                                if (0 != stmt.executeLargeUpdate(createsql)) {
-                                    LOG.error("创建表失败！ {}", createsql);
-//                                    System.exit(-1);
-                                }
-                                try {
-                                    stmt.close();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                    Utility.printExecption(LOG, e);
-                                }
-                            }
-                        }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        Utility.printExecption(LOG, e);
-                    } finally {
-                        DBUtil.closeDB(connection, null, rs);
+                        System.exit(-1);
                     }
                 } else {
+                    migrateLocation = "filesystem:./migrate/mysql";
                     comboPooledDataSource = new ComboPooledDataSource("mysql");
+                    try {
+                        String url01 = comboPooledDataSource.getJdbcUrl().substring(0,comboPooledDataSource.getJdbcUrl().indexOf("?"));
+
+                        String url02 = url01.substring(0,url01.lastIndexOf("/"));
+
+                        String datasourceName = url01.substring(url01.lastIndexOf("/")+1);
+                        // 连接已经存在的数据库，如：mysql
+                        Connection connection = DriverManager.getConnection(url02, comboPooledDataSource.getUser(), comboPooledDataSource.getPassword());
+                        Statement statement = connection.createStatement();
+
+                        // 创建数据库
+                        statement.executeUpdate("CREATE DATABASE IF NOT EXISTS `" + datasourceName + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+
+                        statement.close();
+                        connection.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+
                 }
+                Flyway flyway = Flyway.configure().dataSource(comboPooledDataSource).locations(migrateLocation).baselineOnMigrate(true).load();
+                flyway.migrate();
             }
         }
 

@@ -370,7 +370,8 @@ public class Server {
             throw new IllegalArgumentException("nodeId error: " + nodeIdStr);
         }
         if (nodeIdSet != null && nodeIdSet.contains(nodeId)){
-            throw new IllegalArgumentException("nodeId conflict " + nodeId + ", 请修改wildfirechat.conf文件，是各个节点的nodeId不冲突");
+            LOG.error("只允许一个实例运行，多个实例会引起冲突，进程终止");
+            System.exit(-1);
         }
 
         MessageShardingUtil.setNodeId(nodeId);
