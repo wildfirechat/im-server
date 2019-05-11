@@ -12,10 +12,10 @@
     <artifactId>wildfirechat-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.12</version>
+    <version>0.20</version>
     <name>Wildfire Chat</name>
     <description>Wildfire Chat Server</description>
-    <inceptionYear>2018</inceptionYear>
+    <inceptionYear>2019</inceptionYear>
     <url>https://www.wildfirechat.cn</url>
 
     <licenses>
