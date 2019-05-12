@@ -32,12 +32,14 @@ public class GroupNotificationBinaryContent {
     private String m;
 
     public GroupNotificationBinaryContent(String g, String o, String n, String m) {
+        this.g = g;
         this.o = o;
         this.n = n;
         this.m = m;
     }
 
     public GroupNotificationBinaryContent(String g, String operator, String name, List<String> members) {
+        this.g = g;
         this.o = operator;
         this.n = name;
         this.ms = members;
