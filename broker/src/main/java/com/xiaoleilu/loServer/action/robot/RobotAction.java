@@ -24,6 +24,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import win.liyufan.im.ErrorCode;
 import win.liyufan.im.RateLimiter;
 
+import java.io.UnsupportedEncodingException;
+
 abstract public class RobotAction extends Action {
     private final RateLimiter mLimitCounter = new RateLimiter(10, 1000);
 
@@ -80,10 +82,15 @@ abstract public class RobotAction extends Action {
         if (request instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request;
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
-            String content = new String(bytes);
-            Gson gson = new Gson();
-            T t = gson.fromJson(content, cls);
-            return t;
+            String content = null;
+            try {
+                content = new String(bytes, "UTF-8");
+                Gson gson = new Gson();
+                T t = gson.fromJson(content, cls);
+                return t;
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
