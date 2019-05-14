@@ -41,7 +41,7 @@
         <!--关闭连接时，是否提交未提交的事务，默认为false，即关闭连接，回滚未提交的事务 -->
         <property name="autoCommitOnClose">false</property>
         <!--c3p0将建一张名为Test的空表，并使用其自带的查询语句进行测试。如果定义了这个参数那么属性preferredTestQuery将被忽略。你不能在这张Test表上进行任何操作，它将只供c3p0测试使用。默认值: null -->
-        <property name="automaticTestTable">Test</property>
+        <!--<property name="automaticTestTable">null</property>-->
         <!--如果为false，则获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常，但是数据源仍有效保留，并在下次调用getConnection()的时候继续尝试获取连接。如果设为true，那么在尝试获取连接失败后该数据源将申明已断开并永久关闭。默认: false-->
         <property name="breakAfterAcquireFailure">false</property>
         <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->
