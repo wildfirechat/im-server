@@ -1,9 +1,13 @@
 package net.xmeter.samplers;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cn.wildfirechat.client.IMClient;
+import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.security.AES;
 import org.apache.jmeter.JMeter;
 import org.apache.jmeter.samplers.Entry;
@@ -21,10 +25,12 @@ import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connected;
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connecting;
+
 public class ConnectionSampler extends AbstractMQTTSampler
 		implements TestStateListener, ThreadListener, Interruptible, SampleListener {
 	private transient static Logger logger = LoggingManager.getLoggerForClass();
-	private transient MQTT mqtt = new MQTT();
 	private transient FutureConnection connection = null;
 	private boolean interrupt = false;
 	//Declare it as static, for the instance variable will be set to initial value 0 in testEnded method.
@@ -50,37 +56,46 @@ public class ConnectionSampler extends AbstractMQTTSampler
 		try {
             result.sampleStart();
 
-			if (!getToken(getUserNameAuth())) {
+			if (!getToken(getUserNameAuth(), getClientId())) {
                 throw new Exception("get token failure!!!");
             }
 
-			if (!route(getUserNameAuth(), token)) {
-			    throw new Exception("route failure!!!");
+            IMClient client = new IMClient(getUserNameAuth(), token, getClientId(), getServer(), Integer.parseInt(getPort()));
+
+            final Object lock = new Object();
+
+
+            final List<Boolean> ret = new ArrayList<>();
+            client.setConnectionStatusCallback(new IMClient.ConnectionStatusCallback() {
+                @Override
+                public void onConnectionStatusChanged(IMClient.ConnectionStatus newStatus) {
+                    if (newStatus != ConnectionStatus_Connected && newStatus != ConnectionStatus_Connecting) {
+                        synchronized (lock) {
+                            ret.add(true);
+                            lock.notify();
+                        }
+                    }
+                }
+            });
+
+            synchronized (lock) {
+                client.connect();
+                lock.wait(Integer.parseInt(getConnKeepTime()) * 1000);
             }
 
-			mqtt.setHost("tcp://" + mqttServerIp + ":" + mqttServerPort);
-			mqtt.setVersion(getMqttVersion());
-			mqtt.setKeepAlive((short) Integer.parseInt(getConnKeepAlive()));
-
-			mqtt.setClientId(getClientId());
-			mqtt.setConnectAttemptsMax(Integer.parseInt(getConnAttamptMax()));
-			mqtt.setReconnectAttemptsMax(Integer.parseInt(getConnReconnAttamptMax()));
-
-			mqtt.setUserName(getUserNameAuth());
-
-            byte[] password = AES.AESEncrypt(token, privateSecret);
-			mqtt.setPassword(new UTF8Buffer(password));
-
-			connection = mqtt.futureConnection();
-
-			Future<byte[]> f1 = connection.connect();
-			f1.await(Integer.parseInt(getConnTimeout()), TimeUnit.SECONDS);
-			
 			result.sampleEnd();
-			result.setSuccessful(true);
-			result.setResponseData("Successful.".getBytes());
-			result.setResponseMessage(MessageFormat.format("Connection {0} connected successfully.", connection));
-			result.setResponseCodeOK();
+            if (ret.size() > 0) {
+                result.setSuccessful(false);
+                result.setResponseMessage(MessageFormat.format("Connection {0} connected failed.", connection));
+                result.setResponseData("Failed.".getBytes());
+                result.setResponseCode("500");
+            } else {
+                result.setSuccessful(true);
+                result.setResponseData("Successful.".getBytes());
+                result.setResponseMessage(MessageFormat.format("Connection {0} connected successfully.", connection));
+                result.setResponseCodeOK();
+            }
+
 		} catch (Exception e) {
 			logger.log(Priority.ERROR, e.getMessage(), e);
 			result.sampleEnd();
