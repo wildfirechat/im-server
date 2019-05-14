@@ -45,16 +45,16 @@ public class IMClient implements Listener {
     private transient MQTT mqtt = new MQTT();
     private transient CallbackConnection connection = null;
 
-    interface ReceiveMessageCallback {
+    public interface ReceiveMessageCallback {
         void onReceiveMessages(List<WFCMessage.Message> messageList, boolean hasMore);
         void onRecallMessage(long messageUid);
     }
 
-    interface ConnectionStatusCallback {
+    public interface ConnectionStatusCallback {
         void onConnectionStatusChanged(ConnectionStatus newStatus);
     }
 
-    interface SendMessageCallback {
+    public interface SendMessageCallback {
         void onSuccess(long messageUid, long timestamp);
         void onFailure(int errorCode);
     }
