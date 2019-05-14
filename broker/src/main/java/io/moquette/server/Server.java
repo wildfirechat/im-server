@@ -102,6 +102,7 @@ public class Server {
         instance = new Server();
         final IConfig config = defaultConfig();
 
+        System.setProperty("hazelcast.logging.type", "none" );
         instance.mConfig = config;
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.ADVANCED);
 
@@ -125,6 +126,8 @@ public class Server {
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(instance::stopServer));
         Runtime.getRuntime().addShutdownHook(new Thread(httpServer::shutdown));
+
+        System.out.println("Wildfire IM server start success...");
     }
 
     /**
