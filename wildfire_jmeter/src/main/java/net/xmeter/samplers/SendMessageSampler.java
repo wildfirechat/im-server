@@ -1,12 +1,15 @@
 package net.xmeter.samplers;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.DatatypeConverter;
 
+import cn.wildfirechat.client.IMClient;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.security.AES;
@@ -22,9 +25,11 @@ import org.fusesource.hawtbuf.UTF8Buffer;
 
 import net.xmeter.Util;
 import org.fusesource.mqtt.client.Callback;
-import org.fusesource.mqtt.client.CallbackConnection;
 import org.fusesource.mqtt.client.Listener;
 import org.fusesource.mqtt.client.QoS;
+
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connected;
+import static cn.wildfirechat.client.IMClient.ConnectionStatus.ConnectionStatus_Connecting;
 
 
 public class SendMessageSampler extends AbstractMQTTSampler implements ThreadListener {
@@ -34,11 +39,11 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 	private static final long serialVersionUID = -4312341622759500786L;
 	private transient static Logger logger = LoggingManager.getLoggerForClass();
 	private transient MQTT mqtt = new MQTT();
-	private transient CallbackConnection connection = null;
+	private transient IMClient imClient = null;
 	private String payload = null;
 	private QoS qos_enum = QoS.AT_MOST_ONCE;
 	private String topicName = "";
-	private String connKey = "";
+	private String clientKey = "";
 
 	public String getQOS() {
 		return getPropertyAsString(QOS_LEVEL, String.valueOf(QOS_0));
@@ -127,76 +132,42 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 	
 	@Override
 	public SampleResult sample(Entry arg0) {
-		this.connKey = getKey();
-		if(connection == null) {
-			connection = ConnectionsManager.getInstance().getConnection(connKey);
-			if(connection != null) {
-				logger.info("Use the shared connection: " + connection);
-                ConnectionsManager.ConnectionInfo info = ConnectionsManager.getInstance().getConnectionInfo(connKey);
-                setUserName(info.userName);
-                token = info.token;
-                privateSecret = info.privateSecrect;
-                mqttServerIp = info.serverAddress;
-                mqttServerPort = info.serverPort;
-			} else {
-				try {
-                    if (!getToken(getUserNameAuth())) {
-                        throw new Exception("get token failure!!!");
+		this.clientKey = getKey();
+
+        imClient = ClientManager.getInstance().getClient(clientKey);
+		if(imClient == null) {
+            try {
+                if (!getToken(getUserNameAuth(), getClientId())) {
+                    throw new Exception("get token failure!!!");
+                }
+
+                imClient = new IMClient(getUserNameAuth(), token, getClientId(), getServer(), Integer.parseInt(getPort()));
+
+                final Object lock = new Object();
+
+
+                final List<Boolean> ret = new ArrayList<>();
+                imClient.setConnectionStatusCallback(new IMClient.ConnectionStatusCallback() {
+                    @Override
+                    public void onConnectionStatusChanged(IMClient.ConnectionStatus newStatus) {
+                        if (newStatus == ConnectionStatus_Connected) {
+                            synchronized (lock) {
+                                ret.add(true);
+                                lock.notify();
+                            }
+                        }
                     }
+                });
 
-                    if (!route(getUserNameAuth(), token)) {
-                        throw new Exception("route failure!!!");
-                    }
+                synchronized (lock) {
+                    imClient.connect();
+                    lock.wait(Integer.parseInt(getConnKeepTime()) * 1000);
+                }
 
-                    mqtt.setHost("tcp://" + mqttServerIp + ":" + mqttServerPort);
-                    mqtt.setVersion(getMqttVersion());
-                    mqtt.setKeepAlive((short) Integer.parseInt(getConnKeepAlive()));
-
-                    mqtt.setClientId(getClientId());
-                    mqtt.setConnectAttemptsMax(Integer.parseInt(getConnAttamptMax()));
-                    mqtt.setReconnectAttemptsMax(Integer.parseInt(getConnReconnAttamptMax()));
-
-                    mqtt.setUserName(getUserNameAuth());
-
-                    byte[] password = AES.AESEncrypt(token, privateSecret);
-                    mqtt.setPassword(new UTF8Buffer(password));
-
-					Object connLock = new Object();
-					connection = ConnectionsManager.getInstance().createConnection(connKey, mqtt, new ConnectionsManager.ConnectionInfo(getUserNameAuth(), token, privateSecret, mqttServerIp, mqttServerPort));
-
-					connection.listener(new Listener() {
-                        @Override
-                        public void onConnected() {
-
-                        }
-
-                        @Override
-                        public void onDisconnected() {
-
-                        }
-
-                        @Override
-                        public void onPublish(UTF8Buffer topic, Buffer body, Runnable ack) {
-                            logger.log(Priority.DEBUG, "receive publish with topic:" + topic);
-                            ack.run();
-                        }
-
-                        @Override
-                        public void onFailure(Throwable value) {
-
-                        }
-                    });
-					synchronized (connLock) {
-						ConnectionCallback callback = new ConnectionCallback(connection, connLock);
-						connection.connect(callback);
-						connLock.wait(TimeUnit.SECONDS.toMillis(Integer.parseInt(getConnTimeout())));
-						ConnectionsManager.getInstance().setConnectionStatus(connKey, callback.isConnectionSucc());
-					}
-				} catch (Exception e) {
-					logger.log(Priority.ERROR, e.getMessage(), e);
-					ConnectionsManager.getInstance().setConnectionStatus(connKey, false);
-				}
-			}
+                ClientManager.getInstance().putClient(clientKey, imClient);
+            } catch (Exception e) {
+                logger.log(Priority.ERROR, e.getMessage(), e);
+            }
 		}
 
 		payload = getMessage();
@@ -204,55 +175,66 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 		    payload = Util.generatePayload(120);
 		}
 		
-		SampleResult result = new SampleResult();
+		final SampleResult result = new SampleResult();
 		result.setSampleLabel(getName());
 		
-		if(!ConnectionsManager.getInstance().getConnectionStatus(connKey)) {
+		if(ClientManager.getInstance().getClient(clientKey) == null) {
 			result.sampleStart();
 			result.setSuccessful(false);
 			result.sampleEnd();
-			result.setResponseMessage(MessageFormat.format("Publish failed for connection {0}.", connection));
-			result.setResponseData("Publish failed becasue the connection has not been established.".getBytes());
+			result.setResponseMessage(MessageFormat.format("Publish failed for imClient {0}.", imClient));
+			result.setResponseData("Publish failed becasue the imClient has not been established.".getBytes());
 			result.setResponseCode("500");
 			return result;
 		}
 		try {
-			byte[] toSend;
 			result.sampleStart();
 			
-			final Object connLock = new Object();
-			SendMessageCallback pubCallback = new SendMessageCallback(connLock);
+			final Object lock = new Object();
 
-            WFCMessage.Message message = WFCMessage.Message.newBuilder()
-                .setConversation(WFCMessage.Conversation.newBuilder().setType(getConvType().equals(CONV_TYPE_SINGLE) ? ProtoConstants.ConversationType.ConversationType_Private : ProtoConstants.ConversationType.ConversationType_Group).setTarget(getTarget()).setLine(0).build())
-                .setFromUser("")
-                .setContent(WFCMessage.MessageContent.newBuilder().setType(1).setSearchableContent(getMessage()).build())
-                .build();
-            toSend = message.toByteArray();
-            toSend = AES.AESEncrypt(toSend, privateSecret);
+            WFCMessage.Conversation conversation = WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build();
+            WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.newBuilder().setType(1).setSearchableContent(getMessage()).build();
 
-			//wildfire send message use Qos1 and MS topic
-            topicName = "MS";
-            synchronized (connLock) {
-                connection.publish(topicName, toSend, QoS.AT_LEAST_ONCE, false, pubCallback);
-                connLock.wait();
+            final List<Long> ret = new ArrayList<>();
+            final List<Integer> error = new ArrayList<>();
+            synchronized (lock) {
+                imClient.sendMessage(conversation, messageContent, new IMClient.SendMessageCallback() {
+                    @Override
+                    public void onSuccess(long messageUid, long timestamp) {
+                        System.out.println("send success");
+                        ret.add(messageUid);
+                        synchronized (lock) {
+                            lock.notify();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+                        System.out.println("send failure");
+                        error.add(errorCode);
+                        synchronized (lock) {
+                            lock.notify();
+                        }
+                    }
+                });
+                lock.wait(30 * 1000);
             }
 
-            String sendData = "Conversation(" + getConvType() + ":" + getTarget() + "), Message(" + getMessage() + ")";
+
 			result.sampleEnd();
-			result.setSamplerData(sendData);
-			result.setSentBytes(sendData.length());
+			result.setSamplerData(getMessage());
+			result.setSentBytes(getMessage().length());
 			result.setLatency(result.getEndTime() - result.getStartTime());
-			result.setSuccessful(pubCallback.isSuccessful());
+			result.setSuccessful(!ret.isEmpty());
 			
-			if(pubCallback.isSuccessful()) {
+			if(result.isSuccessful()) {
 				result.setResponseData("Publish successfuly.".getBytes());
-				result.setResponseMessage(MessageFormat.format("publish successfully for Connection {0}.", connection));
+				result.setResponseMessage(MessageFormat.format("publish successfully for Connection {0}.", imClient));
 				result.setResponseCodeOK();	
 			} else {
 				result.setSuccessful(false);
-				result.setResponseMessage(MessageFormat.format("Publish failed for connection {0}.", connection));
-				result.setResponseData(("Publish failed with error code " + pubCallback.getErrorCode()).getBytes());
+				result.setResponseMessage(MessageFormat.format("Publish failed for imClient {0}.", imClient));
+				result.setResponseData("Publish failed with error code " + error.get(0));
 				result.setResponseCode("500");
 			}
 		} catch (Exception ex) {
@@ -260,7 +242,7 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 			result.sampleEnd();
 			result.setLatency(result.getEndTime() - result.getStartTime());
 			result.setSuccessful(false);
-			result.setResponseMessage(MessageFormat.format("Publish failed for connection {0}.", connection));
+			result.setResponseMessage(MessageFormat.format("Publish failed for imClient {0}.", imClient));
 			result.setResponseData(ex.getMessage().getBytes());
 			result.setResponseCode("500");
 		}
@@ -275,13 +257,13 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 	@Override
 	public void threadFinished() {
 	    if (!isConnectionShare()) {
-            if (this.connection != null) {
+            if (this.imClient != null) {
                 final CountDownLatch cdl = new CountDownLatch(1);
                 Callback<Void> cb = new Callback<Void>() {
 
                     @Override
                     public void onSuccess(Void value) {
-                        logger.info(MessageFormat.format("The connection {0} disconneted successfully.", connection));
+                        logger.info(MessageFormat.format("The imClient {0} disconneted successfully.", imClient));
                         cdl.countDown();
                     }
 
@@ -292,7 +274,7 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
                     }
                 };
                 logger.info("before disconnection");
-                this.connection.disconnect(cb);
+                this.imClient.disconnect(true, cb);
                 logger.info("after disconnection");
                 try {
                     cdl.await();
@@ -300,11 +282,9 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
                     e.printStackTrace();
                 }
             }
-            if (ConnectionsManager.getInstance().containsConnection(connKey)) {
-                ConnectionsManager.getInstance().removeConnection(connKey);
-            }
+            ClientManager.getInstance().removeClient(clientKey);
         } else {
-	        logger.info("share connection, not disconnect the connection");
+	        logger.info("share imClient, not disconnect the imClient");
         }
 	}
     public static String getUUID() {
