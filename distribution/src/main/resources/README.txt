@@ -1,1 +1,1 @@
-To run the Wildfire Chat distribution, untar the archive and run the script bin/wildfirechat.sh
+部署方法请参考野火IM开发文档 http://docs.wildfirechat.cn

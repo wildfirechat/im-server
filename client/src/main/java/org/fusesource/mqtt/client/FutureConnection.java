@@ -151,7 +151,7 @@ public class FutureConnection {
         final Promise<Void> future = new Promise<Void>();
         next.getDispatchQueue().execute(new Task() {
             public void run() {
-                next.disconnect(future);
+                next.disconnect(false, future);
             }
         });
         return future;

@@ -554,7 +554,7 @@ public class CallbackConnection {
         return failure;
     }
 
-    public void disconnect(final Callback<Void> onComplete) {
+    public void disconnect(boolean clearSession, final Callback<Void> onComplete) {
         if( disconnected ) {
             if(onComplete!=null){
                 onComplete.onSuccess(null);
@@ -611,7 +611,7 @@ public class CallbackConnection {
         // Pop the frame into a request so it we get notified
         // of any failures so we continue to stop the transport.
         if(transport!=null) {
-            MQTTFrame frame = new DISCONNECT().encode();
+            MQTTFrame frame = new DISCONNECT().encode().dup(clearSession);
             send(new Request(getNextMessageId(), frame, cb));
         } else {
             cb.onSuccess(null);

@@ -34,6 +34,7 @@ public class IMClient implements Listener {
     private final int port;
     private ConnectionStatusCallback connectionStatusCallback;
     private ReceiveMessageCallback receiveMessageCallback;
+    private ConnectionStatus connectionStatus;
 
     protected String mqttServerIp;
     protected long mqttServerPort;
@@ -102,9 +103,11 @@ public class IMClient implements Listener {
                 connection.listener(this);
 
                 //connecting
+                connectionStatus = ConnectionStatus_Connecting;
                 if(connectionStatusCallback != null) {
-                    connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connecting);
+                    connectionStatusCallback.onConnectionStatusChanged(connectionStatus);
                 }
+
                 connection.connect(new Callback<byte[]>() {
                     @Override
                     public void onSuccess(byte[] value) {
@@ -121,16 +124,18 @@ public class IMClient implements Listener {
 
                         System.out.println("on connect success");
                         //connected
+                        connectionStatus = ConnectionStatus_Connected;
                         if(connectionStatusCallback != null) {
-                            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connected);
+                            connectionStatusCallback.onConnectionStatusChanged(connectionStatus);
                         }
                     }
 
                     @Override
                     public void onFailure(Throwable value) {
                         System.out.println("on connect failure");
+                        connectionStatus = ConnectionStatus_Unconnected;
                         if(connectionStatusCallback != null) {
-                            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Unconnected);
+                            connectionStatusCallback.onConnectionStatusChanged(connectionStatus);
                         }
                     }
                 });
@@ -142,6 +147,9 @@ public class IMClient implements Listener {
         }
     }
 
+    public void disconnect(boolean clearSession, final Callback<Void> onComplete) {
+        this.connection.disconnect(clearSession, onComplete);
+    }
     public void sendMessage(WFCMessage.Conversation conversation, WFCMessage.MessageContent messageContent, final SendMessageCallback callback) {
         WFCMessage.Message message = WFCMessage.Message.newBuilder().setConversation(conversation).setContent(messageContent).setFromUser(userId).build();
         byte[] data = message.toByteArray();
@@ -249,16 +257,18 @@ public class IMClient implements Listener {
     @Override
     public void onConnected() {
         System.out.println("onConnected");
+        connectionStatus = ConnectionStatus_Connecting;
         if(connectionStatusCallback != null) {
-            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Connecting);
+            connectionStatusCallback.onConnectionStatusChanged(connectionStatus);
         }
     }
 
     @Override
     public void onDisconnected() {
         System.out.println("onDisconnected");
+        connectionStatus = ConnectionStatus_Unconnected;
         if(connectionStatusCallback != null) {
-            connectionStatusCallback.onConnectionStatusChanged(ConnectionStatus_Unconnected);
+            connectionStatusCallback.onConnectionStatusChanged(connectionStatus);
         }
     }
 
@@ -319,6 +329,30 @@ public class IMClient implements Listener {
         this.receiveMessageCallback = receiveMessageCallback;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public ConnectionStatus getConnectionStatus() {
+        return connectionStatus;
+    }
+
     public static void main(String[] args) {
         //token与userid和clientid是绑定的，使用时一定要传入正确的userid和clientid，不然会认为token非法
         IMClient client = new IMClient("yzyOyOKK", "7SJk13q+YdHHe6EwDzry9BKogxTNf3UgtYj50cBTZgWNkNuxEkiqg2koKg0lXViONIX1LmwCR1jN0Mw8hvk6KGpiSKFi+IRaRkIb3mNzgIfrq4afhyIHaQfa2HOfsi6Ws+9YobkdDgdq7W70bEdVfiCSU9+JOIY449nxZzfg2Zw=", "DD72C212-26C7-4B38-A5FC-88550896B170", "192.168.1.101", 80);
@@ -338,7 +372,7 @@ public class IMClient implements Listener {
         client.setConnectionStatusCallback((ConnectionStatus newStatus) -> {
             if (newStatus == ConnectionStatus_Connected) {
                 WFCMessage.Conversation conversation = WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build();
-                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.newBuilder().setContent("helloworld").setType(1).build();
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.newBuilder().setSearchableContent("helloworld").setType(1).build();
                 client.sendMessage(conversation, messageContent, new SendMessageCallback() {
                     @Override
                     public void onSuccess(long messageUid, long timestamp) {
