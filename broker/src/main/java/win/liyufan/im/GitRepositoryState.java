@@ -63,8 +63,11 @@ public class GitRepositoryState {
 
     public static GitRepositoryState getGitRepositoryState() throws IOException {
         Properties properties = new Properties();
-        properties.load(new FileInputStream("config/git.properties"));
-//        properties.load(GitRepositoryState.class.getClassLoader().getResourceAsStream("config/git.properties"));
+        try {
+            properties.load(new FileInputStream("config/git.properties"));
+        } catch (IOException e) {
+            
+        }
         GitRepositoryState gitRepositoryState = new GitRepositoryState(properties);
         return gitRepositoryState;
     }
