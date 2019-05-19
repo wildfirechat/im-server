@@ -192,7 +192,7 @@ public class SendMessageSampler extends AbstractMQTTSampler implements ThreadLis
 			
 			final Object lock = new Object();
 
-            WFCMessage.Conversation conversation = WFCMessage.Conversation.newBuilder().setType(0).setTarget("yzyOyOKK").setLine(0).build();
+            WFCMessage.Conversation conversation = WFCMessage.Conversation.newBuilder().setType(0).setTarget(getTarget()).setLine(0).build();
             WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.newBuilder().setType(1).setSearchableContent(getMessage()).build();
 
             final List<Long> ret = new ArrayList<>();

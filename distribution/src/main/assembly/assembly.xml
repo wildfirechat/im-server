@@ -19,6 +19,11 @@
             <directory>../broker/migrate/h2/</directory>
             <outputDirectory>/migrate/h2</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>../wildfire_jmeter/test_plan/</directory>
+            <outputDirectory>/tools/jmeter</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>
@@ -61,6 +66,11 @@
         <file>
             <source>src/main/resources/git.properties</source>
             <outputDirectory>config/</outputDirectory>
+        </file>
+
+        <file>
+            <source>../wildfire_jmeter/target/wildfire-xmeter-jar-with-dependencies.jar</source>
+            <outputDirectory>tools/jmeter</outputDirectory>
         </file>
 
         <file>
