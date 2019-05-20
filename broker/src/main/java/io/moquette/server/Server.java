@@ -112,6 +112,8 @@ public class Server {
         int httpAdminPort = Integer.parseInt(config.getProperty(BrokerConstants.HTTP_ADMIN_PORT));
 
         AdminAction.setSecretKey(config.getProperty(HTTP_SERVER_SECRET_KEY));
+        AdminAction.setNoCheckTime(config.getProperty(HTTP_SERVER_API_NO_CHECK_TIME));
+
         final LoServer httpServer = new LoServer(httpLocalPort, httpAdminPort, instance.m_processor.getMessagesStore(), instance.m_store.sessionsStore());
         try {
             httpServer.start();

@@ -26,9 +26,18 @@ import win.liyufan.im.RateLimiter;
 
 abstract public class AdminAction extends Action {
     private static String SECRET_KEY = "123456";
+    private static boolean NO_CHECK_TIME = false;
     private final RateLimiter mLimitCounter = new RateLimiter(10, 500);
     public static void setSecretKey(String secretKey) {
         SECRET_KEY = secretKey;
+    }
+
+    public static void setNoCheckTime(String noCheckTime) {
+        try {
+            NO_CHECK_TIME = Boolean.parseBoolean(noCheckTime);
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
@@ -51,8 +60,8 @@ abstract public class AdminAction extends Action {
             return ErrorCode.INVALID_PARAMETER;
         }
 
-        if (System.currentTimeMillis() - ts > 2 * 60 * 60 * 1000) {
-//            return ErrorCode.ERROR_CODE_SIGN_EXPIRED;
+        if (!NO_CHECK_TIME && System.currentTimeMillis() - ts > 2 * 60 * 60 * 1000) {
+            return ErrorCode.ERROR_CODE_SIGN_EXPIRED;
         }
 
         String str = nonce + "|" + SECRET_KEY + "|" + timestamp;
