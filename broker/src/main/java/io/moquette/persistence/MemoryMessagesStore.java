@@ -1564,28 +1564,32 @@ public class MemoryMessagesStore implements IMessagesStore {
             friendsMap.put(userId, friendData1);
             databaseStore.persistOrUpdateFriendData(friendData1);
 
-            FriendData friendData2 = null;
+            if (request.getStatus() != 2) {
+                FriendData friendData2 = null;
 
-            friendDatas = friendsMap.get(request.getTargetUid());
-            for (FriendData fd : friendDatas) {
-                if (fd.getFriendUid().equals(userId)) {
-                    friendData2 = fd;
-                    break;
+                friendDatas = friendsMap.get(request.getTargetUid());
+                for (FriendData fd : friendDatas) {
+                    if (fd.getFriendUid().equals(userId)) {
+                        friendData2 = fd;
+                        break;
+                    }
                 }
-            }
-            if (friendData2 == null) {
-                friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getStatus(), friendData1.getTimestamp());
+                if (friendData2 == null) {
+                    friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getStatus(), friendData1.getTimestamp());
+                } else {
+                    friendsMap.remove(request.getTargetUid(), friendData2);
+                    friendData2.setState(request.getStatus());
+                    friendData2.setTimestamp(System.currentTimeMillis());
+                }
+
+
+                friendsMap.put(request.getTargetUid(), friendData2);
+                databaseStore.persistOrUpdateFriendData(friendData2);
+
+                heads[0] = friendData2.getTimestamp();
             } else {
-                friendsMap.remove(request.getTargetUid(), friendData2);
-                friendData2.setState(request.getStatus());
-                friendData2.setTimestamp(System.currentTimeMillis());
+                heads[0] = 0;
             }
-
-
-            friendsMap.put(request.getTargetUid(), friendData2);
-            databaseStore.persistOrUpdateFriendData(friendData2);
-
-            heads[0] = friendData2.getTimestamp();
             heads[1] = friendData1.getTimestamp();
             return ErrorCode.ERROR_CODE_SUCCESS;
         }
