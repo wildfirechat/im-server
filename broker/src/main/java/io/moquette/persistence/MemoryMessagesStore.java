@@ -1348,7 +1348,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         for (FriendData friendData : friendDatas) {
-            if (friendData.getUserId().equals(userId)) {
+            if (friendData.getFriendUid().equals(userId)) {
                 if (friendData.getState() == 2) {
                     return true;
                 } else {
@@ -1539,8 +1539,57 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads) {
+    public ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+
+        if (isAdmin) {
+            MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+            FriendData friendData1 = null;
+            Collection<FriendData> friendDatas = friendsMap.get(userId);
+            for (FriendData fd : friendDatas) {
+                if (fd.getFriendUid().equals(request.getTargetUid())) {
+                    friendData1 = fd;
+                    break;
+                }
+            }
+            if (friendData1 == null) {
+                friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getStatus(), System.currentTimeMillis());
+            } else {
+                friendsMap.remove(userId, friendData1);
+                friendData1.setState(request.getStatus());
+                friendData1.setTimestamp(System.currentTimeMillis());
+            }
+
+            friendsMap.put(userId, friendData1);
+            databaseStore.persistOrUpdateFriendData(friendData1);
+
+            FriendData friendData2 = null;
+
+            friendDatas = friendsMap.get(request.getTargetUid());
+            for (FriendData fd : friendDatas) {
+                if (fd.getFriendUid().equals(userId)) {
+                    friendData2 = fd;
+                    break;
+                }
+            }
+            if (friendData2 == null) {
+                friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getStatus(), friendData1.getTimestamp());
+            } else {
+                friendsMap.remove(request.getTargetUid(), friendData2);
+                friendData2.setState(request.getStatus());
+                friendData2.setTimestamp(System.currentTimeMillis());
+            }
+
+
+            friendsMap.put(request.getTargetUid(), friendData2);
+            databaseStore.persistOrUpdateFriendData(friendData2);
+
+            heads[0] = friendData2.getTimestamp();
+            heads[1] = friendData1.getTimestamp();
+            return ErrorCode.ERROR_CODE_SUCCESS;
+        }
+
         MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
         Collection<WFCMessage.FriendRequest> requests = requestMap.get(userId);
         if (requests == null || requests.size() == 0) {
