@@ -58,12 +58,16 @@ public class InputCreateGroup extends InputGroupBase {
 
         WFCMessage.CreateGroupRequest.Builder createGroupReqBuilder = WFCMessage.CreateGroupRequest.newBuilder();
         createGroupReqBuilder.setGroup(groupBuilder);
-        for (Integer line : to_lines
-             ) {
-            createGroupReqBuilder.addToLine(line);
+        if (to_lines != null) {
+            for (Integer line : to_lines
+            ) {
+                createGroupReqBuilder.addToLine(line);
+            }
         }
 
-        createGroupReqBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        if (notify_message != null) {
+            createGroupReqBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        }
         return createGroupReqBuilder.build();
     }
 

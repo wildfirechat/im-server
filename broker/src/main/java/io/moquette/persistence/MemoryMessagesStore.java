@@ -583,6 +583,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         long dt = System.currentTimeMillis();
         if (StringUtil.isNullOrEmpty(groupInfo.getTargetId())) {
             groupId = getShortUUID();
+        } else {
+            groupId = groupInfo.getTargetId();
         }
         groupInfo = groupInfo.toBuilder()
             .setTargetId(groupId)
