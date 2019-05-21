@@ -34,12 +34,16 @@ public class InputDismissGroupMember extends InputGroupBase {
         WFCMessage.DismissGroupRequest.Builder dismissGroupBuilder = WFCMessage.DismissGroupRequest.newBuilder();
         dismissGroupBuilder.setGroupId(group_id);
 
-        for (Integer line : to_lines
-             ) {
-            dismissGroupBuilder.addToLine(line);
+        if (to_lines != null) {
+            for (Integer line : to_lines
+            ) {
+                dismissGroupBuilder.addToLine(line);
+            }
         }
 
-        dismissGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        if (notify_message != null) {
+            dismissGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        }
         return dismissGroupBuilder.build();
     }
 

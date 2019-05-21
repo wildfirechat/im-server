@@ -50,12 +50,16 @@ public class InputAddGroupMember extends InputGroupBase {
             addGroupBuilder.addAddedMember(groupMemberBuilder);
         }
 
-        for (Integer line : to_lines
-             ) {
-            addGroupBuilder.addToLine(line);
+        if (to_lines != null) {
+            for (Integer line : to_lines
+            ) {
+                addGroupBuilder.addToLine(line);
+            }
         }
 
-        addGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        if (notify_message != null) {
+            addGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        }
         return addGroupBuilder.build();
     }
 

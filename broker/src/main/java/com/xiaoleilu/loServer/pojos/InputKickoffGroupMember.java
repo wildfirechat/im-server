@@ -43,12 +43,16 @@ public class InputKickoffGroupMember extends InputGroupBase {
         removedGroupBuilder.setGroupId(group_id);
         removedGroupBuilder.addAllRemovedMember(members);
 
-        for (Integer line : to_lines
-             ) {
-            removedGroupBuilder.addToLine(line);
+        if (to_lines != null) {
+            for (Integer line : to_lines
+            ) {
+                removedGroupBuilder.addToLine(line);
+            }
         }
 
-        removedGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        if (notify_message != null) {
+            removedGroupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        }
         return removedGroupBuilder.build();
     }
 

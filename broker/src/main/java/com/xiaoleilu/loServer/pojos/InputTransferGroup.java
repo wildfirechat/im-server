@@ -26,12 +26,16 @@ public class InputTransferGroup extends InputGroupBase {
 
         groupBuilder.setGroupId(group_id);
         groupBuilder.setNewOwner(new_owner);
-        for (Integer line : to_lines
-             ) {
-            groupBuilder.addToLine(line);
+        if (to_lines != null) {
+            for (Integer line : to_lines
+            ) {
+                groupBuilder.addToLine(line);
+            }
         }
 
-        groupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        if (notify_message != null) {
+            groupBuilder.setNotifyContent(notify_message.toProtoMessageContent());
+        }
         return groupBuilder.build();
     }
 
