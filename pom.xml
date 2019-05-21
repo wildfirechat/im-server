@@ -33,9 +33,9 @@
 
     <modules>
         <module>broker</module>
-        <module>distribution</module>
         <module>wildfire_jmeter</module>
         <module>client</module>
+        <module>distribution</module>
     </modules>
 
     <build>
