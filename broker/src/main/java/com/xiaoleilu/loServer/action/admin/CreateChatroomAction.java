@@ -15,14 +15,13 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import com.xiaoleilu.loServer.pojos.InputCreateChatroom;
-import com.xiaoleilu.loServer.pojos.OutputCreateChatroom;
+import cn.wildfirechat.pojos.InputCreateChatroom;
+import cn.wildfirechat.pojos.OutputCreateChatroom;
 import io.moquette.spi.impl.Utils;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import win.liyufan.im.ErrorCode;
-import win.liyufan.im.UUIDGenerator;
 
 @Route("/admin/chatroom")
 @HttpMethod("PUT")

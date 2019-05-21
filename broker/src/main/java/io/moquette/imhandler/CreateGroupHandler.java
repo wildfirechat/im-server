@@ -9,14 +9,11 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.WFCMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.xiaoleilu.loServer.pojos.GroupNotificationBinaryContent;
+import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import win.liyufan.im.ErrorCode;
 import win.liyufan.im.IMTopic;
-
-import static io.moquette.BrokerConstants.MESSAGE_CONTENT_TYPE_CREATE_GROUP;
 
 @Handler(value = IMTopic.CreateGroupTopic)
 public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupRequest> {

@@ -30,7 +30,7 @@ import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.ClassUtil;
-import com.xiaoleilu.loServer.pojos.OutputCheckUserOnline;
+import cn.wildfirechat.pojos.OutputCheckUserOnline;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.imhandler.Handler;
 import io.moquette.imhandler.IMHandler;

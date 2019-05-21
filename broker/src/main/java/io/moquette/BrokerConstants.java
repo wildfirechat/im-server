@@ -115,17 +115,6 @@ public final class BrokerConstants {
 
 
 
-
-
-    public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
-    public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
-    public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER = 106;
-    public static final int MESSAGE_CONTENT_TYPE_QUIT_GROUP = 107;
-    public static final int MESSAGE_CONTENT_TYPE_DISMISS_GROUP = 108;
-    public static final int MESSAGE_CONTENT_TYPE_TRANSFER_GROUP_OWNER = 109;
-    public static final int MESSAGE_CONTENT_TYPE_CHANGE_GROUP_NAME = 110;
-    public static final int MESSAGE_CONTENT_TYPE_MODIFY_GROUP_ALIAS = 111;
-    public static final int MESSAGE_CONTENT_TYPE_CHANGE_GROUP_PORTRAIT = 112;
     private BrokerConstants() {
     }
 }

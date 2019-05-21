@@ -9,13 +9,11 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.WFCMessage;
-import com.xiaoleilu.loServer.pojos.GroupNotificationBinaryContent;
+import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import win.liyufan.im.ErrorCode;
 import win.liyufan.im.IMTopic;
-
-import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(IMTopic.TransferChannelInfoTopic)
 public class TransferChannelHandler extends GroupHandler<WFCMessage.TransferChannel> {

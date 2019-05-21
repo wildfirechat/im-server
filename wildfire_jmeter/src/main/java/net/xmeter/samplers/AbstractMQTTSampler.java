@@ -2,9 +2,9 @@ package net.xmeter.samplers;
 
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
-import com.xiaoleilu.loServer.pojos.InputRoute;
-import com.xiaoleilu.loServer.pojos.InputGetToken;
-import com.xiaoleilu.loServer.pojos.OutputGetIMTokenData;
+import cn.wildfirechat.pojos.InputRoute;
+import cn.wildfirechat.pojos.InputGetToken;
+import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import io.moquette.spi.impl.security.AES;
 import net.xmeter.IMResult;
 import net.xmeter.Util;

@@ -9,23 +9,17 @@
 package com.xiaoleilu.loServer.action;
 
 import com.google.gson.Gson;
-import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import com.xiaoleilu.loServer.pojos.InputUserLogin;
-import com.xiaoleilu.loServer.pojos.OutputLoginData;
-import io.moquette.spi.impl.Utils;
-import io.moquette.spi.impl.security.TokenAuthenticator;
+import cn.wildfirechat.pojos.InputUserLogin;
+import cn.wildfirechat.pojos.OutputLoginData;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import win.liyufan.im.ErrorCode;
 import win.liyufan.im.GitRepositoryState;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Route("/api/version")
 @HttpMethod("GET")

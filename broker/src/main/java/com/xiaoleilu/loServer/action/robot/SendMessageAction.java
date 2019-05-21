@@ -9,16 +9,14 @@
 package com.xiaoleilu.loServer.action.robot;
 
 
-import cn.wildfirechat.proto.ProtoConstants;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
-import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import com.xiaoleilu.loServer.pojos.SendMessageData;
-import com.xiaoleilu.loServer.pojos.SendMessageResult;
+import cn.wildfirechat.pojos.SendMessageData;
+import cn.wildfirechat.pojos.SendMessageResult;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;

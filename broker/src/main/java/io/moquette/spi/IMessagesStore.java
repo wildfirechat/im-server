@@ -18,9 +18,8 @@ package io.moquette.spi;
 
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
-import com.xiaoleilu.loServer.pojos.InputOutputUserBlockStatus;
+import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import io.moquette.persistence.DatabaseStore;
-import io.moquette.persistence.MemoryMessagesStore;
 import io.moquette.persistence.UserClientEntry;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
@@ -28,7 +27,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import win.liyufan.im.ErrorCode;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;

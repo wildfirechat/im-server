@@ -1,4 +1,4 @@
-package com.xiaoleilu.loServer.pojos;
+package cn.wildfirechat.pojos;
 
 public class OutputGetIMTokenData {
     private String userId;

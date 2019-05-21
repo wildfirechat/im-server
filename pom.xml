@@ -36,6 +36,7 @@
         <module>wildfire_jmeter</module>
         <module>client</module>
         <module>distribution</module>
+        <module>common</module>
     </modules>
 
     <build>
