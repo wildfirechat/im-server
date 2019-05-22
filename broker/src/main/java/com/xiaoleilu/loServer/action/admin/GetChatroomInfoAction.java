@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -16,14 +17,13 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import cn.wildfirechat.pojos.OutputGetChatroomInfo;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 
 @Route(APIPath.Chatroom_Info)
-@HttpMethod("GET")
+@HttpMethod("POST")
 public class GetChatroomInfoAction extends AdminAction {
 
     @Override
@@ -34,8 +34,8 @@ public class GetChatroomInfoAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-
-            String chatroomid = request.getParam("id");
+            InputGetChatroomInfo getChatroomInfo = getRequestBody(request.getNettyRequest(), InputGetChatroomInfo.class);
+            String chatroomid = getChatroomInfo.getChatroomId();
             if (!StringUtil.isNullOrEmpty(chatroomid)) {
 
                 WFCMessage.ChatroomInfo info = messagesStore.getChatroomInfo(chatroomid);

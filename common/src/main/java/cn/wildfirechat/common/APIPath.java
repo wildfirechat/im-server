@@ -14,9 +14,9 @@ public interface APIPath {
     String Sensitive_Del = "/admin/sensitive/del";
     String Sensitive_Query = "/admin/sensitive/query";
 
-    String User_Token = "/admin/user/token";
+    String Get_User_Token = "/admin/user/token";
     String User_Status = "/admin/user/status";
-    String User_Info = "/admin/user/info";
+    String Get_User_Info = "/admin/user/info";
     String User_Status_List = "/admin/user/statuslist";
     String User_Check_Status = "/admin/user/checkstatus";
     String User_Online_Status = "/admin/user/onlinestatus";

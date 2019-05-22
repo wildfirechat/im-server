@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Info)
+@Route(APIPath.Get_User_Info)
 @HttpMethod("POST")
 public class GetUserAction extends AdminAction {
 
