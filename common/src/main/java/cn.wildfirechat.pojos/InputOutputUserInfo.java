@@ -1,6 +1,17 @@
-package cn.wildfirechat.sdk.model;
+/*
+ * This file is part of the Wildfire Chat package.
+ * (c) Heavyrain2012 <heavyrain.lee@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-public class User {
+package cn.wildfirechat.pojos;
+
+
+import cn.wildfirechat.proto.WFCMessage;
+
+public class InputOutputUserInfo {
     private String userId;
     private String name;
     private String password;
@@ -15,12 +26,57 @@ public class User {
     private String extra;
     private long updateDt;
 
+    public static InputOutputUserInfo fromPbUser(WFCMessage.User pbUser) {
+        InputOutputUserInfo inputCreateUser = new InputOutputUserInfo();
+        inputCreateUser.userId = pbUser.getUid();
+        inputCreateUser.name = pbUser.getName();
+        inputCreateUser.displayName = pbUser.getDisplayName();
+        inputCreateUser.portrait = pbUser.getPortrait();
+        inputCreateUser.gender = pbUser.getGender();
+        inputCreateUser.mobile = pbUser.getMobile();
+        inputCreateUser.email = pbUser.getEmail();
+        inputCreateUser.address = pbUser.getAddress();
+        inputCreateUser.company = pbUser.getCompany();
+        inputCreateUser.social = pbUser.getSocial();
+        inputCreateUser.extra = pbUser.getExtra();
+        inputCreateUser.updateDt = pbUser.getUpdateDt();
+        return inputCreateUser;
+    }
+
     public String getSocial() {
         return social;
     }
 
     public void setSocial(String social) {
         this.social = social;
+    }
+
+    public WFCMessage.User toUser() {
+        WFCMessage.User.Builder newUserBuilder = WFCMessage.User.newBuilder()
+            .setUid(userId);
+        if (name != null)
+            newUserBuilder.setName(name);
+        if (displayName != null)
+            newUserBuilder.setDisplayName(displayName);
+        if (getPortrait() != null)
+            newUserBuilder.setPortrait(getPortrait());
+        if (getEmail() != null)
+            newUserBuilder.setEmail(getEmail());
+        if (getAddress() != null)
+            newUserBuilder.setAddress(getAddress());
+        if (getCompany() != null)
+            newUserBuilder.setCompany(getCompany());
+        if (getSocial() != null)
+            newUserBuilder.setSocial(getSocial());
+
+        if (getMobile() != null)
+            newUserBuilder.setMobile(getMobile());
+        if (getExtra() != null)
+            newUserBuilder.setExtra(getExtra());
+        newUserBuilder.setGender(gender);
+
+        newUserBuilder.setUpdateDt(System.currentTimeMillis());
+        return newUserBuilder.build();
     }
 
     public long getUpdateDt() {

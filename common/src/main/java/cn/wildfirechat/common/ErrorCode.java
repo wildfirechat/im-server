@@ -6,7 +6,7 @@
  * file that was distributed with this source code.
  */
 
-package common.cn.wildfirechat;
+package cn.wildfirechat.common;
 
 public enum ErrorCode {
     //General error

@@ -20,9 +20,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
-import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 /**
  * 请求处理接口<br>

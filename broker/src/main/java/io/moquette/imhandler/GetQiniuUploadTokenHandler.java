@@ -14,7 +14,7 @@ import com.xiaoleilu.loServer.action.UploadFileAction;
 import io.moquette.server.config.MediaServerConfig;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 @Handler(IMTopic.GetQiniuUploadTokenTopic)

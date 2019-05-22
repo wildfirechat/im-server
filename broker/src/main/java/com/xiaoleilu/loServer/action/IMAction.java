@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 import java.util.Base64;
 import java.util.concurrent.Executor;

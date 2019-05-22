@@ -78,6 +78,30 @@
             <outputDirectory>lib/</outputDirectory>
             <destName>moquette-broker-${project.version}.jar</destName>
         </file>
+
+        <file>
+            <source>../client/target/client-${project.version}.jar</source>
+            <outputDirectory>java_client/</outputDirectory>
+            <destName>client-${project.version}.jar</destName>
+        </file>
+
+        <file>
+            <source>../common/target/common-${project.version}.jar</source>
+            <outputDirectory>java_client/</outputDirectory>
+            <destName>common-${project.version}.jar</destName>
+        </file>
+
+        <file>
+            <source>../sdk/target/sdk-${project.version}.jar</source>
+            <outputDirectory>server_sdk/</outputDirectory>
+            <destName>sdk-${project.version}.jar</destName>
+        </file>
+
+        <file>
+            <source>../common/target/common-${project.version}.jar</source>
+            <outputDirectory>server_sdk/</outputDirectory>
+            <destName>common-${project.version}.jar</destName>
+        </file>
     </files>
 
 

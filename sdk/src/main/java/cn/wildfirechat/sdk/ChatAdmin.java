@@ -1,5 +1,6 @@
 package cn.wildfirechat.sdk;
 
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.*;
 
 public class ChatAdmin {
@@ -7,19 +8,20 @@ public class ChatAdmin {
         HttpUtils.init(url, secret);
     }
 
-    public static IMResult<User> getUserByName(String mobile) throws Exception {
+    public static IMResult<InputOutputUserInfo> getUserByName(String mobile) throws Exception {
         String path = "/admin/user/info";
-        UserName name = new UserName(mobile);
-        return HttpUtils.httpJsonPost(path, name, User.class);
+        InputGetUserInfo getUserInfo = new InputGetUserInfo(null, mobile);
+        return HttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
-    public static IMResult<UserId> createUser(User user) throws Exception {
+    public static IMResult<OutputCreateUser> createUser(InputOutputUserInfo user) throws Exception {
         String path = "/admin/user/create";
-        return HttpUtils.httpJsonPost(path, user, UserId.class);
+        return HttpUtils.httpJsonPost(path, user, OutputCreateUser.class);
     }
 
-    public static IMResult<Token> getUserToken(String userId, String clientId) throws Exception {
+    public static IMResult<OutputGetIMTokenData> getUserToken(String userId, String clientId) throws Exception {
         String path = "/admin/user/token";
-        return HttpUtils.httpJsonPost(path, new GetTokenRequest(userId, clientId), Token.class);
+        InputGetToken getToken = new InputGetToken(userId, clientId);
+        return HttpUtils.httpJsonPost(path, getToken, OutputGetIMTokenData.class);
     }
 }

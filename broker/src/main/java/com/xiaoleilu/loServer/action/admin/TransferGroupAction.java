@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 
+import cn.wildfirechat.common.APIPath;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -22,13 +23,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import java.util.concurrent.Executor;
 
-@Route("admin/group/owner")
-@HttpMethod("PUT")
+@Route(APIPath.Group_Owner)
+@HttpMethod("POST")
 public class TransferGroupAction extends AdminAction {
 
     @Override

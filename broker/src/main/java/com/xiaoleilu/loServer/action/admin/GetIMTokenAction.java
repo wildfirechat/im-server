@@ -8,6 +8,7 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -18,13 +19,13 @@ import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import java.util.Base64;
 import java.util.concurrent.Executor;
 
-@Route("/admin/user/token")
+@Route(APIPath.User_Token)
 @HttpMethod("POST")
 public class GetIMTokenAction extends AdminAction {
 

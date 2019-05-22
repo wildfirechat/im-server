@@ -23,7 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
@@ -34,8 +34,8 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
-import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 /**
  * 请求处理接口<br>

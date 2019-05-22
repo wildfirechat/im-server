@@ -8,17 +8,18 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+import cn.wildfirechat.common.APIPath;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputOutputSensitiveWords;
 import io.netty.handler.codec.http.FullHttpRequest;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 import java.util.List;
 
-@Route("admin/sensitive/query")
+@Route(APIPath.Sensitive_Query)
 @HttpMethod("POST")
 public class SensitiveWordQueryAction extends AdminAction {
 

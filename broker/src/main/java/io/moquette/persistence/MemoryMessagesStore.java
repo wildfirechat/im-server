@@ -23,7 +23,7 @@ import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 import io.moquette.server.Server;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;

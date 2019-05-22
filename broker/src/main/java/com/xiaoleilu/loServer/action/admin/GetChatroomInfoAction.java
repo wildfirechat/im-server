@@ -8,6 +8,7 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -19,9 +20,9 @@ import cn.wildfirechat.pojos.OutputGetChatroomInfo;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
-@Route("/admin/chatroom")
+@Route(APIPath.Chatroom_Info)
 @HttpMethod("GET")
 public class GetChatroomInfoAction extends AdminAction {
 

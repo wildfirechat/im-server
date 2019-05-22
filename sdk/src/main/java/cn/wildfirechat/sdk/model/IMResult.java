@@ -1,6 +1,6 @@
 package cn.wildfirechat.sdk.model;
 
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 public class IMResult<T> {
 

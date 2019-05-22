@@ -19,7 +19,7 @@ package io.moquette.spi;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.persistence.MemorySessionStore.Session;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 import java.util.Collection;
 import java.util.Queue;

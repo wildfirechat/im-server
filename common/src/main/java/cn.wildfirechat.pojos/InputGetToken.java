@@ -4,9 +4,9 @@ public class InputGetToken {
     private String userId;
     private String clientId;
 
-    public InputGetToken(String userId, String name) {
+    public InputGetToken(String userId, String clientId) {
         this.userId = userId;
-        this.clientId = name;
+        this.clientId = clientId;
     }
 
     public String getUserId() {

@@ -8,6 +8,7 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+import cn.wildfirechat.common.APIPath;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -15,8 +16,6 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import com.xiaoleilu.loServer.model.FriendData;
-import cn.wildfirechat.pojos.InputCreateGroup;
-import cn.wildfirechat.pojos.InputFriendRequest;
 import cn.wildfirechat.pojos.InputGetFriendList;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -24,7 +23,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.ArrayList;
 import java.util.List;
 
-@Route("admin/friend/list")
+@Route(APIPath.Friend_List)
 @HttpMethod("POST")
 public class FriendRelationGetAction extends AdminAction {
 

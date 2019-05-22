@@ -27,7 +27,7 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 import java.util.ArrayList;
 import java.util.Collection;

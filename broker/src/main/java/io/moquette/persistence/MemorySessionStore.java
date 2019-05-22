@@ -25,7 +25,7 @@ import io.moquette.spi.ISessionsStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import common.cn.wildfirechat.ErrorCode;
+import cn.wildfirechat.common.ErrorCode;
 
 import java.util.*;
 import java.util.concurrent.*;
