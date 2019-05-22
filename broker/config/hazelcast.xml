@@ -3,15 +3,9 @@
     xsi:schemaLocation="http://www.hazelcast.com/schema/config
   http://www.hazelcast.com/schema/config/hazelcast-config-3.5.xsd"
     xmlns="http://www.hazelcast.com/schema/config">
-
-    <group>
-        <!--<name>wfc-dev</name>-->
-        <name>wfc-pro</name>
-    </group>
-
     <network>
         <join>
-            <multicast enabled="true"/>
+            <multicast enabled="false"/>
         </join>
     </network>
 

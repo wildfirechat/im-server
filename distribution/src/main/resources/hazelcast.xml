@@ -3,13 +3,9 @@
   http://www.hazelcast.com/schema/config/hazelcast-config-3.5.xsd"
         xmlns="http://www.hazelcast.com/schema/config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <group>
-        <name>wfc-pro</name>
-    </group>
-
     <network>
         <join>
-            <multicast enabled="true"/>
+            <multicast enabled="false"/>
         </join>
     </network>
 
