@@ -25,7 +25,7 @@ import win.liyufan.im.IMTopic;
 import java.util.Base64;
 import java.util.concurrent.Executor;
 
-@Route(APIPath.Get_User_Token)
+@Route(APIPath.User_Get_Token)
 @HttpMethod("POST")
 public class GetIMTokenAction extends AdminAction {
 

@@ -54,7 +54,10 @@ public class HttpUtils {
             post.setHeader("timestamp", "" + timestamp);
             post.setHeader("sign", sign);
 
-            String jsonStr = new Gson().toJson(object);
+            String jsonStr = null;
+            if (object != null) {
+                jsonStr = new Gson().toJson(object);
+            }
             LOG.info("http request content: {}", jsonStr);
 
             StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));

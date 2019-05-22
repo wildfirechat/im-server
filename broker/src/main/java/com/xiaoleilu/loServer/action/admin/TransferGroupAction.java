@@ -28,7 +28,7 @@ import win.liyufan.im.IMTopic;
 
 import java.util.concurrent.Executor;
 
-@Route(APIPath.Group_Owner)
+@Route(APIPath.Group_Transfer)
 @HttpMethod("POST")
 public class TransferGroupAction extends AdminAction {
 

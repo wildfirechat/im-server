@@ -20,7 +20,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Online_Status)
+@Route(APIPath.User_Get_Online_Status)
 @HttpMethod("POST")
 public class CheckUserOnlineAction extends AdminAction {
 

@@ -20,6 +20,10 @@ public class InputGroupBase {
         return operator;
     }
 
+    public void setOperator(String operator) {
+        this.operator = operator;
+    }
+
     public List<Integer> getTo_lines() {
         return to_lines;
     }

@@ -14,12 +14,12 @@ public interface APIPath {
     String Sensitive_Del = "/admin/sensitive/del";
     String Sensitive_Query = "/admin/sensitive/query";
 
-    String Get_User_Token = "/admin/user/token";
-    String User_Status = "/admin/user/status";
-    String Get_User_Info = "/admin/user/info";
-    String User_Status_List = "/admin/user/statuslist";
-    String User_Check_Status = "/admin/user/checkstatus";
-    String User_Online_Status = "/admin/user/onlinestatus";
+    String User_Get_Token = "/admin/user/get_token";
+    String User_Update_Block_Status = "/admin/user/update_block_status";
+    String User_Get_Info = "/admin/user/get_info";
+    String User_Get_Blocked_List = "/admin/user/get_blocked_list";
+    String User_Check_Block_Status = "/admin/user/check_block_status";
+    String User_Get_Online_Status = "/admin/user/onlinestatus";
 
 
     String Friend_Status = "/admin/friend/status";
@@ -29,9 +29,9 @@ public interface APIPath {
     String Msg_Recall = "/admin/message/recall";
 
     String Group_Dismiss = "/admin/group/del";
+    String Group_Transfer = "/admin/group/transfer";
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
-    String Group_Owner = "/admin/group/owner";
 
 
     String Channel_Message_Send = "/channel/message/send";

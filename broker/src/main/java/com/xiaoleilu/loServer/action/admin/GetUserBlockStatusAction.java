@@ -22,7 +22,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Check_Status)
+@Route(APIPath.User_Check_Block_Status)
 @HttpMethod("POST")
 public class GetUserBlockStatusAction extends AdminAction {
 

@@ -18,7 +18,7 @@ import com.xiaoleilu.loServer.handler.Response;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-@Route(APIPath.User_Status_List)
+@Route(APIPath.User_Get_Blocked_List)
 @HttpMethod("POST")
 public class GetUserBlockListAction extends AdminAction {
 
