@@ -25,7 +25,7 @@ import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 import java.util.Collection;
 import java.util.List;

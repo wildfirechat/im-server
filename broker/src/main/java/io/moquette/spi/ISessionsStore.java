@@ -19,10 +19,9 @@ package io.moquette.spi;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.persistence.MemorySessionStore.Session;
 import io.moquette.spi.IMessagesStore.StoredMessage;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Queue;
 
 /**

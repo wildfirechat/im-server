@@ -12,10 +12,10 @@ import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.IMTopic;
 
-import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
+import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(value = IMTopic.AddGroupMemberTopic)
 public class AddGroupMember extends GroupHandler<WFCMessage.AddGroupMemberRequest> {

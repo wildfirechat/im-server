@@ -11,10 +11,10 @@ package io.moquette.imhandler;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.IMTopic;
 
-import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
+import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(IMTopic.RriendRequestUnreadSyncTopic)
 public class SyncFriendRequestUnreadHandler extends GroupHandler<WFCMessage.Version> {

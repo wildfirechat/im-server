@@ -23,24 +23,19 @@ import io.netty.buffer.Unpooled;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 
-import static win.liyufan.im.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
-import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
+import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
+import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
 
 /**
  * 请求处理接口<br>

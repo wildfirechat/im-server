@@ -13,11 +13,10 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import cn.wildfirechat.pojos.InputCreateUser;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.RateLimiter;
 
 abstract public class AdminAction extends Action {

@@ -9,10 +9,9 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.WFCMessage;
-import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 import static win.liyufan.im.IMTopic.ModifyChannelInfoTopic;
 

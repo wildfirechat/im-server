@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import java.util.concurrent.Executor;

@@ -26,7 +26,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 import java.util.Base64;
 import java.util.concurrent.Executor;

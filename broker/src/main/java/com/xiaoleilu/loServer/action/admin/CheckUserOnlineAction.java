@@ -13,12 +13,11 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputGetUserInfo;
-import cn.wildfirechat.pojos.OutputCreateUser;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.internal.StringUtil;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 @Route("/admin/user/onlinestatus")
 @HttpMethod("POST")

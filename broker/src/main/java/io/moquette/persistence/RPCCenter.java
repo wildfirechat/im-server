@@ -12,7 +12,7 @@ import io.moquette.persistence.remote.*;
 import io.moquette.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 

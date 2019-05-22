@@ -20,7 +20,7 @@ import cn.wildfirechat.pojos.OutputCreateUser;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.UUIDGenerator;
 
 @Route("admin/user/create")

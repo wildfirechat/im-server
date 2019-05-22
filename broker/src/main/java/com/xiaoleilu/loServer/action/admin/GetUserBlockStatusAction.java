@@ -15,12 +15,11 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputGetUserInfo;
-import cn.wildfirechat.pojos.OutputCreateUser;
 import cn.wildfirechat.pojos.OutputUserStatus;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 @Route("admin/user/checkstatus")
 @HttpMethod("POST")

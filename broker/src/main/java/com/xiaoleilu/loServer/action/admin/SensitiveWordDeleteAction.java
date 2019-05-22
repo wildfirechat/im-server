@@ -17,7 +17,7 @@ import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputOutputSensitiveWords;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 @Route("admin/sensitive/del")
 @HttpMethod("POST")

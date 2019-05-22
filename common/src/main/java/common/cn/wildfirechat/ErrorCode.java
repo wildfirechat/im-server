@@ -6,7 +6,7 @@
  * file that was distributed with this source code.
  */
 
-package win.liyufan.im;
+package common.cn.wildfirechat;
 
 public enum ErrorCode {
     //General error

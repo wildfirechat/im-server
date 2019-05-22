@@ -18,7 +18,7 @@ import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import java.util.Base64;

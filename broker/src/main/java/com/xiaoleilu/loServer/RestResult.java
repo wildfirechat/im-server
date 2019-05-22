@@ -8,7 +8,7 @@
 
 package com.xiaoleilu.loServer;
 
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 public class RestResult {
 

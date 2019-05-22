@@ -10,7 +10,6 @@ package com.xiaoleilu.loServer.action;
 
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
-import com.xiaoleilu.loServer.action.admin.GetIMTokenAction;
 import com.xiaoleilu.loServer.annotation.RequireAuthentication;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
@@ -21,10 +20,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import win.liyufan.im.DBUtil;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
-import static win.liyufan.im.ErrorCode.ERROR_CODE_SUCCESS;
+import static common.cn.wildfirechat.ErrorCode.ERROR_CODE_SUCCESS;
 
 /**
  * 请求处理接口<br>

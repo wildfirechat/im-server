@@ -19,7 +19,7 @@ import cn.wildfirechat.pojos.OutputGetChatroomInfo;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import win.liyufan.im.ErrorCode;
+import common.cn.wildfirechat.ErrorCode;
 
 @Route("/admin/chatroom")
 @HttpMethod("GET")
