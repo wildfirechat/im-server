@@ -3,6 +3,7 @@ package cn.wildfirechat.sdk;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
+import cn.wildfirechat.sdk.utilities.HttpUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,8 +3,7 @@ package cn.wildfirechat.sdk;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
-
-import java.util.List;
+import cn.wildfirechat.sdk.utilities.HttpUtils;
 
 public class UserAdmin {
     public static IMResult<InputOutputUserInfo> getUserByName(String mobile) throws Exception {

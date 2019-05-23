@@ -2,10 +2,6 @@ package cn.wildfirechat.common;
 
 public interface APIPath {
     String Create_Chatroom = "/admin/chatroom/create";
-    String Create_Group = "/admin/group/create";
-    String Create_Robot = "/admin/robot/create";
-    String Create_User = "/admin/user/create";
-
     String Chatroom_Destroy = "/admin/chatroom/del";
     String Chatroom_Info = "/admin/chatroom/info";
 
@@ -14,6 +10,7 @@ public interface APIPath {
     String Sensitive_Del = "/admin/sensitive/del";
     String Sensitive_Query = "/admin/sensitive/query";
 
+    String Create_User = "/admin/user/create";
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
     String User_Get_Info = "/admin/user/get_info";
@@ -28,12 +25,15 @@ public interface APIPath {
     String Msg_Send = "/admin/message/send";
     String Msg_Recall = "/admin/message/recall";
 
+    String Create_Group = "/admin/group/create";
     String Group_Dismiss = "/admin/group/del";
     String Group_Transfer = "/admin/group/transfer";
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
 
+    String Create_Robot = "/admin/robot/create";
 
+    
     String Channel_Message_Send = "/channel/message/send";
 
     String Robot_User_Info = "/robot/user_info";

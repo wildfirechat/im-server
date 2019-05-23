@@ -1,4 +1,4 @@
-package cn.wildfirechat.sdk;
+package cn.wildfirechat.sdk.utilities;
 
 import cn.wildfirechat.sdk.model.IMResult;
 import com.google.gson.Gson;
@@ -25,12 +25,12 @@ public class HttpUtils {
     private static String adminUrl;
     private static String adminSecret;
 
-    static void init(String url, String secret) {
+    public static void init(String url, String secret) {
         adminUrl = url;
         adminSecret = secret;
     }
 
-    static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
+    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
         if (isNullOrEmpty(adminUrl) || isNullOrEmpty(path)) {
             LOG.error("Not init IM SDK correctly. Do you forget init it?");
             throw new Exception("SDK url or secret lack!");

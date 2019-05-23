@@ -1,8 +1,6 @@
 package cn.wildfirechat.sdk;
 
-import cn.wildfirechat.common.APIPath;
-import cn.wildfirechat.pojos.*;
-import cn.wildfirechat.sdk.model.*;
+import cn.wildfirechat.sdk.utilities.HttpUtils;
 
 public class ChatConfig {
     public static void init(String url, String secret) {
