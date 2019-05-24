@@ -251,11 +251,16 @@ public class ProtocolProcessor {
                 pwd = msg.payload().password();
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
+                if (session == null) {
+                    m_sessionsStore.createNewSession(msg.payload().userName(), clientId, true, false);
+                    session = m_sessionsStore.getSession(clientId);
+                }
+                
                 if (session != null && session.getUsername().equals(msg.payload().userName())) {
                     pwd = AES.AESDecrypt(pwd, session.getSecret(), true);
                 } else {
                     LOG.error("Password decrypt failed of client {}", clientId);
-                    failedCredentials(channel);
+                    failedNoSession(channel);
                     return false;
                 }
 
@@ -362,6 +367,11 @@ public class ProtocolProcessor {
 
     private void failedCredentials(Channel session) {
         session.writeAndFlush(connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD));
+        LOG.info("Client {} failed to connect with bad username or password.", session);
+    }
+
+    private void failedNoSession(Channel session) {
+        session.writeAndFlush(connAck(CONNECTION_REFUSED_SESSION_NOT_EXIST));
         LOG.info("Client {} failed to connect with bad username or password.", session);
     }
 
