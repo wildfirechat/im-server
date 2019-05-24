@@ -749,7 +749,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode dismissGroup(String operator, String groupId) {
+    public ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -762,9 +762,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Free ||
+        if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Free ||
             (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
-                && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
+                && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)))) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 

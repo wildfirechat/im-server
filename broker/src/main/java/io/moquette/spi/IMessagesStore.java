@@ -104,7 +104,7 @@ public interface IMessagesStore {
     ErrorCode addGroupMembers(String operator, String groupId, List<WFCMessage.GroupMember> memberList);
     ErrorCode kickoffGroupMembers(String operator, String groupId, List<String> memberList);
     ErrorCode quitGroup(String operator, String groupId);
-    ErrorCode dismissGroup(String operator, String groupId);
+    ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
     ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value);
     ErrorCode modifyGroupAlias(String operator, String groupId, String alias);
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);

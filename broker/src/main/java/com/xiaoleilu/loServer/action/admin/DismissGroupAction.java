@@ -42,7 +42,7 @@ public class DismissGroupAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             if (inputDismissGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.AddGroupMemberTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

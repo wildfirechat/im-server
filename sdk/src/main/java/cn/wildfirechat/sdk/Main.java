@@ -130,6 +130,8 @@ public class Main {
 //***********************************************
 //****  群组相关API
 //***********************************************
+        IMResult<Void> voidIMResult1 = GroupAdmin.dismissGroup("user1", "groupId1", null, null);
+
         PojoGroupInfo groupInfo = new PojoGroupInfo();
         groupInfo.setTarget_id("groupId1");
         groupInfo.setOwner("user1");
