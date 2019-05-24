@@ -19,8 +19,8 @@ public interface APIPath {
     String User_Get_Online_Status = "/admin/user/onlinestatus";
 
 
-    String Friend_Status = "/admin/friend/status";
-    String Friend_List = "/admin/friend/list";
+    String Friend_Update_Status = "/admin/friend/status";
+    String Friend_Get_List = "/admin/friend/list";
 
     String Msg_Send = "/admin/message/send";
     String Msg_Recall = "/admin/message/recall";
@@ -33,7 +33,6 @@ public interface APIPath {
 
     String Create_Robot = "/admin/robot/create";
 
-    
     String Channel_Message_Send = "/channel/message/send";
 
     String Robot_User_Info = "/robot/user_info";

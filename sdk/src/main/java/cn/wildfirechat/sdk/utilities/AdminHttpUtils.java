@@ -19,8 +19,8 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 
-public class HttpUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
+public class AdminHttpUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(AdminHttpUtils.class);
 
     private static String adminUrl;
     private static String adminSecret;
@@ -54,7 +54,7 @@ public class HttpUtils {
             post.setHeader("timestamp", "" + timestamp);
             post.setHeader("sign", sign);
 
-            String jsonStr = null;
+            String jsonStr = "";
             if (object != null) {
                 jsonStr = new Gson().toJson(object);
             }

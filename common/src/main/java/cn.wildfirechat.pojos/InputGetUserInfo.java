@@ -13,9 +13,10 @@ public class InputGetUserInfo {
     private String name;
     private String mobile;
 
-    public InputGetUserInfo(String userId, String name) {
+    public InputGetUserInfo(String userId, String name, String mobile) {
         this.userId = userId;
         this.name = name;
+        this.mobile = mobile;
     }
 
     public String getMobile() {

@@ -3,7 +3,7 @@ package cn.wildfirechat.sdk;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
-import cn.wildfirechat.sdk.utilities.HttpUtils;
+import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class GroupAdmin {
         createGroup.setTo_lines(to_lines);
         createGroup.setNotify_message(notify_message);
 
-        return HttpUtils.httpJsonPost(path, createGroup, OutputCreateGroupResult.class);
+        return AdminHttpUtils.httpJsonPost(path, createGroup, OutputCreateGroupResult.class);
     }
 
     public static IMResult<Void> dismissGroup(String operator, String groupId, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
@@ -30,7 +30,7 @@ public class GroupAdmin {
         dismissGroup.setGroup_id(groupId);
         dismissGroup.setTo_lines(to_lines);
         dismissGroup.setNotify_message(notify_message);
-        return HttpUtils.httpJsonPost(path, dismissGroup, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, dismissGroup, Void.class);
     }
 
     public static IMResult<Void> transferGroup(String operator, String groupId, String newOwner, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
@@ -40,7 +40,7 @@ public class GroupAdmin {
         transferGroup.setNew_owner(newOwner);
         transferGroup.setTo_lines(to_lines);
         transferGroup.setNotify_message(notify_message);
-        return HttpUtils.httpJsonPost(path, transferGroup, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, transferGroup, Void.class);
     }
 
     public static IMResult<Void> addGroupMembers(String operator, String groupId, List<String> groupMemberIds, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
@@ -56,7 +56,7 @@ public class GroupAdmin {
         addGroupMember.setMembers(members);
         addGroupMember.setTo_lines(to_lines);
         addGroupMember.setNotify_message(notify_message);
-        return HttpUtils.httpJsonPost(path, addGroupMember, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, addGroupMember, Void.class);
     }
 
     public static IMResult<Void> kickoffGroupMembers(String operator, String groupId, List<String> groupMemberIds, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
@@ -66,7 +66,7 @@ public class GroupAdmin {
         kickoffGroupMember.setMembers(groupMemberIds);
         kickoffGroupMember.setTo_lines(to_lines);
         kickoffGroupMember.setNotify_message(notify_message);
-        return HttpUtils.httpJsonPost(path, kickoffGroupMember, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, kickoffGroupMember, Void.class);
     }
 
 }

@@ -3,7 +3,7 @@ package cn.wildfirechat.sdk;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
-import cn.wildfirechat.sdk.utilities.HttpUtils;
+import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
 public class MessageAdmin {
     public static IMResult<SendMessageResult> sendMessage(String sender, Conversation conversation, MessagePayload payload) throws Exception {
@@ -12,7 +12,7 @@ public class MessageAdmin {
         messageData.setSender(sender);
         messageData.setConv(conversation);
         messageData.setPayload(payload);
-        return HttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
+        return AdminHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
     public static IMResult<Void> recallMessage(String operator, long messageUid) throws Exception {
@@ -20,6 +20,6 @@ public class MessageAdmin {
         RecallMessageData messageData = new RecallMessageData();
         messageData.setOperator(operator);
         messageData.setMessageUid(messageUid);
-        return HttpUtils.httpJsonPost(path, messageData, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
     }
 }
