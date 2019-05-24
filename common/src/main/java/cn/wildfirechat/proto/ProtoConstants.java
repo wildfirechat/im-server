@@ -73,12 +73,13 @@ public class ProtoConstants {
     public interface ContentType {
         int Unknown = 0;
         int Text = 1;
-        int Image = 2;
-        int Voice = 3;
+        int Voice = 2;
+        int Image = 3;
         int Location = 4;
-        int Video = 5;
-        int RichMedia = 6;
-        int Custom = 7;
+        int File = 5;
+        int Video = 6;
+        int Sticker = 7;
+        int RichMedia = 8;
     }
 
     //ModifyGroupInfoRequest -> type

@@ -480,6 +480,10 @@ public class MessagesPublisher {
                 pushContent = "[视频]";
             } else if(type == ProtoConstants.ContentType.RichMedia) {
                 pushContent = "[图文]";
+            } else if(type == ProtoConstants.ContentType.File) {
+                pushContent = "[文件]";
+            } else if(type == ProtoConstants.ContentType.Sticker) {
+                pushContent = "[表情]";
             }
         }
 
