@@ -28,6 +28,8 @@ public interface APIPath {
     String Create_Group = "/admin/group/create";
     String Group_Dismiss = "/admin/group/del";
     String Group_Transfer = "/admin/group/transfer";
+    String Group_Get_Info = "/admin/group/get_info";
+    String Group_Member_List = "/admin/group/member/list";
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
 

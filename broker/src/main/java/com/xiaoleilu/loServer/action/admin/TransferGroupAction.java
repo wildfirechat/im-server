@@ -42,7 +42,7 @@ public class TransferGroupAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputTransferGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputTransferGroup.class);
             if (inputDismissGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.AddGroupMemberTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.TransferGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

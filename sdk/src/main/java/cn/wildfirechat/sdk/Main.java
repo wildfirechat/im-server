@@ -5,10 +5,17 @@ import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) throws Exception {
         AdminHttpUtils.init("http://localhost:18080", "123456");
 
+
+//***********************************************
+//****  用户相关的API
+//***********************************************
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
         userInfo.setUserId("userId1");
         userInfo.setName("user1");
@@ -116,6 +123,81 @@ public class Main {
             }
         } else {
             System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+
+//***********************************************
+//****  群组相关API
+//***********************************************
+        PojoGroupInfo groupInfo = new PojoGroupInfo();
+        groupInfo.setTarget_id("groupId1");
+        groupInfo.setOwner("user1");
+        groupInfo.setName("test_group");
+        groupInfo.setExtra("hello extra");
+        groupInfo.setPortrait("http://portrait");
+        List<PojoGroupMember> members = new ArrayList<>();
+        PojoGroupMember member1 = new PojoGroupMember();
+        member1.setMember_id(groupInfo.getOwner());
+        members.add(member1);
+
+        PojoGroupMember member2 = new PojoGroupMember();
+        member2.setMember_id("user2");
+        members.add(member2);
+
+        PojoGroupMember member3 = new PojoGroupMember();
+        member3.setMember_id("user3");
+        members.add(member3);
+
+        IMResult<OutputCreateGroupResult> resultCreateGroup = GroupAdmin.createGroup(groupInfo.getOwner(), groupInfo, members, null, null);
+        if (resultCreateGroup != null && resultCreateGroup.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("create group success");
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+        IMResult<PojoGroupInfo> resultGetGroupInfo = GroupAdmin.getGroupInfo(groupInfo.getTarget_id());
+        if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (groupInfo.getExtra().equals(resultGetGroupInfo.getResult().getExtra())
+                && groupInfo.getName().equals(resultGetGroupInfo.getResult().getName())
+                && groupInfo.getOwner().equals(resultGetGroupInfo.getResult().getOwner())) {
+                System.out.println("get group success");
+            } else {
+                System.out.println("group info is not expected");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+        IMResult<Void> voidIMResult = GroupAdmin.transferGroup(groupInfo.getOwner(), groupInfo.getTarget_id(), "user2", null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("transfer success");
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+        resultGetGroupInfo = GroupAdmin.getGroupInfo(groupInfo.getTarget_id());
+        if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if ("user2".equals(resultGetGroupInfo.getResult().getOwner())) {
+                groupInfo.setOwner("user2");
+            } else {
+                System.out.println("group info is not expected");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGroupMemberList> resultGetMembers = GroupAdmin.getGroupMembers(groupInfo.getTarget_id());
+        if (resultGetMembers != null && resultGetMembers.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get group member success");
+        } else {
+            System.out.println("create group failure");
             System.exit(-1);
         }
 

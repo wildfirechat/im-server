@@ -10,6 +10,7 @@ package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
+import com.hazelcast.util.StringUtil;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
@@ -19,6 +20,13 @@ import win.liyufan.im.IMTopic;
 public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.CreateGroupRequest request, Qos1PublishHandler.IMCallback callback) {
+
+        if (!StringUtil.isNullOrEmpty(request.getGroup().getGroupInfo().getTargetId())) {
+            WFCMessage.GroupInfo existGroupInfo = m_messagesStore.getGroupInfo(request.getGroup().getGroupInfo().getTargetId());
+            if (existGroupInfo != null) {
+                return ErrorCode.ERROR_CODE_GROUP_ALREADY_EXIST;
+            }
+        }
         WFCMessage.GroupInfo groupInfo = m_messagesStore.createGroup(fromUser, request.getGroup().getGroupInfo(), request.getGroup().getMembersList());
         if (groupInfo != null) {
             if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

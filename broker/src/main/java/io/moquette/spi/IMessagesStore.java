@@ -110,7 +110,7 @@ public interface IMessagesStore {
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
     ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members);
-    ErrorCode transferGroup(String operator, String groupId, String newOwner);
+    ErrorCode transferGroup(String operator, String groupId, String newOwner, boolean isAdmin);
     boolean isMemberInGroup(String member, String groupId);
     boolean isForbiddenInGroup(String member, String groupId);
 

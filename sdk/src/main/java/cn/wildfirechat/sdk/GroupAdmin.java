@@ -23,6 +23,14 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, createGroup, OutputCreateGroupResult.class);
     }
 
+    public static IMResult<PojoGroupInfo> getGroupInfo(String groupId) throws Exception {
+        String path = APIPath.Group_Get_Info;
+        InputGetGroup input = new InputGetGroup();
+        input.setGroupId(groupId);
+
+        return AdminHttpUtils.httpJsonPost(path, input, PojoGroupInfo.class);
+    }
+
     public static IMResult<Void> dismissGroup(String operator, String groupId, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Group_Dismiss;
         InputDismissGroup dismissGroup = new InputDismissGroup();
@@ -38,9 +46,18 @@ public class GroupAdmin {
         InputTransferGroup transferGroup = new InputTransferGroup();
         transferGroup.setGroup_id(groupId);
         transferGroup.setNew_owner(newOwner);
+        transferGroup.setOperator(operator);
         transferGroup.setTo_lines(to_lines);
         transferGroup.setNotify_message(notify_message);
         return AdminHttpUtils.httpJsonPost(path, transferGroup, Void.class);
+    }
+
+
+    public static IMResult<OutputGroupMemberList> getGroupMembers(String groupId) throws Exception {
+        String path = APIPath.Group_Member_List;
+        InputGetGroup input = new InputGetGroup();
+        input.setGroupId(groupId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputGroupMemberList.class);
     }
 
     public static IMResult<Void> addGroupMembers(String operator, String groupId, List<String> groupMemberIds, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
@@ -54,6 +71,7 @@ public class GroupAdmin {
             members.add(m);
         }
         addGroupMember.setMembers(members);
+        addGroupMember.setOperator(operator);
         addGroupMember.setTo_lines(to_lines);
         addGroupMember.setNotify_message(notify_message);
         return AdminHttpUtils.httpJsonPost(path, addGroupMember, Void.class);
@@ -64,6 +82,7 @@ public class GroupAdmin {
         InputKickoffGroupMember kickoffGroupMember = new InputKickoffGroupMember();
         kickoffGroupMember.setGroup_id(groupId);
         kickoffGroupMember.setMembers(groupMemberIds);
+        kickoffGroupMember.setOperator(operator);
         kickoffGroupMember.setTo_lines(to_lines);
         kickoffGroupMember.setNotify_message(notify_message);
         return AdminHttpUtils.httpJsonPost(path, kickoffGroupMember, Void.class);
