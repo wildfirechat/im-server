@@ -29,7 +29,7 @@ import win.liyufan.im.IMTopic;
 
 import java.util.concurrent.Executor;
 
-@Route(APIPath.Friend_Status)
+@Route(APIPath.Friend_Update_Status)
 @HttpMethod("POST")
 public class FriendRelationAction extends AdminAction {
 

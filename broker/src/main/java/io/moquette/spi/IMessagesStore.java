@@ -104,13 +104,13 @@ public interface IMessagesStore {
     ErrorCode addGroupMembers(String operator, String groupId, List<WFCMessage.GroupMember> memberList);
     ErrorCode kickoffGroupMembers(String operator, String groupId, List<String> memberList);
     ErrorCode quitGroup(String operator, String groupId);
-    ErrorCode dismissGroup(String operator, String groupId);
+    ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
     ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value);
     ErrorCode modifyGroupAlias(String operator, String groupId, String alias);
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
     ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members);
-    ErrorCode transferGroup(String operator, String groupId, String newOwner);
+    ErrorCode transferGroup(String operator, String groupId, String newOwner, boolean isAdmin);
     boolean isMemberInGroup(String member, String groupId);
     boolean isForbiddenInGroup(String member, String groupId);
 

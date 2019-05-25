@@ -14,7 +14,7 @@ import io.netty.util.internal.StringUtil;
 
 import java.util.List;
 
-public class InputDismissGroupMember extends InputGroupBase {
+public class InputDismissGroup extends InputGroupBase {
     private String group_id;
 
 

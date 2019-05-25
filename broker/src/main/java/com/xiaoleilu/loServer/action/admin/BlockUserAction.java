@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Status)
+@Route(APIPath.User_Update_Block_Status)
 @HttpMethod("POST")
 public class BlockUserAction extends AdminAction {
 
@@ -45,7 +45,9 @@ public class BlockUserAction extends AdminAction {
                 result = RestResult.resultOf(errorCode);
                 response.setContent(new Gson().toJson(result));
 
-                RPCCenter.getInstance().sendRequest(null, null, RPCCenter.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), inputUserBlock.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
+                if (inputUserBlock.getStatus() != 0) {
+                    RPCCenter.getInstance().sendRequest(null, null, RPCCenter.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), inputUserBlock.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
+                }
 
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, null);
             } else {

@@ -9,6 +9,11 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.pojos.InputGetGroup;
+import cn.wildfirechat.pojos.OutputGroupMemberList;
+import cn.wildfirechat.pojos.PojoGroupInfo;
+import cn.wildfirechat.pojos.PojoGroupMember;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -16,16 +21,16 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import cn.wildfirechat.pojos.InputOutputUserInfo;
-import cn.wildfirechat.pojos.InputGetUserInfo;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Get_Info)
+import java.util.ArrayList;
+import java.util.List;
+
+@Route(APIPath.Group_Member_List)
 @HttpMethod("POST")
-public class GetUserAction extends AdminAction {
+public class GetGroupMembersAction extends AdminAction {
 
     @Override
     public boolean isTransactionAction() {
@@ -35,25 +40,29 @@ public class GetUserAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
-            if (inputUserId != null
-                && (!StringUtil.isNullOrEmpty(inputUserId.getUserId()) || !StringUtil.isNullOrEmpty(inputUserId.getName()) || !StringUtil.isNullOrEmpty(inputUserId.getMobile()))) {
+            InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
+            if (inputGetGroup != null
+                && (!StringUtil.isNullOrEmpty(inputGetGroup.getGroupId()))) {
 
-                WFCMessage.User user = null;
-                if(!StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
-                    user = messagesStore.getUserInfo(inputUserId.getUserId());
-                } else if(!StringUtil.isNullOrEmpty(inputUserId.getName())) {
-                    user = messagesStore.getUserInfoByName(inputUserId.getName());
-                } else if(!StringUtil.isNullOrEmpty(inputUserId.getMobile())) {
-                    user = messagesStore.getUserInfoByMobile(inputUserId.getMobile());
-                }
+                List<WFCMessage.GroupMember> members = new ArrayList<>();
+                ErrorCode errorCode = messagesStore.getGroupMembers(inputGetGroup.getGroupId(), 0, members);
+
 
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
-                if (user == null) {
-                    result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
+                if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                    result = RestResult.resultOf(errorCode);
                 } else {
-                    result = RestResult.ok(InputOutputUserInfo.fromPbUser(user));
+                    OutputGroupMemberList out = new OutputGroupMemberList();
+                    out.setMembers(new ArrayList<>());
+                    for (WFCMessage.GroupMember member : members) {
+                        PojoGroupMember pm = new PojoGroupMember();
+                        pm.setMember_id(member.getMemberId());
+                        pm.setAlias(member.getAlias());
+                        pm.setType(member.getType());
+                        out.getMembers().add(pm);
+                    }
+                    result = RestResult.ok(out);
                 }
 
                 response.setContent(new Gson().toJson(result));

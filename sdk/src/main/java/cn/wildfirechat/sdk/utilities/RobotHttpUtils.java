@@ -1,4 +1,4 @@
-package cn.wildfirechat.sdk;
+package cn.wildfirechat.sdk.utilities;
 
 import cn.wildfirechat.sdk.model.IMResult;
 import com.google.gson.Gson;
@@ -19,31 +19,33 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 
-public class HttpUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
+public class RobotHttpUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(RobotHttpUtils.class);
 
-    private static String adminUrl;
-    private static String adminSecret;
+    private static String url;
+    private static String robotId;
+    private static String robotSecret;
 
-    static void init(String url, String secret) {
-        adminUrl = url;
-        adminSecret = secret;
+    public static void init(String url, String robotId, String secret) {
+        RobotHttpUtils.url = url;
+        RobotHttpUtils.robotId = robotId;
+        RobotHttpUtils.robotSecret = secret;
     }
 
-    static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
-        if (isNullOrEmpty(adminUrl) || isNullOrEmpty(path)) {
+    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
+        if (isNullOrEmpty(url) || isNullOrEmpty(path)) {
             LOG.error("Not init IM SDK correctly. Do you forget init it?");
             throw new Exception("SDK url or secret lack!");
         }
 
-        String url = adminUrl + path;
+        String url = RobotHttpUtils.url + path;
         HttpPost post = null;
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
 
             int nonce = (int)(Math.random() * 100000 + 3);
             long timestamp = System.currentTimeMillis();
-            String str = nonce + "|" + adminSecret + "|" + timestamp;
+            String str = nonce + "|" + robotSecret + "|" + timestamp;
             String sign = DigestUtils.sha1Hex(str);
 
 
@@ -52,9 +54,13 @@ public class HttpUtils {
             post.setHeader("Connection", "Keep-Alive");
             post.setHeader("nonce", nonce + "");
             post.setHeader("timestamp", "" + timestamp);
+            post.setHeader("rid", robotId);
             post.setHeader("sign", sign);
 
-            String jsonStr = new Gson().toJson(object);
+            String jsonStr = null;
+            if (object != null) {
+                jsonStr = new Gson().toJson(object);
+            }
             LOG.info("http request content: {}", jsonStr);
 
             StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));

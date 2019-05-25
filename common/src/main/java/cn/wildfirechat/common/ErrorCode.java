@@ -68,7 +68,7 @@ public enum ErrorCode {
 
     public static ErrorCode fromCode(int code) {
         for (ErrorCode errorCode : ErrorCode.values()) {
-            if(errorCode.code == code) {
+            if(errorCode.code == (code&0xff)) {
                 return errorCode;
             }
         }

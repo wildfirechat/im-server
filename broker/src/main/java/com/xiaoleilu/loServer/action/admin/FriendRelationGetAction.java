@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.ArrayList;
 import java.util.List;
 
-@Route(APIPath.Friend_List)
+@Route(APIPath.Friend_Get_List)
 @HttpMethod("POST")
 public class FriendRelationGetAction extends AdminAction {
 

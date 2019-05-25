@@ -28,7 +28,7 @@ public class UnknownErrorAction extends Action{
 
     @Override
     public boolean action(Request request, Response response) {
-        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        response.setStatus(HttpResponseStatus.NOT_FOUND);
         return true;
     }
 }

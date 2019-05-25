@@ -9,6 +9,11 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.pojos.InputGetGroup;
+import cn.wildfirechat.pojos.InputGetUserInfo;
+import cn.wildfirechat.pojos.InputOutputUserInfo;
+import cn.wildfirechat.pojos.PojoGroupInfo;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -16,16 +21,13 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import cn.wildfirechat.pojos.InputOutputUserInfo;
-import cn.wildfirechat.pojos.InputGetUserInfo;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import cn.wildfirechat.common.ErrorCode;
 
-@Route(APIPath.User_Get_Info)
+@Route(APIPath.Group_Get_Info)
 @HttpMethod("POST")
-public class GetUserAction extends AdminAction {
+public class GetGroupInfoAction extends AdminAction {
 
     @Override
     public boolean isTransactionAction() {
@@ -35,25 +37,25 @@ public class GetUserAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
-            if (inputUserId != null
-                && (!StringUtil.isNullOrEmpty(inputUserId.getUserId()) || !StringUtil.isNullOrEmpty(inputUserId.getName()) || !StringUtil.isNullOrEmpty(inputUserId.getMobile()))) {
+            InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
+            if (inputGetGroup != null
+                && (!StringUtil.isNullOrEmpty(inputGetGroup.getGroupId()))) {
 
-                WFCMessage.User user = null;
-                if(!StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
-                    user = messagesStore.getUserInfo(inputUserId.getUserId());
-                } else if(!StringUtil.isNullOrEmpty(inputUserId.getName())) {
-                    user = messagesStore.getUserInfoByName(inputUserId.getName());
-                } else if(!StringUtil.isNullOrEmpty(inputUserId.getMobile())) {
-                    user = messagesStore.getUserInfoByMobile(inputUserId.getMobile());
-                }
+                WFCMessage.GroupInfo groupInfo = messagesStore.getGroupInfo(inputGetGroup.getGroupId());
 
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
-                if (user == null) {
+                if (groupInfo == null) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 } else {
-                    result = RestResult.ok(InputOutputUserInfo.fromPbUser(user));
+                    PojoGroupInfo pojoGroupInfo = new PojoGroupInfo();
+                    pojoGroupInfo.setExtra(groupInfo.getExtra());
+                    pojoGroupInfo.setName(groupInfo.getName());
+                    pojoGroupInfo.setOwner(groupInfo.getOwner());
+                    pojoGroupInfo.setPortrait(groupInfo.getPortrait());
+                    pojoGroupInfo.setTarget_id(groupInfo.getTargetId());
+                    pojoGroupInfo.setType(groupInfo.getType());
+                    result = RestResult.ok(pojoGroupInfo);
                 }
 
                 response.setContent(new Gson().toJson(result));
