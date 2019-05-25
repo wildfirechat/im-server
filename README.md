@@ -27,6 +27,7 @@
 微信公众号：
 
 <img src="http://static.wildfirechat.cn/wx_wfc_qrcode.jpg" width = 50% height = 50% />
+> 强烈建议关注我们的公众号。我们有新版本发布或者有重大更新会通过公众号通知大家，另外我们也会不定期的发布一些关于野火IM的技术介绍。
 
 #### 体验Demo
 我们提供了体验demo，请使用微信扫码下载安装体验
