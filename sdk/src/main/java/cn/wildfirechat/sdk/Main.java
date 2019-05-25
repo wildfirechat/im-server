@@ -2,20 +2,23 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
+import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        //初始化服务API
         AdminHttpUtils.init("http://localhost:18080", "123456");
 
-
-//***********************************************
-//****  用户相关的API
-//***********************************************
+        //***********************************************
+        //****  用户相关的API
+        //***********************************************
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
         userInfo.setUserId("userId1");
         userInfo.setName("user1");
@@ -27,6 +30,20 @@ public class Main {
             System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
         } else {
             System.out.println("Create user failure");
+            System.exit(-1);
+        }
+
+        InputCreateRobot createRobot = new InputCreateRobot();
+        createRobot.setUserId("robot1");
+        createRobot.setName("robot1");
+        createRobot.setDisplayName("机器人");
+        createRobot.setSecret("123456");
+        createRobot.setCallback("http://127.0.0.1:8883/robot/recvmsg");
+        IMResult<OutputCreateRobot> resultCreateRobot = UserAdmin.createRobot(createRobot);
+        if (resultCreateRobot != null && resultCreateRobot.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create robot " + resultCreateRobot.getResult().getUserId() + " success");
+        } else {
+            System.out.println("Create robot failure");
             System.exit(-1);
         }
 
@@ -127,9 +144,9 @@ public class Main {
         }
 
 
-//***********************************************
-//****  群组相关API
-//***********************************************
+        //***********************************************
+        //****  群组相关功能
+        //***********************************************
         IMResult<Void> voidIMResult1 = GroupAdmin.dismissGroup("user1", "groupId1", null, null);
 
         PojoGroupInfo groupInfo = new PojoGroupInfo();
@@ -203,5 +220,77 @@ public class Main {
             System.exit(-1);
         }
 
+        voidIMResult = GroupAdmin.addGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("use4", "user5"), null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("add group member success");
+        } else {
+            System.out.println("add group member failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = GroupAdmin.kickoffGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("use2", "user3"), null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("kickoff group member success");
+        } else {
+            System.out.println("kickoff group member failure");
+            System.exit(-1);
+        }
+
+        //***********************************************
+        //****  消息相关功能
+        //***********************************************
+        Conversation conversation = new Conversation();
+        conversation.setTarget("user2");
+        conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
+        MessagePayload payload = new MessagePayload();
+        payload.setType(1);
+        payload.setSearchableContent("hello world");
+
+        IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("user1", conversation, payload);
+        if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("send message success");
+        } else {
+            System.out.println("send message failure");
+            System.exit(-1);
+        }
+
+
+        voidIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("recall message success");
+        } else {
+            System.out.println("recall message failure");
+            System.exit(-1);
+        }
+
+
+
+        //初始化机器人API
+        RobotHttpUtils.init("http://localhost:18080", "robot1", "123456");
+        //***********************************************
+        //****  机器人API
+        //***********************************************
+        conversation = new Conversation();
+        conversation.setTarget("user2");
+        conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
+        payload = new MessagePayload();
+        payload.setType(1);
+        payload.setSearchableContent("hello world");
+
+        IMResult<SendMessageResult> resultRobotSendMessage = RobotService.sendMessage("robot1", conversation, payload);
+        if (resultRobotSendMessage != null && resultRobotSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("robot send message success");
+        } else {
+            System.out.println("robot send message failure");
+            System.exit(-1);
+        }
+
+        IMResult<InputOutputUserInfo> resultRobotGetUserInfo = RobotService.getUserInfo("user1");
+        if (resultRobotGetUserInfo != null && resultRobotGetUserInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("robot get user info success");
+        } else {
+            System.out.println("robot get user info by userId failure");
+            System.exit(-1);
+        }
     }
 }

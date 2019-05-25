@@ -32,7 +32,7 @@ public class GetUserAction extends RobotAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId != null
-                && (!StringUtil.isNullOrEmpty(inputUserId.getUserId()) || !StringUtil.isNullOrEmpty(inputUserId.getName()))) {
+                && (!StringUtil.isNullOrEmpty(inputUserId.getUserId()) || !StringUtil.isNullOrEmpty(inputUserId.getName()) || !StringUtil.isNullOrEmpty(inputUserId.getMobile()))) {
 
                 WFCMessage.User user = null;
                 if(!StringUtil.isNullOrEmpty(inputUserId.getUserId())) {

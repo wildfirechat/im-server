@@ -54,6 +54,7 @@ public class RobotHttpUtils {
             post.setHeader("Connection", "Keep-Alive");
             post.setHeader("nonce", nonce + "");
             post.setHeader("timestamp", "" + timestamp);
+            post.setHeader("rid", robotId);
             post.setHeader("sign", sign);
 
             String jsonStr = null;

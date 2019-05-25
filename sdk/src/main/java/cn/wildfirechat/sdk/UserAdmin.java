@@ -29,6 +29,11 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, user, OutputCreateUser.class);
     }
 
+    public static IMResult<OutputCreateRobot> createRobot(InputCreateRobot robot) throws Exception {
+        String path = APIPath.Create_Robot;
+        return AdminHttpUtils.httpJsonPost(path, robot, OutputCreateRobot.class);
+    }
+
     public static IMResult<OutputGetIMTokenData> getUserToken(String userId, String clientId) throws Exception {
         String path = APIPath.User_Get_Token;
         InputGetToken getToken = new InputGetToken(userId, clientId);
