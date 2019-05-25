@@ -189,7 +189,7 @@ public abstract class AbstractMQTTSampler extends AbstractSampler implements Con
     protected String token;
 
     protected boolean getToken(String userId, String clientId) {
-        String url = "http://" + getServer() + ":18080/admin/user/token";
+        String url = "http://" + getServer() + ":18080/admin/user/get_token";
         String adminSecret = "123456";
         HttpPost post = null;
         try {

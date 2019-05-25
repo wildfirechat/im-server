@@ -29,7 +29,7 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 	 */
 	private static final long serialVersionUID = 2479085966683186422L;
 
-	private JLabeledChoice conversationTypeChoice;
+	private JLabeledChoice conversationTypeChoice = new JLabeledChoice("ConversationType:", new String[] { CONV_TYPE_SINGLE, CONV_TYPE_GROUP }, true, false);
 	private final JLabeledTextField target = new JLabeledTextField("Target:");
 //	private JCheckBox timestamp = new JCheckBox("Add timestamp in payload");
 
@@ -62,13 +62,11 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 		JPanel optsPanelCon = new VerticalPanel();
 		optsPanelCon.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Send message options"));
 
-		conversationTypeChoice = new JLabeledChoice("ConversationType:", new String[] { CONV_TYPE_SINGLE, CONV_TYPE_GROUP }, true, false);
 		conversationTypeChoice.addChangeListener(this);
 
 		JPanel optsPanel = new HorizontalPanel();
 		optsPanel.add(conversationTypeChoice);
 		optsPanel.add(target);
-//		optsPanel.add(timestamp);
 		optsPanelCon.add(optsPanel);
 
 		return optsPanelCon;
@@ -77,17 +75,11 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 	private JPanel createPayload() {
 		JPanel optsPanelCon = new VerticalPanel();
 		optsPanelCon.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Message Content"));
-		
-//		JPanel horizon1 = new HorizontalPanel();
-//
-//		stringLength.setVisible(true);
-//		horizon1.add(stringLength);
-		
+
 		JPanel horizon2 = new VerticalPanel();
 		messagePanel.setVisible(true);
 		horizon2.add(messagePanel);
-		
-//		optsPanelCon.add(horizon1);
+
 		optsPanelCon.add(horizon2);
 		return optsPanelCon;
 	}
@@ -135,12 +127,16 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 		
 		connUI.configure(sampler);
 //		if(sampler.getQOS().trim().indexOf(JMETER_VARIABLE_PREFIX) == -1){
-			this.conversationTypeChoice.setSelectedIndex(0);
+        if ("1".equals(sampler.getConvType())) {
+            this.conversationTypeChoice.setSelectedIndex(1);
+        } else {
+            this.conversationTypeChoice.setSelectedIndex(0);
+        }
 //		} else {
 //			this.conversationTypeChoice.setText(sampler.getQOS());
 //		}
 		
-		this.target.setText(sampler.getTopic());
+		this.target.setText(sampler.getTarget());
 //		this.timestamp.setSelected(sampler.isAddTimestamp());
 //		if(MESSAGE_TYPE_STRING.equalsIgnoreCase(sampler.getMessageType())) {
 //			this.messageTypes.setSelectedIndex(0);
@@ -168,27 +164,7 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 		connUI.setupSamplerProperties(sampler);
 
 		sampler.setTarget(this.target.getText());
-		
-//		if(this.conversationTypeChoice.getText().indexOf(JMETER_VARIABLE_PREFIX) == -1) {
-//			int qos = QOS_0;
-//			try {
-//				qos = Integer.parseInt(this.conversationTypeChoice.getText());
-//				if (qos < QOS_0 || qos > QOS_2) {
-//					qos = QOS_0;
-//					logger.info("Invalid QoS value, set to default QoS value 0.");
-//				}
-//			} catch (Exception ex) {
-//				logger.info("Invalid QoS value, set to default QoS value 0.");
-//				qos = QOS_0;
-//			}
-//			sampler.setQOS(String.valueOf(qos));
-//		} else {
-//			sampler.setQOS(this.conversationTypeChoice.getText());
-//		}
-		
-//		sampler.setAddTimestamp(this.timestamp.isSelected());
-//		sampler.setMessageType(this.messageTypes.getText());
-//		sampler.setMessageLength(this.stringLength.getText());
+	    sampler.setConvType(this.conversationTypeChoice.getSelectedIndex() + "");
 		sampler.setMessage(this.sendMessage.getText());
 	}
 
@@ -199,11 +175,7 @@ public class SendMessageSamplerUI extends AbstractSamplerGui implements Constant
 		connUI.clearUI();
 		connUI.connNamePrefix.setText(DEFAULT_CONN_PREFIX_FOR_PUB);
 		this.target.setText(DEFAULT_TARGET);
-		this.conversationTypeChoice.setText(CONV_TYPE_SINGLE);
-//		this.timestamp.setSelected(false);
-		
-//		this.messageTypes.setSelectedIndex(0);
-//		this.stringLength.setText(String.valueOf(DEFAULT_MESSAGE_FIX_LENGTH));
+		this.conversationTypeChoice.setSelectedIndex(0);
 		this.sendMessage.setText("");
 	}
 }

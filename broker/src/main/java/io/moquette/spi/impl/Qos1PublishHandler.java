@@ -114,7 +114,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                     byte[] response = new byte[ackPayload.readableBytes()];
                     ackPayload.readBytes(response);
                     ReferenceCountUtil.release(ackPayload);
-                    RPCCenter.getInstance().sendResponse(ERROR_CODE_SUCCESS.getCode(), response, from, requestId);
+                    RPCCenter.getInstance().sendResponse(errorCode.getCode(), response, from, requestId);
                 }
             }, isAdmin);
         }
