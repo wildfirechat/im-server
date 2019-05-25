@@ -23,8 +23,10 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_NOT_IMPLEMENT;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
@@ -174,8 +176,23 @@ public class Qos1PublishHandler extends QosPublishHandler {
                             data = AES.AESEncrypt(data, "");
                         } else {
                             MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
-                            if (session != null && session.getUsername().equals(fromUser))
-                            data = AES.AESEncrypt(data, session.getSecret());
+                            if (session != null && session.getUsername().equals(fromUser)) {
+                                if (data.length > 10*1024) {
+                                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                    GZIPOutputStream gzip;
+                                    try {
+                                        gzip = new GZIPOutputStream(out);
+                                        gzip.write(data);
+                                        gzip.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    data = out.toByteArray();
+                                    code = (byte)ErrorCode.ERROR_CODE_ASYNC_HANDLER.code;
+                                }
+
+                                data = AES.AESEncrypt(data, session.getSecret());
+                            }
                         }
                     }
                     ackPayload.clear();

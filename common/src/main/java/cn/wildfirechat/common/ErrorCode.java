@@ -56,7 +56,7 @@ public enum ErrorCode {
     ERROR_CODE_NOT_IMPLEMENT(254, "not implement"),
 
 
-    ERROR_CODE_ASYNC_HANDLER(255, "异步执行，服务器内部逻辑需要此代码，为正常情况，不能返回客户端"),;
+    ERROR_CODE_SUCCESS_GZIPED(255, "success withe gzip response"),;
 
     public int code;
     public String msg;

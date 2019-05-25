@@ -205,9 +205,7 @@ abstract public class IMHandler<T> {
                     }
                 }
 
-                if(errorCode != ErrorCode.ERROR_CODE_ASYNC_HANDLER) {
-                    response(ackPayload, errorCode, callback);
-                }
+                response(ackPayload, errorCode, callback);
             } else {
                 LOG.error("Handler {} preAction failure", this.getClass().getName());
                 ByteBuf ackPayload = Unpooled.buffer(1);
