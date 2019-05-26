@@ -73,7 +73,7 @@ public class RPCCenter {
                 info.future.cancel(true);
                 if (info.callback != null) {
                     info.callback.getResponseExecutor().execute(() -> {
-                        if (errorCode == 0 || errorCode == ErrorCode.ERROR_CODE_ASYNC_HANDLER.getCode()) {
+                        if (errorCode == 0 || errorCode == ErrorCode.ERROR_CODE_SUCCESS_GZIPED.getCode()) {
                             info.callback.onSuccess(message);
                         } else {
                             info.callback.onError(ErrorCode.fromCode(errorCode));

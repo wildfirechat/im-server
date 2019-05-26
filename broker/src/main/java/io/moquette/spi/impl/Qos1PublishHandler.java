@@ -188,7 +188,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                                         e.printStackTrace();
                                     }
                                     data = out.toByteArray();
-                                    code = (byte)ErrorCode.ERROR_CODE_ASYNC_HANDLER.code;
+                                    code = (byte)ErrorCode.ERROR_CODE_SUCCESS_GZIPED.code;
                                 }
 
                                 data = AES.AESEncrypt(data, session.getSecret());
