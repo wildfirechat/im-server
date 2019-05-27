@@ -143,7 +143,8 @@ public class ProtocolProcessor {
         LOG.info("Processing CONNECT message. CId={}, username={}", clientId, payload.userName());
 
         if (msg.variableHeader().version() != MqttVersion.MQTT_3_1.protocolLevel()
-                && msg.variableHeader().version() != MqttVersion.MQTT_3_1_1.protocolLevel()) {
+                && msg.variableHeader().version() != MqttVersion.MQTT_3_1_1.protocolLevel()
+                && msg.variableHeader().version() != MqttVersion.Wildfire_1.protocolLevel()) {
             MqttConnAckMessage badProto = connAck(CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION);
 
             LOG.error("MQTT protocol version is not valid. CId={}", clientId);
@@ -162,7 +163,8 @@ public class ProtocolProcessor {
         }
 
 
-        if (!login(channel, msg, clientId)) {
+        MqttVersion mqttVersion = MqttVersion.fromProtocolLevel(msg.variableHeader().version());
+        if (!login(channel, msg, clientId, mqttVersion)) {
             channel.close();
             return;
         }
@@ -238,7 +240,7 @@ public class ProtocolProcessor {
         MqttConnAckVariableHeader mqttConnAckVariableHeader = new MqttConnAckVariableHeader(returnCode, sessionPresent);
         return new MqttConnAckMessage(mqttFixedHeader, mqttConnAckVariableHeader, new MqttConnectAckPayload(data));
     }
-    private boolean login(Channel channel, MqttConnectMessage msg, final String clientId) {
+    private boolean login(Channel channel, MqttConnectMessage msg, final String clientId, MqttVersion mqttVersion) {
         // handle user authentication
         if (msg.variableHeader().hasUserName()) {
             int status = m_messagesStore.getUserStatus(msg.payload().userName());
@@ -269,6 +271,7 @@ public class ProtocolProcessor {
                     failedCredentials(channel);
                     return false;
                 }
+                session.setMqttVersion(mqttVersion);
             } else if (!this.allowAnonymous) {
                 LOG.error("Client didn't supply any password and MQTT anonymous mode is disabled CId={}", clientId);
                 failedCredentials(channel);

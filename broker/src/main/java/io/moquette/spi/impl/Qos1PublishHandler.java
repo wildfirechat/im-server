@@ -41,6 +41,7 @@ import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.impl.security.AES;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
@@ -177,7 +178,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                         } else {
                             MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
                             if (session != null && session.getUsername().equals(fromUser)) {
-                                if (data.length > 10*1024) {
+                                if (data.length > 7*1024 && session.getMqttVersion() == MqttVersion.Wildfire_1) {
                                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                                     GZIPOutputStream gzip;
                                     try {
