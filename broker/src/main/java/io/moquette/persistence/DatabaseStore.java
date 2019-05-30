@@ -1774,6 +1774,33 @@ public class DatabaseStore {
         return null;
     }
 
+    Set<String> getAllEnds() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select distinct(`_uid`) from t_user_session";
+            statement = connection.prepareStatement(sql);
+
+
+
+            rs = statement.executeQuery();
+            Set<String> out = new HashSet<>();
+            while (rs.next()) {
+                String uid = rs.getString(1);
+                out.add(uid);
+            }
+            return out;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return null;
+    }
     List<FriendData> getPersistFriends(String userId) {
         Connection connection = null;
         PreparedStatement statement = null;

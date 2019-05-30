@@ -22,4 +22,13 @@ public class MessageAdmin {
         messageData.setMessageUid(messageUid);
         return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
     }
+
+    public static IMResult<BroadMessageResult> broadcastMessage(String sender, int line, MessagePayload payload) throws Exception {
+        String path = APIPath.Msg_Broadcast;
+        BroadMessageData messageData = new BroadMessageData();
+        messageData.setSender(sender);
+        messageData.setLine(line);
+        messageData.setPayload(payload);
+        return AdminHttpUtils.httpJsonPost(path, messageData, BroadMessageResult.class);
+    }
 }

@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
@@ -239,6 +240,13 @@ abstract public class IMHandler<T> {
         message = m_messagesStore.storeMessage(username, clientID, message);
         int pullType = m_messagesStore.getNotifyReceivers(username, message, notifyReceivers);
         this.publisher.publish2Receivers(message, notifyReceivers, clientID, pullType);
-        return message.getMessageId();
+        return notifyReceivers.size();
+    }
+
+    protected long saveAndBroadcast(String username, String clientID, WFCMessage.Message message) {
+        Set<String> notifyReceivers = m_messagesStore.getAllEnds();
+        WFCMessage.Message updatedMessage = m_messagesStore.storeMessage(username, clientID, message);
+        mServer.getImBusinessScheduler().execute(() -> publisher.publish2Receivers(updatedMessage, notifyReceivers, clientID, ProtoConstants.PullType.Pull_Normal));
+        return notifyReceivers.size();
     }
 }

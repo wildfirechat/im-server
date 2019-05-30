@@ -264,6 +264,14 @@ public class Main {
         }
 
 
+        IMResult<BroadMessageResult> resultBroadcastMessage = MessageAdmin.broadcastMessage("user1", 0, payload);
+        if (resultBroadcastMessage != null && resultBroadcastMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("broad message success, send message to " + resultBroadcastMessage.getResult().getCount() + " users");
+        } else {
+            System.out.println("broad message failure");
+            System.exit(-1);
+        }
+
 
         //初始化机器人API
         RobotHttpUtils.init("http://localhost:18080", "robot1", "123456");

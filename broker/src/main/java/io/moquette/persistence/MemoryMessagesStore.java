@@ -246,6 +246,10 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public Set<String> getAllEnds() {
+        return databaseStore.getAllEnds();
+    }
+    @Override
     public WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType) {
         WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();
 
