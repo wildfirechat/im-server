@@ -48,10 +48,6 @@ public class CreateUserAction extends AdminAction {
                     inputCreateUser.setUserId(messagesStore.getShortUUID());
                 }
 
-                if (inputCreateUser.getPortrait() == null || inputCreateUser.getPortrait().length() == 0) {
-                    inputCreateUser.setPortrait("https://avatars.io/gravatar/" + inputCreateUser.getUserId());
-                }
-
                 WFCMessage.User.Builder newUserBuilder = WFCMessage.User.newBuilder()
                     .setUid(StringUtil.isNullOrEmpty(inputCreateUser.getUserId()) ? "" : inputCreateUser.getUserId());
                 if (inputCreateUser.getName() != null)
