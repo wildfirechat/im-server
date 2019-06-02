@@ -97,9 +97,9 @@ public class DatabaseStore {
                 ", `_extra`" +
                 ", `_dt` from t_user";
             if (buzzy) {
-                sql += " where `_display_name` like ?";
+                sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
             } else {
-                sql += " where `_display_name` = ?";
+                sql += " where (`_display_name` = ? or `_name` = ? or `_mobile` = ?) ";
             }
 
             sql += " and _type <> 2"; //can search normal user(0) and robot(1), can not search things
@@ -118,6 +118,8 @@ public class DatabaseStore {
             } else {
                 statement.setString(index++, keyword);
             }
+            statement.setString(index++, keyword);
+            statement.setString(index++, keyword);
 
             rs = statement.executeQuery();
             while (rs.next()) {
