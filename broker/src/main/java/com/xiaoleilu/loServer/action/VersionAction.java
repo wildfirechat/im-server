@@ -18,6 +18,7 @@ import cn.wildfirechat.pojos.OutputLoginData;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import win.liyufan.im.GitRepositoryState;
+import win.liyufan.im.Utility;
 
 import java.io.IOException;
 
@@ -32,7 +33,8 @@ public class VersionAction extends Action {
             response.setStatus(HttpResponseStatus.OK);
 
             try {
-                response.setContent(new Gson().toJson(GitRepositoryState.getGitRepositoryState()));
+
+                response.setContent(Utility.formatJson(new Gson().toJson(GitRepositoryState.getGitRepositoryState())));
             } catch (IOException e) {
                 e.printStackTrace();
                 response.setContent("{\"version\":\"unknown\"}");
