@@ -238,8 +238,9 @@ abstract public class IMHandler<T> {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         message = m_messagesStore.storeMessage(username, clientID, message);
-        int pullType = m_messagesStore.getNotifyReceivers(username, message, notifyReceivers);
-        this.publisher.publish2Receivers(message, notifyReceivers, clientID, pullType);
+        WFCMessage.Message.Builder messageBuilder = message.toBuilder();
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
+        this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType);
         return notifyReceivers.size();
     }
 

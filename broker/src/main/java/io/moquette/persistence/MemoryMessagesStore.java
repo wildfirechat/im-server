@@ -170,7 +170,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public int getNotifyReceivers(String fromUser, WFCMessage.Message message, Set<String> notifyReceivers) {
+    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers) {
+        WFCMessage.Message message = messageBuilder.build();
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         int type = message.getConversation().getType();
 
