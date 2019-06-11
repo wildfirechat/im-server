@@ -1,4 +1,4 @@
-package cn.wildfirechat.pojos;
+package com.xiaoleilu.loServer.pojos;
 
 
 public class InputRoute {

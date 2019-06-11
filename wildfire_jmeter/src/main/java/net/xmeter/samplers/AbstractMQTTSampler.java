@@ -1,21 +1,16 @@
 package net.xmeter.samplers;
 
-import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
-import cn.wildfirechat.pojos.InputRoute;
 import cn.wildfirechat.pojos.InputGetToken;
 import cn.wildfirechat.pojos.OutputGetIMTokenData;
-import io.moquette.spi.impl.security.AES;
 import net.xmeter.IMResult;
 import net.xmeter.Util;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jmeter.samplers.AbstractSampler;
 
@@ -24,11 +19,9 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.Base64;
 
 public abstract class AbstractMQTTSampler extends AbstractSampler implements Constants {
     private transient static Logger logger = LoggingManager.getLoggerForClass();

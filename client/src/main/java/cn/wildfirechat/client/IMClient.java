@@ -3,7 +3,7 @@ package cn.wildfirechat.client;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import cn.wildfirechat.pojos.InputRoute;
+import com.xiaoleilu.loServer.pojos.InputRoute;
 import io.moquette.spi.impl.security.AES;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
