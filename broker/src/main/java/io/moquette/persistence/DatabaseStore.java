@@ -384,11 +384,12 @@ public class DatabaseStore {
             try {
                 connection = DBUtil.getConnection();
                 String sql = "insert into " + MessageShardingUtil.getMessageTable(message.getMessageId()) +
-                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`) values(?, ?, ?, ?, ?, ?, ?, ?)" +
+                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_data` = ?," +
                     "`_searchable_key` = ?," +
-                    "`_dt` = ?";
+                    "`_dt` = ?," +
+                    "`_content_type` = ?";
 
                 String searchableContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
 
@@ -404,10 +405,12 @@ public class DatabaseStore {
                 statement.setBlob(index++, blob);
                 statement.setString(index++, searchableContent);
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
+                statement.setInt(index++, message.getContent().getType());
 
                 statement.setBlob(index++, blob);
                 statement.setString(index++, searchableContent);
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
+                statement.setInt(index++, message.getContent().getType());
 
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
