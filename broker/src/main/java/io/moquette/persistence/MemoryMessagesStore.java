@@ -170,6 +170,12 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public void storeSensitiveMessage(WFCMessage.Message message) {
+        databaseStore.persistSensitiveMessage(message);
+    }
+
+
+    @Override
     public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers) {
         WFCMessage.Message message = messageBuilder.build();
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();

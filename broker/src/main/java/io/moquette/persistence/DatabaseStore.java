@@ -424,6 +424,57 @@ public class DatabaseStore {
         });
     }
 
+    void persistSensitiveMessage(final WFCMessage.Message message) {
+        if(message.getContent().getPersistFlag() == Transparent) {
+            return;
+        }
+
+        mScheduler.execute(()-> {
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+                String sql = "insert into " + "t_sensitive_messages" +
+                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    " ON DUPLICATE KEY UPDATE " +
+                    "`_data` = ?," +
+                    "`_searchable_key` = ?," +
+                    "`_dt` = ?," +
+                    "`_content_type` = ?";
+
+                String searchableContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
+
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setLong(index++, message.getMessageId());
+                statement.setString(index++, message.getFromUser());
+                statement.setInt(index++, message.getConversation().getType());
+                statement.setString(index++, message.getConversation().getTarget());
+                statement.setInt(index++, message.getConversation().getLine());
+                Blob blob = connection.createBlob();
+                blob.setBytes(1, message.getContent().toByteArray());
+                statement.setBlob(index++, blob);
+                statement.setString(index++, searchableContent);
+                statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
+                statement.setInt(index++, message.getContent().getType());
+
+                statement.setBlob(index++, blob);
+                statement.setString(index++, searchableContent);
+                statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
+                statement.setInt(index++, message.getContent().getType());
+
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
     Map<Long, MessageBundle> getMessages(Collection<Long> keys) {
         Map<String, List<Long>> messageTableMap = new HashMap<>();
         for (Long key : keys) {
