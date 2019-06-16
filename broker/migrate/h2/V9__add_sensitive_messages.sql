@@ -10,6 +10,6 @@ CREATE TABLE `t_sensitive_messages` (
   `_data` BLOB NOT NULL,
   `_searchable_key` TEXT DEFAULT NULL,
   `_dt` DATETIME NOT NULL DEFAULT NOW(),
-  `_content_type` int(11) NOT NULL DEFAULT '0',
-  UNIQUE INDEX `message_uid_index` (`_mid` ASC)
+  `_content_type` int(11) NOT NULL DEFAULT 0,
+  UNIQUE INDEX `sensitive_message_uid_index` (`_mid` ASC)
 );
