@@ -414,7 +414,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.AddFriendRequest build() {
         cn.wildfirechat.proto.WFCMessage.AddFriendRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -1070,7 +1070,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Conversation build() {
         cn.wildfirechat.proto.WFCMessage.Conversation result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -1425,6 +1425,46 @@ public final class WFCMessage {
      * <code>optional int64 member_update_dt = 9;</code>
      */
     long getMemberUpdateDt();
+
+    // optional int32 mute = 10;
+    /**
+     * <code>optional int32 mute = 10;</code>
+     */
+    boolean hasMute();
+    /**
+     * <code>optional int32 mute = 10;</code>
+     */
+    int getMute();
+
+    // optional int32 join_type = 11;
+    /**
+     * <code>optional int32 join_type = 11;</code>
+     */
+    boolean hasJoinType();
+    /**
+     * <code>optional int32 join_type = 11;</code>
+     */
+    int getJoinType();
+
+    // optional int32 private_chat = 12;
+    /**
+     * <code>optional int32 private_chat = 12;</code>
+     */
+    boolean hasPrivateChat();
+    /**
+     * <code>optional int32 private_chat = 12;</code>
+     */
+    int getPrivateChat();
+
+    // optional int32 searchable = 13;
+    /**
+     * <code>optional int32 searchable = 13;</code>
+     */
+    boolean hasSearchable();
+    /**
+     * <code>optional int32 searchable = 13;</code>
+     */
+    int getSearchable();
   }
   /**
    * Protobuf type {@code GroupInfo}
@@ -1520,6 +1560,26 @@ public final class WFCMessage {
             case 72: {
               bitField0_ |= 0x00000100;
               memberUpdateDt_ = input.readInt64();
+              break;
+            }
+            case 80: {
+              bitField0_ |= 0x00000200;
+              mute_ = input.readInt32();
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000400;
+              joinType_ = input.readInt32();
+              break;
+            }
+            case 96: {
+              bitField0_ |= 0x00000800;
+              privateChat_ = input.readInt32();
+              break;
+            }
+            case 104: {
+              bitField0_ |= 0x00001000;
+              searchable_ = input.readInt32();
               break;
             }
           }
@@ -1841,6 +1901,70 @@ public final class WFCMessage {
       return memberUpdateDt_;
     }
 
+    // optional int32 mute = 10;
+    public static final int MUTE_FIELD_NUMBER = 10;
+    private int mute_;
+    /**
+     * <code>optional int32 mute = 10;</code>
+     */
+    public boolean hasMute() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional int32 mute = 10;</code>
+     */
+    public int getMute() {
+      return mute_;
+    }
+
+    // optional int32 join_type = 11;
+    public static final int JOIN_TYPE_FIELD_NUMBER = 11;
+    private int joinType_;
+    /**
+     * <code>optional int32 join_type = 11;</code>
+     */
+    public boolean hasJoinType() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional int32 join_type = 11;</code>
+     */
+    public int getJoinType() {
+      return joinType_;
+    }
+
+    // optional int32 private_chat = 12;
+    public static final int PRIVATE_CHAT_FIELD_NUMBER = 12;
+    private int privateChat_;
+    /**
+     * <code>optional int32 private_chat = 12;</code>
+     */
+    public boolean hasPrivateChat() {
+      return ((bitField0_ & 0x00000800) == 0x00000800);
+    }
+    /**
+     * <code>optional int32 private_chat = 12;</code>
+     */
+    public int getPrivateChat() {
+      return privateChat_;
+    }
+
+    // optional int32 searchable = 13;
+    public static final int SEARCHABLE_FIELD_NUMBER = 13;
+    private int searchable_;
+    /**
+     * <code>optional int32 searchable = 13;</code>
+     */
+    public boolean hasSearchable() {
+      return ((bitField0_ & 0x00001000) == 0x00001000);
+    }
+    /**
+     * <code>optional int32 searchable = 13;</code>
+     */
+    public int getSearchable() {
+      return searchable_;
+    }
+
     private void initFields() {
       targetId_ = "";
       name_ = "";
@@ -1851,6 +1975,10 @@ public final class WFCMessage {
       extra_ = "";
       updateDt_ = 0L;
       memberUpdateDt_ = 0L;
+      mute_ = 0;
+      joinType_ = 0;
+      privateChat_ = 0;
+      searchable_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1899,6 +2027,18 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeInt64(9, memberUpdateDt_);
       }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeInt32(10, mute_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeInt32(11, joinType_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeInt32(12, privateChat_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        output.writeInt32(13, searchable_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1943,6 +2083,22 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(9, memberUpdateDt_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(10, mute_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(11, joinType_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(12, privateChat_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(13, searchable_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2078,6 +2234,14 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000080);
         memberUpdateDt_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000100);
+        mute_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        joinType_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000400);
+        privateChat_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000800);
+        searchable_ = 0;
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -2097,7 +2261,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GroupInfo build() {
         cn.wildfirechat.proto.WFCMessage.GroupInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -2142,6 +2306,22 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000100;
         }
         result.memberUpdateDt_ = memberUpdateDt_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.mute_ = mute_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.joinType_ = joinType_;
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        result.privateChat_ = privateChat_;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00001000;
+        }
+        result.searchable_ = searchable_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2194,6 +2374,18 @@ public final class WFCMessage {
         }
         if (other.hasMemberUpdateDt()) {
           setMemberUpdateDt(other.getMemberUpdateDt());
+        }
+        if (other.hasMute()) {
+          setMute(other.getMute());
+        }
+        if (other.hasJoinType()) {
+          setJoinType(other.getJoinType());
+        }
+        if (other.hasPrivateChat()) {
+          setPrivateChat(other.getPrivateChat());
+        }
+        if (other.hasSearchable()) {
+          setSearchable(other.getSearchable());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2732,6 +2924,138 @@ public final class WFCMessage {
         return this;
       }
 
+      // optional int32 mute = 10;
+      private int mute_ ;
+      /**
+       * <code>optional int32 mute = 10;</code>
+       */
+      public boolean hasMute() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional int32 mute = 10;</code>
+       */
+      public int getMute() {
+        return mute_;
+      }
+      /**
+       * <code>optional int32 mute = 10;</code>
+       */
+      public Builder setMute(int value) {
+        bitField0_ |= 0x00000200;
+        mute_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 mute = 10;</code>
+       */
+      public Builder clearMute() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        mute_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 join_type = 11;
+      private int joinType_ ;
+      /**
+       * <code>optional int32 join_type = 11;</code>
+       */
+      public boolean hasJoinType() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional int32 join_type = 11;</code>
+       */
+      public int getJoinType() {
+        return joinType_;
+      }
+      /**
+       * <code>optional int32 join_type = 11;</code>
+       */
+      public Builder setJoinType(int value) {
+        bitField0_ |= 0x00000400;
+        joinType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 join_type = 11;</code>
+       */
+      public Builder clearJoinType() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        joinType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 private_chat = 12;
+      private int privateChat_ ;
+      /**
+       * <code>optional int32 private_chat = 12;</code>
+       */
+      public boolean hasPrivateChat() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <code>optional int32 private_chat = 12;</code>
+       */
+      public int getPrivateChat() {
+        return privateChat_;
+      }
+      /**
+       * <code>optional int32 private_chat = 12;</code>
+       */
+      public Builder setPrivateChat(int value) {
+        bitField0_ |= 0x00000800;
+        privateChat_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 private_chat = 12;</code>
+       */
+      public Builder clearPrivateChat() {
+        bitField0_ = (bitField0_ & ~0x00000800);
+        privateChat_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 searchable = 13;
+      private int searchable_ ;
+      /**
+       * <code>optional int32 searchable = 13;</code>
+       */
+      public boolean hasSearchable() {
+        return ((bitField0_ & 0x00001000) == 0x00001000);
+      }
+      /**
+       * <code>optional int32 searchable = 13;</code>
+       */
+      public int getSearchable() {
+        return searchable_;
+      }
+      /**
+       * <code>optional int32 searchable = 13;</code>
+       */
+      public Builder setSearchable(int value) {
+        bitField0_ |= 0x00001000;
+        searchable_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 searchable = 13;</code>
+       */
+      public Builder clearSearchable() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        searchable_ = 0;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:GroupInfo)
     }
 
@@ -3231,7 +3555,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GroupMember build() {
         cn.wildfirechat.proto.WFCMessage.GroupMember result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -3965,7 +4289,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Group build() {
         cn.wildfirechat.proto.WFCMessage.Group result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -5424,7 +5748,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ChannelInfo build() {
         cn.wildfirechat.proto.WFCMessage.ChannelInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -6742,7 +7066,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ModifyChannelInfo build() {
         cn.wildfirechat.proto.WFCMessage.ModifyChannelInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -7429,7 +7753,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.TransferChannel build() {
         cn.wildfirechat.proto.WFCMessage.TransferChannel result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -8040,7 +8364,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullChannelInfo build() {
         cn.wildfirechat.proto.WFCMessage.PullChannelInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -8653,7 +8977,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullChannelListener build() {
         cn.wildfirechat.proto.WFCMessage.PullChannelListener result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -9309,7 +9633,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullChannelListenerResult build() {
         cn.wildfirechat.proto.WFCMessage.PullChannelListenerResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -9943,7 +10267,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ListenChannel build() {
         cn.wildfirechat.proto.WFCMessage.ListenChannel result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -10559,7 +10883,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.SearchChannelResult build() {
         cn.wildfirechat.proto.WFCMessage.SearchChannelResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -11860,7 +12184,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.MessageContent build() {
         cn.wildfirechat.proto.WFCMessage.MessageContent result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -13179,7 +13503,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.AddGroupMemberRequest build() {
         cn.wildfirechat.proto.WFCMessage.AddGroupMemberRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -14295,7 +14619,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.CreateGroupRequest build() {
         cn.wildfirechat.proto.WFCMessage.CreateGroupRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -15184,7 +15508,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.DismissGroupRequest build() {
         cn.wildfirechat.proto.WFCMessage.DismissGroupRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -16192,7 +16516,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.FriendRequest build() {
         cn.wildfirechat.proto.WFCMessage.FriendRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -16969,7 +17293,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GeneralResult build() {
         cn.wildfirechat.proto.WFCMessage.GeneralResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -17600,7 +17924,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetUploadTokenResult build() {
         cn.wildfirechat.proto.WFCMessage.GetUploadTokenResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -18338,7 +18662,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.HandleFriendRequest build() {
         cn.wildfirechat.proto.WFCMessage.HandleFriendRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -18861,7 +19185,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.IDBuf build() {
         cn.wildfirechat.proto.WFCMessage.IDBuf result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -19338,7 +19662,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.IDListBuf build() {
         cn.wildfirechat.proto.WFCMessage.IDListBuf result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -20236,7 +20560,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Message build() {
         cn.wildfirechat.proto.WFCMessage.Message result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -22079,7 +22403,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.User build() {
         cn.wildfirechat.proto.WFCMessage.User result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -23794,7 +24118,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Robot build() {
         cn.wildfirechat.proto.WFCMessage.Robot result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -24680,7 +25004,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetRobotsResult build() {
         cn.wildfirechat.proto.WFCMessage.GetRobotsResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -25635,7 +25959,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Thing build() {
         cn.wildfirechat.proto.WFCMessage.Thing result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -26442,7 +26766,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetThingsResult build() {
         cn.wildfirechat.proto.WFCMessage.GetThingsResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -27280,7 +27604,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.UploadDeviceTokenRequest build() {
         cn.wildfirechat.proto.WFCMessage.UploadDeviceTokenRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -28202,7 +28526,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ModifyGroupInfoRequest build() {
         cn.wildfirechat.proto.WFCMessage.ModifyGroupInfoRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -29072,7 +29396,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.InfoEntry build() {
         cn.wildfirechat.proto.WFCMessage.InfoEntry result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -29610,7 +29934,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ModifyMyInfoRequest build() {
         cn.wildfirechat.proto.WFCMessage.ModifyMyInfoRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -30367,7 +30691,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.NotifyMessage build() {
         cn.wildfirechat.proto.WFCMessage.NotifyMessage result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -30984,7 +31308,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullMessageRequest build() {
         cn.wildfirechat.proto.WFCMessage.PullMessageRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -31610,7 +31934,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullMessageResult build() {
         cn.wildfirechat.proto.WFCMessage.PullMessageResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -32386,7 +32710,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullGroupInfoResult build() {
         cn.wildfirechat.proto.WFCMessage.PullGroupInfoResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -33102,7 +33426,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullGroupMemberRequest build() {
         cn.wildfirechat.proto.WFCMessage.PullGroupMemberRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -33640,7 +33964,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullGroupMemberResult build() {
         cn.wildfirechat.proto.WFCMessage.PullGroupMemberResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -34352,7 +34676,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.UserRequest build() {
         cn.wildfirechat.proto.WFCMessage.UserRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -34886,7 +35210,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullUserRequest build() {
         cn.wildfirechat.proto.WFCMessage.PullUserRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -35597,7 +35921,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.UserResult build() {
         cn.wildfirechat.proto.WFCMessage.UserResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -36184,7 +36508,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.PullUserResult build() {
         cn.wildfirechat.proto.WFCMessage.PullUserResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -37001,7 +37325,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.QuitGroupRequest build() {
         cn.wildfirechat.proto.WFCMessage.QuitGroupRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -37917,7 +38241,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.RemoveGroupMemberRequest build() {
         cn.wildfirechat.proto.WFCMessage.RemoveGroupMemberRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -38943,7 +39267,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.TransferGroupRequest build() {
         cn.wildfirechat.proto.WFCMessage.TransferGroupRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -39947,7 +40271,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ModifyGroupMemberAlias build() {
         cn.wildfirechat.proto.WFCMessage.ModifyGroupMemberAlias result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -40895,7 +41219,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.UserSettingEntry build() {
         cn.wildfirechat.proto.WFCMessage.UserSettingEntry result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -41671,7 +41995,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ModifyUserSettingReq build() {
         cn.wildfirechat.proto.WFCMessage.ModifyUserSettingReq result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -42249,7 +42573,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Version build() {
         cn.wildfirechat.proto.WFCMessage.Version result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -42700,7 +43024,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetUserSettingResult build() {
         cn.wildfirechat.proto.WFCMessage.GetUserSettingResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -43534,7 +43858,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.Friend build() {
         cn.wildfirechat.proto.WFCMessage.Friend result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -44199,7 +44523,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetFriendsResult build() {
         cn.wildfirechat.proto.WFCMessage.GetFriendsResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -44885,7 +45209,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetFriendRequestResult build() {
         cn.wildfirechat.proto.WFCMessage.GetFriendRequestResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -45798,7 +46122,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ConnectAckPayload build() {
         cn.wildfirechat.proto.WFCMessage.ConnectAckPayload result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -46708,7 +47032,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.IMHttpWrapper build() {
         cn.wildfirechat.proto.WFCMessage.IMHttpWrapper result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -47486,7 +47810,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.SearchUserRequest build() {
         cn.wildfirechat.proto.WFCMessage.SearchUserRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -48060,7 +48384,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.SearchUserResult build() {
         cn.wildfirechat.proto.WFCMessage.SearchUserResult result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -48772,7 +49096,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetChatroomInfoRequest build() {
         cn.wildfirechat.proto.WFCMessage.GetChatroomInfoRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -49674,7 +49998,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ChatroomInfo build() {
         cn.wildfirechat.proto.WFCMessage.ChatroomInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -50603,7 +50927,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetChatroomMemberInfoRequest build() {
         cn.wildfirechat.proto.WFCMessage.GetChatroomMemberInfoRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -51162,7 +51486,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.ChatroomMemberInfo build() {
         cn.wildfirechat.proto.WFCMessage.ChatroomMemberInfo result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -51671,7 +51995,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.INT64Buf build() {
         cn.wildfirechat.proto.WFCMessage.INT64Buf result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -52152,7 +52476,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.NotifyRecallMessage build() {
         cn.wildfirechat.proto.WFCMessage.NotifyRecallMessage result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -52720,7 +53044,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.BlackUserRequest build() {
         cn.wildfirechat.proto.WFCMessage.BlackUserRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -53832,7 +54156,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.RouteRequest build() {
         cn.wildfirechat.proto.WFCMessage.RouteRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -55058,7 +55382,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.RouteResponse build() {
         cn.wildfirechat.proto.WFCMessage.RouteResponse result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -55702,7 +56026,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.GetTokenRequest build() {
         cn.wildfirechat.proto.WFCMessage.GetTokenRequest result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -56353,7 +56677,7 @@ public final class WFCMessage {
       public cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages build() {
         cn.wildfirechat.proto.WFCMessage.LoadRemoteMessages result = buildPartial();
         if (!result.isInitialized()) {
-          throw Builder.newUninitializedMessageException(result);
+          throw newUninitializedMessageException(result);
         }
         return result;
       }
@@ -56997,149 +57321,151 @@ public final class WFCMessage {
       "\n\020wfcmessage.proto\"6\n\020AddFriendRequest\022\022" +
       "\n\ntarget_uid\030\001 \002(\t\022\016\n\006reason\030\002 \002(\t\":\n\014Co" +
       "nversation\022\014\n\004type\030\001 \002(\005\022\016\n\006target\030\002 \002(\t" +
-      "\022\014\n\004line\030\003 \002(\005\"\255\001\n\tGroupInfo\022\021\n\ttarget_i" +
+      "\022\014\n\004line\030\003 \002(\005\"\370\001\n\tGroupInfo\022\021\n\ttarget_i" +
       "d\030\001 \001(\t\022\014\n\004name\030\002 \002(\t\022\020\n\010portrait\030\003 \001(\t\022" +
       "\r\n\005owner\030\004 \001(\t\022\014\n\004type\030\005 \002(\005\022\024\n\014member_c" +
       "ount\030\006 \001(\005\022\r\n\005extra\030\007 \001(\t\022\021\n\tupdate_dt\030\010" +
-      " \001(\003\022\030\n\020member_update_dt\030\t \001(\003\"P\n\013GroupM" +
-      "ember\022\021\n\tmember_id\030\001 \002(\t\022\r\n\005alias\030\002 \001(\t\022" +
-      "\014\n\004type\030\003 \002(\005\022\021\n\tupdate_dt\030\004 \001(\003\"F\n\005Grou",
-      "p\022\036\n\ngroup_info\030\001 \002(\0132\n.GroupInfo\022\035\n\007mem" +
-      "bers\030\002 \003(\0132\014.GroupMember\"\304\001\n\013ChannelInfo" +
-      "\022\021\n\ttarget_id\030\001 \001(\t\022\014\n\004name\030\002 \002(\t\022\020\n\010por" +
-      "trait\030\003 \001(\t\022\r\n\005owner\030\004 \001(\t\022\016\n\006status\030\005 \001" +
-      "(\005\022\014\n\004desc\030\006 \001(\t\022\r\n\005extra\030\007 \001(\t\022\021\n\tupdat" +
-      "e_dt\030\010 \001(\003\022\016\n\006secret\030\t \001(\t\022\020\n\010callback\030\n" +
-      " \001(\t\022\021\n\tautomatic\030\013 \001(\005\"D\n\021ModifyChannel" +
-      "Info\022\022\n\nchannel_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r" +
-      "\n\005value\030\003 \002(\t\"8\n\017TransferChannel\022\022\n\nchan" +
-      "nel_id\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002(\t\"3\n\017PullC",
-      "hannelInfo\022\022\n\nchannel_id\030\001 \002(\t\022\014\n\004head\030\002" +
-      " \002(\003\"H\n\023PullChannelListener\022\022\n\nchannel_i" +
-      "d\030\001 \002(\t\022\016\n\006offset\030\002 \002(\005\022\r\n\005count\030\003 \002(\005\"R" +
-      "\n\031PullChannelListenerResult\022\023\n\013total_cou" +
-      "nt\030\001 \002(\005\022\016\n\006offset\030\002 \002(\005\022\020\n\010listener\030\003 \003" +
-      "(\t\"3\n\rListenChannel\022\022\n\nchannel_id\030\001 \002(\t\022" +
-      "\016\n\006listen\030\002 \002(\005\"E\n\023SearchChannelResult\022\035" +
-      "\n\007channel\030\001 \003(\0132\014.ChannelInfo\022\017\n\007keyword" +
-      "\030\002 \002(\t\"\373\001\n\016MessageContent\022\014\n\004type\030\001 \002(\005\022" +
-      "\032\n\022searchable_content\030\002 \001(\t\022\024\n\014push_cont",
-      "ent\030\003 \001(\t\022\017\n\007content\030\004 \001(\t\022\014\n\004data\030\005 \001(\014" +
-      "\022\021\n\tmediaType\030\006 \001(\005\022\026\n\016remoteMediaUrl\030\007 " +
-      "\001(\t\022\024\n\014persist_flag\030\010 \001(\005\022\027\n\017expire_dura" +
-      "tion\030\t \001(\005\022\026\n\016mentioned_type\030\n \001(\005\022\030\n\020me" +
-      "ntioned_target\030\013 \003(\t\"\207\001\n\025AddGroupMemberR" +
-      "equest\022\020\n\010group_id\030\001 \002(\t\022\"\n\014added_member" +
-      "\030\002 \003(\0132\014.GroupMember\022\017\n\007to_line\030\003 \003(\005\022\'\n" +
-      "\016notify_content\030\004 \001(\0132\017.MessageContent\"e" +
-      "\n\022CreateGroupRequest\022\025\n\005group\030\001 \002(\0132\006.Gr" +
-      "oup\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003",
-      " \001(\0132\017.MessageContent\"a\n\023DismissGroupReq" +
-      "uest\022\020\n\010group_id\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022" +
-      "\'\n\016notify_content\030\003 \001(\0132\017.MessageContent" +
-      "\"\226\001\n\rFriendRequest\022\020\n\010from_uid\030\001 \001(\t\022\016\n\006" +
-      "to_uid\030\002 \002(\t\022\016\n\006reason\030\003 \002(\t\022\016\n\006status\030\004" +
-      " \001(\005\022\021\n\tupdate_dt\030\005 \001(\003\022\030\n\020from_read_sta" +
-      "tus\030\006 \001(\010\022\026\n\016to_read_status\030\007 \001(\010\"#\n\rGen" +
-      "eralResult\022\022\n\nerror_code\030\001 \002(\005\"S\n\024GetUpl" +
-      "oadTokenResult\022\016\n\006domain\030\001 \002(\t\022\r\n\005token\030" +
-      "\002 \002(\t\022\016\n\006server\030\003 \002(\t\022\014\n\004port\030\004 \001(\005\"9\n\023H",
-      "andleFriendRequest\022\022\n\ntarget_uid\030\001 \002(\t\022\016" +
-      "\n\006status\030\002 \002(\005\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tI" +
-      "DListBuf\022\n\n\002id\030\001 \003(\t\"\256\001\n\007Message\022#\n\014conv" +
-      "ersation\030\001 \002(\0132\r.Conversation\022\021\n\tfrom_us" +
-      "er\030\002 \002(\t\022 \n\007content\030\003 \002(\0132\017.MessageConte" +
-      "nt\022\022\n\nmessage_id\030\004 \001(\003\022\030\n\020server_timesta" +
-      "mp\030\005 \001(\003\022\017\n\007to_user\030\006 \001(\t\022\n\n\002to\030\007 \003(\t\"\332\001" +
-      "\n\004User\022\013\n\003uid\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\024\n\014dis" +
-      "play_name\030\003 \001(\t\022\020\n\010portrait\030\004 \001(\t\022\016\n\006mob" +
-      "ile\030\005 \001(\t\022\r\n\005email\030\006 \001(\t\022\017\n\007address\030\007 \001(",
-      "\t\022\017\n\007company\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\021\n\tupd" +
-      "ate_dt\030\n \001(\003\022\016\n\006gender\030\013 \001(\005\022\016\n\006social\030\014" +
-      " \001(\t\022\014\n\004type\030\r \001(\005\"c\n\005Robot\022\013\n\003uid\030\001 \002(\t" +
-      "\022\r\n\005state\030\002 \002(\005\022\r\n\005owner\030\003 \001(\t\022\016\n\006secret" +
-      "\030\004 \001(\t\022\020\n\010callback\030\005 \001(\t\022\r\n\005extra\030\006 \001(\t\"" +
-      "(\n\017GetRobotsResult\022\025\n\005entry\030\001 \003(\0132\006.Robo" +
-      "t\"P\n\005Thing\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r" +
-      "\n\005token\030\003 \002(\t\022\r\n\005owner\030\004 \001(\t\022\r\n\005extra\030\005 " +
-      "\001(\t\"(\n\017GetThingsResult\022\025\n\005entry\030\001 \003(\0132\006." +
-      "Thing\"g\n\030UploadDeviceTokenRequest\022\020\n\010pla",
-      "tform\030\001 \002(\005\022\020\n\010app_name\030\002 \002(\t\022\024\n\014device_" +
-      "token\030\003 \002(\t\022\021\n\tpush_type\030\004 \002(\005\"\201\001\n\026Modif" +
-      "yGroupInfoRequest\022\020\n\010group_id\030\001 \002(\t\022\014\n\004t" +
-      "ype\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\022\017\n\007to_line\030\004 \003(" +
-      "\005\022\'\n\016notify_content\030\005 \001(\0132\017.MessageConte" +
-      "nt\"(\n\tInfoEntry\022\014\n\004type\030\001 \002(\005\022\r\n\005value\030\002" +
-      " \002(\t\"0\n\023ModifyMyInfoRequest\022\031\n\005entry\030\001 \003" +
-      "(\0132\n.InfoEntry\";\n\rNotifyMessage\022\014\n\004type\030" +
-      "\001 \002(\005\022\014\n\004head\030\002 \002(\003\022\016\n\006target\030\003 \001(\t\"=\n\022P" +
-      "ullMessageRequest\022\n\n\002id\030\001 \002(\003\022\014\n\004type\030\002 ",
-      "\002(\005\022\r\n\005delay\030\003 \001(\003\"M\n\021PullMessageResult\022" +
-      "\031\n\007message\030\001 \003(\0132\010.Message\022\017\n\007current\030\002 " +
-      "\002(\003\022\014\n\004head\030\003 \002(\003\"/\n\023PullGroupInfoResult" +
-      "\022\030\n\004info\030\001 \003(\0132\n.GroupInfo\"6\n\026PullGroupM" +
-      "emberRequest\022\016\n\006target\030\001 \002(\t\022\014\n\004head\030\002 \002" +
-      "(\003\"5\n\025PullGroupMemberResult\022\034\n\006member\030\001 " +
-      "\003(\0132\014.GroupMember\"-\n\013UserRequest\022\013\n\003uid\030" +
-      "\001 \002(\t\022\021\n\tupdate_dt\030\002 \001(\003\"0\n\017PullUserRequ" +
-      "est\022\035\n\007request\030\001 \003(\0132\014.UserRequest\"/\n\nUs" +
-      "erResult\022\023\n\004user\030\001 \002(\0132\005.User\022\014\n\004code\030\002 ",
-      "\002(\005\"-\n\016PullUserResult\022\033\n\006result\030\001 \003(\0132\013." +
-      "UserResult\"^\n\020QuitGroupRequest\022\020\n\010group_" +
-      "id\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_cont" +
-      "ent\030\003 \001(\0132\017.MessageContent\"~\n\030RemoveGrou" +
-      "pMemberRequest\022\020\n\010group_id\030\001 \002(\t\022\026\n\016remo" +
-      "ved_member\030\002 \003(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016not" +
-      "ify_content\030\004 \001(\0132\017.MessageContent\"u\n\024Tr" +
-      "ansferGroupRequest\022\020\n\010group_id\030\001 \002(\t\022\021\n\t" +
-      "new_owner\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016noti" +
-      "fy_content\030\004 \001(\0132\017.MessageContent\"s\n\026Mod",
-      "ifyGroupMemberAlias\022\020\n\010group_id\030\001 \002(\t\022\r\n" +
-      "\005alias\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_" +
-      "content\030\004 \001(\0132\017.MessageContent\"P\n\020UserSe" +
-      "ttingEntry\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r" +
-      "\n\005value\030\003 \002(\t\022\021\n\tupdate_dt\030\004 \002(\003\"A\n\024Modi" +
-      "fyUserSettingReq\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002" +
-      " \002(\t\022\r\n\005value\030\003 \002(\t\"\032\n\007Version\022\017\n\007versio" +
-      "n\030\001 \002(\003\"8\n\024GetUserSettingResult\022 \n\005entry" +
-      "\030\001 \003(\0132\021.UserSettingEntry\"F\n\006Friend\022\013\n\003u" +
-      "id\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\021\n\tupdate_dt\030\003 \002",
-      "(\003\022\r\n\005alias\030\004 \001(\t\"*\n\020GetFriendsResult\022\026\n" +
-      "\005entry\030\001 \003(\0132\007.Friend\"7\n\026GetFriendReques" +
-      "tResult\022\035\n\005entry\030\001 \003(\0132\016.FriendRequest\"\243" +
-      "\001\n\021ConnectAckPayload\022\020\n\010msg_head\030\001 \001(\003\022\023" +
-      "\n\013friend_head\030\002 \001(\003\022\026\n\016friend_rq_head\030\003 " +
-      "\001(\003\022\024\n\014setting_head\030\004 \001(\003\022\021\n\tnode_addr\030\005" +
-      " \001(\t\022\021\n\tnode_port\030\006 \001(\005\022\023\n\013server_time\030\007" +
-      " \001(\003\"P\n\rIMHttpWrapper\022\r\n\005token\030\001 \002(\t\022\021\n\t" +
-      "client_id\030\002 \002(\t\022\017\n\007request\030\003 \002(\t\022\014\n\004data" +
-      "\030\004 \001(\014\"A\n\021SearchUserRequest\022\017\n\007keyword\030\001",
-      " \002(\t\022\r\n\005fuzzy\030\002 \001(\005\022\014\n\004page\030\003 \001(\005\"(\n\020Sea" +
-      "rchUserResult\022\024\n\005entry\030\001 \003(\0132\005.User\"@\n\026G" +
-      "etChatroomInfoRequest\022\023\n\013chatroom_id\030\001 \002" +
-      "(\t\022\021\n\tupdate_dt\030\002 \001(\003\"\227\001\n\014ChatroomInfo\022\r" +
-      "\n\005title\030\001 \002(\t\022\014\n\004desc\030\002 \001(\t\022\020\n\010portrait\030" +
-      "\003 \001(\t\022\024\n\014member_count\030\004 \001(\005\022\021\n\tcreate_dt" +
-      "\030\005 \001(\003\022\021\n\tupdate_dt\030\006 \001(\003\022\r\n\005extra\030\007 \001(\t" +
-      "\022\r\n\005state\030\010 \001(\005\"F\n\034GetChatroomMemberInfo" +
-      "Request\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n\tmax_coun" +
-      "t\030\002 \001(\005\";\n\022ChatroomMemberInfo\022\024\n\014member_",
-      "count\030\001 \001(\005\022\017\n\007members\030\002 \003(\t\"\026\n\010INT64Buf" +
-      "\022\n\n\002id\030\001 \002(\003\"4\n\023NotifyRecallMessage\022\n\n\002i" +
-      "d\030\001 \002(\003\022\021\n\tfrom_user\030\002 \002(\t\"/\n\020BlackUserR" +
-      "equest\022\013\n\003uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005\"\323\001\n\014" +
-      "RouteRequest\022\013\n\003app\030\001 \001(\t\022\020\n\010platform\030\002 " +
-      "\001(\005\022\021\n\tpush_type\030\003 \001(\005\022\023\n\013device_name\030\004 " +
-      "\001(\t\022\026\n\016device_version\030\005 \001(\t\022\022\n\nphone_nam" +
-      "e\030\006 \001(\t\022\020\n\010language\030\007 \001(\t\022\024\n\014carrier_nam" +
-      "e\030\010 \001(\t\022\023\n\013app_version\030\t \001(\t\022\023\n\013sdk_vers" +
-      "ion\030\n \001(\t\"D\n\rRouteResponse\022\014\n\004host\030\001 \002(\t",
-      "\022\021\n\tlong_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"" +
-      "5\n\017GetTokenRequest\022\017\n\007user_id\030\001 \002(\t\022\021\n\tc" +
-      "lient_id\030\002 \002(\t\"\\\n\022LoadRemoteMessages\022#\n\014" +
-      "conversation\030\001 \002(\0132\r.Conversation\022\022\n\nbef" +
-      "ore_uid\030\002 \002(\003\022\r\n\005count\030\003 \002(\005B#\n\025cn.wildf" +
-      "irechat.protoB\nWFCMessage"
+      " \001(\003\022\030\n\020member_update_dt\030\t \001(\003\022\014\n\004mute\030\n" +
+      " \001(\005\022\021\n\tjoin_type\030\013 \001(\005\022\024\n\014private_chat\030" +
+      "\014 \001(\005\022\022\n\nsearchable\030\r \001(\005\"P\n\013GroupMember",
+      "\022\021\n\tmember_id\030\001 \002(\t\022\r\n\005alias\030\002 \001(\t\022\014\n\004ty" +
+      "pe\030\003 \002(\005\022\021\n\tupdate_dt\030\004 \001(\003\"F\n\005Group\022\036\n\n" +
+      "group_info\030\001 \002(\0132\n.GroupInfo\022\035\n\007members\030" +
+      "\002 \003(\0132\014.GroupMember\"\304\001\n\013ChannelInfo\022\021\n\tt" +
+      "arget_id\030\001 \001(\t\022\014\n\004name\030\002 \002(\t\022\020\n\010portrait" +
+      "\030\003 \001(\t\022\r\n\005owner\030\004 \001(\t\022\016\n\006status\030\005 \001(\005\022\014\n" +
+      "\004desc\030\006 \001(\t\022\r\n\005extra\030\007 \001(\t\022\021\n\tupdate_dt\030" +
+      "\010 \001(\003\022\016\n\006secret\030\t \001(\t\022\020\n\010callback\030\n \001(\t\022" +
+      "\021\n\tautomatic\030\013 \001(\005\"D\n\021ModifyChannelInfo\022" +
+      "\022\n\nchannel_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r\n\005val",
+      "ue\030\003 \002(\t\"8\n\017TransferChannel\022\022\n\nchannel_i" +
+      "d\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002(\t\"3\n\017PullChanne" +
+      "lInfo\022\022\n\nchannel_id\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"" +
+      "H\n\023PullChannelListener\022\022\n\nchannel_id\030\001 \002" +
+      "(\t\022\016\n\006offset\030\002 \002(\005\022\r\n\005count\030\003 \002(\005\"R\n\031Pul" +
+      "lChannelListenerResult\022\023\n\013total_count\030\001 " +
+      "\002(\005\022\016\n\006offset\030\002 \002(\005\022\020\n\010listener\030\003 \003(\t\"3\n" +
+      "\rListenChannel\022\022\n\nchannel_id\030\001 \002(\t\022\016\n\006li" +
+      "sten\030\002 \002(\005\"E\n\023SearchChannelResult\022\035\n\007cha" +
+      "nnel\030\001 \003(\0132\014.ChannelInfo\022\017\n\007keyword\030\002 \002(",
+      "\t\"\373\001\n\016MessageContent\022\014\n\004type\030\001 \002(\005\022\032\n\022se" +
+      "archable_content\030\002 \001(\t\022\024\n\014push_content\030\003" +
+      " \001(\t\022\017\n\007content\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\022\021\n\tm" +
+      "ediaType\030\006 \001(\005\022\026\n\016remoteMediaUrl\030\007 \001(\t\022\024" +
+      "\n\014persist_flag\030\010 \001(\005\022\027\n\017expire_duration\030" +
+      "\t \001(\005\022\026\n\016mentioned_type\030\n \001(\005\022\030\n\020mention" +
+      "ed_target\030\013 \003(\t\"\207\001\n\025AddGroupMemberReques" +
+      "t\022\020\n\010group_id\030\001 \002(\t\022\"\n\014added_member\030\002 \003(" +
+      "\0132\014.GroupMember\022\017\n\007to_line\030\003 \003(\005\022\'\n\016noti" +
+      "fy_content\030\004 \001(\0132\017.MessageContent\"e\n\022Cre",
+      "ateGroupRequest\022\025\n\005group\030\001 \002(\0132\006.Group\022\017" +
+      "\n\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003 \001(\0132" +
+      "\017.MessageContent\"a\n\023DismissGroupRequest\022" +
+      "\020\n\010group_id\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016no" +
+      "tify_content\030\003 \001(\0132\017.MessageContent\"\226\001\n\r" +
+      "FriendRequest\022\020\n\010from_uid\030\001 \001(\t\022\016\n\006to_ui" +
+      "d\030\002 \002(\t\022\016\n\006reason\030\003 \002(\t\022\016\n\006status\030\004 \001(\005\022" +
+      "\021\n\tupdate_dt\030\005 \001(\003\022\030\n\020from_read_status\030\006" +
+      " \001(\010\022\026\n\016to_read_status\030\007 \001(\010\"#\n\rGeneralR" +
+      "esult\022\022\n\nerror_code\030\001 \002(\005\"S\n\024GetUploadTo",
+      "kenResult\022\016\n\006domain\030\001 \002(\t\022\r\n\005token\030\002 \002(\t" +
+      "\022\016\n\006server\030\003 \002(\t\022\014\n\004port\030\004 \001(\005\"9\n\023Handle" +
+      "FriendRequest\022\022\n\ntarget_uid\030\001 \002(\t\022\016\n\006sta" +
+      "tus\030\002 \002(\005\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tIDList" +
+      "Buf\022\n\n\002id\030\001 \003(\t\"\256\001\n\007Message\022#\n\014conversat" +
+      "ion\030\001 \002(\0132\r.Conversation\022\021\n\tfrom_user\030\002 " +
+      "\002(\t\022 \n\007content\030\003 \002(\0132\017.MessageContent\022\022\n" +
+      "\nmessage_id\030\004 \001(\003\022\030\n\020server_timestamp\030\005 " +
+      "\001(\003\022\017\n\007to_user\030\006 \001(\t\022\n\n\002to\030\007 \003(\t\"\332\001\n\004Use" +
+      "r\022\013\n\003uid\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\024\n\014display_",
+      "name\030\003 \001(\t\022\020\n\010portrait\030\004 \001(\t\022\016\n\006mobile\030\005" +
+      " \001(\t\022\r\n\005email\030\006 \001(\t\022\017\n\007address\030\007 \001(\t\022\017\n\007" +
+      "company\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\021\n\tupdate_d" +
+      "t\030\n \001(\003\022\016\n\006gender\030\013 \001(\005\022\016\n\006social\030\014 \001(\t\022" +
+      "\014\n\004type\030\r \001(\005\"c\n\005Robot\022\013\n\003uid\030\001 \002(\t\022\r\n\005s" +
+      "tate\030\002 \002(\005\022\r\n\005owner\030\003 \001(\t\022\016\n\006secret\030\004 \001(" +
+      "\t\022\020\n\010callback\030\005 \001(\t\022\r\n\005extra\030\006 \001(\t\"(\n\017Ge" +
+      "tRobotsResult\022\025\n\005entry\030\001 \003(\0132\006.Robot\"P\n\005" +
+      "Thing\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r\n\005tok" +
+      "en\030\003 \002(\t\022\r\n\005owner\030\004 \001(\t\022\r\n\005extra\030\005 \001(\t\"(",
+      "\n\017GetThingsResult\022\025\n\005entry\030\001 \003(\0132\006.Thing" +
+      "\"g\n\030UploadDeviceTokenRequest\022\020\n\010platform" +
+      "\030\001 \002(\005\022\020\n\010app_name\030\002 \002(\t\022\024\n\014device_token" +
+      "\030\003 \002(\t\022\021\n\tpush_type\030\004 \002(\005\"\201\001\n\026ModifyGrou" +
+      "pInfoRequest\022\020\n\010group_id\030\001 \002(\t\022\014\n\004type\030\002" +
+      " \002(\005\022\r\n\005value\030\003 \002(\t\022\017\n\007to_line\030\004 \003(\005\022\'\n\016" +
+      "notify_content\030\005 \001(\0132\017.MessageContent\"(\n" +
+      "\tInfoEntry\022\014\n\004type\030\001 \002(\005\022\r\n\005value\030\002 \002(\t\"" +
+      "0\n\023ModifyMyInfoRequest\022\031\n\005entry\030\001 \003(\0132\n." +
+      "InfoEntry\";\n\rNotifyMessage\022\014\n\004type\030\001 \002(\005",
+      "\022\014\n\004head\030\002 \002(\003\022\016\n\006target\030\003 \001(\t\"=\n\022PullMe" +
+      "ssageRequest\022\n\n\002id\030\001 \002(\003\022\014\n\004type\030\002 \002(\005\022\r" +
+      "\n\005delay\030\003 \001(\003\"M\n\021PullMessageResult\022\031\n\007me" +
+      "ssage\030\001 \003(\0132\010.Message\022\017\n\007current\030\002 \002(\003\022\014" +
+      "\n\004head\030\003 \002(\003\"/\n\023PullGroupInfoResult\022\030\n\004i" +
+      "nfo\030\001 \003(\0132\n.GroupInfo\"6\n\026PullGroupMember" +
+      "Request\022\016\n\006target\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"5\n" +
+      "\025PullGroupMemberResult\022\034\n\006member\030\001 \003(\0132\014" +
+      ".GroupMember\"-\n\013UserRequest\022\013\n\003uid\030\001 \002(\t" +
+      "\022\021\n\tupdate_dt\030\002 \001(\003\"0\n\017PullUserRequest\022\035",
+      "\n\007request\030\001 \003(\0132\014.UserRequest\"/\n\nUserRes" +
+      "ult\022\023\n\004user\030\001 \002(\0132\005.User\022\014\n\004code\030\002 \002(\005\"-" +
+      "\n\016PullUserResult\022\033\n\006result\030\001 \003(\0132\013.UserR" +
+      "esult\"^\n\020QuitGroupRequest\022\020\n\010group_id\030\001 " +
+      "\002(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003" +
+      " \001(\0132\017.MessageContent\"~\n\030RemoveGroupMemb" +
+      "erRequest\022\020\n\010group_id\030\001 \002(\t\022\026\n\016removed_m" +
+      "ember\030\002 \003(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_c" +
+      "ontent\030\004 \001(\0132\017.MessageContent\"u\n\024Transfe" +
+      "rGroupRequest\022\020\n\010group_id\030\001 \002(\t\022\021\n\tnew_o",
+      "wner\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_co" +
+      "ntent\030\004 \001(\0132\017.MessageContent\"s\n\026ModifyGr" +
+      "oupMemberAlias\022\020\n\010group_id\030\001 \002(\t\022\r\n\005alia" +
+      "s\030\002 \002(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_conte" +
+      "nt\030\004 \001(\0132\017.MessageContent\"P\n\020UserSetting" +
+      "Entry\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r\n\005val" +
+      "ue\030\003 \002(\t\022\021\n\tupdate_dt\030\004 \002(\003\"A\n\024ModifyUse" +
+      "rSettingReq\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022" +
+      "\r\n\005value\030\003 \002(\t\"\032\n\007Version\022\017\n\007version\030\001 \002" +
+      "(\003\"8\n\024GetUserSettingResult\022 \n\005entry\030\001 \003(",
+      "\0132\021.UserSettingEntry\"F\n\006Friend\022\013\n\003uid\030\001 " +
+      "\002(\t\022\r\n\005state\030\002 \002(\005\022\021\n\tupdate_dt\030\003 \002(\003\022\r\n" +
+      "\005alias\030\004 \001(\t\"*\n\020GetFriendsResult\022\026\n\005entr" +
+      "y\030\001 \003(\0132\007.Friend\"7\n\026GetFriendRequestResu" +
+      "lt\022\035\n\005entry\030\001 \003(\0132\016.FriendRequest\"\243\001\n\021Co" +
+      "nnectAckPayload\022\020\n\010msg_head\030\001 \001(\003\022\023\n\013fri" +
+      "end_head\030\002 \001(\003\022\026\n\016friend_rq_head\030\003 \001(\003\022\024" +
+      "\n\014setting_head\030\004 \001(\003\022\021\n\tnode_addr\030\005 \001(\t\022" +
+      "\021\n\tnode_port\030\006 \001(\005\022\023\n\013server_time\030\007 \001(\003\"" +
+      "P\n\rIMHttpWrapper\022\r\n\005token\030\001 \002(\t\022\021\n\tclien",
+      "t_id\030\002 \002(\t\022\017\n\007request\030\003 \002(\t\022\014\n\004data\030\004 \001(" +
+      "\014\"A\n\021SearchUserRequest\022\017\n\007keyword\030\001 \002(\t\022" +
+      "\r\n\005fuzzy\030\002 \001(\005\022\014\n\004page\030\003 \001(\005\"(\n\020SearchUs" +
+      "erResult\022\024\n\005entry\030\001 \003(\0132\005.User\"@\n\026GetCha" +
+      "troomInfoRequest\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n" +
+      "\tupdate_dt\030\002 \001(\003\"\227\001\n\014ChatroomInfo\022\r\n\005tit" +
+      "le\030\001 \002(\t\022\014\n\004desc\030\002 \001(\t\022\020\n\010portrait\030\003 \001(\t" +
+      "\022\024\n\014member_count\030\004 \001(\005\022\021\n\tcreate_dt\030\005 \001(" +
+      "\003\022\021\n\tupdate_dt\030\006 \001(\003\022\r\n\005extra\030\007 \001(\t\022\r\n\005s" +
+      "tate\030\010 \001(\005\"F\n\034GetChatroomMemberInfoReque",
+      "st\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n\tmax_count\030\002 \001" +
+      "(\005\";\n\022ChatroomMemberInfo\022\024\n\014member_count" +
+      "\030\001 \001(\005\022\017\n\007members\030\002 \003(\t\"\026\n\010INT64Buf\022\n\n\002i" +
+      "d\030\001 \002(\003\"4\n\023NotifyRecallMessage\022\n\n\002id\030\001 \002" +
+      "(\003\022\021\n\tfrom_user\030\002 \002(\t\"/\n\020BlackUserReques" +
+      "t\022\013\n\003uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005\"\323\001\n\014Route" +
+      "Request\022\013\n\003app\030\001 \001(\t\022\020\n\010platform\030\002 \001(\005\022\021" +
+      "\n\tpush_type\030\003 \001(\005\022\023\n\013device_name\030\004 \001(\t\022\026" +
+      "\n\016device_version\030\005 \001(\t\022\022\n\nphone_name\030\006 \001" +
+      "(\t\022\020\n\010language\030\007 \001(\t\022\024\n\014carrier_name\030\010 \001",
+      "(\t\022\023\n\013app_version\030\t \001(\t\022\023\n\013sdk_version\030\n" +
+      " \001(\t\"D\n\rRouteResponse\022\014\n\004host\030\001 \002(\t\022\021\n\tl" +
+      "ong_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"5\n\017Ge" +
+      "tTokenRequest\022\017\n\007user_id\030\001 \002(\t\022\021\n\tclient" +
+      "_id\030\002 \002(\t\"\\\n\022LoadRemoteMessages\022#\n\014conve" +
+      "rsation\030\001 \002(\0132\r.Conversation\022\022\n\nbefore_u" +
+      "id\030\002 \002(\003\022\r\n\005count\030\003 \002(\005B#\n\025cn.wildfirech" +
+      "at.protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -57163,7 +57489,7 @@ public final class WFCMessage {
           internal_static_GroupInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GroupInfo_descriptor,
-              new java.lang.String[] { "TargetId", "Name", "Portrait", "Owner", "Type", "MemberCount", "Extra", "UpdateDt", "MemberUpdateDt", });
+              new java.lang.String[] { "TargetId", "Name", "Portrait", "Owner", "Type", "MemberCount", "Extra", "UpdateDt", "MemberUpdateDt", "Mute", "JoinType", "PrivateChat", "Searchable", });
           internal_static_GroupMember_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_GroupMember_fieldAccessorTable = new
