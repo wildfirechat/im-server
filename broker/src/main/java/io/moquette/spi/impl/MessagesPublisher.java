@@ -308,7 +308,7 @@ public class MessagesPublisher {
                     }
 
                     if (isSlient) {
-                        LOG.info("The conversation is slient");
+                        LOG.info("Slient of user or conversation");
                         continue;
                     }
 

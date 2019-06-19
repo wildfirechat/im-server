@@ -1871,7 +1871,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (entry.getScope() == request.getScope() && entry.getKey().equals(request.getKey())) {
                 userSettingMap.remove(userId, entry);
                 userSettingMap.put(userId, settingEntry);
-                return updateDt;
+                break;
             }
         }
 
