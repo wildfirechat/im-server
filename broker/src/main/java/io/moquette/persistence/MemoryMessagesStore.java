@@ -1165,7 +1165,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         } else {
             mUserMap.put(userId, status);
         }
-        databaseStore.updateUserStatus(userId, status);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 

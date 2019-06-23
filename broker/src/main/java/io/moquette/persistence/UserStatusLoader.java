@@ -27,7 +27,7 @@ public class UserStatusLoader implements MapStore<String, Integer> {
 
     @Override
     public void delete(String s) {
-        getDatabaseStore().deleteUser(s);
+        getDatabaseStore().deleteUserStatus(s);
     }
 
     @Override

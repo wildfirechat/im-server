@@ -143,6 +143,26 @@ public class Main {
             System.exit(-1);
         }
 
+        resultVoid =UserAdmin.updateUserBlockStatus(userInfo.getUserId(), 0);
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        resultCheckUserStatus = UserAdmin.checkUserBlockStatus(userInfo.getUserId());
+        if (resultCheckUserStatus != null && resultCheckUserStatus.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (resultCheckUserStatus.getResult().getStatus() == 0) {
+                System.out.println("check user status success");
+            } else {
+                System.out.println("user status not correct");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
 
         //***********************************************
         //****  群组相关功能

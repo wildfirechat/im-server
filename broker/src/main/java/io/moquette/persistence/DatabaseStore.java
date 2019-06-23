@@ -1623,6 +1623,27 @@ public class DatabaseStore {
         });
     }
 
+    void deleteUserStatus(String userId) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+                String sql = "delete from t_user_status where _uid = ?";
+                statement = connection.prepareStatement(sql);
+                statement.setString(1, userId);
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
     void updateUserStatus(String userId, int status) {
         mScheduler.execute(()->{
             Connection connection = null;

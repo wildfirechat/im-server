@@ -45,7 +45,7 @@ public class BlockUserAction extends AdminAction {
                 result = RestResult.resultOf(errorCode);
                 response.setContent(new Gson().toJson(result));
 
-                if (inputUserBlock.getStatus() != 0) {
+                if (inputUserBlock.getStatus() == 2) {
                     RPCCenter.getInstance().sendRequest(null, null, RPCCenter.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), inputUserBlock.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
                 }
 
