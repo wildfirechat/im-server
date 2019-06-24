@@ -1694,6 +1694,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (friendData == null) {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
+        friendsMap.remove(fromUser, friendData);
 
         friendData.setAlias(alias);
         friendData.setTimestamp(System.currentTimeMillis());
