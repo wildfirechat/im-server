@@ -87,6 +87,10 @@ public class ProtoConstants {
         int Modify_Group_Name = 0;
         int Modify_Group_Portrait = 1;
         int Modify_Group_Extra = 2;
+        int Modify_Group_Mute = 3;
+        int Modify_Group_JoinType = 4;
+        int Modify_Group_PrivateChat = 5;
+        int Modify_Group_Searchable = 6;
     }
 
     //ModifyGroupInfoRequest -> type
