@@ -14,9 +14,8 @@ import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 
-import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.Modify_Group_Name;
-import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.Modify_Group_Portrait;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
+import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
 import static win.liyufan.im.IMTopic.ModifyGroupInfoTopic;
 
 @Handler(value = ModifyGroupInfoTopic)
@@ -33,6 +32,14 @@ public class ModifyGroupInfoHandler extends GroupHandler<WFCMessage.ModifyGroupI
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupNameNotifyContent();
                 } else if(request.getType() == Modify_Group_Portrait) {
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getChangeGroupPortraitNotifyContent();
+                } else if(request.getType() == Modify_Group_Mute) {
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupMuteNotifyContent();
+                } else if(request.getType() == Modify_Group_JoinType) {
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupJointypeNotifyContent();
+                } else if(request.getType() == Modify_Group_PrivateChat) {
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupPrivatechatNotifyContent();
+                } else if(request.getType() == Modify_Group_Searchable) {
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupSearchableNotifyContent();
                 }
 
                 if (content != null) {

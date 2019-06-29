@@ -22,7 +22,7 @@ public class AddGroupMember extends GroupHandler<WFCMessage.AddGroupMemberReques
 
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
-        ErrorCode errorCode = m_messagesStore.addGroupMembers(fromUser, request.getGroupId(), request.getAddedMemberList());
+        ErrorCode errorCode = m_messagesStore.addGroupMembers(fromUser, isAdmin, request.getGroupId(), request.getAddedMemberList());
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());

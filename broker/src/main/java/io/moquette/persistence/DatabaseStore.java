@@ -793,7 +793,11 @@ public class DatabaseStore {
                     ", `_extra`" +
                     ", `_dt`" +
                     ", `_member_count`" +
-                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    ", `_mute`" +
+                    ", `_join_type`" +
+                    ", `_private_chat`" +
+                    ", `_searchable`" +
+                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_name` = ?," +
                     "`_portrait` = ?," +
@@ -802,6 +806,10 @@ public class DatabaseStore {
                     "`_extra` = ?," +
                     "`_dt` = ?," +
                     "`_member_count` = ?," +
+                    "`_mute` = ?" +
+                    ", `_join_type` = ?" +
+                    ", `_private_chat` = ?" +
+                    ", `_searchable` = ?, " +
                     "`_member_dt` = ?";
 
 
@@ -816,6 +824,10 @@ public class DatabaseStore {
                 statement.setString(index++, groupInfo.getExtra());
                 statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
                 statement.setInt(index++, groupInfo.getMemberCount());
+                statement.setInt(index++, groupInfo.getMute());
+                statement.setInt(index++, groupInfo.getJoinType());
+                statement.setInt(index++, groupInfo.getPrivateChat());
+                statement.setInt(index++, groupInfo.getSearchable());
                 statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
 
                 statement.setString(index++, groupInfo.getName());
@@ -825,6 +837,10 @@ public class DatabaseStore {
                 statement.setString(index++, groupInfo.getExtra());
                 statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
                 statement.setInt(index++, groupInfo.getMemberCount());
+                statement.setInt(index++, groupInfo.getMute());
+                statement.setInt(index++, groupInfo.getJoinType());
+                statement.setInt(index++, groupInfo.getPrivateChat());
+                statement.setInt(index++, groupInfo.getSearchable());
                 statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
@@ -1155,6 +1171,10 @@ public class DatabaseStore {
                 ", `_dt`" +
                 ", `_member_count`" +
                 ", `_member_dt`" +
+                ", `_mute`" +
+                ", `_join_type`" +
+                ", `_private_chat`" +
+                ", `_searchable`" +
                 " from t_group  where `_gid` = ?";
 
             statement = connection.prepareStatement(sql);
@@ -1190,17 +1210,26 @@ public class DatabaseStore {
                 strValue = (strValue == null ? "" : strValue);
                 builder.setExtra(strValue);
 
-
-
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
-
 
                 intValue = rs.getInt(index++);
                 builder.setMemberCount(intValue);
 
                 longValue = rs.getLong(index++);
                 builder.setMemberUpdateDt(longValue);
+
+                intValue = rs.getInt(index++);
+                builder.setMute(intValue);
+
+                intValue = rs.getInt(index++);
+                builder.setJoinType(intValue);
+
+                intValue = rs.getInt(index++);
+                builder.setPrivateChat(intValue);
+
+                intValue = rs.getInt(index++);
+                builder.setSearchable(intValue);
 
                 return builder.build();
             }

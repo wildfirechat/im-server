@@ -42,6 +42,7 @@ public enum ErrorCode {
 
     ERROR_CODE_NOT_IN_CHANNEL(21, "not in channel"),
 
+    ERROR_CODE_GROUP_MUTED(241, "group is muted"),
     ERROR_CODE_SENSITIVE_MATCHED(242, "sensitive matched"),
     ERROR_CODE_SIGN_EXPIRED(243, "sign expired"),
     ERROR_CODE_AUTH_FAILURE(244, "auth failure"),

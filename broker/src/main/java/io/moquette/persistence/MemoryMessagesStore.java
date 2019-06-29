@@ -49,10 +49,9 @@ import java.util.function.Consumer;
 
 
 import static cn.wildfirechat.proto.ProtoConstants.ChannelStatus.Channel_Status_Destoryed;
+import static cn.wildfirechat.proto.ProtoConstants.GroupMemberType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyChannelInfoType.*;
-import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.Modify_Group_Extra;
-import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.Modify_Group_Name;
-import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.Modify_Group_Portrait;
+import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.BrokerConstants.*;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
@@ -197,7 +196,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
                 for (WFCMessage.GroupMember member : members) {
-                    if (member.getType() != ProtoConstants.GroupMemberType.GroupMemberType_Removed) {
+                    if (member.getType() != GroupMemberType_Removed) {
                         notifyReceivers.add(member.getMemberId());
                     }
                 }
@@ -603,19 +602,25 @@ public class MemoryMessagesStore implements IMessagesStore {
         mIMap.put(groupId, groupInfo);
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
+        List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
-            member = member.toBuilder().setUpdateDt(dt).build();
+            if (member.getMemberId().equals(groupInfo.getOwner())) {
+                member = member.toBuilder().setUpdateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            } else {
+                member = member.toBuilder().setUpdateDt(dt).build();
+            }
             groupMembers.put(groupId, member);
+            updatedMemberList.add(member);
         }
 
-        databaseStore.persistGroupMember(groupId, memberList);
+        databaseStore.persistGroupMember(groupId, updatedMemberList);
 
         return groupInfo;
     }
 
 
     @Override
-    public ErrorCode addGroupMembers(String operator, String groupId, List<WFCMessage.GroupMember> memberList) {
+    public ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -628,6 +633,22 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+
+        if (!isAdmin) {
+            boolean isMember = false;
+            for (WFCMessage.GroupMember member : memberList) {
+                if (member.getType() == GroupMemberType_Removed) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                } else if(member.getType() == GroupMemberType_Silent) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+                isMember = true;
+                break;
+            }
+            if (!isMember) {
+                return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+            }
+        }
 
         long updateDt = System.currentTimeMillis();
 
@@ -652,7 +673,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         int count = 0;
         for (WFCMessage.GroupMember member : groupMembers.get(groupId)) {
-            if (member.getType() != ProtoConstants.GroupMemberType.GroupMemberType_Removed) {
+            if (member.getType() != GroupMemberType_Removed) {
                 count++;
             }
         }
@@ -688,7 +709,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 boolean removed = groupMembers.remove(groupId, member);
                 if (removed) {
                     removeCount++;
-                    member = member.toBuilder().setType(ProtoConstants.GroupMemberType.GroupMemberType_Removed).setUpdateDt(updateDt).build();
+                    member = member.toBuilder().setType(GroupMemberType_Removed).setUpdateDt(updateDt).build();
                     groupMembers.put(groupId, member);
                     list.add(member);
                 }
@@ -739,7 +760,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                     databaseStore.persistGroupMember(groupId, list);
 
                     databaseStore.updateGroupMemberCountDt(groupId, groupInfo.getMemberCount()-1, updateDt);
-                    member = member.toBuilder().setType(ProtoConstants.GroupMemberType.GroupMemberType_Removed).setUpdateDt(updateDt).build();
+                    member = member.toBuilder().setType(GroupMemberType_Removed).setUpdateDt(updateDt).build();
                     groupMembers.put(groupId, member);
                 }
                 break;
@@ -818,6 +839,16 @@ public class MemoryMessagesStore implements IMessagesStore {
             newInfoBuilder.setPortrait(value);
         else if(modifyType == Modify_Group_Extra)
             newInfoBuilder.setExtra(value);
+        else if(modifyType == Modify_Group_Mute)
+            newInfoBuilder.setMute(Integer.parseInt(value));
+        else if(modifyType == Modify_Group_JoinType)
+            newInfoBuilder.setJoinType(Integer.parseInt(value));
+        else if(modifyType == Modify_Group_PrivateChat)
+            newInfoBuilder.setPrivateChat(Integer.parseInt(value));
+        else if(modifyType == Modify_Group_Searchable)
+            newInfoBuilder.setSearchable(Integer.parseInt(value));
+        else
+            return ErrorCode.INVALID_PARAMETER;
 
 
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
@@ -951,7 +982,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         for (WFCMessage.GroupMember member : members
             ) {
-            if (member.getMemberId().equals(memberId) && member.getType() != ProtoConstants.GroupMemberType.GroupMemberType_Removed)
+            if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed)
                 return true;
         }
 
@@ -959,19 +990,37 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public boolean isForbiddenInGroup(String memberId, String groupId) {
+    public ErrorCode canSendMessageInGroup(String memberId, String groupId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        IMap<String, WFCMessage.GroupInfo> groups = hzInstance.getMap(GROUPS_MAP);
+        WFCMessage.GroupInfo groupInfo = groups.get(groupId);
+        boolean isMute = false;
+        if (groupInfo != null) {
+            isMute = groupInfo.getMute()>0;
+        }
 
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
 
         for (WFCMessage.GroupMember member : members
             ) {
-            if (member.getMemberId().equals(memberId) && member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Silent)
-                return true;
+            if (member.getMemberId().equals(memberId)) {
+                if (member.getType() == GroupMemberType_Silent) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+
+                if (isMute && member.getType() != GroupMemberType_Manager && member.getType() != GroupMemberType_Owner) {
+                    return ErrorCode.ERROR_CODE_GROUP_MUTED;
+                }
+
+                if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                }
+            }
+
         }
 
-        return false;
+        return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
     @Override
@@ -1002,7 +1051,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
                 for (WFCMessage.GroupMember member : members) {
                     if (member.getMemberId().equals(operatorId)) {
-                        if (member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
+                        if (member.getType() == GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
                             canRecall = true;
                         }
                         break;

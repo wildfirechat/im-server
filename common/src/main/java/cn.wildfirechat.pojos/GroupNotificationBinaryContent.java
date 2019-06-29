@@ -22,13 +22,13 @@ public class GroupNotificationBinaryContent {
     //operator
     private String o;
 
-    //name
+    //value1(name or something)
     private String n;
 
     //members
     private List<String> ms;
 
-    //members
+    //value2(member or something)
     private String m;
 
     public GroupNotificationBinaryContent(String g, String o, String n, String m) {
@@ -124,4 +124,21 @@ public class GroupNotificationBinaryContent {
     public WFCMessage.MessageContent getModifyGroupMemberAliasNotifyContent() {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_MODIFY_GROUP_ALIAS);
     }
+
+    public WFCMessage.MessageContent getChangeGroupMuteNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_MUTE);
+    }
+
+    public WFCMessage.MessageContent getChangeGroupJointypeNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_JOINTYPE);
+    }
+
+    public WFCMessage.MessageContent getChangeGroupPrivatechatNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_PRIVATECHAT);
+    }
+
+    public WFCMessage.MessageContent getChangeGroupSearchableNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_SEARCHABLE);
+    }
+
 }

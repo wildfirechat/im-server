@@ -103,7 +103,7 @@ public interface IMessagesStore {
     WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count);
     long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String userId, long messageId);
     WFCMessage.GroupInfo createGroup(String operator, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList);
-    ErrorCode addGroupMembers(String operator, String groupId, List<WFCMessage.GroupMember> memberList);
+    ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList);
     ErrorCode kickoffGroupMembers(String operator, String groupId, List<String> memberList);
     ErrorCode quitGroup(String operator, String groupId);
     ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
@@ -114,7 +114,7 @@ public interface IMessagesStore {
     ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members);
     ErrorCode transferGroup(String operator, String groupId, String newOwner, boolean isAdmin);
     boolean isMemberInGroup(String member, String groupId);
-    boolean isForbiddenInGroup(String member, String groupId);
+    ErrorCode canSendMessageInGroup(String member, String groupId);
 
     ErrorCode recallMessage(long messageUid, String operatorId);
 
