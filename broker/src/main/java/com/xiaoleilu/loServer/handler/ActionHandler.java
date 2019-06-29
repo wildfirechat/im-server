@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Action处理单元
- * 
+ *
  * @author Looly
  */
 abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
@@ -45,7 +45,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 		try {
 			//do filter
 			boolean isPass = this.doFilter(request, response);
-			
+
 			if(isPass){
 				//do action
 				this.doAction(ctx, request, response);
@@ -64,10 +64,10 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
             ctx.fireExceptionCaught(e);
             ctx.close();
 		}
-		
+
 
 	}
-	
+
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
@@ -75,7 +75,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
         Channel channel = ctx.channel();
         if(channel.isActive())ctx.close();
 	}
-	
+
 	//---------------------------------------------------------------------------------------- Private method start
 	/**
 	 * 执行过滤
@@ -91,7 +91,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 				return false;
 			}
 		}
-		
+
 		//自定义Path过滤器
 		filter = ServerSetting.getFilter(request.getPath());
 		if(null != filter){
@@ -99,7 +99,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -110,6 +110,10 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 	 * @param response 响应对象
 	 */
 	private void doAction(ChannelHandlerContext ctx, Request request, Response response){
+	    if( "/route".equalsIgnoreCase(request.getPath()) && "OPTIONS".equalsIgnoreCase(request.getMethod())){
+	        handleOptions(ctx, request, response);
+	        return;
+        }
 		Action action;
 		if (isValidePath(request.getPath())) {
             action = ServerSetting.getAction(request.getPath(), request.getMethod().toUpperCase());
@@ -141,4 +145,11 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
         }
 	}
 	//---------------------------------------------------------------------------------------- Private method start
+
+
+    private void handleOptions(ChannelHandlerContext ctx, Request request, Response response){
+	    response.setHeader("Access-Control-Allow-Origin", "*");
+	    response.setHeader("Access-Control-Allow-Headers", "*");
+	    response.send();
+    }
 }

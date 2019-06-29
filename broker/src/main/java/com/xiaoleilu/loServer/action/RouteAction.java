@@ -35,11 +35,14 @@ import java.util.concurrent.Executor;
 @HttpMethod("POST")
 public class RouteAction extends Action {
     private static final Logger LOG = LoggerFactory.getLogger(RouteAction.class);
+
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
 
             response.setContentType("application/octet-stream");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request.getNettyRequest();
             boolean b = false;
             if ("web".equalsIgnoreCase(fullHttpRequest.headers().get("p"))) {

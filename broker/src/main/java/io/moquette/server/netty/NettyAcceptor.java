@@ -260,7 +260,7 @@ public class NettyAcceptor implements ServerAcceptor {
                 pipeline.addLast(new HttpServerCodec());
                 pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                 pipeline.addLast("webSocketHandler",
-                        new WebSocketServerProtocolHandler("/org/fusesource/mqtt", MQTT_SUBPROTOCOL_CSV_LIST));
+                        new WebSocketServerProtocolHandler("/", MQTT_SUBPROTOCOL_CSV_LIST));
                 pipeline.addLast("ws2bytebufDecoder", new WebSocketFrameToByteBufDecoder());
                 pipeline.addLast("bytebuf2wsEncoder", new ByteBufToWebSocketFrameEncoder());
                 pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0));
