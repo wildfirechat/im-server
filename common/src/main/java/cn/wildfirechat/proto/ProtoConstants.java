@@ -146,5 +146,7 @@ public class ProtoConstants {
     public static final int MESSAGE_CONTENT_TYPE_CHANGE_JOINTYPE = 114;
     public static final int MESSAGE_CONTENT_TYPE_CHANGE_PRIVATECHAT = 115;
     public static final int MESSAGE_CONTENT_TYPE_CHANGE_SEARCHABLE = 116;
+
+    public static final int MESSAGE_CONTENT_TYPE_SET_MANAGER = 117;
 }
 

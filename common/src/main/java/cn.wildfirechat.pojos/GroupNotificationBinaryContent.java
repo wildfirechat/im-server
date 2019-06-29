@@ -141,4 +141,10 @@ public class GroupNotificationBinaryContent {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_SEARCHABLE);
     }
 
+    public WFCMessage.MessageContent getSetGroupManagerNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_SET_MANAGER);
+    }
+
+
+
 }

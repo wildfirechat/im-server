@@ -974,6 +974,40 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public ErrorCode setGroupManager(String operator, String groupId, int type, List<String> userList, boolean isAdmin) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
+
+
+        WFCMessage.GroupInfo groupInfo = mIMap.get(groupId);
+
+        if (groupInfo == null) {
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
+        }
+
+        if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
+            && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
+        long updateDt = System.currentTimeMillis();
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        for (WFCMessage.GroupMember member : members) {
+            if (userList.contains(member.getMemberId())) {
+                groupMembers.remove(groupId, member);
+                member = member.toBuilder().setType(ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                groupMembers.put(groupId, member);
+//                userList.remove(member.getMemberId());
+            }
+        }
+
+        mIMap.put(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+        return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
     public boolean isMemberInGroup(String memberId, String groupId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);

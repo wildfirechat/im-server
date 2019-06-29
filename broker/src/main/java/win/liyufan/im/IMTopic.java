@@ -30,7 +30,7 @@ public interface IMTopic {
     String GetGroupInfoTopic = "GPGI";
     String GetGroupMemberTopic = "GPGM";
     String TransferGroupTopic = "GTG";
-
+    String SetGroupManagerTopic = "GSM";
 
     String GetUserInfoTopic = "UPUI";
     String ModifyMyInfoTopic = "MMI";
