@@ -1047,7 +1047,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                     return ErrorCode.ERROR_CODE_GROUP_MUTED;
                 }
 
-                if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed) {
+                if (member.getMemberId().equals(memberId) && member.getType() == GroupMemberType_Removed) {
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 }
             }
