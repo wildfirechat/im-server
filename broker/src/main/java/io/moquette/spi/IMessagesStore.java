@@ -154,7 +154,7 @@ public interface IMessagesStore {
 
     ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head);
     ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin);
-    ErrorCode deleteFriend(String userId, String friendUid);
+    ErrorCode deleteFriend(String userId, String friendUid, long[] head);
     ErrorCode blackUserRequest(String fromUser, String targetUserId, int status, long[] head);
     ErrorCode SyncFriendRequestUnread(String userId, long unreadDt, long[] head);
     boolean isBlacked(String fromUser, String userId);

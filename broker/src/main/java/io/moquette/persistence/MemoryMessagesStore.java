@@ -1829,7 +1829,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode deleteFriend(String userId, String friendUid) {
+    public ErrorCode deleteFriend(String userId, String friendUid, long[] head) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
         Collection<FriendData> user1Friends = friendsMap.get(userId);
@@ -1839,8 +1839,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         for (FriendData data :
             user1Friends) {
             if (data.getFriendUid().equals(friendUid)) {
+                long ts = System.currentTimeMillis();
+                head[0] = ts;
                 data.setState(1);
-                data.setTimestamp(System.currentTimeMillis());
+                data.setTimestamp(ts);
                 databaseStore.persistOrUpdateFriendData(data);
                 break;
             }
@@ -1854,7 +1856,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             user2Friends) {
             if (data.getFriendUid().equals(userId)) {
                 data.setState(1);
-                data.setTimestamp(System.currentTimeMillis());
+                long ts = System.currentTimeMillis();
+                head[1] = ts;
+                data.setTimestamp(ts);
                 databaseStore.persistOrUpdateFriendData(data);
                 break;
             }
