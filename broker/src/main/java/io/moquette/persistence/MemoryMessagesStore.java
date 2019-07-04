@@ -1513,6 +1513,19 @@ public class MemoryMessagesStore implements IMessagesStore {
         return friends;
     }
 
+    synchronized Collection<WFCMessage.FriendRequest> loadFriendRequest(MultiMap<String, WFCMessage.FriendRequest> requestMap, String userId) {
+        Collection<WFCMessage.FriendRequest> requests = databaseStore.getPersistFriendRequests(userId);
+        if (requests != null) {
+            for (WFCMessage.FriendRequest r : requests
+                ) {
+                requestMap.put(userId, r);
+            }
+        } else {
+            requests = new ArrayList<>();
+        }
+        return requests;
+    }
+
     @Override
     public List<FriendData> getFriendList(String userId, long version) {
         List<FriendData> out = new ArrayList<FriendData>();
@@ -1541,15 +1554,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
         Collection<WFCMessage.FriendRequest> requests = requestMap.get(userId);
         if (requests == null || requests.size() == 0) {
-            requests = databaseStore.getPersistFriendRequests(userId);
-            if (requests != null) {
-                for (WFCMessage.FriendRequest request : requests) {
-                    if (request.getUpdateDt() > version)
-                        requestMap.put(userId, request);
-                }
-            } else {
-                requests = new ArrayList<>();
-            }
+            requests = loadFriendRequest(requestMap, userId);
         }
 
         for (WFCMessage.FriendRequest request : requests) {
@@ -1567,15 +1572,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
         Collection<WFCMessage.FriendRequest> requests = requestMap.get(userId);
         if (requests == null || requests.size() == 0) {
-            requests = databaseStore.getPersistFriendRequests(userId);
-            if (requests != null) {
-                for (WFCMessage.FriendRequest r : requests
-                    ) {
-                    requestMap.put(userId, r);
-                }
-            } else {
-                requests = new ArrayList<>();
-            }
+            requests = loadFriendRequest(requestMap, userId);
         }
 
         WFCMessage.FriendRequest existRequest = null;
@@ -1660,6 +1657,9 @@ public class MemoryMessagesStore implements IMessagesStore {
                 FriendData friendData2 = null;
 
                 friendDatas = friendsMap.get(request.getTargetUid());
+                if (friendDatas == null || friendDatas.size() == 0) {
+                    friendDatas = loadFriend(friendsMap, request.getTargetUid());
+                }
                 for (FriendData fd : friendDatas) {
                     if (fd.getFriendUid().equals(userId)) {
                         friendData2 = fd;
@@ -1689,13 +1689,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
         Collection<WFCMessage.FriendRequest> requests = requestMap.get(userId);
         if (requests == null || requests.size() == 0) {
-            requests = databaseStore.getPersistFriendRequests(userId);
-            if (requests != null) {
-                for (WFCMessage.FriendRequest r : requests
-                    ) {
-                    requestMap.put(userId, r);
-                }
-            }
+            requests = loadFriendRequest(requestMap, userId);
         }
 
         WFCMessage.FriendRequest existRequest = null;
@@ -1847,7 +1841,6 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (data.getFriendUid().equals(friendUid)) {
                 data.setState(1);
                 data.setTimestamp(System.currentTimeMillis());
-                friendsMap.put(userId, data);
                 databaseStore.persistOrUpdateFriendData(data);
                 break;
             }
@@ -1860,7 +1853,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         for (FriendData data :
             user2Friends) {
             if (data.getFriendUid().equals(userId)) {
-                friendsMap.remove(friendUid, data);
                 data.setState(1);
                 data.setTimestamp(System.currentTimeMillis());
                 databaseStore.persistOrUpdateFriendData(data);
@@ -2282,11 +2274,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         Collection<WFCMessage.FriendRequest> friendsReq = friendsReqMap.get(userId);
         long max = 0;
         if (friendsReq == null || friendsReq.size() == 0) {
-            friendsReq = databaseStore.getPersistFriendRequests(userId);
-            for (WFCMessage.FriendRequest req : friendsReq
-                 ) {
-                friendsReqMap.put(userId, req);
-            }
+            friendsReq = loadFriendRequest(friendsReqMap, userId);
         }
 
         if (friendsReq != null && friendsReq.size() > 0) {
