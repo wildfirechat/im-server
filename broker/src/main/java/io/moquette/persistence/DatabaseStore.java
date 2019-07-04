@@ -2007,7 +2007,6 @@ public class DatabaseStore {
     }
 
     void persistFriendRequestUnreadStatus(String userId, long readDt, long updateDt) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -2034,11 +2033,9 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
     //
     void persistOrUpdateFriendRequest(final WFCMessage.FriendRequest request) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -2075,11 +2072,9 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     void persistOrUpdateFriendData(final FriendData request) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -2110,7 +2105,6 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     boolean removeGroupInfoFromDB(String groupId) {

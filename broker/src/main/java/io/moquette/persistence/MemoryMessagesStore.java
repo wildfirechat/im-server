@@ -1429,8 +1429,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         Collection<FriendData> friendDatas = friendsMap.get(fromUser);
 
-        if (friendDatas == null) {
-            return false;
+        if (friendDatas == null || friendDatas.size() == 0) {
+            friendDatas = loadFriend(friendsMap, fromUser);
         }
 
         for (FriendData friendData : friendDatas) {
@@ -1501,6 +1501,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
     }
 
+    synchronized Collection<FriendData> loadFriend(MultiMap<String, FriendData> friendsMap, String userId) {
+        Collection<FriendData> friends = databaseStore.getPersistFriends(userId);
+        if (friends != null) {
+            for (FriendData friend : friends) {
+                friendsMap.put(userId, friend);
+            }
+        } else {
+            friends = new ArrayList<>();
+        }
+        return friends;
+    }
+
     @Override
     public List<FriendData> getFriendList(String userId, long version) {
         List<FriendData> out = new ArrayList<FriendData>();
@@ -1509,14 +1521,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
         Collection<FriendData> friends = friendsMap.get(userId);
         if (friends == null || friends.size() == 0) {
-            friends = databaseStore.getPersistFriends(userId);
-            if (friends != null) {
-                for (FriendData friend : friends) {
-                    friendsMap.put(userId, friend);
-                }
-            } else {
-                friends = new ArrayList<>();
-            }
+            friends = loadFriend(friendsMap, userId);
         }
 
         for (FriendData friend : friends) {
@@ -1588,7 +1593,6 @@ public class MemoryMessagesStore implements IMessagesStore {
                     && System.currentTimeMillis() - existRequest.getUpdateDt() < 30 * 24 * 60 * 60 * 1000) {
                     return ErrorCode.ERROR_CODE_FRIEND_REQUEST_BLOCKED;
                 }
-                requestMap.remove(userId, existRequest);
             } else {
                 return ErrorCode.ERROR_CODE_FRIEND_ALREADY_REQUEST;
             }
@@ -1603,9 +1607,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setUpdateDt(System.currentTimeMillis())
             .build();
 
-        requestMap.put(userId, newRequest);
-        requestMap.put(request.getTargetUid(), newRequest);
         databaseStore.persistOrUpdateFriendRequest(newRequest);
+        requestMap.remove(userId);
+        requestMap.remove(request.getTargetUid());
+
         head[0] = newRequest.getUpdateDt();
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -1633,6 +1638,9 @@ public class MemoryMessagesStore implements IMessagesStore {
 
             FriendData friendData1 = null;
             Collection<FriendData> friendDatas = friendsMap.get(userId);
+            if (friendDatas == null || friendDatas.size() == 0) {
+                friendDatas = loadFriend(friendsMap, userId);
+            }
             for (FriendData fd : friendDatas) {
                 if (fd.getFriendUid().equals(request.getTargetUid())) {
                     friendData1 = fd;
@@ -1642,12 +1650,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (friendData1 == null) {
                 friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getStatus(), System.currentTimeMillis());
             } else {
-                friendsMap.remove(userId, friendData1);
                 friendData1.setState(request.getStatus());
                 friendData1.setTimestamp(System.currentTimeMillis());
             }
 
-            friendsMap.put(userId, friendData1);
             databaseStore.persistOrUpdateFriendData(friendData1);
 
             if (request.getStatus() != 2) {
@@ -1668,8 +1674,6 @@ public class MemoryMessagesStore implements IMessagesStore {
                     friendData2.setTimestamp(System.currentTimeMillis());
                 }
 
-
-                friendsMap.put(request.getTargetUid(), friendData2);
                 databaseStore.persistOrUpdateFriendData(friendData2);
 
                 heads[0] = friendData2.getTimestamp();
@@ -1677,6 +1681,8 @@ public class MemoryMessagesStore implements IMessagesStore {
                 heads[0] = 0;
             }
             heads[1] = friendData1.getTimestamp();
+            friendsMap.remove(userId);
+            friendsMap.remove(request.getTargetUid());
             return ErrorCode.ERROR_CODE_SUCCESS;
         }
 
@@ -1704,21 +1710,20 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (System.currentTimeMillis() - existRequest.getUpdateDt() > 7 * 24 * 60 * 60 * 1000) {
                 return ErrorCode.ERROR_CODE_FRIEND_REQUEST_OVERTIME;
             } else {
-                requestMap.remove(userId, existRequest);
                 existRequest = existRequest.toBuilder().setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Accepted).setUpdateDt(System.currentTimeMillis()).build();
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
-                requestMap.put(userId, existRequest);
-
-
                 MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
                 FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", 0, System.currentTimeMillis());
-                friendsMap.put(userId, friendData1);
                 databaseStore.persistOrUpdateFriendData(friendData1);
 
                 FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", 0, friendData1.getTimestamp());
-                friendsMap.put(request.getTargetUid(), friendData2);
                 databaseStore.persistOrUpdateFriendData(friendData2);
+
+                requestMap.remove(userId);
+                requestMap.remove(request.getTargetUid());
+                friendsMap.remove(userId);
+                friendsMap.remove(request.getTargetUid());
 
                 heads[0] = friendData2.getTimestamp();
                 heads[1] = friendData1.getTimestamp();
@@ -1739,6 +1744,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         FriendData friendData = null;
         Collection<FriendData> friends = friendsMap.get(fromUser);
+        if (friends == null || friends.size() == 0) {
+            friends = loadFriend(friendsMap, fromUser);
+        }
+
         for (FriendData fd:friends) {
             if (fd.getFriendUid().equals(targetUserId)) {
                 friendData = fd;
@@ -1752,8 +1761,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         friendData.setState(state);
         friendData.setTimestamp(System.currentTimeMillis());
 
-        friendsMap.put(fromUser, friendData);
+
         databaseStore.persistOrUpdateFriendData(friendData);
+        friendsMap.remove(fromUser);
 
         heads[0] = friendData.getTimestamp();
 
@@ -1767,6 +1777,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         FriendData friendData = null;
         Collection<FriendData> friends = friendsMap.get(fromUser);
+        if (friends == null || friends.size() == 0) {
+            friends = loadFriend(friendsMap, fromUser);
+        }
+
         for (FriendData fd:friends) {
             if (fd.getFriendUid().equals(targetUserId)) {
                 friendData = fd;
@@ -1777,15 +1791,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (friendData == null) {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
-        friendsMap.remove(fromUser, friendData);
 
         friendData.setAlias(alias);
         friendData.setTimestamp(System.currentTimeMillis());
 
-        friendsMap.put(fromUser, friendData);
         databaseStore.persistOrUpdateFriendData(friendData);
 
         heads[0] = friendData.getTimestamp();
+
+        friendsMap.remove(fromUser);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -1825,10 +1839,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
         Collection<FriendData> user1Friends = friendsMap.get(userId);
+        if (user1Friends == null || user1Friends.size() == 0) {
+            user1Friends = loadFriend(friendsMap, userId);
+        }
         for (FriendData data :
             user1Friends) {
             if (data.getFriendUid().equals(friendUid)) {
-                friendsMap.remove(userId, data);
                 data.setState(1);
                 data.setTimestamp(System.currentTimeMillis());
                 friendsMap.put(userId, data);
@@ -1838,18 +1854,22 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         Collection<FriendData> user2Friends = friendsMap.get(friendUid);
+        if (user2Friends == null || user2Friends.size() == 0) {
+            user2Friends = loadFriend(friendsMap, friendUid);
+        }
         for (FriendData data :
             user2Friends) {
             if (data.getFriendUid().equals(userId)) {
                 friendsMap.remove(friendUid, data);
                 data.setState(1);
                 data.setTimestamp(System.currentTimeMillis());
-                friendsMap.put(friendUid, data);
                 databaseStore.persistOrUpdateFriendData(data);
                 break;
             }
         }
 
+        friendsMap.remove(userId);
+        friendsMap.remove(friendUid);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2240,15 +2260,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
         Collection<FriendData> friends = friendsMap.get(userId);
-        long max = 0;
         if (friends == null || friends.size() == 0) {
-            friends = databaseStore.getPersistFriends(userId);
-            for (FriendData friend :
-                friends) {
-                friendsMap.put(userId, friend);
-            }
+            friends = loadFriend(friendsMap, userId);
         }
-
+        long max = 0;
         if (friends != null && friends.size() > 0) {
             for (FriendData friend :
                 friends) {
