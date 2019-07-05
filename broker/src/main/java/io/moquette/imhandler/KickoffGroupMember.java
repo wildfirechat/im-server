@@ -25,8 +25,8 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
         if (groupInfo == null) {
             errorCode = ErrorCode.ERROR_CODE_NOT_EXIST;
 
-        } else if ((groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)
-            && groupInfo.getOwner() != null && groupInfo.getOwner().equals(fromUser)) {
+        } else if (isAdmin || ((groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)
+            && groupInfo.getOwner() != null && groupInfo.getOwner().equals(fromUser)) ) {
 
             //send notify message first, then kickoff the member
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
@@ -35,7 +35,7 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
                 WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, request.getRemovedMemberList()).getKickokfMemberGroupNotifyContent();
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content);
             }
-            errorCode = m_messagesStore.kickoffGroupMembers(fromUser, request.getGroupId(), request.getRemovedMemberList());
+            errorCode = m_messagesStore.kickoffGroupMembers(fromUser, isAdmin, request.getGroupId(), request.getRemovedMemberList());
         } else {
             errorCode = ErrorCode.ERROR_CODE_NOT_RIGHT;
         }

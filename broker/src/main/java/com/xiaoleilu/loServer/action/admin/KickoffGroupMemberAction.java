@@ -42,7 +42,7 @@ public class KickoffGroupMemberAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputKickoffGroupMember inputKickoffGroupMember = getRequestBody(request.getNettyRequest(), InputKickoffGroupMember.class);
             if (inputKickoffGroupMember.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputKickoffGroupMember.getOperator(), null, IMTopic.AddGroupMemberTopic, inputKickoffGroupMember.toProtoGroupRequest().toByteArray(), inputKickoffGroupMember.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                RPCCenter.getInstance().sendRequest(inputKickoffGroupMember.getOperator(), null, IMTopic.KickoffGroupMemberTopic, inputKickoffGroupMember.toProtoGroupRequest().toByteArray(), inputKickoffGroupMember.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

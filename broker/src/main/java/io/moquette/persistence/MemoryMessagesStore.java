@@ -685,7 +685,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode kickoffGroupMembers(String operator, String groupId, List<String> memberList) {
+    public ErrorCode kickoffGroupMembers(String operator, boolean isAdmin, String groupId, List<String> memberList) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -693,8 +693,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (groupInfo == null) {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
-        if ((groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
-            && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
+        if (!isAdmin && ((groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
+            && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)))) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
