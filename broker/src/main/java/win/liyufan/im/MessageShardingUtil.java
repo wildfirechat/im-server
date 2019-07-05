@@ -54,10 +54,15 @@ public class MessageShardingUtil {
             return "t_messages";
         }
 
-        mid >>= (nodeIdWidth + rotateIdWidth);
-        Date date = new Date(mid + T201801010000);
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        if (mid != Long.MAX_VALUE) {
+            mid >>= (nodeIdWidth + rotateIdWidth);
+            Date date = new Date(mid + T201801010000);
+            calendar.setTime(date);
+        } else {
+            Date date = new Date(System.currentTimeMillis());
+            calendar.setTime(date);
+        }
         int month = calendar.get(Calendar.MONTH);
         int year = calendar.get(Calendar.YEAR);
         year %= 3;
