@@ -9,6 +9,7 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.WFCMessage;
+import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -25,7 +26,11 @@ public class FriendPullHandler extends IMHandler<WFCMessage.Version> {
         WFCMessage.GetFriendsResult.Builder builder = WFCMessage.GetFriendsResult.newBuilder();
         for (FriendData data : friendDatas
             ) {
-            builder.addEntry(WFCMessage.Friend.newBuilder().setState(data.getState()).setUid(data.getFriendUid()).setUpdateDt(data.getTimestamp()).setAlias(data.getAlias()).build());
+            WFCMessage.Friend.Builder builder1 = WFCMessage.Friend.newBuilder().setState(data.getState()).setUid(data.getFriendUid()).setUpdateDt(data.getTimestamp());
+            if (StringUtil.isNullOrEmpty(data.getAlias())) {
+                builder1.setAlias(data.getAlias());
+            }
+            builder.addEntry(builder1.build());
         }
         byte[] data = builder.build().toByteArray();
         ackPayload.ensureWritable(data.length).writeBytes(data);
