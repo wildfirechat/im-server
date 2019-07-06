@@ -27,7 +27,7 @@ public class FriendPullHandler extends IMHandler<WFCMessage.Version> {
         for (FriendData data : friendDatas
             ) {
             WFCMessage.Friend.Builder builder1 = WFCMessage.Friend.newBuilder().setState(data.getState()).setUid(data.getFriendUid()).setUpdateDt(data.getTimestamp());
-            if (StringUtil.isNullOrEmpty(data.getAlias())) {
+            if (!StringUtil.isNullOrEmpty(data.getAlias())) {
                 builder1.setAlias(data.getAlias());
             }
             builder.addEntry(builder1.build());
