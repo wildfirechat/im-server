@@ -26,6 +26,7 @@ public interface APIPath {
     String Msg_Send = "/admin/message/send";
     String Msg_Recall = "/admin/message/recall";
     String Msg_Broadcast = "/admin/message/broadcast";
+    String Msg_Multicast = "/admin/message/multicast";
 
     String Create_Group = "/admin/group/create";
     String Group_Dismiss = "/admin/group/del";

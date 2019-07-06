@@ -7,6 +7,7 @@ import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +28,7 @@ public class Main {
         userInfo.setMobile("13900000000");
         userInfo.setDisplayName("user 1");
 
-        IMResult<OutputCreateUser>  resultCreateUser = UserAdmin.createUser(userInfo);
+        IMResult<OutputCreateUser> resultCreateUser = UserAdmin.createUser(userInfo);
         if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
         } else {

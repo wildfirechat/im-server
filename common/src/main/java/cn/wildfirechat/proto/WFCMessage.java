@@ -58078,6 +58078,967 @@ public final class WFCMessage {
     // @@protoc_insertion_point(class_scope:LoadRemoteMessages)
   }
 
+  public interface MultiCastMessageOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string from_user = 1;
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    boolean hasFromUser();
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    java.lang.String getFromUser();
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getFromUserBytes();
+
+    // required .MessageContent content = 2;
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    boolean hasContent();
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.MessageContent getContent();
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder getContentOrBuilder();
+
+    // repeated string to = 3;
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    java.util.List<java.lang.String>
+    getToList();
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    int getToCount();
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    java.lang.String getTo(int index);
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getToBytes(int index);
+
+    // required int32 line = 4;
+    /**
+     * <code>required int32 line = 4;</code>
+     */
+    boolean hasLine();
+    /**
+     * <code>required int32 line = 4;</code>
+     */
+    int getLine();
+  }
+  /**
+   * Protobuf type {@code MultiCastMessage}
+   */
+  public static final class MultiCastMessage extends
+      com.google.protobuf.GeneratedMessage
+      implements MultiCastMessageOrBuilder {
+    // Use MultiCastMessage.newBuilder() to construct.
+    private MultiCastMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private MultiCastMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final MultiCastMessage defaultInstance;
+    public static MultiCastMessage getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public MultiCastMessage getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private MultiCastMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              fromUser_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              cn.wildfirechat.proto.WFCMessage.MessageContent.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = content_.toBuilder();
+              }
+              content_ = input.readMessage(cn.wildfirechat.proto.WFCMessage.MessageContent.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(content_);
+                content_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                to_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              to_.add(input.readBytes());
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000004;
+              line_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_ = new com.google.protobuf.UnmodifiableLazyStringList(to_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_MultiCastMessage_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_MultiCastMessage_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.MultiCastMessage.class, cn.wildfirechat.proto.WFCMessage.MultiCastMessage.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<MultiCastMessage> PARSER =
+        new com.google.protobuf.AbstractParser<MultiCastMessage>() {
+      public MultiCastMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new MultiCastMessage(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MultiCastMessage> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string from_user = 1;
+    public static final int FROM_USER_FIELD_NUMBER = 1;
+    private java.lang.Object fromUser_;
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    public boolean hasFromUser() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    public java.lang.String getFromUser() {
+      java.lang.Object ref = fromUser_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          fromUser_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string from_user = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFromUserBytes() {
+      java.lang.Object ref = fromUser_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        fromUser_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required .MessageContent content = 2;
+    public static final int CONTENT_FIELD_NUMBER = 2;
+    private cn.wildfirechat.proto.WFCMessage.MessageContent content_;
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    public boolean hasContent() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.MessageContent getContent() {
+      return content_;
+    }
+    /**
+     * <code>required .MessageContent content = 2;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder getContentOrBuilder() {
+      return content_;
+    }
+
+    // repeated string to = 3;
+    public static final int TO_FIELD_NUMBER = 3;
+    private com.google.protobuf.LazyStringList to_;
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    public java.util.List<java.lang.String>
+        getToList() {
+      return to_;
+    }
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    public int getToCount() {
+      return to_.size();
+    }
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    public java.lang.String getTo(int index) {
+      return to_.get(index);
+    }
+    /**
+     * <code>repeated string to = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getToBytes(int index) {
+      return to_.getByteString(index);
+    }
+
+    // required int32 line = 4;
+    public static final int LINE_FIELD_NUMBER = 4;
+    private int line_;
+    /**
+     * <code>required int32 line = 4;</code>
+     */
+    public boolean hasLine() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int32 line = 4;</code>
+     */
+    public int getLine() {
+      return line_;
+    }
+
+    private void initFields() {
+      fromUser_ = "";
+      content_ = cn.wildfirechat.proto.WFCMessage.MessageContent.getDefaultInstance();
+      to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      line_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasFromUser()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasContent()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasLine()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getContent().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getFromUserBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, content_);
+      }
+      for (int i = 0; i < to_.size(); i++) {
+        output.writeBytes(3, to_.getByteString(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(4, line_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getFromUserBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, content_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < to_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(to_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getToList().size();
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, line_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.MultiCastMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.MultiCastMessage prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code MultiCastMessage}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.MultiCastMessageOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_MultiCastMessage_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_MultiCastMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.MultiCastMessage.class, cn.wildfirechat.proto.WFCMessage.MultiCastMessage.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.MultiCastMessage.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getContentFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        fromUser_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (contentBuilder_ == null) {
+          content_ = cn.wildfirechat.proto.WFCMessage.MessageContent.getDefaultInstance();
+        } else {
+          contentBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        line_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_MultiCastMessage_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.MultiCastMessage getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.MultiCastMessage.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.MultiCastMessage build() {
+        cn.wildfirechat.proto.WFCMessage.MultiCastMessage result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.MultiCastMessage buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.MultiCastMessage result = new cn.wildfirechat.proto.WFCMessage.MultiCastMessage(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.fromUser_ = fromUser_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (contentBuilder_ == null) {
+          result.content_ = content_;
+        } else {
+          result.content_ = contentBuilder_.build();
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          to_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              to_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.to_ = to_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.line_ = line_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.MultiCastMessage) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.MultiCastMessage)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.MultiCastMessage other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.MultiCastMessage.getDefaultInstance()) return this;
+        if (other.hasFromUser()) {
+          bitField0_ |= 0x00000001;
+          fromUser_ = other.fromUser_;
+          onChanged();
+        }
+        if (other.hasContent()) {
+          mergeContent(other.getContent());
+        }
+        if (!other.to_.isEmpty()) {
+          if (to_.isEmpty()) {
+            to_ = other.to_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureToIsMutable();
+            to_.addAll(other.to_);
+          }
+          onChanged();
+        }
+        if (other.hasLine()) {
+          setLine(other.getLine());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasFromUser()) {
+          
+          return false;
+        }
+        if (!hasContent()) {
+          
+          return false;
+        }
+        if (!hasLine()) {
+          
+          return false;
+        }
+        if (!getContent().isInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.MultiCastMessage parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.MultiCastMessage) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string from_user = 1;
+      private java.lang.Object fromUser_ = "";
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public boolean hasFromUser() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public java.lang.String getFromUser() {
+        java.lang.Object ref = fromUser_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          fromUser_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFromUserBytes() {
+        java.lang.Object ref = fromUser_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fromUser_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public Builder setFromUser(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        fromUser_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public Builder clearFromUser() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        fromUser_ = getDefaultInstance().getFromUser();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string from_user = 1;</code>
+       */
+      public Builder setFromUserBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        fromUser_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required .MessageContent content = 2;
+      private cn.wildfirechat.proto.WFCMessage.MessageContent content_ = cn.wildfirechat.proto.WFCMessage.MessageContent.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.MessageContent, cn.wildfirechat.proto.WFCMessage.MessageContent.Builder, cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder> contentBuilder_;
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public boolean hasContent() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.MessageContent getContent() {
+        if (contentBuilder_ == null) {
+          return content_;
+        } else {
+          return contentBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public Builder setContent(cn.wildfirechat.proto.WFCMessage.MessageContent value) {
+        if (contentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          content_ = value;
+          onChanged();
+        } else {
+          contentBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public Builder setContent(
+          cn.wildfirechat.proto.WFCMessage.MessageContent.Builder builderForValue) {
+        if (contentBuilder_ == null) {
+          content_ = builderForValue.build();
+          onChanged();
+        } else {
+          contentBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public Builder mergeContent(cn.wildfirechat.proto.WFCMessage.MessageContent value) {
+        if (contentBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              content_ != cn.wildfirechat.proto.WFCMessage.MessageContent.getDefaultInstance()) {
+            content_ =
+              cn.wildfirechat.proto.WFCMessage.MessageContent.newBuilder(content_).mergeFrom(value).buildPartial();
+          } else {
+            content_ = value;
+          }
+          onChanged();
+        } else {
+          contentBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public Builder clearContent() {
+        if (contentBuilder_ == null) {
+          content_ = cn.wildfirechat.proto.WFCMessage.MessageContent.getDefaultInstance();
+          onChanged();
+        } else {
+          contentBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.MessageContent.Builder getContentBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getContentFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder getContentOrBuilder() {
+        if (contentBuilder_ != null) {
+          return contentBuilder_.getMessageOrBuilder();
+        } else {
+          return content_;
+        }
+      }
+      /**
+       * <code>required .MessageContent content = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.MessageContent, cn.wildfirechat.proto.WFCMessage.MessageContent.Builder, cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder> 
+          getContentFieldBuilder() {
+        if (contentBuilder_ == null) {
+          contentBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              cn.wildfirechat.proto.WFCMessage.MessageContent, cn.wildfirechat.proto.WFCMessage.MessageContent.Builder, cn.wildfirechat.proto.WFCMessage.MessageContentOrBuilder>(
+                  content_,
+                  getParentForChildren(),
+                  isClean());
+          content_ = null;
+        }
+        return contentBuilder_;
+      }
+
+      // repeated string to = 3;
+      private com.google.protobuf.LazyStringList to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureToIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          to_ = new com.google.protobuf.LazyStringArrayList(to_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public java.util.List<java.lang.String>
+          getToList() {
+        return java.util.Collections.unmodifiableList(to_);
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public int getToCount() {
+        return to_.size();
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public java.lang.String getTo(int index) {
+        return to_.get(index);
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getToBytes(int index) {
+        return to_.getByteString(index);
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public Builder setTo(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public Builder addTo(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public Builder addAllTo(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureToIsMutable();
+        super.addAll(values, to_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public Builder clearTo() {
+        to_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string to = 3;</code>
+       */
+      public Builder addToBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureToIsMutable();
+        to_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // required int32 line = 4;
+      private int line_ ;
+      /**
+       * <code>required int32 line = 4;</code>
+       */
+      public boolean hasLine() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required int32 line = 4;</code>
+       */
+      public int getLine() {
+        return line_;
+      }
+      /**
+       * <code>required int32 line = 4;</code>
+       */
+      public Builder setLine(int value) {
+        bitField0_ |= 0x00000008;
+        line_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 line = 4;</code>
+       */
+      public Builder clearLine() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        line_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:MultiCastMessage)
+    }
+
+    static {
+      defaultInstance = new MultiCastMessage(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:MultiCastMessage)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_AddFriendRequest_descriptor;
   private static
@@ -58428,6 +59389,11 @@ public final class WFCMessage {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_LoadRemoteMessages_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_MultiCastMessage_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_MultiCastMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -58586,8 +59552,11 @@ public final class WFCMessage {
       "rt\030\003 \002(\005\"5\n\017GetTokenRequest\022\017\n\007user_id\030\001" +
       " \002(\t\022\021\n\tclient_id\030\002 \002(\t\"\\\n\022LoadRemoteMes" +
       "sages\022#\n\014conversation\030\001 \002(\0132\r.Conversati" +
-      "on\022\022\n\nbefore_uid\030\002 \002(\003\022\r\n\005count\030\003 \002(\005B#\n",
-      "\025cn.wildfirechat.protoB\nWFCMessage"
+      "on\022\022\n\nbefore_uid\030\002 \002(\003\022\r\n\005count\030\003 \002(\005\"a\n",
+      "\020MultiCastMessage\022\021\n\tfrom_user\030\001 \002(\t\022 \n\007" +
+      "content\030\002 \002(\0132\017.MessageContent\022\n\n\002to\030\003 \003" +
+      "(\t\022\014\n\004line\030\004 \002(\005B#\n\025cn.wildfirechat.prot" +
+      "oB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -59014,6 +59983,12 @@ public final class WFCMessage {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_LoadRemoteMessages_descriptor,
               new java.lang.String[] { "Conversation", "BeforeUid", "Count", });
+          internal_static_MultiCastMessage_descriptor =
+            getDescriptor().getMessageTypes().get(70);
+          internal_static_MultiCastMessage_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_MultiCastMessage_descriptor,
+              new java.lang.String[] { "FromUser", "Content", "To", "Line", });
           return null;
         }
       };

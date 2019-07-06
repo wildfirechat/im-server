@@ -10,6 +10,7 @@ package win.liyufan.im;
 
 public interface IMTopic {
 	String SendMessageTopic = "MS";
+    String MultiCastMessageTopic = "MMC";
     String RecallMessageTopic = "MR";
 	String PullMessageTopic = "MP";
 	String NotifyMessageTopic = "MN";
