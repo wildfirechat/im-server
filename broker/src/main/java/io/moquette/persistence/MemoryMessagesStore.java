@@ -628,23 +628,30 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (groupInfo == null) {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
-        if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
-        }
+
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
         if (!isAdmin) {
             boolean isMember = false;
+            boolean isManager = false;
             for (WFCMessage.GroupMember member : memberList) {
-                if (member.getType() == GroupMemberType_Removed) {
-                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
-                } else if(member.getType() == GroupMemberType_Silent) {
-                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                if (member.getMemberId().equals(operator)) {
+                    if (member.getType() == GroupMemberType_Removed) {
+                        return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                    } else if (member.getType() == GroupMemberType_Silent) {
+                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                    }
+                    isManager = (member.getType() == GroupMemberType_Manager || member.getType() == GroupMemberType_Owner);
+                    isMember = true;
+                    break;
                 }
-                isMember = true;
-                break;
             }
+
+            if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted && ((groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) && !isManager)) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+
             if (!isMember) {
                 return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
             }
@@ -804,7 +811,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value) {
+    public ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value, boolean isAdmin) {
 
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
@@ -815,21 +822,35 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        if ((oldInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)
-            && (oldInfo.getOwner() == null || !oldInfo.getOwner().equals(operator))) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
-        }
-
-        if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Normal) {
-            if (oldInfo.getOwner() == null) {
-                return ErrorCode.ERROR_CODE_NOT_RIGHT;
-            }
-            if (!oldInfo.getOwner().equals(operator)) {
-                if (modifyType == Modify_Group_Extra) {
+        if (!isAdmin) {
+            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted) {
+                boolean isAllow = false;
+                if ((oldInfo.getOwner() != null && oldInfo.getOwner().equals(operator))) {
+                    isAllow = true;
+                } else {
+                    WFCMessage.GroupMember gm = getGroupMember(groupId, operator);
+                    if (gm != null && gm.getType() == GroupMemberType_Manager) {
+                        isAllow = true;
+                    }
+                }
+                if (!isAllow) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
             }
+
+            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Normal) {
+                if (oldInfo.getOwner() == null) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+                if (!oldInfo.getOwner().equals(operator)) {
+                    if (modifyType == Modify_Group_Extra) {
+                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                    }
+                }
+            }
         }
+
+
 
         WFCMessage.GroupInfo.Builder newInfoBuilder = oldInfo.toBuilder();
 
@@ -944,6 +965,24 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         members.addAll(groupMembers.get(groupId));
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public WFCMessage.GroupMember getGroupMember(String groupId, String memberId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members != null) {
+            for (WFCMessage.GroupMember gm : members) {
+                if (gm.getMemberId().equals(memberId)) {
+                    return gm;
+                }
+            }
+        }
+
+        return null;
     }
 
 

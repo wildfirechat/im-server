@@ -107,11 +107,12 @@ public interface IMessagesStore {
     ErrorCode kickoffGroupMembers(String operator, boolean isAdmin, String groupId, List<String> memberList);
     ErrorCode quitGroup(String operator, String groupId);
     ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
-    ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value);
+    ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value, boolean isAdmin);
     ErrorCode modifyGroupAlias(String operator, String groupId, String alias);
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
     ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members);
+    WFCMessage.GroupMember getGroupMember(String groupId, String memberId);
     ErrorCode transferGroup(String operator, String groupId, String newOwner, boolean isAdmin);
     ErrorCode setGroupManager(String operator, String groupId, int type, List<String> userList, boolean isAdmin);
     boolean isMemberInGroup(String member, String groupId);
