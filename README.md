@@ -65,7 +65,7 @@
 
 | 捐赠者 | 商标 | 金额 | 简介 |
 | ----- | ---- | -------- | --- |
-| [SAMOS](http://samos.io) | ![SAMOS](http://static.wildfirechat.cn/SAMOS.png) | 每月2000¥ | 一站式区块链解决方案服务商(http://samos.io) |
+| [SAMOS](http://samos.io) | ![SAMOS](http://static.wildfirechat.cn/SAMOS.png) | 保密 | 一站式区块链解决方案服务商(http://samos.io) |
 
 ## 特别感谢
 1. [moquette](https://github.com/moquette-io/moquette) 本项目是基于此项目二次开发而来，处理MQTT相关业务。
