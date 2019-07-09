@@ -46,6 +46,10 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         if (message != null) {
             if (!isAdmin) {  //admin do not check the right
+                // 不能在端上直接发送撤回和群通知
+                if (message.getContent().getType() == 80 || (message.getContent().getType() >= 100 && message.getContent().getType() < 200)) {
+                    return ErrorCode.INVALID_PARAMETER;
+                }
                 int userStatus = m_messagesStore.getUserStatus(fromUser);
                 if (userStatus == 1 || userStatus == 2) {
                     return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
