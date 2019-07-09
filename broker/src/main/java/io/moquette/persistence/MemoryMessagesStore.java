@@ -647,7 +647,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted && ((groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) && !isManager)) {
-                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                if (groupInfo.getJoinType() == 2) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                } else if (groupInfo.getJoinType() == 1) {
+                    if (memberList.size() == 1 && operator.equals(memberList.get(0).getMemberId()))
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
             }
 
             if (!isMember) {
