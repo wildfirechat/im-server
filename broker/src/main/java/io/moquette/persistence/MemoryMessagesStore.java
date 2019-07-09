@@ -2229,7 +2229,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     public boolean addSensitiveWords(List<String> words) {
         for (String word :
             words) {
-            databaseStore.persistSensitiveWord(word);
+            databaseStore.persistSensitiveWord(word.toLowerCase());
         }
         lastUpdateSensitiveTime = 0;
         return true;

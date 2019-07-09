@@ -58,6 +58,7 @@ public class SensitiveFilter {
             return sensitiveWords;
         }
 
+        text = text.toLowerCase();
         for(int i=0;i<text.length();i++){
             int sensitiveWordLength = getSensitiveWordLength(text, i, matchType);
             if(sensitiveWordLength>0){
