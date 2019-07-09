@@ -635,17 +635,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (!isAdmin) {
             boolean isMember = false;
             boolean isManager = false;
-            for (WFCMessage.GroupMember member : memberList) {
-                if (member.getMemberId().equals(operator)) {
-                    if (member.getType() == GroupMemberType_Removed) {
-                        return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
-                    } else if (member.getType() == GroupMemberType_Silent) {
-                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
-                    }
-                    isManager = (member.getType() == GroupMemberType_Manager || member.getType() == GroupMemberType_Owner);
-                    isMember = true;
-                    break;
+            WFCMessage.GroupMember gm = getGroupMember(groupId, operator);
+            if (gm != null) {
+                if (gm.getType() == GroupMemberType_Removed) {
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                } else if (gm.getType() == GroupMemberType_Silent) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
+                isManager = (gm.getType() == GroupMemberType_Manager || gm.getType() == GroupMemberType_Owner);
+                isMember = true;
             }
 
             if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted && ((groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) && !isManager)) {
