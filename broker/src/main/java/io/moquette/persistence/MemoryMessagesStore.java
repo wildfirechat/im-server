@@ -1073,6 +1073,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         WFCMessage.GroupInfo groupInfo = groups.get(groupId);
         boolean isMute = false;
         if (groupInfo != null) {
+            if (groupInfo.getOwner().equals(memberId)) {
+                return ErrorCode.ERROR_CODE_SUCCESS;
+            }
             isMute = groupInfo.getMute()>0;
         }
 
@@ -1092,6 +1095,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 if (member.getMemberId().equals(memberId) && member.getType() == GroupMemberType_Removed) {
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 }
+                break;
             }
 
         }
