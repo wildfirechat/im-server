@@ -70,7 +70,7 @@ JAVA_OPTS="$JAVA_OPTS -XX:MaxGCPauseMillis=500"
 ### GC logging options -- uncomment to enable
 
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDateStamps"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDateStamps"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintHeapAtGC"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintTenuringDistribution"
 JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
