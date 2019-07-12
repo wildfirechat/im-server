@@ -1038,7 +1038,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         for (WFCMessage.GroupMember member : members) {
             if (userList.contains(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
-                member = member.toBuilder().setType(ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
+                member = member.toBuilder().setType(type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
                 groupMembers.put(groupId, member);
 //                userList.remove(member.getMemberId());
