@@ -1010,8 +1010,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         //check the new owner is in member list? is that necessary?
-
-        groupInfo = groupInfo.toBuilder().setOwner(newOwner).build();
+        long updateDt = System.currentTimeMillis();
+        groupInfo = groupInfo.toBuilder().setOwner(newOwner).setUpdateDt(updateDt).build();
 
         mIMap.set(groupId, groupInfo);
 
