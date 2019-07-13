@@ -637,13 +637,16 @@ public class MemoryMessagesStore implements IMessagesStore {
             boolean isManager = false;
             WFCMessage.GroupMember gm = getGroupMember(groupId, operator);
             if (gm != null) {
-                if (gm.getType() == GroupMemberType_Removed) {
+                if (gm.getType() == GroupMemberType_Removed && !(memberList.size() == 1 && operator.equals(memberList.get(0).getMemberId()))) {
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 } else if (gm.getType() == GroupMemberType_Silent) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
                 isManager = (gm.getType() == GroupMemberType_Manager || gm.getType() == GroupMemberType_Owner);
-                isMember = true;
+
+                if (gm.getType() != GroupMemberType_Removed) {
+                    isMember = true;
+                }
             }
 
             if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted && ((groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) && !isManager)) {
@@ -655,7 +658,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
 
-            if (!isMember) {
+            if (!isMember && !(memberList.size() == 1 && operator.equals(memberList.get(0).getMemberId()))) {
                 return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
             }
         }
