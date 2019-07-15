@@ -688,6 +688,43 @@ public class DatabaseStore {
         });
     }
 
+    void removeFavGroup(final String groupId, final List<String> memberIds) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            StringBuilder sb = new StringBuilder("update t_user_setting set _value = ?, _dt = ? where _uid in (");
+            for (int i = 0; i < memberIds.size(); i++) {
+                sb.append("?");
+                if (i != memberIds.size() - 1) {
+                    sb.append(",");
+                }
+            }
+            sb.append(")");
+
+            sb.append(" and _scope = 6 and _key = ?");
+
+            statement = connection.prepareStatement(sb.toString());
+            int index = 1;
+            statement.setString(index++, "0");
+            statement.setLong(index++, System.currentTimeMillis());
+            for (int i = 0; i < memberIds.size(); i++) {
+                statement.setString(index++, memberIds.get(i));
+            }
+            statement.setString(index++, groupId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     void persistUserSetting(final String userId, WFCMessage.UserSettingEntry entry) {
         mScheduler.execute(()->{
             Connection connection = null;
