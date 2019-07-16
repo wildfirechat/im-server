@@ -61,7 +61,6 @@ import static win.liyufan.im.MyInfoType.*;
 public class MemoryMessagesStore implements IMessagesStore {
     private static final String MESSAGES_MAP = "messages_map";
     private static final String GROUPS_MAP = "groups_map";
-    private static final String GROUP_ID_COUNTER = "group_id_counter";
     static int dumy = 0;
     static final String GROUP_MEMBERS = "group_members";
 
@@ -120,14 +119,6 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public void initStore() {
-        //TODO reload data from mysql
-        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
-        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(MemoryMessagesStore.GROUP_MEMBERS);
-        if (groupMembers.size() == 0) {
-            databaseStore.reloadFriendsFromDB(hzInstance);
-            databaseStore.reloadFriendRequestsFromDB(hzInstance);
-        }
-
         updateSensitiveWord();
     }
 
