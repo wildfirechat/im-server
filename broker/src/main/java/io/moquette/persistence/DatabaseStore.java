@@ -210,22 +210,26 @@ public class DatabaseStore {
         return 0;
     }
 
-    void reloadGroupMemberFromDB(HazelcastInstance hzInstance) {
+    synchronized Collection<WFCMessage.GroupMember>  reloadGroupMemberFromDB(HazelcastInstance hzInstance, String groupId) {
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(MemoryMessagesStore.GROUP_MEMBERS);
+        if (groupMembers.get(groupId).size() > 0) {
+            return groupMembers.get(groupId);
+        }
 
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_gid`" +
-                ", `_mid`" +
+            String sql = "select `_mid`" +
                 ", `_alias`" +
                 ", `_type`" +
-                ", `_dt` from t_group_member";
+                ", `_dt` from t_group_member where _gid = ?";
             statement = connection.prepareStatement(sql);
 
+            statement.setString(1, groupId);
             int index;
+
 
             rs = statement.executeQuery();
             while (rs.next()) {
@@ -233,10 +237,6 @@ public class DatabaseStore {
                 index = 1;
 
                 String value = rs.getString(index++);
-                value = (value == null ? "" : value);
-                String groupId = value;
-
-                value = rs.getString(index++);
                 value = (value == null ? "" : value);
                 builder.setMemberId(value);
 
@@ -254,6 +254,7 @@ public class DatabaseStore {
                 WFCMessage.GroupMember member = builder.build();
                 groupMembers.put(groupId, member);
             }
+            return groupMembers.get(groupId);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -261,6 +262,7 @@ public class DatabaseStore {
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
+        return new ArrayList<>();
     }
 
     void reloadFriendsFromDB(HazelcastInstance hzInstance) {

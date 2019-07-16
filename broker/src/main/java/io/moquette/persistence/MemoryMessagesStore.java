@@ -124,12 +124,16 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(MemoryMessagesStore.GROUP_MEMBERS);
         if (groupMembers.size() == 0) {
-            databaseStore.reloadGroupMemberFromDB(hzInstance);
             databaseStore.reloadFriendsFromDB(hzInstance);
             databaseStore.reloadFriendRequestsFromDB(hzInstance);
         }
 
         updateSensitiveWord();
+    }
+
+    private Collection<WFCMessage.GroupMember> loadGroupMemberFromDB(HazelcastInstance hzInstance, String groupId) {
+        Collection<WFCMessage.GroupMember> members = databaseStore.reloadGroupMemberFromDB(hzInstance, groupId);
+        return members;
     }
 
     private void updateSensitiveWord() {
@@ -195,6 +199,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             } else {
                 MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
+                if (members == null || members.size() == 0) {
+                    members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
+                }
                 for (WFCMessage.GroupMember member : members) {
                     if (member.getType() != GroupMemberType_Removed) {
                         notifyReceivers.add(member.getMemberId());
@@ -630,8 +637,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
 
-        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
-
         if (!isAdmin) {
             boolean isMember = false;
             boolean isManager = false;
@@ -674,7 +679,13 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
         memberList = tmp;
 
-        for (WFCMessage.GroupMember member : groupMembers.get(groupId)) {
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
+        for (WFCMessage.GroupMember member : members) {
             if (newInviteUsers.contains(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
             }
@@ -716,7 +727,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         int removeCount = 0;
         long updateDt = System.currentTimeMillis();
         ArrayList<WFCMessage.GroupMember> list = new ArrayList<>();
-        List<WFCMessage.GroupMember> allMembers = new ArrayList<>(groupMembers.get(groupId));
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
+        List<WFCMessage.GroupMember> allMembers = new ArrayList<>(members);
 
         List<String> removedIds = new ArrayList<>();
         for (WFCMessage.GroupMember member : allMembers) {
@@ -763,8 +779,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         WFCMessage.GroupInfo groupInfo = mIMap.get(groupId);
         if (groupInfo == null) {
             MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
-            for (WFCMessage.GroupMember member : groupMembers.get(groupId)
-                ) {
+            Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+            if (members == null || members.size() == 0) {
+                members = loadGroupMemberFromDB(hzInstance, groupId);
+            }
+            for (WFCMessage.GroupMember member :members) {
                 if (member.getMemberId().equals(operator)) {
                     groupMembers.remove(groupId, member);
                     break;
@@ -780,8 +799,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         long updateDt = System.currentTimeMillis();
         boolean removed = false;
-        for (WFCMessage.GroupMember member : groupMembers.get(groupId)
-            ) {
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+        for (WFCMessage.GroupMember member : members) {
             if (member.getMemberId().equals(operator)) {
                 removed = groupMembers.remove(groupId, member);
                 if (removed) {
@@ -828,6 +850,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
         groupMembers.remove(groupId);
         mIMap.remove(groupId);
 
@@ -929,8 +955,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         long updateDt = System.currentTimeMillis();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
-        for (WFCMessage.GroupMember member : members
-            ) {
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+        for (WFCMessage.GroupMember member : members) {
             if (member.getMemberId().equals(operator)) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setAlias(alias).setUpdateDt(updateDt).build();
@@ -996,8 +1024,16 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        Collection<WFCMessage.GroupMember> memberCollection = groupMembers.get(groupId);
+        if (memberCollection == null || memberCollection.size() == 0) {
+            memberCollection = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+        for (WFCMessage.GroupMember member:memberCollection) {
+            if (member.getUpdateDt() > maxDt) {
+                members.add(member);
+            }
+        }
 
-        members.addAll(groupMembers.get(groupId));
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1008,6 +1044,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
         if (members != null) {
             for (WFCMessage.GroupMember gm : members) {
                 if (gm.getMemberId().equals(memberId)) {
@@ -1066,6 +1106,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         long updateDt = System.currentTimeMillis();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
         for (WFCMessage.GroupMember member : members) {
             if (userList.contains(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
@@ -1086,7 +1129,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
-
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
         for (WFCMessage.GroupMember member : members
             ) {
             if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed)
@@ -1111,7 +1156,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
-
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
         for (WFCMessage.GroupMember member : members
             ) {
             if (member.getMemberId().equals(memberId)) {
@@ -1160,6 +1207,9 @@ public class MemoryMessagesStore implements IMessagesStore {
 
                 MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
+                if (members == null || members.size() == 0) {
+                    members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
+                }
                 for (WFCMessage.GroupMember member : members) {
                     if (member.getMemberId().equals(operatorId)) {
                         if (member.getType() == GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
