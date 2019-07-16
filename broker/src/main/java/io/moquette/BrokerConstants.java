@@ -60,10 +60,6 @@ public final class BrokerConstants {
     public static final String NETTY_SO_KEEPALIVE_PROPERTY_NAME = "netty.so_keepalive";
     public static final String NETTY_CHANNEL_TIMEOUT_SECONDS_PROPERTY_NAME = "netty.channel_timeout.seconds";
     public static final String NETTY_EPOLL_PROPERTY_NAME = "netty.epoll";
-    public static final String METRICS_ENABLE_PROPERTY_NAME = "use_metrics";
-    public static final String METRICS_LIBRATO_EMAIL_PROPERTY_NAME = "metrics.librato.email";
-    public static final String METRICS_LIBRATO_TOKEN_PROPERTY_NAME = "metrics.librato.token";
-    public static final String METRICS_LIBRATO_SOURCE_PROPERTY_NAME = "metrics.librato.source";
 
     public static final String STORAGE_CLASS_NAME = "storage_class";
 

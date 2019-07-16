@@ -139,14 +139,7 @@ public class NettyAcceptor implements ServerAcceptor {
 
         final NettyMQTTHandler mqttHandler = new NettyMQTTHandler(processor);
 
-        final boolean useFineMetrics = Boolean.parseBoolean(props.getProperty(METRICS_ENABLE_PROPERTY_NAME, "false"));
-        if (useFineMetrics) {
-            DropWizardMetricsHandler metricsHandler = new DropWizardMetricsHandler();
-            metricsHandler.init(props);
-            this.metrics = Optional.of(metricsHandler);
-        } else {
-            this.metrics = Optional.empty();
-        }
+        this.metrics = Optional.empty();
 
         this.errorsCather = Optional.empty();
 

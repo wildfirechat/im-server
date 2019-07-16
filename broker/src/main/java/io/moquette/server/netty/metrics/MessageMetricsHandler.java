@@ -22,10 +22,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static io.moquette.server.netty.NettyUtils.ATTR_USERNAME;
 
 public class MessageMetricsHandler extends ChannelDuplexHandler {
-
+    private static final Logger LOG = LoggerFactory.getLogger(MessageMetricsHandler.class);
     private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("MessageMetrics");
+    private static final AttributeKey<String> ATTR_KEY_USERNAME = AttributeKey.valueOf(ATTR_USERNAME);
+
 
     private MessageMetricsCollector m_collector;
 
@@ -58,6 +64,12 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
+        String userId = ctx.channel().attr(ATTR_KEY_USERNAME).get();
+        if (userId == null) {
+            userId = "";
+        }
+
+        LOG.info("channel<{}> closing after read {} messages and wrote {} messages", userId,  metrics.messagesRead(), metrics.messagesWrote());
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
         super.close(ctx, promise);

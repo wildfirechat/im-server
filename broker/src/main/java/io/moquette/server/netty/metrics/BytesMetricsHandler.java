@@ -16,6 +16,7 @@
 
 package io.moquette.server.netty.metrics;
 
+import io.moquette.server.netty.NettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -23,10 +24,15 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static io.moquette.server.netty.NettyUtils.ATTR_USERNAME;
 
 public class BytesMetricsHandler extends ChannelDuplexHandler {
-
+    private static final Logger LOG = LoggerFactory.getLogger(BytesMetricsHandler.class);
     private static final AttributeKey<BytesMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("BytesMetrics");
+    private static final AttributeKey<String> ATTR_KEY_USERNAME = AttributeKey.valueOf(ATTR_USERNAME);
 
     private BytesMetricsCollector m_collector;
 
@@ -59,6 +65,12 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         BytesMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
+        String userId = ctx.channel().attr(ATTR_KEY_USERNAME).get();
+        if (userId == null) {
+            userId = "";
+        }
+
+        LOG.info("channel<{}> closing after read {} bytes and wrote {} bytes", userId,  metrics.readBytes(), metrics.wroteBytes());
         m_collector.sumReadBytes(metrics.readBytes());
         m_collector.sumWroteBytes(metrics.wroteBytes());
         super.close(ctx, promise);
