@@ -96,7 +96,7 @@ public final class BrokerConstants {
     public static final String HTTP_SERVER_API_NO_CHECK_TIME = "http.admin.no_check_time";
 
     public static final String CLIENT_PROTO_SECRET_KEY = "client.proto.secret_key";
-    public static final String TOKEN_SECRET_KEY = "token.key ";
+    public static final String TOKEN_SECRET_KEY = "token.key";
 
     public static final String EMBED_DB_PROPERTY_NAME = "embed.db";
 
@@ -106,6 +106,7 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_Forward_Url = "message.forward.url";
 
+    public static final String MESSAGE_ROAMING = "message.roaming";
 
 
     private BrokerConstants() {

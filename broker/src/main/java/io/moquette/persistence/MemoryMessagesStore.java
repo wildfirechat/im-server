@@ -82,6 +82,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private static final String CHANNEL_LISTENERS = "channel_listeners";
 
+    private static boolean IS_MESSAGE_ROAMING = true;
+
     static final String USER_ROBOTS = "user_robots";
     static final String USER_THINGS = "user_things";
 
@@ -115,6 +117,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
+        IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
     }
 
     @Override
@@ -314,6 +317,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 });
             }
 
+            boolean noRoaming = false;
+            if (pullType == ProtoConstants.PullType.Pull_Normal && fromMessageId == 0 && !IS_MESSAGE_ROAMING) {
+                noRoaming = true;
+            }
             while (true) {
                 Map.Entry<Long, Long> entry = maps.higherEntry(current);
                 if (entry == null) {
@@ -331,6 +338,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                             if (!bundle.getMessage().getConversation().getTarget().equals(chatroomId)) {
                                 continue;
                             }
+                        }
+
+                        if (noRoaming && (System.currentTimeMillis() - bundle.getMessage().getServerTimestamp() > 5 * 60 * 1000)) {
+                            continue;
                         }
 
                         size += bundle.getMessage().getSerializedSize();
