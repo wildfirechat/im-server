@@ -233,6 +233,11 @@
             <version>5.2.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.4.1</version>
+        </dependency>
 
     </dependencies>
 
