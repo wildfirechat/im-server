@@ -623,7 +623,8 @@ public class ProtocolProcessor {
 
     public void onRpcMsg(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin) {
         if(request.equals(RPCCenter.KICKOFF_USER_REQUEST)) {
-            mServer.getImBusinessScheduler().execute(()->handleTargetRemovedFromCurrentNode(new TargetEntry(TargetEntry.Type.TARGET_TYPE_USER, from)));
+            String userId = new String(message);
+            mServer.getImBusinessScheduler().execute(()->handleTargetRemovedFromCurrentNode(new TargetEntry(TargetEntry.Type.TARGET_TYPE_USER, userId)));
             return;
         }
         qos1PublishHandler.onRpcMsg(fromUser, clientId, message, messageId, from, request, isAdmin);
