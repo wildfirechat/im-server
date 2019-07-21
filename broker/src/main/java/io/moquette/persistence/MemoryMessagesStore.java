@@ -1235,6 +1235,8 @@ public class MemoryMessagesStore implements IMessagesStore {
             message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(new StringBuffer().append(messageUid).toString().getBytes())).build()).build();
             messageBundle.setMessage(message);
 
+            databaseStore.deleteMessage(messageUid);
+
             mIMap.put(messageUid, messageBundle, 7, TimeUnit.DAYS);
             return ErrorCode.ERROR_CODE_SUCCESS;
         } else {

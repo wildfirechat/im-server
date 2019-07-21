@@ -594,6 +594,25 @@ public class DatabaseStore {
         return null;
     }
 
+    void deleteMessage(long messageId) {
+        String sql = "delete from " + MessageShardingUtil.getMessageTable(messageId) + " where _mid = ?";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setLong(1, messageId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
         List<WFCMessage.Message> messages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count, MessageShardingUtil.getMessageTable(beforeUid));
         if (messages != null && messages.size() < count) {
