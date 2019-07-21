@@ -294,7 +294,7 @@ public class Main {
 
 
         //初始化机器人API
-        RobotHttpUtils.init("http://localhost:18080", "robot1", "123456");
+        RobotHttpUtils.init("http://localhost", "robot1", "123456");
         //***********************************************
         //****  机器人API
         //***********************************************
@@ -313,7 +313,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<InputOutputUserInfo> resultRobotGetUserInfo = RobotService.getUserInfo("user1");
+        IMResult<InputOutputUserInfo> resultRobotGetUserInfo = RobotService.getUserInfo("userId1");
         if (resultRobotGetUserInfo != null && resultRobotGetUserInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("robot get user info success");
         } else {
