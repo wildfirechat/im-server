@@ -95,13 +95,15 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                         errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
                     } else if(mSensitiveType == 1) {
                         ignoreMsg = true;
-                    } else {
+                    } else if(mSensitiveType == 2) {
                         String text = message.getContent().getSearchableContent();
                         for (String word : matched) {
                             text = text.replace(word, "***");
                         }
 
                         message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
+                    } else if(mSensitiveType == 3) {
+
                     }
                 }
             }
