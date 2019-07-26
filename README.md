@@ -20,11 +20,14 @@
 
 开发一套IM系统真的很艰辛，请路过的朋友们给点个star，支持我们坚持下去🙏🙏🙏🙏🙏
 
-
 ### 联系我们
-问题讨论请加群：822762829
+1. QQ：3239481169(野火IM)
+2. QQ: 1960867973(x86)
 
-微信公众号：
+### 问题交流
+1. 如果大家发现bug，请在GitHub提issue
+2. 其他问题，请到[野火IM论坛](http://bbs.wildfirechat.cn/)进行交流学习
+3. 微信公众号
 
 <img src="http://static.wildfirechat.cn/wx_wfc_qrcode.jpg" width = 50% height = 50% />
 
