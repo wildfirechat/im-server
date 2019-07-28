@@ -294,7 +294,15 @@ public class Main {
             System.exit(-1);
         }
 
-
+        List<String> multicastReceivers = Arrays.asList("user2", "user3", "user4");
+        IMResult<MultiMessageResult> resultMulticastMessage = MessageAdmin.multicastMessage("user1", multicastReceivers, 0, payload);
+        if (resultMulticastMessage != null && resultMulticastMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("multi message success, messageid is " + resultMulticastMessage.getResult().getMessageUid());
+        } else {
+            System.out.println("multi message failure");
+            System.exit(-1);
+        }
+        
         IMResult<SystemSettingPojo> resultGetSystemSetting  =  GeneralAdmin.getSystemSetting(Group_Max_Member_Count);
         if (resultGetSystemSetting != null && resultGetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
