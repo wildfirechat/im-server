@@ -35,6 +35,9 @@ public interface APIPath {
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
 
+    String Get_System_Setting = "/admin/system/get_setting";
+    String Put_System_Setting = "/admin/system/put_setting";
+
 
     String Channel_Message_Send = "/channel/message/send";
 

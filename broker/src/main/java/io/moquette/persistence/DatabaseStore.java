@@ -8,6 +8,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
@@ -74,6 +75,79 @@ public class DatabaseStore {
         }
 
         return out;
+    }
+
+    boolean updateSystemSetting(int id, String value, String desc) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "insert into t_settings " +
+                " (`id`, `value`, `desc`) values(?, ?, ?)" +
+                " ON DUPLICATE KEY UPDATE " +
+                "`value` = ?," +
+                "`desc` = ?";
+
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setLong(index++, id);
+            statement.setString(index++, value);
+            statement.setString(index++, desc);
+            statement.setString(index++, value);
+            statement.setString(index++, desc);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+            return true;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+        return false;
+    }
+
+    SystemSettingPojo getSystemSetting(int id) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select `value`, `desc` from t_settings where `id` = ?";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setLong(index++, id);
+
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                SystemSettingPojo out = new SystemSettingPojo();
+                index = 1;
+
+                out.id = id;
+
+                String value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                out.value = value;
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                out.desc = value;
+
+               return out;
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return null;
     }
 
     List<WFCMessage.User> searchUserFromDB(String keyword, boolean buzzy, int page) {

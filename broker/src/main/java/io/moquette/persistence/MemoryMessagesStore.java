@@ -16,6 +16,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.protobuf.ByteString;
@@ -1440,6 +1441,16 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public List<WFCMessage.User> searchUser(String keyword, boolean buzzy, int page) {
         return databaseStore.searchUserFromDB(keyword, buzzy, page);
+    }
+
+    @Override
+    public boolean updateSystemSetting(int id, String value, String desc) {
+        return databaseStore.updateSystemSetting(id, value, desc);
+    }
+
+    @Override
+    public SystemSettingPojo getSystemSetting(int id) {
+        return databaseStore.getSystemSetting(id);
     }
 
     @Override

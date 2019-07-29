@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_Member_Count;
+
 public class Main {
     public static void main(String[] args) throws Exception {
         //初始化服务API
@@ -292,6 +294,30 @@ public class Main {
             System.exit(-1);
         }
 
+
+        IMResult<SystemSettingPojo> resultGetSystemSetting  =  GeneralAdmin.getSystemSetting(Group_Max_Member_Count);
+        if (resultGetSystemSetting != null && resultGetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("get system setting failure");
+            System.exit(-1);
+        }
+
+        IMResult<Void> resultSetSystemSetting = GeneralAdmin.setSystemSetting(Group_Max_Member_Count, "2000", "最大群人数为2000");
+        if (resultSetSystemSetting != null && resultSetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("get system setting failure");
+            System.exit(-1);
+        }
+
+        resultGetSystemSetting  =  GeneralAdmin.getSystemSetting(Group_Max_Member_Count);
+        if (resultGetSystemSetting != null && resultGetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultGetSystemSetting.getResult().value.equals("2000")) {
+            System.out.println("success");
+        } else {
+            System.out.println("get system setting failure");
+            System.exit(-1);
+        }
 
         //初始化机器人API
         RobotHttpUtils.init("http://localhost", "robot1", "123456");

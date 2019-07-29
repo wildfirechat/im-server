@@ -147,7 +147,7 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>[0.9.5.3,)</version>
+            <version>0.9.5.4</version>
         </dependency>
 
         <!-- needs extra dependencies: objenesis & hamcrest -->

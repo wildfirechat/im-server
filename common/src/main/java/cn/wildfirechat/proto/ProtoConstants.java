@@ -128,6 +128,9 @@ public class ProtoConstants {
     }
 
 
+    public interface SystemSettingType {
+        int Group_Max_Member_Count = 1;
+    }
 
 
 
