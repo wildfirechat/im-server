@@ -22,7 +22,7 @@
 
 ### 联系我们
 
-> 请优先采用邮箱和我们联系。
+> 商务合作请优先采用邮箱和我们联系。技术问题请到[野火IM论坛](http://bbs.wildfirechat.cn/)发帖交流
 
 1. heavyrain.lee  邮箱: heavyrain.lee@wildfirechat.cn  微信：wildfirechat
 2. imndx  邮箱: imndx@wildfirechat.cn  微信：wfchat
