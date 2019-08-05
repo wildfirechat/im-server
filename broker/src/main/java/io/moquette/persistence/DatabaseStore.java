@@ -911,6 +911,40 @@ public class DatabaseStore {
     }
 
 
+    void removeGroupUserSettings(String groupId, List<String> users) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            StringBuilder sb = new StringBuilder("delete t_user_setting where _scope in (1,3,5,7) and _uid in (");
+            for (int i = 0; i < users.size(); i++) {
+                sb.append("?");
+                if (i != users.size() - 1) {
+                    sb.append(",");
+                }
+            }
+            sb.append(") and _key like '1-_-?'");
+
+
+            statement = connection.prepareStatement(sb.toString());
+            int index = 1;
+            for (String userId:users) {
+                statement.setString(index++, userId);
+            }
+            statement.setString(index++, groupId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     void persistGroupInfo(final WFCMessage.GroupInfo groupInfo) {
         mScheduler.execute(()->{
             Connection connection = null;

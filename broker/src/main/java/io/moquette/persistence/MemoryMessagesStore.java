@@ -758,7 +758,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         removeFavGroup(groupId, removedIds);
-
+        removeGroupUserSettings(groupId, removedIds);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -827,7 +827,19 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         removeFavGroup(groupId, Arrays.asList(operator));
+        removeGroupUserSettings(groupId, Arrays.asList(operator));
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    private void removeGroupUserSettings(String groupId, List<String> users) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+
+        databaseStore.removeGroupUserSettings(groupId, users);
+        for (String userId:users) {
+            userSettingMap.remove(userId);
+        }
+
     }
 
     @Override
@@ -869,6 +881,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
         removeFavGroup(groupId, ids);
+        removeGroupUserSettings(groupId, ids);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
