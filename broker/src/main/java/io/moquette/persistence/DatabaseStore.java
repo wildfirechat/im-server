@@ -917,14 +917,16 @@ public class DatabaseStore {
         try {
             connection = DBUtil.getConnection();
 
-            StringBuilder sb = new StringBuilder("delete t_user_setting where _scope in (1,3,5,7) and _uid in (");
+            StringBuilder sb = new StringBuilder("delete from t_user_setting where _scope in (1,3,5,7) and _uid in (");
             for (int i = 0; i < users.size(); i++) {
                 sb.append("?");
                 if (i != users.size() - 1) {
                     sb.append(",");
                 }
             }
-            sb.append(") and _key like '1-_-?'");
+            sb.append(") and _key like '1-_-");
+            sb.append(groupId);
+            sb.append("'");
 
 
             statement = connection.prepareStatement(sb.toString());
@@ -932,7 +934,6 @@ public class DatabaseStore {
             for (String userId:users) {
                 statement.setString(index++, userId);
             }
-            statement.setString(index++, groupId);
 
             int count = statement.executeUpdate();
             LOG.info("Update rows {}", count);
@@ -1321,6 +1322,70 @@ public class DatabaseStore {
                 DBUtil.closeDB(connection, statement);
             }
         });
+    }
+
+    int removeGroupMember(String groupId, List<String> groupMembers) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        PreparedStatement statement2 = null;
+        try {
+            connection = DBUtil.getConnection();
+            connection.setAutoCommit(false);
+
+            StringBuilder sqlBuilder = new StringBuilder("update t_group_member set `_type` = ?, `_dt` = ? where `_mid` in (");
+            for (int i = 0; i < groupMembers.size(); i++) {
+                sqlBuilder.append("?");
+                if (i != groupMembers.size()-1) {
+                    sqlBuilder.append(",");
+                }
+            }
+            sqlBuilder.append(")");
+
+            sqlBuilder.append(" and _gid = ?");
+
+            statement = connection.prepareStatement(sqlBuilder.toString());
+
+            int index = 1;
+            long current = System.currentTimeMillis();
+            statement.setInt(index++, ProtoConstants.GroupMemberType.GroupMemberType_Removed);
+            statement.setLong(index++, current);
+
+            for (String memberId:groupMembers) {
+                statement.setString(index++, memberId);
+            }
+            statement.setString(index++, groupId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+
+            String sql = "update t_group set `_member_count` = `_member_count` - ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
+
+            statement2 = connection.prepareStatement(sql);
+            index = 1;
+            statement2.setInt(index++, count);
+            statement2.setLong(index++, current);
+            statement2.setLong(index++, current);
+            statement2.setString(index++, groupId);
+            statement2.executeUpdate();
+            connection.commit();
+            connection.setAutoCommit(true);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            if (connection != null) {
+                try {
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement2);
+        }
+        return 0;
     }
 
     WFCMessage.GroupInfo getPersistGroupInfo(String groupId) {

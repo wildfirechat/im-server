@@ -33,7 +33,7 @@ public class IDUtils {
             return ch - 'a' + 26;
         } else if(ch >= '0' && ch <= '9') {
             return ch - '0' + 52;
-        } else if(ch == '_') {
+        } else if(ch == '+') {
             return 62;
         }
         return 63;
