@@ -33,6 +33,10 @@ public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
+        publish(fromUser, clientID, message);
+
+
+        //等待客户端实现根据撤回消息更新内容，之后可以删掉这段代码
         m_messagesStore.getNotifyReceivers(fromUser, message.toBuilder(), notifyReceivers);
         this.publisher.publishRecall2Receivers(int64Buf.getId(), fromUser, notifyReceivers, clientID);
 
