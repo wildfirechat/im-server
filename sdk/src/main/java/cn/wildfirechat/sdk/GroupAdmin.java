@@ -52,6 +52,17 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, transferGroup, Void.class);
     }
 
+    public static IMResult<Void> modifyGroupInfo(String operator, String groupId, int type, String value, List<Integer> to_lines) throws Exception {
+        String path = APIPath.Group_Modify_Info;
+        InputModifyGroupInfo modifyGroupInfo = new InputModifyGroupInfo();
+        modifyGroupInfo.setGroup_id(groupId);
+        modifyGroupInfo.setOperator(operator);
+        modifyGroupInfo.setTo_lines(to_lines);
+        modifyGroupInfo.setType(type);
+        modifyGroupInfo.setValue(value);
+        return AdminHttpUtils.httpJsonPost(path, modifyGroupInfo, Void.class);
+    }
+
 
     public static IMResult<OutputGroupMemberList> getGroupMembers(String groupId) throws Exception {
         String path = APIPath.Group_Member_List;
