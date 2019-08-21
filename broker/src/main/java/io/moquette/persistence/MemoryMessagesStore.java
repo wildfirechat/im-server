@@ -85,6 +85,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private static boolean IS_MESSAGE_ROAMING = true;
 
+    private static boolean IS_MESSAGE_REMOTE_HISTORY_MESSAGE = true;
+
     static final String USER_ROBOTS = "user_robots";
     static final String USER_THINGS = "user_things";
 
@@ -119,6 +121,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         m_Server = server;
         this.databaseStore = databaseStore;
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
+        IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
     }
 
     @Override
@@ -370,7 +373,12 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
         WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();
-        List<WFCMessage.Message> messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
+        List<WFCMessage.Message> messages;
+        if (IS_MESSAGE_REMOTE_HISTORY_MESSAGE) {
+           messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
+        } else {
+           messages = new ArrayList<>();
+        }
         builder.setCurrent(0).setHead(0);
         if(messages != null) {
             builder.addAllMessage(messages);
@@ -1134,7 +1142,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode recallMessage(long messageUid, String operatorId) {
+    public ErrorCode recallMessage(long messageUid, String operatorId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 

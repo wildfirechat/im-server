@@ -222,6 +222,15 @@ public class Main {
             System.exit(-1);
         }
 
+        voidIMResult = GroupAdmin.modifyGroupInfo(groupInfo.getOwner(), groupInfo.getTarget_id(), ProtoConstants.ModifyGroupInfoType.Modify_Group_Name,"HelloWorld", null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("transfer success");
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+
         resultGetGroupInfo = GroupAdmin.getGroupInfo(groupInfo.getTarget_id());
         if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             if ("user2".equals(resultGetGroupInfo.getResult().getOwner())) {
@@ -251,7 +260,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = GroupAdmin.kickoffGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("use2", "user3"), null, null);
+        voidIMResult = GroupAdmin.kickoffGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("user3"), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("kickoff group member success");
         } else {
@@ -325,6 +334,16 @@ public class Main {
             System.out.println("success");
         } else {
             System.out.println("get system setting failure");
+            System.exit(-1);
+        }
+
+        InputCreateChannel inputCreateChannel = new InputCreateChannel();
+        inputCreateChannel.setName("MyChannel");
+        IMResult<OutputCreateChannel> resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
+        if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("create channel failure");
             System.exit(-1);
         }
 

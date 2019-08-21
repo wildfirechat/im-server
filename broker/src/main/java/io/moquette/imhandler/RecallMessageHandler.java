@@ -21,7 +21,7 @@ import java.util.Set;
 public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.INT64Buf int64Buf, Qos1PublishHandler.IMCallback callback) {
-        ErrorCode errorCode = m_messagesStore.recallMessage(int64Buf.getId(), fromUser);
+        ErrorCode errorCode = m_messagesStore.recallMessage(int64Buf.getId(), fromUser, isAdmin);
 
         if(errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
             return errorCode;
@@ -33,6 +33,10 @@ public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
+        publish(fromUser, clientID, message);
+
+
+        //等待客户端实现根据撤回消息更新内容，之后可以删掉这段代码
         m_messagesStore.getNotifyReceivers(fromUser, message.toBuilder(), notifyReceivers);
         this.publisher.publishRecall2Receivers(int64Buf.getId(), fromUser, notifyReceivers, clientID);
 
