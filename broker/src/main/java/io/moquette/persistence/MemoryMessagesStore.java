@@ -1042,6 +1042,25 @@ public class MemoryMessagesStore implements IMessagesStore {
         groupInfo = groupInfo.toBuilder().setOwner(newOwner).setUpdateDt(updateDt).build();
 
         mIMap.set(groupId, groupInfo);
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+        for (WFCMessage.GroupMember member : members) {
+            if (newOwner.equals(member.getMemberId())) {
+                groupMembers.remove(groupId, member);
+                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).build();
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                groupMembers.put(groupId, member);
+            } else if(member.getType() == GroupMemberType_Owner) {
+                groupMembers.remove(groupId, member);
+                member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).build();
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                groupMembers.put(groupId, member);
+            }
+        }
+
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
