@@ -2772,7 +2772,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_word` from t_sensitiveword";
+            String sql = "select `_word` from t_sensitiveword order by `id` desc";
 
             statement = connection.prepareStatement(sql);
             rs = statement.executeQuery();
