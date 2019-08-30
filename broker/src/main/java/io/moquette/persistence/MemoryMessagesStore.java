@@ -1169,7 +1169,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (messageBundle != null) {
             WFCMessage.Message message = messageBundle.getMessage();
             boolean canRecall = false;
-            if (message.getFromUser().equals(operatorId)) {
+            if (isAdmin) {
+                canRecall = true;
+            }
+            if (!isAdmin && message.getFromUser().equals(operatorId)) {
                 canRecall = true;
             }
 
