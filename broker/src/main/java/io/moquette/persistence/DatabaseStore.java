@@ -1806,7 +1806,6 @@ public class DatabaseStore {
 
     void updateUser(final WFCMessage.User user) {
         LOG.info("Database update user info {} {}", user.getUid(), user.getUpdateDt());
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             LOG.info("Database update user info {}", user.getDisplayName());
@@ -1880,7 +1879,6 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     void deleteUserStatus(String userId) {
@@ -2383,7 +2381,6 @@ public class DatabaseStore {
 
     void updateChannelInfo(final WFCMessage.ChannelInfo channelInfo) {
         LOG.info("Database update channel info {} {}", channelInfo.getTargetId(), channelInfo.getUpdateDt());
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -2446,7 +2443,6 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     void removeChannelInfo(final String channelId) {
