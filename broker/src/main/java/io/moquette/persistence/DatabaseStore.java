@@ -1265,7 +1265,6 @@ public class DatabaseStore {
     }
 
     void persistGroupMember(final String groupId, final List<WFCMessage.GroupMember> memberList) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -1321,7 +1320,6 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     int removeGroupMember(String groupId, List<String> groupMembers) {

@@ -27,18 +27,29 @@ public class InputCreateChannel {
     private long updateDt;
 
     public WFCMessage.ChannelInfo toProtoChannelInfo() {
-        return WFCMessage.ChannelInfo.newBuilder().setOwner(owner)
-            .setName(name)
-            .setTargetId(targetId)
-            .setCallback(callback)
-            .setPortrait(portrait)
-            .setAutomatic(auto)
-            .setSecret(secret)
-            .setDesc(desc)
-            .setStatus(status)
-            .setExtra(extra)
-            .setUpdateDt(updateDt)
-            .build();
+        WFCMessage.ChannelInfo.Builder builder = WFCMessage.ChannelInfo.newBuilder().setOwner(owner);
+        if (!StringUtil.isNullOrEmpty(name))
+            builder = builder.setName(name);
+        if (!StringUtil.isNullOrEmpty(targetId))
+            builder = builder.setTargetId(targetId);
+        if (!StringUtil.isNullOrEmpty(callback))
+            builder = builder.setCallback(callback);
+        if (!StringUtil.isNullOrEmpty(portrait))
+            builder = builder.setPortrait(portrait);
+        builder = builder.setAutomatic(auto);
+        if (!StringUtil.isNullOrEmpty(secret))
+            builder = builder.setSecret(secret);
+        if (!StringUtil.isNullOrEmpty(desc))
+            builder = builder.setDesc(desc);
+        builder = builder.setStatus(status);
+        if (!StringUtil.isNullOrEmpty(extra))
+            builder = builder.setExtra(extra);
+        if (!StringUtil.isNullOrEmpty(name))
+            builder = builder.setUpdateDt(updateDt);
+        else
+            builder = builder.setUpdateDt(System.currentTimeMillis());
+
+        return builder.build();
     }
 
     public String getOwner() {
