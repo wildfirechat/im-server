@@ -1153,7 +1153,7 @@ public class DatabaseStore {
                     statement.setInt(index++, request.getPlatform());
                 }
                 if (session.getPushType() != request.getPushType()) {
-                    statement.setInt(index++, request.getPushType());
+                    statement.setInt(index++, request.getPushType() >= 32 ? 0 : request.getPushType());
                 }
                 if (!strEqual(session.getDeviceName(), request.getDeviceName())) {
                     statement.setString(index++, request.getDeviceName());
