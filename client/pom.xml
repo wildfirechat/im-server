@@ -6,7 +6,7 @@
         <relativePath>../</relativePath>
         <artifactId>wildfirechat-parent</artifactId>
         <groupId>cn.wildfirechat</groupId>
-        <version>0.25</version>
+        <version>0.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
