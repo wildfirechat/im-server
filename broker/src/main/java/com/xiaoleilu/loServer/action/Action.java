@@ -22,8 +22,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import cn.wildfirechat.common.ErrorCode;
 
-import java.nio.charset.StandardCharsets;
-
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 /**
@@ -86,7 +84,7 @@ abstract public class Action {
         if (request instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request;
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
-            String content = new String(bytes, StandardCharsets.UTF_8);
+            String content = new String(bytes);
             Gson gson = new Gson();
             T t = gson.fromJson(content, cls);
             return t;

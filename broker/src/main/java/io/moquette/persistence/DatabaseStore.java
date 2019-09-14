@@ -298,9 +298,7 @@ public class DatabaseStore {
             String sql = "select `_mid`" +
                 ", `_alias`" +
                 ", `_type`" +
-                ", `_dt` from t_group_member where _gid = ? order by _dt ASC";
-
-            System.out.println("reloadGroupMemberFromDB mysql sql " + sql);
+                ", `_dt` from t_group_member where _gid = ?";
             statement = connection.prepareStatement(sql);
 
             statement.setString(1, groupId);
@@ -308,9 +306,6 @@ public class DatabaseStore {
 
 
             rs = statement.executeQuery();
-
-            System.out.println("reloadGroupMemberFromDB mysql groupId" + groupId);
-
             while (rs.next()) {
                 WFCMessage.GroupMember.Builder builder = WFCMessage.GroupMember.newBuilder();
                 index = 1;
@@ -318,8 +313,6 @@ public class DatabaseStore {
                 String value = rs.getString(index++);
                 value = (value == null ? "" : value);
                 builder.setMemberId(value);
-
-                System.out.println("reloadGroupMemberFromDB mysql memberid " + value);
 
                 value = rs.getString(index++);
                 value = (value == null ? "" : value);
