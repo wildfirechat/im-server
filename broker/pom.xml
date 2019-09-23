@@ -5,7 +5,7 @@
         <relativePath>../</relativePath>
         <artifactId>wildfirechat-parent</artifactId>
         <groupId>cn.wildfirechat</groupId>
-        <version>0.25</version>
+        <version>0.26</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
@@ -110,7 +110,7 @@
             <artifactId>netty-transport-native-epoll</artifactId>
             <version>${netty.version}</version>
             <classifier>linux-x86_64</classifier>
-            <!-- 
+            <!--
             <classifier>${os.detected.name}-${os.detected.arch}</classifier>
              -->
         </dependency>

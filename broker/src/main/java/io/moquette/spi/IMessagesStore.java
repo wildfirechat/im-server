@@ -119,7 +119,7 @@ public interface IMessagesStore {
     boolean isMemberInGroup(String member, String groupId);
     ErrorCode canSendMessageInGroup(String member, String groupId);
 
-    ErrorCode recallMessage(long messageUid, String operatorId);
+    ErrorCode recallMessage(long messageUid, String operatorId, boolean isAdmin);
 
     WFCMessage.Robot getRobot(String robotId);
     void addRobot(WFCMessage.Robot robot);

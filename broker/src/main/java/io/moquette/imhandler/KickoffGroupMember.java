@@ -27,6 +27,12 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
         } else {
             boolean isAllow = isAdmin;
             if (!isAllow) {
+                if (groupInfo.getOwner() != null) {
+                    if (request.getRemovedMemberList().contains(groupInfo.getOwner())) {
+                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                    }
+                }
+
                 if (groupInfo.getOwner() != null && groupInfo.getOwner().equals(fromUser)) {
                     isAllow = true;
                 }

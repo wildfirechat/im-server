@@ -17,9 +17,9 @@ goto end
 rem Set JavaHome if it exists
 if exist { "%JAVA_HOME%\bin\java" } (
     set "JAVA="%JAVA_HOME%\bin\java""
-) else {
+) else (
     set "JAVA="java""
-}
+)
 
 echo Using JAVA_HOME:       "%JAVA_HOME%"
 echo Using WILDFIRECHAT_HOME:   "%WILDFIRECHAT_HOME%"

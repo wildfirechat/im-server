@@ -1,9 +1,7 @@
 package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
-import cn.wildfirechat.pojos.InputFriendRequest;
-import cn.wildfirechat.pojos.InputGetFriendList;
-import cn.wildfirechat.pojos.SystemSettingPojo;
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
@@ -22,6 +20,11 @@ public class GeneralAdmin {
         input.value = value;
         input.desc = desc;
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    public static IMResult<OutputCreateChannel> createChannel(InputCreateChannel inputCreateChannel) throws Exception {
+        String path = APIPath.Create_Channel;
+        return AdminHttpUtils.httpJsonPost(path, inputCreateChannel, OutputCreateChannel.class);
     }
 
 }
