@@ -15,11 +15,11 @@
         <!--MySQL数据库驱动程序-->
         <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
         <!--MySQL数据库地址-->
-        <property name="jdbcUrl">jdbc:mysql://localhost:3306/wfchat?useSSL=false&amp;serverTimezone=GMT%2B8&amp;allowPublicKeyRetrieval=true&amp;useUnicode=true&amp;characterEncoding=utf8</property>
+        <property name="jdbcUrl">jdbc:mysql://47.90.126.14:3306/wfchat?useSSL=false&amp;serverTimezone=GMT%2B8&amp;allowPublicKeyRetrieval=true&amp;useUnicode=true&amp;characterEncoding=utf8</property>
         <!--MySQL数据库用户名-->
         <property name="user">root</property>
         <!--MySQL数据库密码-->
-        <property name="password">lt123456</property>
+        <property name="password">digintech123</property>
         <!-- 初始化连接池中的连接数，取值应在minPoolSize与maxPoolSize之间，默认为3-->
         <property name="initialPoolSize">10</property>
         <!--最大空闲时间，60秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->

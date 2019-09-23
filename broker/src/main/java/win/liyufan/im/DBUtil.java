@@ -80,11 +80,15 @@ public class DBUtil {
                     comboPooledDataSource = new ComboPooledDataSource("mysql");
                     try {
                         String url01 = comboPooledDataSource.getJdbcUrl().substring(0,comboPooledDataSource.getJdbcUrl().indexOf("?"));
-
+                        String urlParam = null;
+                        if(comboPooledDataSource.getJdbcUrl().indexOf("?") > 0) {
+                            urlParam = comboPooledDataSource.getJdbcUrl().substring(comboPooledDataSource.getJdbcUrl().indexOf("?"));
+                        }
                         String url02 = url01.substring(0,url01.lastIndexOf("/"));
 
                         String datasourceName = url01.substring(url01.lastIndexOf("/")+1);
                         // 连接已经存在的数据库，如：mysql
+                        url02 = urlParam != null && urlParam.length() >0 ? (url02+urlParam) : url02;
                         Connection connection = DriverManager.getConnection(url02, comboPooledDataSource.getUser(), comboPooledDataSource.getPassword());
                         Statement statement = connection.createStatement();
 
