@@ -5,7 +5,7 @@
         <relativePath>../</relativePath>
         <artifactId>wildfirechat-parent</artifactId>
         <groupId>cn.wildfirechat</groupId>
-        <version>0.27</version>
+        <version>0.28</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
@@ -29,12 +29,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>cn.wildfirechat</groupId>
-            <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

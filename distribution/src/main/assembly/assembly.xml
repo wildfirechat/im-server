@@ -19,11 +19,6 @@
             <directory>../broker/migrate/h2/</directory>
             <outputDirectory>/migrate/h2</outputDirectory>
         </fileSet>
-
-        <fileSet>
-            <directory>../wildfire_jmeter/test_plan/</directory>
-            <outputDirectory>/tools/jmeter</outputDirectory>
-        </fileSet>
     </fileSets>
 
     <files>
@@ -69,20 +64,9 @@
         </file>
 
         <file>
-            <source>../wildfire_jmeter/target/wildfire-xmeter-jar-with-dependencies.jar</source>
-            <outputDirectory>tools/jmeter</outputDirectory>
-        </file>
-
-        <file>
             <source>../broker/target/moquette-broker-${project.version}.jar</source>
             <outputDirectory>lib/</outputDirectory>
             <destName>moquette-broker-${project.version}.jar</destName>
-        </file>
-
-        <file>
-            <source>../client/target/client-${project.version}.jar</source>
-            <outputDirectory>java_client/</outputDirectory>
-            <destName>client-${project.version}.jar</destName>
         </file>
 
         <file>

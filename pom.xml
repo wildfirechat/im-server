@@ -12,7 +12,7 @@
     <artifactId>wildfirechat-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.27</version>
+    <version>0.28</version>
     <name>Wildfire Chat</name>
     <description>Wildfire Chat Server</description>
     <inceptionYear>2019</inceptionYear>
@@ -32,8 +32,6 @@
 
     <modules>
         <module>broker</module>
-        <module>wildfire_jmeter</module>
-        <module>client</module>
         <module>common</module>
         <module>sdk</module>
         <module>distribution</module>
