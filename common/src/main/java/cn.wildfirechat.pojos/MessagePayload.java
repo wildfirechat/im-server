@@ -129,8 +129,8 @@ public class MessagePayload {
             builder.setSearchableContent(searchableContent);
         if (!StringUtil.isNullOrEmpty(pushContent))
             builder.setPushContent(pushContent);
-        if (!StringUtil.isNullOrEmpty(searchableContent))
-            builder.setContent(searchableContent);
+        if (!StringUtil.isNullOrEmpty(content))
+            builder.setContent(content);
         if (!StringUtil.isNullOrEmpty(base64edData))
             builder.setData(ByteString.copyFrom(Base64.getDecoder().decode(base64edData)));
         if (!StringUtil.isNullOrEmpty(remoteMediaUrl))
