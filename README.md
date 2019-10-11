@@ -7,7 +7,6 @@
 | [android-chat](https://github.com/wildfirechat/android-chat) | 野火IM Android SDK源码和App源码                                      | 可以很方便地进行二次开发，或集成到现有应用当中 |
 | [ios-chat](https://github.com/wildfirechat/ios-chat)         | 野火IM iOS SDK源码和App源码                                          | 可以很方便地进行二次开发，或集成到现有应用当中 |
 | [pc-chat](https://github.com/wildfirechat/pc-chat)           | 基于[Electron](https://electronjs.org/)开发的PC平台应用 |                                                |
-| [proto](https://github.com/wildfirechat/proto)               | 野火IM的协议栈实现                                      |                                                |
 | [server](https://github.com/wildfirechat/server)             | IM server                                               |                                                |
 | [app server](https://github.com/wildfirechat/app_server)     | 应用服务端                                              |                                                |
 | [robot_server](https://github.com/wildfirechat/robot_server) | 机器人服务端                                            |                                                |
