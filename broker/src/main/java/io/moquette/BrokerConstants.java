@@ -111,7 +111,7 @@ public final class BrokerConstants {
     public static final String MONGODB_Data_Expire_Days = "mongodb.data_expire_days";
 
     public static final String MESSAGE_ROAMING = "message.roaming";
-    public static final String MESSAGE_Remote_History_Message = "message.reomte_history_message";
+    public static final String MESSAGE_Remote_History_Message = "message.remote_history_message";
 
 
     private BrokerConstants() {
