@@ -1,4 +1,7 @@
 <?xml version ="1.0" encoding="UTF-8"?>
+
+<!--    # 本配置文件为debug使用，修改这里不会在Release包中生效。Release中包含的配置文件在 ${Porject_Path}/distribution/src/main/resources目录下-->
+
 <c3p0-config>
     <!-- This is default config! -->
     <default-config>
