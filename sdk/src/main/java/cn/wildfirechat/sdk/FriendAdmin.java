@@ -19,7 +19,7 @@ public class FriendAdmin {
         String path = APIPath.Friend_Get_List;
         InputGetFriendList input = new InputGetFriendList();
         input.setUserId(userId);
-        input.setStatus(0);
+        input.setStatus(status);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
