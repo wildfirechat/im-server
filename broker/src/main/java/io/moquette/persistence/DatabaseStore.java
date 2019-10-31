@@ -173,13 +173,17 @@ public class DatabaseStore {
             if (buzzy) {
                 sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
             } else {
-                sql += " where (`_display_name` = ? or `_name` = ? or `_mobile` = ?) ";
+                sql += " where (``_name` = ? or `_mobile` = ?) ";
             }
 
             sql += " and _type <> 2"; //can search normal user(0) and robot(1), can not search things
 
-            sql += " limit 20";
-
+            if (buzzy) {
+                sql += " limit 20";
+            } else {
+                sql += " limit 1";
+            }
+            
             if (page > 0) {
                 sql += "offset = '" + page * 20 + "'";
             }
@@ -189,9 +193,8 @@ public class DatabaseStore {
             int index = 1;
             if (buzzy) {
                 statement.setString(index++, "%" + keyword + "%");
-            } else {
-                statement.setString(index++, keyword);
             }
+
             statement.setString(index++, keyword);
             statement.setString(index++, keyword);
 
