@@ -32,7 +32,6 @@ import io.moquette.spi.security.Tokenor;
 import io.moquette.spi.impl.subscriptions.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Encoder;
 import win.liyufan.im.*;
 
 import java.security.MessageDigest;
@@ -1592,8 +1591,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 String pwd_md5 = rs.getString(2);
                 try {
                     MessageDigest md5 = MessageDigest.getInstance("MD5");
-                    BASE64Encoder base64en = new BASE64Encoder();
-                    String passwdMd5 = base64en.encode(md5.digest(password.getBytes("utf-8")));
+                    String passwdMd5 = Base64.getEncoder().encodeToString(md5.digest(password.getBytes("utf-8")));
                     if (passwdMd5.equals(pwd_md5)) {
                         LOG.info("login success userName={}, userId={}", name, uid);
                         userIdRet.add(uid);

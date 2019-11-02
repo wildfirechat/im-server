@@ -19,7 +19,6 @@ import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.spi.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Encoder;
 import win.liyufan.im.DBUtil;
 import win.liyufan.im.MessageBundle;
 import win.liyufan.im.MessageShardingUtil;
@@ -1631,8 +1630,7 @@ public class DatabaseStore {
 
                 try {
                     MessageDigest md5 = MessageDigest.getInstance("MD5");
-                    BASE64Encoder base64en = new BASE64Encoder();
-                    String passwdMd5 = base64en.encode(md5.digest(password.getBytes("utf-8")));
+                    String passwdMd5 = Base64.getEncoder().encodeToString(md5.digest(password.getBytes("utf-8")));
                     statement.setString(index, passwdMd5);
                 } catch (Exception e) {
                     statement.setString(index, "");
