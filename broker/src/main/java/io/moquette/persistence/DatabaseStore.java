@@ -172,7 +172,7 @@ public class DatabaseStore {
             if (buzzy) {
                 sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
             } else {
-                sql += " where (``_name` = ? or `_mobile` = ?) ";
+                sql += " where (`_name` = ? or `_mobile` = ?) ";
             }
 
             sql += " and _type <> 2"; //can search normal user(0) and robot(1), can not search things
