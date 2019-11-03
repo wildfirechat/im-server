@@ -56,8 +56,6 @@ public class DatabaseStore {
 
             statement.setString(1, userId);
 
-            statement.executeQuery();
-
             rs = statement.executeQuery();
             while (rs.next()) {
                 int index = 1;
