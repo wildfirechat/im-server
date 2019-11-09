@@ -2318,6 +2318,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             words) {
             databaseStore.deleteSensitiveWord(word);
         }
+        lastUpdateSensitiveTime = 0;
         return true;
     }
 
