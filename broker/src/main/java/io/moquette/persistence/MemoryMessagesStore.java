@@ -1038,25 +1038,31 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         //check the new owner is in member list? is that necessary?
         long updateDt = System.currentTimeMillis();
-        groupInfo = groupInfo.toBuilder().setOwner(newOwner).setUpdateDt(updateDt).build();
-
+        groupInfo = groupInfo.toBuilder().setOwner(newOwner).setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build();
         mIMap.set(groupId, groupInfo);
+
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
         if (members == null || members.size() == 0) {
             members = loadGroupMemberFromDB(hzInstance, groupId);
         }
+        int modifyMemeberCount = 0;
         for (WFCMessage.GroupMember member : members) {
+            if (modifyMemeberCount == 2) {
+                break;
+            }
             if (newOwner.equals(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
                 groupMembers.put(groupId, member);
+                modifyMemeberCount++;
             } else if(member.getType() == GroupMemberType_Owner) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
                 groupMembers.put(groupId, member);
+                modifyMemeberCount++;
             }
         }
 
