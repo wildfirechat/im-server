@@ -268,6 +268,24 @@ public class Main {
             System.exit(-1);
         }
 
+        voidIMResult = GroupAdmin.setGroupManager("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), true, null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("set group manager success");
+        } else {
+            System.out.println("set group manager failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = GroupAdmin.setGroupManager("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), false, null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("cancel group manager success");
+        } else {
+            System.out.println("cancel group manager failure");
+            System.exit(-1);
+        }
+
+
+
         //***********************************************
         //****  消息相关功能
         //***********************************************

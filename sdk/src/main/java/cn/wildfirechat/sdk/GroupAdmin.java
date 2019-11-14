@@ -88,6 +88,20 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, addGroupMember, Void.class);
     }
 
+    public static IMResult<Void> setGroupManager(String operator, String groupId, List<String> groupMemberIds, boolean isManager, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+        String path = APIPath.Group_Set_Manager;
+        InputSetGroupManager addGroupMember = new InputSetGroupManager();
+        addGroupMember.setGroup_id(groupId);
+        addGroupMember.setMembers(groupMemberIds);
+        addGroupMember.setIs_manager(isManager);
+        addGroupMember.setOperator(operator);
+        addGroupMember.setTo_lines(to_lines);
+        addGroupMember.setNotify_message(notify_message);
+        return AdminHttpUtils.httpJsonPost(path, addGroupMember, Void.class);
+    }
+
+
+
     public static IMResult<Void> kickoffGroupMembers(String operator, String groupId, List<String> groupMemberIds, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Group_Member_Kickoff;
         InputKickoffGroupMember kickoffGroupMember = new InputKickoffGroupMember();
