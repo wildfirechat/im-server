@@ -348,7 +348,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                         }
 
                         size += bundle.getMessage().getSerializedSize();
-                        if (size >= 1 * 1024 * 1024) { //3M
+                        if (size >= 512 * 1024) { //3M
                             break;
                         }
                         builder.addMessage(bundle.getMessage());
