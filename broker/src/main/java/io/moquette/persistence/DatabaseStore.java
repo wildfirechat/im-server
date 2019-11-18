@@ -350,7 +350,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_uid`, `_friend_uid`, `_alias`, `_state`, `_dt` from t_friend";
+            String sql = "select `_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt` from t_friend";
             statement = connection.prepareStatement(sql);
 
             int index;
@@ -374,6 +374,9 @@ public class DatabaseStore {
 
                 int intvalue = rs.getInt(index++);
                 builder.setState(intvalue);
+
+                intvalue = rs.getInt(index++);
+                builder.setBlacked(intvalue);
 
                 long longvalue = rs.getLong(index++);
                 builder.setTimestamp(longvalue);
@@ -2139,7 +2142,7 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_friend_uid`, `_alias`, `_state`, `_dt` from t_friend where `_uid` = ?";
+            String sql = "select `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt` from t_friend where `_uid` = ?";
             statement = connection.prepareStatement(sql);
 
 
@@ -2153,9 +2156,10 @@ public class DatabaseStore {
                 String uid = rs.getString(1);
                 String alias = rs.getString(2);
                 int state = rs.getInt(3);
-                long timestamp = rs.getLong(4);
+                int blacked = rs.getInt(4);
+                long timestamp = rs.getLong(5);
 
-                FriendData data = new FriendData(userId, uid, alias, state, timestamp);
+                FriendData data = new FriendData(userId, uid, alias, state, blacked, timestamp);
                 out.add(data);
             }
             return out;
@@ -2305,10 +2309,11 @@ public class DatabaseStore {
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
-                String sql = "insert into t_friend (`_uid`, `_friend_uid`, `_alias`, `_state`, `_dt`) values(?, ?, ?, ?, ?)" +
+                String sql = "insert into t_friend (`_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt`) values(?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_alias` = ?," +
                     "`_state` = ?," +
+                    "`_blacked` = ?," +
                     "`_dt` = ?";
 
 
@@ -2318,9 +2323,11 @@ public class DatabaseStore {
                 statement.setString(index++, request.getFriendUid());
                 statement.setString(index++, request.getAlias());
                 statement.setInt(index++, request.getState());
+                statement.setInt(index++, request.getBlacked());
                 statement.setLong(index++, request.getTimestamp());
                 statement.setString(index++, request.getAlias());
                 statement.setInt(index++, request.getState());
+                statement.setInt(index++, request.getBlacked());
                 statement.setLong(index++, request.getTimestamp());
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);

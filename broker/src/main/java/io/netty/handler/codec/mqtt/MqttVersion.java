@@ -25,7 +25,9 @@ import io.netty.util.internal.ObjectUtil;
 public enum MqttVersion {
     MQTT_3_1("MQIsdp", (byte) 3),
     MQTT_3_1_1("MQTT", (byte) 4),
-    Wildfire_1("MQTT", (byte) 5);
+    Wildfire_1("MQTT", (byte) 5),
+    Wildfire_2("MQTT", (byte) 6),
+    Wildfire_Max("MQTT", (byte) 7);
 
     private final String name;
     private final byte level;

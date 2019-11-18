@@ -36,7 +36,7 @@ public class FriendRelationGetAction extends AdminAction {
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetFriendList inputGetFriendList = getRequestBody(request.getNettyRequest(), InputGetFriendList.class);
-            List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), 0);
+            List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), null, 0);
             List<String> list = new ArrayList<>();
             for (FriendData data : dataList) {
                 if (data.getState() == inputGetFriendList.getStatus()) {

@@ -153,7 +153,7 @@ public interface IMessagesStore {
     ErrorCode verifyToken(String userId, String token, List<String> serverIPs, List<Integer> ports);
     ErrorCode login(String name, String password, List<String> userIdRet);
 
-    List<FriendData> getFriendList(String userId, long version);
+    List<FriendData> getFriendList(String userId, String clientId, long version);
     List<WFCMessage.FriendRequest> getFriendRequestList(String userId, long version);
 
     ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head);

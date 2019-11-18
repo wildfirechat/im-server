@@ -15,14 +15,16 @@ public class FriendData implements Serializable {
     private String friendUid;
     private String alias;
     private int state;
+    private int blacked;
     private long timestamp;
 
 
-    public FriendData(String userId, String friendUid, String alias, int state, long timestamp) {
+    public FriendData(String userId, String friendUid, String alias, int state, int blacked, long timestamp) {
         this.userId = userId;
         this.friendUid = friendUid;
         this.alias = alias;
         this.state = state;
+        this.blacked = blacked;
         this.timestamp = timestamp;
     }
 
@@ -59,6 +61,14 @@ public class FriendData implements Serializable {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public int getBlacked() {
+        return blacked;
+    }
+
+    public void setBlacked(int blacked) {
+        this.blacked = blacked;
     }
 
     public long getTimestamp() {
