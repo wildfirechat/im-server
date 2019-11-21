@@ -2164,7 +2164,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     public boolean getUserPushHiddenDetail(String userId) {
         Boolean hidden = userPushHiddenDetail.get(userId);
         if (hidden == null) {
-            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingGlobalSilent, null);
+            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingHiddenNotificationDetail, null);
             if (entry == null || !entry.getValue().equals("1")) {
                 hidden = false;
             } else {
