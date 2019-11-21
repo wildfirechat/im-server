@@ -1896,7 +1896,10 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode blackUserRequest(String fromUser, String targetUserId, int state, long[] heads) {
         if (state == 2) {
             state = 1;
+        } else {
+            state = 0;
         }
+        
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
