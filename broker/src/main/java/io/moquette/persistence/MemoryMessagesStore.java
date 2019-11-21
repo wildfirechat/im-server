@@ -1562,7 +1562,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         for (FriendData friendData : friendDatas) {
             if (friendData.getFriendUid().equals(userId)) {
-                if (friendData.getState() == 2) {
+                if (friendData.getBlacked() == 1) {
                     return true;
                 } else {
                     return false;
