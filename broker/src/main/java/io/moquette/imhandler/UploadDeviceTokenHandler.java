@@ -26,12 +26,12 @@ public class UploadDeviceTokenHandler extends IMHandler<WFCMessage.UploadDeviceT
             session.setAppName(request.getAppName());
             if (request.getPlatform() == ProtoConstants.Platform.Platform_iOS && request.getPushType() == 2) {
                 session.setVoipDeviceToken(request.getDeviceToken());
-//                session.setPushType(0);//如果有voip token，肯定是生产环境的推送
                 m_sessionsStore.updateSessionToken(session, true);
             } else {
                 session.setDeviceToken(request.getDeviceToken());
                 session.setPushType(request.getPushType());
                 m_sessionsStore.updateSessionToken(session, false);
+                m_sessionsStore.cleanDuplatedToken(session.getClientID(), session.getPushType(), session.getDeviceToken(), false);
             }
 
             return ErrorCode.ERROR_CODE_SUCCESS;

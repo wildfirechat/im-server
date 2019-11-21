@@ -16,7 +16,9 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.proto.WFCMessage;
+import com.hazelcast.util.StringUtil;
 import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
@@ -26,7 +28,6 @@ import io.moquette.spi.ISessionsStore;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import cn.wildfirechat.common.ErrorCode;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -262,6 +263,21 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public void cleanDuplatedToken(String cid, int pushType, String token, boolean isVoip) {
+        if (StringUtil.isNullOrEmpty(token) || isVoip) {
+            return;
+        }
+
+        Iterator<Map.Entry<String, Session>> it = sessions.entrySet().iterator();
+        while (it.hasNext()) {
+            Session session = it.next().getValue();
+            if (!session.getClientID().equals(cid) && (session.pushType == pushType && token.equals(session.deviceToken))) {
+                session.deviceToken = token;
+            }
+        }
+    }
+
+    @Override
     public void initStore() {
     }
 
@@ -272,7 +288,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void updateSessionToken(Session session, boolean voip) {
-        databaseStore.updateSessionToken(session.getUsername(), session.getClientID(), voip ? session.getVoipDeviceToken() : session.getDeviceToken(), voip);
+        databaseStore.updateSessionToken(session.getUsername(), session.getClientID(), voip ? session.getVoipDeviceToken() : session.getDeviceToken(), session.getPushType(), voip);
     }
 
     @Override

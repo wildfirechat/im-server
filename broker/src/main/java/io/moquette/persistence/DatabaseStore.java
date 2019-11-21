@@ -1064,10 +1064,45 @@ public class DatabaseStore {
         return null;
     }
 
-    void updateSessionToken(String uid, String cid, String token, boolean voipToken) {
+    void clearOtherSessionToken(String cid, String token, int pushType, boolean voipToken) {
+        if (voipToken) {
+            return;
+        }
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            String sql = "update t_user_session set `_token` = ?, `_dt` = ? where `_token` = ? and `_push_type` = ? and `_cid` <> ?";
+
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+            statement.setString(index++, "");
+            statement.setLong(index++, System.currentTimeMillis());
+            statement.setString(index++, token);
+            statement.setInt(index++, pushType);
+            statement.setString(index++, cid);
+
+            int c = statement.executeUpdate();
+            LOG.info("Update rows {}", c);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+
+    void updateSessionToken(String uid, String cid, String token, int pushType, boolean voipToken) {
         mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
+
+            clearOtherSessionToken(cid, token, pushType, voipToken);
             try {
                 connection = DBUtil.getConnection();
 
@@ -1076,12 +1111,15 @@ public class DatabaseStore {
                 if (voipToken) {
                     sql = "update t_user_session set `_voip_token` = ?, `_dt` = ? where `_uid` = ? and `_cid` = ?";
                 } else {
-                    sql = "update t_user_session set `_token` = ?, `_dt` = ? where `_uid` = ? and `_cid` = ?";
+                    sql = "update t_user_session set `_token` = ?, `_push_type` = ?, `_dt` = ? where `_uid` = ? and `_cid` = ?";
                 }
                 statement = connection.prepareStatement(sql);
 
                 int index = 1;
                 statement.setString(index++, token);
+                if (!voipToken) {
+                    statement.setInt(index++, pushType);
+                }
                 statement.setLong(index++, System.currentTimeMillis());
                 statement.setString(index++, uid);
                 statement.setString(index++, cid);
