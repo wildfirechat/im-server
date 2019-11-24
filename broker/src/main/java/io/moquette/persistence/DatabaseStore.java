@@ -2217,13 +2217,20 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select   `_uid`" +
+            String sql = "select  `_uid`" +
                 ", `_friend_uid`" +
                 ", `_reason`" +
                 ", `_status`" +
                 ", `_dt`" +
                 ", `_from_read_status`" +
-                ", `_to_read_status` from t_friend_request where `_uid` = ? or `_friend_uid` = ?";
+                ", `_to_read_status` from t_friend_request where `_uid` = ? UNION ALL " +
+                "select   `_uid`" +
+                ", `_friend_uid`" +
+                ", `_reason`" +
+                ", `_status`" +
+                ", `_dt`" +
+                ", `_from_read_status`" +
+                ", `_to_read_status` from t_friend_request where `_friend_uid` = ?";
             statement = connection.prepareStatement(sql);
 
             int index = 1;
