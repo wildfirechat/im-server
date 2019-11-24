@@ -2,16 +2,18 @@
 
 野火IM是一套跨平台、核心功能开源的即时通讯解决方案，主要包含以下内容。
 
-| 仓库                                                         | 说明                                                    | 备注                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------------------- |
-| [android-chat](https://github.com/wildfirechat/android-chat) | 野火IM Android SDK源码和App源码                                      | 可以很方便地进行二次开发，或集成到现有应用当中 |
-| [ios-chat](https://github.com/wildfirechat/ios-chat)         | 野火IM iOS SDK源码和App源码                                          | 可以很方便地进行二次开发，或集成到现有应用当中 |
-| [pc-chat](https://github.com/wildfirechat/pc-chat)           | 基于[Electron](https://electronjs.org/)开发的PC平台应用 |                                                |
-| [server](https://github.com/wildfirechat/server)             | IM server                                               |                                                |
-| [app server](https://github.com/wildfirechat/app_server)     | 应用服务端                                              |                                                |
-| [robot_server](https://github.com/wildfirechat/robot_server) | 机器人服务端                                            |                                                |
-| [push_server](https://github.com/wildfirechat/push_server)   | 推送服务器                                              |                                                |
-| [docs](https://github.com/wildfirechat/docs)                 | 野火IM相关文档，包含设计、概念、开发、使用说明          |                                                |
+| 仓库                                                         | 说明                                                    | 备注 |
+| ------------------------------------------------------------ | ------------------------------------------------------- | ---- |
+| [android-chat](https://github.com/wildfirechat/android-chat) | 野火IM Android SDK源码和App源码                       |可以很方便地进行二次开发，或集成到现有应用当中      |
+| [ios-chat](https://github.com/wildfirechat/ios-chat)         | 野火IM iOS SDK源码和App源码                            |可以很方便地进行二次开发，或集成到现有应用当中      |
+| [pc-chat](https://github.com/wildfirechat/pc-chat)           | 基于[Electron](https://electronjs.org/)开发的PC平台应用 |      |
+| [web-chat](https://github.com/wildfirechat/web-chat)          | Web平台的Demo, [体验地址](http://web.wildfirechat.cn)   |      |
+| [wx-chat](https://github.com/wildfirechat/wx-chat)           | 微信小程序平台的Demo   |      |
+| [server](https://github.com/wildfirechat/server)             | IM server                                               |      |
+| [app server](https://github.com/wildfirechat/app_server)     | 应用服务端                                          |      |
+| [robot_server](https://github.com/wildfirechat/robot_server) | 机器人服务端                                        |      |
+| [push_server](https://github.com/wildfirechat/push_server)   | 推送服务器                                              |      |
+| [docs](https://github.com/wildfirechat/docs)                 | 野火IM相关文档，包含设计、概念、开发、使用说明          |      | |                                            |
 
 # server
 本工程为野火IM 社区版IM服务软件。野火IM作为一个通用的即时通讯解决方案，可以集成到各种应用中。请阅读[docs](http://docs.wildfirechat.cn)或下载服务器[发布版本](https://github.com/wildfirechat/server/releases)
