@@ -57571,6 +57571,16 @@ public final class WFCMessage {
      */
     com.google.protobuf.ByteString
         getClientIdBytes();
+
+    // optional int32 platform = 3;
+    /**
+     * <code>optional int32 platform = 3;</code>
+     */
+    boolean hasPlatform();
+    /**
+     * <code>optional int32 platform = 3;</code>
+     */
+    int getPlatform();
   }
   /**
    * Protobuf type {@code GetTokenRequest}
@@ -57631,6 +57641,11 @@ public final class WFCMessage {
             case 18: {
               bitField0_ |= 0x00000002;
               clientId_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              platform_ = input.readInt32();
               break;
             }
           }
@@ -57759,9 +57774,26 @@ public final class WFCMessage {
       }
     }
 
+    // optional int32 platform = 3;
+    public static final int PLATFORM_FIELD_NUMBER = 3;
+    private int platform_;
+    /**
+     * <code>optional int32 platform = 3;</code>
+     */
+    public boolean hasPlatform() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int32 platform = 3;</code>
+     */
+    public int getPlatform() {
+      return platform_;
+    }
+
     private void initFields() {
       userId_ = "";
       clientId_ = "";
+      platform_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -57789,6 +57821,9 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getClientIdBytes());
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, platform_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -57805,6 +57840,10 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getClientIdBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, platform_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -57926,6 +57965,8 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000001);
         clientId_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        platform_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -57962,6 +58003,10 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000002;
         }
         result.clientId_ = clientId_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.platform_ = platform_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -57987,6 +58032,9 @@ public final class WFCMessage {
           bitField0_ |= 0x00000002;
           clientId_ = other.clientId_;
           onChanged();
+        }
+        if (other.hasPlatform()) {
+          setPlatform(other.getPlatform());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -58167,6 +58215,39 @@ public final class WFCMessage {
   }
   bitField0_ |= 0x00000002;
         clientId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 platform = 3;
+      private int platform_ ;
+      /**
+       * <code>optional int32 platform = 3;</code>
+       */
+      public boolean hasPlatform() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int32 platform = 3;</code>
+       */
+      public int getPlatform() {
+        return platform_;
+      }
+      /**
+       * <code>optional int32 platform = 3;</code>
+       */
+      public Builder setPlatform(int value) {
+        bitField0_ |= 0x00000004;
+        platform_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 platform = 3;</code>
+       */
+      public Builder clearPlatform() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        platform_ = 0;
         onChanged();
         return this;
       }
@@ -60361,14 +60442,15 @@ public final class WFCMessage {
       "\001(\t\022\020\n\010language\030\007 \001(\t\022\024\n\014carrier_name\030\010 " +
       "\001(\t\022\023\n\013app_version\030\t \001(\t\022\023\n\013sdk_version\030" +
       "\n \001(\t\"D\n\rRouteResponse\022\014\n\004host\030\001 \002(\t\022\021\n\t" +
-      "long_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"5\n\017G" +
+      "long_port\030\002 \002(\005\022\022\n\nshort_port\030\003 \002(\005\"G\n\017G" +
       "etTokenRequest\022\017\n\007user_id\030\001 \002(\t\022\021\n\tclien",
-      "t_id\030\002 \002(\t\"\\\n\022LoadRemoteMessages\022#\n\014conv" +
-      "ersation\030\001 \002(\0132\r.Conversation\022\022\n\nbefore_" +
-      "uid\030\002 \002(\003\022\r\n\005count\030\003 \002(\005\"a\n\020MultiCastMes" +
-      "sage\022\021\n\tfrom_user\030\001 \002(\t\022 \n\007content\030\002 \002(\013" +
-      "2\017.MessageContent\022\n\n\002to\030\003 \003(\t\022\014\n\004line\030\004 " +
-      "\002(\005B#\n\025cn.wildfirechat.protoB\nWFCMessage"
+      "t_id\030\002 \002(\t\022\020\n\010platform\030\003 \001(\005\"\\\n\022LoadRemo" +
+      "teMessages\022#\n\014conversation\030\001 \002(\0132\r.Conve" +
+      "rsation\022\022\n\nbefore_uid\030\002 \002(\003\022\r\n\005count\030\003 \002" +
+      "(\005\"a\n\020MultiCastMessage\022\021\n\tfrom_user\030\001 \002(" +
+      "\t\022 \n\007content\030\002 \002(\0132\017.MessageContent\022\n\n\002t" +
+      "o\030\003 \003(\t\022\014\n\004line\030\004 \002(\005B#\n\025cn.wildfirechat" +
+      ".protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -60794,7 +60876,7 @@ public final class WFCMessage {
           internal_static_GetTokenRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenRequest_descriptor,
-              new java.lang.String[] { "UserId", "ClientId", });
+              new java.lang.String[] { "UserId", "ClientId", "Platform", });
           internal_static_LoadRemoteMessages_descriptor =
             getDescriptor().getMessageTypes().get(70);
           internal_static_LoadRemoteMessages_fieldAccessorTable = new
