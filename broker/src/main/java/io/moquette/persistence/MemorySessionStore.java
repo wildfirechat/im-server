@@ -17,8 +17,10 @@
 package io.moquette.persistence;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.util.StringUtil;
+import io.moquette.BrokerConstants;
 import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
@@ -35,6 +37,8 @@ import java.util.concurrent.*;
 public class MemorySessionStore implements ISessionsStore {
     private static int dumy = 1;
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
+
+    private boolean supportMultiEndpoint = false;
 
     public static class Session implements Comparable<Session>{
         final String clientID;
@@ -249,8 +253,14 @@ public class MemorySessionStore implements ISessionsStore {
     private final Server mServer;
     private final DatabaseStore databaseStore;
     public MemorySessionStore(Server server, DatabaseStore databaseStore) {
-    		mServer = server;
-    		this.databaseStore = databaseStore;
+        mServer = server;
+        this.databaseStore = databaseStore;
+
+        try {
+            supportMultiEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_ENDPOINT));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -292,14 +302,55 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public Session createUserSession(String username, String clientID) {
+    public Session createUserSession(String username, String clientID, int platform) {
         LOG.debug("createUserSession for client <{}>, user <{}>", clientID, username);
 
         ClientSession clientSession = new ClientSession(clientID, this);
         Session session = databaseStore.getSession(username, clientID, clientSession);
 
         if (session == null) {
-            session = databaseStore.createSession(username, clientID, clientSession);
+            session = databaseStore.createSession(username, clientID, clientSession, platform);
+        }
+
+        if (session.getPlatform() != platform) {
+            session.setPlatform(platform);
+            databaseStore.updateSessionPlatform(username, clientID, platform);
+        }
+
+
+        if (!supportMultiEndpoint && platform > 0) {
+            databaseStore.clearMultiEndpoint(username, clientID, platform);
+            if (userSessions.get(username) != null) {
+                Iterator<String> it = userSessions.get(username).iterator();
+                while (it.hasNext()) {
+                    String c = it.next();
+                    if (!clientID.equals(c)) {
+                        Session s = sessions.get(c);
+
+                        boolean remove = false;
+                        if (platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_iOS) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_Android || s.getPlatform() == ProtoConstants.Platform.Platform_iOS) {
+                                remove = true;
+                            }
+                        } else if(platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Windows) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows) {
+                                remove = true;
+                            }
+                        } else {
+                            if (s.getPlatform() ==platform) {
+                                remove = true;
+                            }
+                        }
+
+                        if (remove) {
+                            sessions.remove(c);
+                            mServer.getProcessor().kickoffSession(s);
+                            it.remove();
+                        }
+                    }
+                }
+            }
+
         }
 
         return session;
@@ -307,7 +358,7 @@ public class MemorySessionStore implements ISessionsStore {
 
 
     @Override
-    public ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createWhenNoExist) {
+    public ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createWhenNoExist, int platform) {
         LOG.debug("createNewSession for client <{}>", clientID);
 
         Session session = sessions.get(clientID);
@@ -322,10 +373,10 @@ public class MemorySessionStore implements ISessionsStore {
 
         if (session == null) {
             if (!createWhenNoExist) {
-                return ErrorCode.ERROR_CODE_NOT_EXIST;
+                return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
             }
 
-            session = databaseStore.createSession(username, clientID, clientSession);
+            session = databaseStore.createSession(username, clientID, clientSession, platform);
         }
 
         sessions.put(clientID, session);
@@ -482,7 +533,9 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public void dropQueue(String clientID) {
-        sessions.get(clientID).queue.clear();
+        if (sessions.get(clientID) != null) {
+            sessions.get(clientID).queue.clear();
+        }
     }
 
     @Override

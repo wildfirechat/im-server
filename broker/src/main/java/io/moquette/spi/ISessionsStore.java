@@ -38,9 +38,9 @@ public interface ISessionsStore {
      */
     boolean contains(String clientID);
 
-    Session createUserSession(String username, String clientID);
+    Session createUserSession(String username, String clientID, int platform);
 
-    ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createNoExist);
+    ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createNoExist, int platform);
 
     ClientSession updateExistSession(String username, String clientID, WFCMessage.RouteRequest endpoint, boolean cleanSession);
 

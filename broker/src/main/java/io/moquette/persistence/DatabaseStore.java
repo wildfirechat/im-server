@@ -1136,6 +1136,35 @@ public class DatabaseStore {
         });
     }
 
+    void updateSessionPlatform(String uid, String cid, int platform) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "update t_user_session set `_platform` = ? where `_uid` = ? and `_cid` = ?";
+
+                statement = connection.prepareStatement(sql);
+
+                int index = 1;
+                statement.setInt(index++, platform);
+                statement.setString(index++, uid);
+                statement.setString(index++, cid);
+
+                int c = statement.executeUpdate();
+                LOG.info("Update rows {}", c);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
     private boolean strEqual(String left, String right) {
         if (left == right)
             return true;
@@ -1228,23 +1257,65 @@ public class DatabaseStore {
         });
     }
 
-    MemorySessionStore.Session createSession(String uid, String clientId, ClientSession clientSession) {
+    void clearMultiEndpoint(String uid, String clientId, int platform) {
+        LOG.info("clearMultiEndpoint {}, {}", uid, clientId);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql;
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX
+                    || platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
+                sql = "delete from t_user_session where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ?";
+            } else {
+                sql = "delete from t_user_session where `_uid`=? and `_platform` = ? and `_cid` <> ?";
+            }
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setString(index++, uid);
+
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_Windows);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_OSX);
+            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_iOS);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_Android);
+            } else {
+                statement.setInt(index++, platform);
+            }
+
+            statement.setString(index++, clientId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    MemorySessionStore.Session createSession(String uid, String clientId, ClientSession clientSession, int platform) {
         Connection connection = null;
         PreparedStatement statement = null;
         LOG.info("Database create session {},{}", uid, clientId);
         try {
             connection = DBUtil.getConnection();
-            String sql = "insert into t_user_session  (`_uid`,`_cid`,`_secret`,`_db_secret`, `_dt`) values (?,?,?,?,?)";
+            String sql = "insert into t_user_session  (`_uid`,`_cid`,`_platform`,`_secret`,`_db_secret`, `_dt`) values (?,?,?,?,?,?)";
 
             statement = connection.prepareStatement(sql);
 
             int index = 1;
 
             MemorySessionStore.Session session = new MemorySessionStore.Session(uid, clientId, clientSession);
-
+            session.setPlatform(platform);
 
             statement.setString(index++, uid);
             statement.setString(index++, clientId);
+            statement.setInt(index++, platform);
 
 
             session.setSecret(UUID.randomUUID().toString());

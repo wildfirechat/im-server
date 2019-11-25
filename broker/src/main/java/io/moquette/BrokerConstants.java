@@ -106,6 +106,8 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_Forward_Url = "message.forward.url";
 
+    public static final String SERVER_MULTI_ENDPOINT = "server.multi_endpoint";
+
     public static final String MONGODB_Client_URI = "mongodb.client_uri";
     public static final String MONGODB_Database = "mongodb.database";
     public static final String MONGODB_Data_Expire_Days = "mongodb.data_expire_days";

@@ -55,7 +55,24 @@ import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
  *
  * Used by the front facing class ProtocolProcessorBootstrapper.
  */
+
 public class ProtocolProcessor {
+
+
+    public void kickoffSession(final MemorySessionStore.Session session) {
+        mServer.getImBusinessScheduler().execute(()->{
+            ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
+            try {
+                if (descriptor != null) {
+                    processDisconnect(descriptor.getChannel(), true);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            }
+        });
+    }
+
     private void handleTargetRemovedFromCurrentNode(TargetEntry target) {
         System.out.println("kickof user " + target);
         if (target.type == TargetEntry.Type.TARGET_TYPE_USER) {
@@ -253,7 +270,7 @@ public class ProtocolProcessor {
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
                 if (session == null) {
-                    m_sessionsStore.createNewSession(msg.payload().userName(), clientId, true, false);
+                    m_sessionsStore.createNewSession(msg.payload().userName(), clientId, true, false, 0);
                     session = m_sessionsStore.getSession(clientId);
                 }
                 
@@ -501,14 +518,11 @@ public class ProtocolProcessor {
             return;
         }
 
-        boolean stillPresent = this.connectionDescriptors.removeConnection(existingDescriptor);
-        if (!stillPresent) {
-            // another descriptor was inserted
-            LOG.warn("Another descriptor has been inserted. CId={}", clientID);
-            return;
-        }
+        this.connectionDescriptors.removeConnection(existingDescriptor);
 
         LOG.info("The DISCONNECT message has been processed. CId={}", clientID);
+
+        channel.closeFuture();
 
         //disconnect the session
         m_sessionsStore.sessionForClient(clientID).disconnect(clearSession);

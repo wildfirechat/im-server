@@ -82,7 +82,7 @@ public class RouteAction extends Action {
 
             MemorySessionStore.Session session = sessionsStore.sessionForClientAndUser(uid, cid);
             if (session == null) {
-                ErrorCode errorCode = sessionsStore.createNewSession(uid, cid, true, true);
+                ErrorCode errorCode = sessionsStore.createNewSession(uid, cid, true, false, 0);
                 if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
                     sendResponse(response, errorCode, null, base64Response);
                     return true;

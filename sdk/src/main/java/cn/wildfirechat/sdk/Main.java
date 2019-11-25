@@ -98,7 +98,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<OutputGetIMTokenData> resultGetToken = UserAdmin.getUserToken(userInfo.getUserId(), "client111");
+        IMResult<OutputGetIMTokenData> resultGetToken = UserAdmin.getUserToken(userInfo.getUserId(), "client111", ProtoConstants.Platform.Platform_Android);
         if (resultGetToken != null && resultGetToken.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get token success: " + resultGetToken.getResult().getToken());
         } else {
