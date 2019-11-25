@@ -2040,6 +2040,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode getUserSettings(String userId, long version, WFCMessage.GetUserSettingResult.Builder builder) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+        IMap<String, WFCMessage.GroupInfo> mGroups = hzInstance.getMap(GROUPS_MAP);
+        IMap<String, WFCMessage.ChannelInfo> mChannels = hzInstance.getMap(CHANNELS);
 
         Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
         if (entries == null || entries.size() == 0) {
@@ -2047,12 +2049,51 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         ErrorCode ec = ErrorCode.ERROR_CODE_NOT_MODIFIED;
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.MONTH, -1);
+        long monthAgo = c.getTimeInMillis();
+
         if (entries != null) {
             for (WFCMessage.UserSettingEntry entry : entries
             ) {
                 if (entry.getUpdateDt() > version) {
                     ec = ErrorCode.ERROR_CODE_SUCCESS;
-                    builder.addEntry(entry);
+                    boolean skip = false;
+                    if (version == 0 && entry.getUpdateDt() > monthAgo) {
+                        if (entry.getScope() == UserSettingScope.kUserSettingConversationSync) {
+                            try {
+                                String key = entry.getKey();
+                                int pos1 = key.indexOf('-');
+                                String typeStr = key.substring(0, pos1);
+                                int type = Integer.parseInt(typeStr);
+                                if (type == ProtoConstants.ConversationType.ConversationType_Group
+                                    || type == ProtoConstants.ConversationType.ConversationType_Channel) {
+                                    int pos2 = key.indexOf('-', pos1 + 1);
+                                    String target = key.substring(pos2 + 1);
+
+                                    if (type == ProtoConstants.ConversationType.ConversationType_Group) {
+                                        WFCMessage.GroupInfo groupInfo = mGroups.get(target);
+                                        if (groupInfo == null) {
+                                            skip = true;
+                                        }
+                                    } else {
+                                        WFCMessage.ChannelInfo channelInfo = mChannels.get(target);
+                                        if (channelInfo == null) {
+                                            skip = true;
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                    if (!skip) {
+                        builder.addEntry(entry);
+                    }
                 }
             }
         }
