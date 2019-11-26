@@ -282,7 +282,7 @@ public class MemorySessionStore implements ISessionsStore {
         while (it.hasNext()) {
             Session session = it.next().getValue();
             if (!session.getClientID().equals(cid) && (session.pushType == pushType && token.equals(session.deviceToken))) {
-                session.deviceToken = token;
+                session.deviceToken = null;
             }
         }
     }
