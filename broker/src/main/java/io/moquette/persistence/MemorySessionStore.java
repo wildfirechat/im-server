@@ -145,6 +145,9 @@ public class MemorySessionStore implements ISessionsStore {
 
         public void setUpdateDt(long updateDt) {
             this.updateDt = updateDt;
+            if (this.lastActiveTime == 0) {
+                this.lastActiveTime = updateDt;
+            }
         }
 
         private int pushType;
