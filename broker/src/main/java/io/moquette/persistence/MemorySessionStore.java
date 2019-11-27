@@ -55,6 +55,16 @@ public class MemorySessionStore implements ISessionsStore {
 
         private volatile int unReceivedMsgs;
 
+        private int deleted;
+
+        public int getDeleted() {
+            return deleted;
+        }
+
+        public void setDeleted(int deleted) {
+            this.deleted = deleted;
+        }
+
         private MqttVersion mqttVersion = MqttVersion.MQTT_3_1_1;
 
         public long getLastActiveTime() {
@@ -312,6 +322,11 @@ public class MemorySessionStore implements ISessionsStore {
             session = databaseStore.createSession(username, clientID, clientSession, platform);
         }
 
+        if (session.getDeleted() > 0) {
+            session.setDeleted(0);
+            databaseStore.updateSessionDeleted(username, clientID, 0);
+        }
+
         if (session.getPlatform() != platform) {
             session.setPlatform(platform);
             databaseStore.updateSessionPlatform(username, clientID, platform);
@@ -358,34 +373,29 @@ public class MemorySessionStore implements ISessionsStore {
 
 
     @Override
-    public ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createWhenNoExist, int platform) {
+    public ErrorCode loadActiveSession(String username, String clientID) {
         LOG.debug("createNewSession for client <{}>", clientID);
 
         Session session = sessions.get(clientID);
-        if (session != null) {
+
+        if (session != null && session.getDeleted() == 0) {
             LOG.error("already exists a session for client <{}>, bad condition", clientID);
             throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
         }
 
+        if (session != null && session.getDeleted() > 0) {
+            return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+        }
 
         ClientSession clientSession = new ClientSession(clientID, this);
         session = databaseStore.getSession(username, clientID, clientSession);
 
-        if (session == null) {
-            if (!createWhenNoExist) {
-                return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
-            }
-
-            session = databaseStore.createSession(username, clientID, clientSession, platform);
+        if (session == null || session.getDeleted() > 0) {
+            return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
         }
 
         sessions.put(clientID, session);
-        ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);
-        if (sessionSet == null) {
-			sessionSet = new ConcurrentSkipListSet<>();
-			userSessions.put(username, sessionSet);
-		}
-        sessionSet = userSessions.get(username);
+        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
         sessionSet.add(clientID);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
@@ -409,12 +419,7 @@ public class MemorySessionStore implements ISessionsStore {
         session.setUsername(username);
         sessions.put(clientID, session);
 
-        ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);
-        if (sessionSet == null) {
-            sessionSet = new ConcurrentSkipListSet<>();
-            userSessions.put(username, sessionSet);
-        }
-        sessionSet = userSessions.get(username);
+        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
         sessionSet.add(clientID);
 
         if (endpoint != null) {
@@ -460,14 +465,26 @@ public class MemorySessionStore implements ISessionsStore {
         }
     }
 
+    private ConcurrentSkipListSet<String> getUserSessionSet(String username) {
+        ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);
+        if (sessionSet == null) {
+            sessionSet = new ConcurrentSkipListSet<String>();
+            List<Session> ss = databaseStore.getUserActivedSessions(username);
+            for (Session s : ss) {
+                sessionSet.add(s.getClientID());
+                sessions.put(s.getClientID(), s);
+            }
+            userSessions.put(username, sessionSet);
+        }
+
+        sessionSet = userSessions.get(username);
+        return sessionSet;
+    }
+
     @Override
     public Collection<Session> sessionForUser(String username) {
-    	ConcurrentSkipListSet<String> sessionSet = userSessions.get(username);
-        if (sessionSet == null) {
-			sessionSet = new ConcurrentSkipListSet<String>();
-			userSessions.put(username, sessionSet);
-		}
-        sessionSet = userSessions.get(username);
+    	ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+
         ArrayList<Session> out = new ArrayList<>();
         for (String clientId : sessionSet
              ) {
@@ -611,12 +628,7 @@ public class MemorySessionStore implements ISessionsStore {
             LOG.error("Can't find the session for client <{}>", clientID);
             return;
         }
-        ConcurrentSkipListSet<String> sessionSet = userSessions.get(session.username);
-        if (sessionSet == null) {
-			sessionSet = new ConcurrentSkipListSet<>();
-			userSessions.put(session.username, sessionSet);
-		}
-        sessionSet = userSessions.get(session.username);
+        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
         sessionSet.remove(clientID);
 
         // remove also the messages stored of type QoS1/2

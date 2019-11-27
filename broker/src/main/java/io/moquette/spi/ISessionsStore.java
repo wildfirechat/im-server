@@ -40,7 +40,7 @@ public interface ISessionsStore {
 
     Session createUserSession(String username, String clientID, int platform);
 
-    ErrorCode createNewSession(String username, String clientID, boolean cleanSession, boolean createNoExist, int platform);
+    ErrorCode loadActiveSession(String username, String clientID);
 
     ClientSession updateExistSession(String username, String clientID, WFCMessage.RouteRequest endpoint, boolean cleanSession);
 

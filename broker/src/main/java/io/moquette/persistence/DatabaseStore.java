@@ -16,6 +16,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
+import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import java.security.MessageDigest;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
+
 
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.persistence.MemoryMessagesStore.USER_STATUS;
@@ -1024,8 +1026,52 @@ public class DatabaseStore {
         });
     }
 
+    List<MemorySessionStore.Session> getUserActivedSessions(String uid) {
+        String sql = "select  `_cid`, `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt` from t_user_session where `_uid` = ? and `_deleted` = 0";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        List<MemorySessionStore.Session> result = new ArrayList<>();
+        try {
+            connection = DBUtil.getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, uid);
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int index = 1;
+                String cid = resultSet.getString(index++);
+
+                ClientSession clientSession = new ClientSession(cid, Server.getServer().getStore().sessionsStore());
+                MemorySessionStore.Session session = new MemorySessionStore.Session(uid, cid, clientSession);
+
+                session.setAppName(resultSet.getString(index++));
+                session.setDeviceToken(resultSet.getString(index++));
+                session.setVoipDeviceToken(resultSet.getString(index++));
+                session.setSecret(resultSet.getString(index++));
+                session.setDbSecret(resultSet.getString(index++));
+                session.setPlatform(resultSet.getInt(index++));
+                session.setPushType(resultSet.getInt(index++));
+
+                session.setDeviceName(resultSet.getString(index++));
+                session.setDeviceVersion(resultSet.getString(index++));
+                session.setPhoneName(resultSet.getString(index++));
+                session.setLanguage(resultSet.getString(index++));
+                session.setCarrierName(resultSet.getString(index++));
+                session.setUpdateDt(resultSet.getLong(index++));
+                result.add(session);
+            }
+            resultSet.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+        return result;
+    }
+
     MemorySessionStore.Session getSession(String uid, String clientId, ClientSession clientSession) {
-        String sql = "select  `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt` from t_user_session where `_uid` = ? and `_cid` = ? limit 1";
+        String sql = "select  `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt`, `_deleted` from t_user_session where `_uid` = ? and `_cid` = ? limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -1051,7 +1097,8 @@ public class DatabaseStore {
                 session.setPhoneName(resultSet.getString(index++));
                 session.setLanguage(resultSet.getString(index++));
                 session.setCarrierName(resultSet.getString(index++));
-                session.setUpdateDt(resultSet.getLong(index));
+                session.setUpdateDt(resultSet.getLong(index++));
+                session.setDeleted(resultSet.getInt(index));
                 return session;
             }
             resultSet.close();
@@ -1121,6 +1168,35 @@ public class DatabaseStore {
                     statement.setInt(index++, pushType);
                 }
                 statement.setLong(index++, System.currentTimeMillis());
+                statement.setString(index++, uid);
+                statement.setString(index++, cid);
+
+                int c = statement.executeUpdate();
+                LOG.info("Update rows {}", c);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
+    void updateSessionDeleted(String uid, String cid, int deleted) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "update t_user_session set `_deleted` = ? where `_uid` = ? and `_cid` = ?";
+
+                statement = connection.prepareStatement(sql);
+
+                int index = 1;
+                statement.setInt(index++, deleted);
                 statement.setString(index++, uid);
                 statement.setString(index++, cid);
 
@@ -1266,13 +1342,19 @@ public class DatabaseStore {
             String sql;
             if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX
                     || platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
-                sql = "delete from t_user_session where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ?";
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
             } else {
-                sql = "delete from t_user_session where `_uid`=? and `_platform` = ? and `_cid` <> ?";
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and `_platform` = ? and `_cid` <> ? and `_deleted` = 0";
             }
 
             statement = connection.prepareStatement(sql);
             int index = 1;
+
+            statement.setInt(index++, 1);
+            statement.setString(index++, "");
+            statement.setString(index++, "");
+            statement.setLong(index++, System.currentTimeMillis());
+
             statement.setString(index++, uid);
 
             if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX) {
@@ -2224,7 +2306,7 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select distinct(`_uid`) from t_user_session";
+            String sql = "select distinct(`_uid`) from t_user_session where `_deleted` = 0";
             statement = connection.prepareStatement(sql);
 
 

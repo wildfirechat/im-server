@@ -240,7 +240,7 @@ abstract public class IMHandler<T> {
 
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
         int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
-        this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType);
+        mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 
@@ -250,7 +250,7 @@ abstract public class IMHandler<T> {
         message = m_messagesStore.storeMessage(username, clientID, message);
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
         int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
-        this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType);
+        mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 

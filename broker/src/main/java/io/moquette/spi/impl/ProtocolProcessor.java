@@ -16,6 +16,7 @@
 
 package io.moquette.spi.impl;
 
+import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.interception.InterceptHandler;
@@ -181,7 +182,11 @@ public class ProtocolProcessor {
 
         MqttVersion mqttVersion = MqttVersion.fromProtocolLevel(msg.variableHeader().version());
         if (!login(channel, msg, clientId, mqttVersion)) {
+            MqttConnAckMessage badId = connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD);
+
+            channel.writeAndFlush(badId);
             channel.close();
+            LOG.error("The MQTT login failure. Username={}", payload.userName());
             return;
         }
         if (!mServer.m_initialized) {
@@ -270,8 +275,15 @@ public class ProtocolProcessor {
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
                 if (session == null) {
-                    m_sessionsStore.createNewSession(msg.payload().userName(), clientId, true, false, 0);
+                    ErrorCode errorCode = m_sessionsStore.loadActiveSession(msg.payload().userName(), clientId);
+                    if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                        return false;
+                    }
                     session = m_sessionsStore.getSession(clientId);
+                }
+
+                if (session.getDeleted() != 0) {
+                    return false;
                 }
                 
                 if (session != null && session.getUsername().equals(msg.payload().userName())) {
