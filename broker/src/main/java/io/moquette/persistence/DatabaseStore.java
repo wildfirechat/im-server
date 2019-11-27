@@ -640,11 +640,12 @@ public class DatabaseStore {
         String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + MessageShardingUtil.getMessageTable(messageId) +" where _mid = ? limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, messageId);
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
                 builder.setMessageId(messageId);
@@ -663,12 +664,11 @@ public class DatabaseStore {
                 WFCMessage.Message message = builder.build();
                 return new MessageBundle(messageId, message.getFromUser(), null, message);
             }
-            resultSet.close();
         } catch (SQLException | IOException e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         } finally {
-            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return null;
     }
@@ -1031,12 +1031,13 @@ public class DatabaseStore {
         Connection connection = null;
         PreparedStatement statement = null;
         List<MemorySessionStore.Session> result = new ArrayList<>();
+        ResultSet resultSet = null;
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setString(1, uid);
 
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 int index = 1;
                 String cid = resultSet.getString(index++);
@@ -1060,12 +1061,11 @@ public class DatabaseStore {
                 session.setUpdateDt(resultSet.getLong(index++));
                 result.add(session);
             }
-            resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         } finally {
-            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return result;
     }
@@ -1074,12 +1074,13 @@ public class DatabaseStore {
         String sql = "select  `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt`, `_deleted` from t_user_session where `_uid` = ? and `_cid` = ? limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setString(1, uid);
             statement.setString(2, clientId);
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 MemorySessionStore.Session session = new MemorySessionStore.Session(uid, clientId, clientSession);
 
@@ -1101,12 +1102,11 @@ public class DatabaseStore {
                 session.setDeleted(resultSet.getInt(index));
                 return session;
             }
-            resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         } finally {
-            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return null;
     }
