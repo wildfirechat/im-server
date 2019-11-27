@@ -57,7 +57,7 @@ public class PushServer {
     }
 
     public void pushMessage(PushMessage pushMessage, String deviceId, String pushContent) {
-        LOG.info("try to delivery push diviceId = {}, pushContent", deviceId, pushContent);
+        LOG.info("try to delivery push diviceId = {}, pushContent = {}", deviceId, pushContent);
         executorService.execute(() ->{
                 try {
                     pushMessageInternel(pushMessage, deviceId, pushContent);
