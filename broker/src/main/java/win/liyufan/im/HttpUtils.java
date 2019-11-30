@@ -53,6 +53,13 @@ public class HttpUtils {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 LOG.info("POST to {} success with response: {}", url, response.body());
+                try {
+                    if (response.body() != null) {
+                        response.body().close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
