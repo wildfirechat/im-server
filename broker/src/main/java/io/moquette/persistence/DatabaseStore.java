@@ -2135,6 +2135,7 @@ public class DatabaseStore {
                     ", `_social`=?" +
                     ", `_extra`=?" +
                     ", `_type`=?" +
+                    ", `_deleted`=?" +
                     ", `_dt`=?";
 
                 statement = connection.prepareStatement(sql);
@@ -2168,6 +2169,7 @@ public class DatabaseStore {
 
                 statement.setString(index++, user.getExtra());
                 statement.setInt(index++, user.getType());
+                statement.setInt(index++, user.getDeleted());
                 statement.setLong(index++, user.getUpdateDt() == 0 ? System.currentTimeMillis() : user.getUpdateDt());
 
                 int count = statement.executeUpdate();
@@ -2294,6 +2296,7 @@ public class DatabaseStore {
                 ", `_social`" +
                 ", `_extra`" +
                 ", `_type`" +
+                ", `_deleted`" +
                 ", `_dt` from t_user where `_uid` = ?";
             statement = connection.prepareStatement(sql);
 
@@ -2347,6 +2350,9 @@ public class DatabaseStore {
 
                 int type = rs.getInt(index++);
                 builder.setType(type);
+
+                int deleted = rs.getInt(index++);
+                builder.setDeleted(deleted);
 
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
