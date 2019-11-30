@@ -1459,7 +1459,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
         WFCMessage.User us = mUserMap.get(userId);
         if (us != null) {
-            us = WFCMessage.User.newBuilder().setUid(userId).setUpdateDt(System.currentTimeMillis()).setDisplayName("已删除用户").setName(userId).build();
+            us = WFCMessage.User.newBuilder().setUid(userId).setUpdateDt(System.currentTimeMillis()).setDisplayName("已删除用户").setName(userId).setDeleted(1).build();
             mUserMap.put(userId, us);
         }
 
