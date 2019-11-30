@@ -71,6 +71,7 @@ public interface IMTopic {
     String ChannelPullTopic = "CHP";
 
     String GetTokenTopic = "GETTOKEN";
+    String DestroyUserTopic = "DESTROYUSER";
 
     String LoadRemoteMessagesTopic = "LRM";
 }

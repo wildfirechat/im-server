@@ -772,7 +772,31 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (groupInfo.getType() != ProtoConstants.GroupType.GroupType_Free && groupInfo.getOwner() != null && groupInfo.getOwner().equals(operator)) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+            Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+            if (members == null || members.size() == 0) {
+                members = loadGroupMemberFromDB(hzInstance, groupId);
+            }
+
+            WFCMessage.GroupMember newOwner = null;
+            for (WFCMessage.GroupMember member :members) {
+                if (!member.getMemberId().equals(operator) && member.getType() != GroupMemberType_Removed) {
+                    newOwner = member;
+                    break;
+                }
+            }
+
+            if (newOwner == null) {
+                 return dismissGroup(operator, groupId, false);
+            }
+
+            transferGroup(operator, groupId, newOwner.getMemberId(), false);
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         removeGroupMember(groupId, Arrays.asList(operator));
@@ -780,6 +804,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         removeGroupUserSettings(groupId, Arrays.asList(operator));
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
+
+    @Override
+    public void clearUserGroups(String userId) {
+        Set<String> groupIds = databaseStore.getUserGroupIds(userId);
+        int[] removedCount = new int[1];
+        for (String groupId : groupIds) {
+            removedCount[0] = 0;
+            ErrorCode errorCode = quitGroup(userId, groupId);
+            LOG.info("clear user {} group {} result {}", userId, groupId, errorCode);
+        }
+    }
+
 
     private void removeGroupUserSettings(String groupId, List<String> users) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
@@ -969,6 +1005,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         WFCMessage.GroupInfo groupInfo = mIMap.get(groupId);
         return groupInfo;
+    }
+
+    @Override
+    public Set<String> getUserGroupIds(String userId) {
+        return databaseStore.getUserGroupIds(userId);
     }
 
     @Override
@@ -1231,6 +1272,18 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public void clearUserMessages(String userId) {
+        mWriteLock.lock();
+        try {
+            userMessages.remove(userId);
+        } finally {
+            mWriteLock.unlock();
+        }
+
+        databaseStore.clearUserMessage(userId);
+    }
+
+    @Override
     public WFCMessage.Robot getRobot(String robotId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.Robot> mRobotMap = hzInstance.getMap(ROBOTS);
@@ -1398,6 +1451,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
         mUserMap.put(user.getUid(), user);
         databaseStore.updateUserPassword(user.getUid(), password);
+    }
+
+    @Override
+    public void destoryUser(String userId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+        WFCMessage.User us = mUserMap.get(userId);
+        if (us != null) {
+            us = WFCMessage.User.newBuilder().setUid(userId).setUpdateDt(System.currentTimeMillis()).setDisplayName("已删除用户").setName(userId).build();
+            mUserMap.put(userId, us);
+        }
+
     }
 
     @Override
@@ -1687,6 +1752,31 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         return out;
+    }
+
+    @Override
+    public void clearUserFriend(String userId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+        Collection<FriendData> friendDatas = friendsMap.get(userId);
+        if (friendDatas == null || friendDatas.size() == 0) {
+            friendDatas = loadFriend(friendsMap, userId);
+        }
+
+        databaseStore.removeUserFriend(userId);
+        databaseStore.removeUserFriendRequest(userId);
+
+        MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
+        requestMap.remove(userId);
+
+
+        if (friendDatas != null) {
+            for (FriendData fd : friendDatas) {
+                friendsMap.remove(fd.getFriendUid());
+            }
+            friendsMap.remove(userId);
+        }
     }
 
     @Override
@@ -2190,6 +2280,14 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public void clearUserSettings(String userId) {
+        databaseStore.clearUserSetting(userId);
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+        userSettingMap.remove(userId);
+    }
+
+    @Override
     public boolean getUserGlobalSlient(String userId) {
         Boolean slient = userGlobalSlientMap.get(userId);
         if (slient == null) {
@@ -2245,6 +2343,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
+
+    @Override
+    public void clearUserChannels(String userId) {
+
+    }
+
 
     @Override
     public ErrorCode modifyChannelInfo(String operator, String channelId, int modifyType, String value) {

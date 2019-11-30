@@ -58,6 +58,13 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, null, OutputUserBlockStatusList.class);
     }
 
+    public static IMResult<Void> destroyUser(String userId) throws Exception {
+        String path = APIPath.Destroy_User;
+        InputDestroyUser inputDestroyUser = new InputDestroyUser();
+        inputDestroyUser.setUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, inputDestroyUser, Void.class);
+    }
+
     //not implement
 //    public static IMResult<OutputUserBlockStatusList> getUserOnlineStatus(String userId) throws Exception {
 //        String path = APIPath.User_Get_Online_Status;

@@ -49,6 +49,8 @@ public interface ISessionsStore {
     void cleanDuplatedToken(String cid, int pushType, String token, boolean isVoip);
 
     void updateSessionToken(Session session, boolean voip);
+
+    void clearUserSession(String username);
     /**
      * @param clientID
      *            the client owning the session.

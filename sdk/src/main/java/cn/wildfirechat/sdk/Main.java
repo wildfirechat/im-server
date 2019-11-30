@@ -284,6 +284,18 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputGroupIds> groupIdsIMResult = GroupAdmin.getUserGroups("user1");
+        if (groupIdsIMResult != null && groupIdsIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (groupIdsIMResult.getResult().getGroupIds().contains(groupInfo.getTarget_id())) {
+                System.out.println("get user groups success");
+            } else {
+                System.out.println("get user groups failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("get user groups failure");
+            System.exit(-1);
+        }
 
 
         //***********************************************
@@ -390,6 +402,15 @@ public class Main {
             System.out.println("robot get user info success");
         } else {
             System.out.println("robot get user info by userId failure");
+            System.exit(-1);
+        }
+
+
+        voidIMResult = UserAdmin.destroyUser("user1");
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("destroy user success");
+        } else {
+            System.out.println("destroy user failure");
             System.exit(-1);
         }
     }

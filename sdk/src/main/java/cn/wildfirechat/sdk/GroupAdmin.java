@@ -113,4 +113,12 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, kickoffGroupMember, Void.class);
     }
 
+    public static IMResult<OutputGroupIds> getUserGroups(String user) throws Exception {
+        String path = APIPath.Get_User_Groups;
+        InputUserId inputUserId = new InputUserId();
+        inputUserId.setUserId(user);
+        return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputGroupIds.class);
+    }
+
+
 }

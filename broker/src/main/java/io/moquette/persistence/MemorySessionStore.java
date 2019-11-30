@@ -24,9 +24,8 @@ import io.moquette.BrokerConstants;
 import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
-import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
-
+import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -315,6 +314,20 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public void clearUserSession(String username) {
+        LOG.info("Fooooooooo <{}>", username);
+
+        databaseStore.clearUserSessions(username);
+
+        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+        for (String clientID : sessionSet) {
+            Session s = sessions.remove(clientID);
+            mServer.getProcessor().kickoffSession(s);
+        }
+        userSessions.remove(username);
+    }
+
+    @Override
     public Session createUserSession(String username, String clientID, int platform) {
         LOG.debug("createUserSession for client <{}>, user <{}>", clientID, username);
 
@@ -344,6 +357,10 @@ public class MemorySessionStore implements ISessionsStore {
                     String c = it.next();
                     if (!clientID.equals(c)) {
                         Session s = sessions.get(c);
+                        if (s == null) {
+                            it.remove();
+                            continue;
+                        }
 
                         boolean remove = false;
                         if (platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_iOS) {

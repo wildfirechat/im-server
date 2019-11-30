@@ -788,6 +788,40 @@ public class DatabaseStore {
         });
     }
 
+    void clearUserMessage(final String userId) {
+        mScheduler.execute(()->{
+            String tableName = getUserMessageTable(userId);
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "delete from " + tableName + " where _uid = ?";
+                statement = connection.prepareStatement(sql);
+                statement.setString(1, userId);
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+
+                try {
+                    if (statement!=null) {
+                        statement.close();
+                    }
+                    statement = null;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e);
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+
+    }
+
     void removeFavGroup(final String groupId, final List<String> memberIds) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -850,6 +884,31 @@ public class DatabaseStore {
                 statement.setLong(index++, entry.getUpdateDt());
                 statement.setString(index++, entry.getValue());
                 statement.setLong(index++, entry.getUpdateDt());
+
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
+    void clearUserSetting(final String userId) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "delete from t_user_setting where `_uid` = ?";
+
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setString(index++, userId);
 
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
@@ -1068,6 +1127,27 @@ public class DatabaseStore {
             DBUtil.closeDB(connection, statement, resultSet);
         }
         return result;
+    }
+
+    void clearUserSessions(String uid) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_user_session where `_uid`=?";
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setString(index++, uid);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     MemorySessionStore.Session getSession(String uid, String clientId, ClientSession clientSession) {
@@ -1422,6 +1502,35 @@ public class DatabaseStore {
         return null;
     }
 
+    Set<String> getUserGroupIds(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select `_gid` from t_group_member where `_mid` = ? and `_type` <> ?";
+            statement = connection.prepareStatement(sql);
+
+            statement.setString(1, userId);
+            statement.setInt(2, ProtoConstants.GroupMemberType.GroupMemberType_Removed);
+
+
+            rs = statement.executeQuery();
+            Set<String> out = new HashSet<>();
+            while (rs.next()) {
+                String uid = rs.getString(1);
+                out.add(uid);
+            }
+            return out;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return null;
+    }
     void updateGroupMemberCountDt(final String groupId, final int count, final long dt) {
         mScheduler.execute(()->{
             Connection connection = null;
@@ -2362,6 +2471,52 @@ public class DatabaseStore {
             DBUtil.closeDB(connection, statement, rs);
         }
         return null;
+    }
+
+
+    void removeUserFriend(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "update t_friend  set `_alias` = '', `_state` = 1, `_blacked` = 0, `_dt` = ? where `_uid` = ? or `_friend_uid` = ?";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setLong(index++, System.currentTimeMillis());
+            statement.setString(index++, userId);
+            statement.setString(index++, userId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    void removeUserFriendRequest(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_friend_request  where _uid = ? or _friend_uid = ?";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setString(index++, userId);
+            statement.setString(index++, userId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     List<WFCMessage.FriendRequest> getPersistFriendRequests(String userId) {
