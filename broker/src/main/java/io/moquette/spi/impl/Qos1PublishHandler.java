@@ -179,16 +179,15 @@ public class Qos1PublishHandler extends QosPublishHandler {
                             MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
                             if (session != null && session.getUsername().equals(fromUser)) {
                                 if (data.length > 7*1024 && session.getMqttVersion().protocolLevel() >= MqttVersion.Wildfire_1.protocolLevel()) {
-                                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                    GZIPOutputStream gzip;
-                                    try {
-                                        gzip = new GZIPOutputStream(out);
+                                    try (
+                                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                        GZIPOutputStream gzip = new GZIPOutputStream(out)
+                                    ) {
                                         gzip.write(data);
-                                        gzip.close();
+                                        data = out.toByteArray();
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    data = out.toByteArray();
                                     code = (byte)ErrorCode.ERROR_CODE_SUCCESS_GZIPED.code;
                                 }
 
