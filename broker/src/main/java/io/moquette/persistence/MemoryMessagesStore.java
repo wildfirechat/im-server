@@ -25,6 +25,7 @@ import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
+import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
@@ -123,6 +124,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         this.databaseStore = databaseStore;
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
+        Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
     }
 
     @Override
