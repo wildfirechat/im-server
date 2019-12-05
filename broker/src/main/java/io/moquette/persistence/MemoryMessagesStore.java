@@ -687,7 +687,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         List<WFCMessage.GroupMember> tmp = new ArrayList<>();
         ArrayList<String> newInviteUsers = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
-            member = member.toBuilder().setType(ProtoConstants.GroupMemberType.GroupMemberType_Normal).setUpdateDt(updateDt).setAlias("").build();
+            if (member.getMemberId().equals(groupInfo.getOwner())) {
+                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setAlias("").build();
+            } else {
+                member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setAlias("").build();
+            }
             tmp.add(member);
             newInviteUsers.add(member.getMemberId());
         }
