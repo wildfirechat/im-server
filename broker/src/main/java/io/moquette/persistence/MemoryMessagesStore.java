@@ -1496,8 +1496,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         return getUserInfo(userId);
     }
     @Override
-    public List<WFCMessage.User> searchUser(String keyword, boolean buzzy, int page) {
-        return databaseStore.searchUserFromDB(keyword, buzzy, page);
+    public List<WFCMessage.User> searchUser(String keyword, int searchType, int page) {
+        return databaseStore.searchUserFromDB(keyword, searchType, page);
     }
 
     @Override

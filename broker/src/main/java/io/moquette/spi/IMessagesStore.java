@@ -139,7 +139,7 @@ public interface IMessagesStore {
     WFCMessage.User getUserInfo(String userId);
     WFCMessage.User getUserInfoByName(String name);
     WFCMessage.User getUserInfoByMobile(String mobile);
-    List<WFCMessage.User> searchUser(String keyword, boolean buzzy, int page);
+    List<WFCMessage.User> searchUser(String keyword, int searchType, int page);
 
     boolean updateSystemSetting(int id, String value, String desc);
     SystemSettingPojo getSystemSetting(int id);

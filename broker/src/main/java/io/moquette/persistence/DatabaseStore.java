@@ -35,6 +35,7 @@ import java.util.function.Function;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.persistence.MemoryMessagesStore.USER_STATUS;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
+import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
 
 public class DatabaseStore {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseStore.class);
@@ -148,8 +149,12 @@ public class DatabaseStore {
         }
         return null;
     }
-
-    List<WFCMessage.User> searchUserFromDB(String keyword, boolean buzzy, int page) {
+    //searchType
+    // 0 模糊匹配displayName, 精确匹配账户名和电话号码
+    // 1 精确匹配账户名和电话号码
+    // 2 精确匹配账户名
+    // 3 精确匹配电话号码
+    List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -169,18 +174,29 @@ public class DatabaseStore {
                 ", `_social`" +
                 ", `_extra`" +
                 ", `_dt` from t_user";
-            if (buzzy) {
-                sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
-            } else {
-                sql += " where (`_name` = ? or `_mobile` = ?) ";
+            switch (searchType) {
+                case SearchUserType_Name_Mobile:
+                    sql += " where (`_name` = ? or `_mobile` = ?) ";
+                    break;
+                case SearchUserType_Name:
+                    sql += " where `_name` = ? ";
+                    break;
+                case SearchUserType_Mobile:
+                    sql += " where `_mobile` = ? ";
+                    break;
+                case SearchUserType_General:
+                default:
+                    sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
+                    break;
             }
+
 
             sql += " and _type <> 2"; //can search normal user(0) and robot(1), can not search things
 
-            if (buzzy) {
-                sql += " limit 20";
-            } else {
+            if (searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
                 sql += " limit 1";
+            } else {
+                sql += " limit 20";
             }
             
             if (page > 0) {
@@ -190,12 +206,24 @@ public class DatabaseStore {
 
             statement = connection.prepareStatement(sql);
             int index = 1;
-            if (buzzy) {
-                statement.setString(index++, "%" + keyword + "%");
+
+            switch (searchType) {
+                case SearchUserType_Name_Mobile:
+                    statement.setString(index++, keyword);
+                    statement.setString(index++, keyword);
+                    break;
+                case SearchUserType_Name:
+                case SearchUserType_Mobile:
+                    statement.setString(index++, keyword);
+                    break;
+                case SearchUserType_General:
+                default:
+                    statement.setString(index++, "%" + keyword + "%");
+                    statement.setString(index++, keyword);
+                    statement.setString(index++, keyword);
+                    break;
             }
 
-            statement.setString(index++, keyword);
-            statement.setString(index++, keyword);
 
             rs = statement.executeQuery();
             while (rs.next()) {
