@@ -42,7 +42,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -112,7 +111,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private final DatabaseStore databaseStore;
     private ConcurrentHashMap<String, Long> userMaxPullSeq = new ConcurrentHashMap<>();
 
-    private AtomicReference<SensitiveFilter> mSensitiveFilter;
+    private SensitiveFilter mSensitiveFilter;
     private volatile long lastUpdateSensitiveTime = 0;
 
     private ConcurrentHashMap<String, Boolean> userGlobalSlientMap = new ConcurrentHashMap<>();
@@ -148,7 +147,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
             Set<String> sensitiveWords = databaseStore.getSensitiveWord();
-            mSensitiveFilter.set(new SensitiveFilter(sensitiveWords));
+            mSensitiveFilter = new SensitiveFilter(sensitiveWords);
         }
     }
 
@@ -2502,7 +2501,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public Set<String> handleSensitiveWord(String message) {
         updateSensitiveWord();
-        return mSensitiveFilter.get().getSensitiveWords(message, SensitiveFilter.MatchType.MAX_MATCH);
+        return mSensitiveFilter.getSensitiveWords(message, SensitiveFilter.MatchType.MAX_MATCH);
     }
 
     @Override
