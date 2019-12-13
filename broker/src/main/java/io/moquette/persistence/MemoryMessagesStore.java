@@ -112,7 +112,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private final DatabaseStore databaseStore;
     private ConcurrentHashMap<String, Long> userMaxPullSeq = new ConcurrentHashMap<>();
 
-    private AtomicReference<SensitiveFilter> mSensitiveFilter = new AtomicReference<>();
+    private AtomicReference<SensitiveFilter> mSensitiveFilter;
     private volatile long lastUpdateSensitiveTime = 0;
 
     private ConcurrentHashMap<String, Boolean> userGlobalSlientMap = new ConcurrentHashMap<>();
