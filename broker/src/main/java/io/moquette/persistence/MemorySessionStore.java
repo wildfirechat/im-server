@@ -328,15 +328,26 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public Session createUserSession(String username, String clientID, int platform) {
+    public Session updateOrCreateUserSession(String username, String clientID, int platform) {
         LOG.debug("createUserSession for client <{}>, user <{}>", clientID, username);
 
-        ClientSession clientSession = new ClientSession(clientID, this);
-        Session session = databaseStore.getSession(username, clientID, clientSession);
+        Session session = sessions.get(clientID);
 
-        if (session == null) {
-            session = databaseStore.createSession(username, clientID, clientSession, platform);
+        if (session == null || !session.username.equals(username)) {
+            if (session != null && !session.username.equals(username)) {
+                if (userSessions.get(username) != null) {
+                    userSessions.get(username).remove(clientID);
+                }
+            }
+            ClientSession clientSession = new ClientSession(clientID, this);
+            session = databaseStore.getSession(username, clientID, clientSession);
+
+            if (session == null) {
+                session = databaseStore.createSession(username, clientID, clientSession, platform);
+            }
+            sessions.put(clientID, session);
         }
+
 
         if (session.getDeleted() > 0) {
             session.setDeleted(0);
