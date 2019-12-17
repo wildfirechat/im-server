@@ -1039,78 +1039,76 @@ public class DatabaseStore {
     }
 
     void persistGroupInfo(final WFCMessage.GroupInfo groupInfo) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
-                String sql = "insert into t_group (`_gid`" +
-                    ", `_name`" +
-                    ", `_portrait`" +
-                    ", `_owner`" +
-                    ", `_type`" +
-                    ", `_extra`" +
-                    ", `_dt`" +
-                    ", `_member_count`" +
-                    ", `_mute`" +
-                    ", `_join_type`" +
-                    ", `_private_chat`" +
-                    ", `_searchable`" +
-                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE " +
-                    "`_name` = ?," +
-                    "`_portrait` = ?," +
-                    "`_owner` = ?," +
-                    "`_type` = ?," +
-                    "`_extra` = ?," +
-                    "`_dt` = ?," +
-                    "`_member_count` = ?," +
-                    "`_mute` = ?" +
-                    ", `_join_type` = ?" +
-                    ", `_private_chat` = ?" +
-                    ", `_searchable` = ?, " +
-                    "`_member_dt` = ?";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "insert into t_group (`_gid`" +
+                ", `_name`" +
+                ", `_portrait`" +
+                ", `_owner`" +
+                ", `_type`" +
+                ", `_extra`" +
+                ", `_dt`" +
+                ", `_member_count`" +
+                ", `_mute`" +
+                ", `_join_type`" +
+                ", `_private_chat`" +
+                ", `_searchable`" +
+                ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                " ON DUPLICATE KEY UPDATE " +
+                "`_name` = ?," +
+                "`_portrait` = ?," +
+                "`_owner` = ?," +
+                "`_type` = ?," +
+                "`_extra` = ?," +
+                "`_dt` = ?," +
+                "`_member_count` = ?," +
+                "`_mute` = ?" +
+                ", `_join_type` = ?" +
+                ", `_private_chat` = ?" +
+                ", `_searchable` = ?, " +
+                "`_member_dt` = ?";
 
 
-                statement = connection.prepareStatement(sql);
+            statement = connection.prepareStatement(sql);
 
-                int index = 1;
-                statement.setString(index++, groupInfo.getTargetId());
-                statement.setString(index++, groupInfo.getName());
-                statement.setString(index++, groupInfo.getPortrait());
-                statement.setString(index++, groupInfo.getOwner());
-                statement.setInt(index++, groupInfo.getType());
-                statement.setString(index++, groupInfo.getExtra());
-                statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                statement.setInt(index++, groupInfo.getMemberCount());
-                statement.setInt(index++, groupInfo.getMute());
-                statement.setInt(index++, groupInfo.getJoinType());
-                statement.setInt(index++, groupInfo.getPrivateChat());
-                statement.setInt(index++, groupInfo.getSearchable());
-                statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            int index = 1;
+            statement.setString(index++, groupInfo.getTargetId());
+            statement.setString(index++, groupInfo.getName());
+            statement.setString(index++, groupInfo.getPortrait());
+            statement.setString(index++, groupInfo.getOwner());
+            statement.setInt(index++, groupInfo.getType());
+            statement.setString(index++, groupInfo.getExtra());
+            statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            statement.setInt(index++, groupInfo.getMemberCount());
+            statement.setInt(index++, groupInfo.getMute());
+            statement.setInt(index++, groupInfo.getJoinType());
+            statement.setInt(index++, groupInfo.getPrivateChat());
+            statement.setInt(index++, groupInfo.getSearchable());
+            statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
 
-                statement.setString(index++, groupInfo.getName());
-                statement.setString(index++, groupInfo.getPortrait());
-                statement.setString(index++, groupInfo.getOwner());
-                statement.setInt(index++, groupInfo.getType());
-                statement.setString(index++, groupInfo.getExtra());
-                statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                statement.setInt(index++, groupInfo.getMemberCount());
-                statement.setInt(index++, groupInfo.getMute());
-                statement.setInt(index++, groupInfo.getJoinType());
-                statement.setInt(index++, groupInfo.getPrivateChat());
-                statement.setInt(index++, groupInfo.getSearchable());
-                statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                int count = statement.executeUpdate();
-                LOG.info("Update rows {}", count);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            } finally {
-                DBUtil.closeDB(connection, statement);
-            }
-        });
+            statement.setString(index++, groupInfo.getName());
+            statement.setString(index++, groupInfo.getPortrait());
+            statement.setString(index++, groupInfo.getOwner());
+            statement.setInt(index++, groupInfo.getType());
+            statement.setString(index++, groupInfo.getExtra());
+            statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            statement.setInt(index++, groupInfo.getMemberCount());
+            statement.setInt(index++, groupInfo.getMute());
+            statement.setInt(index++, groupInfo.getJoinType());
+            statement.setInt(index++, groupInfo.getPrivateChat());
+            statement.setInt(index++, groupInfo.getSearchable());
+            statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     List<MemorySessionStore.Session> getUserActivedSessions(String uid) {
@@ -1560,39 +1558,37 @@ public class DatabaseStore {
         return null;
     }
     void updateGroupMemberCountDt(final String groupId, final int count, final long dt) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
 
-                String sql ;
+            String sql ;
 
-                if (count >= 0) {
-                    sql = "update t_group set `_member_count` = ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
-                } else {
-                    sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
-                }
-                statement = connection.prepareStatement(sql);
-
-                int index = 1;
-                if (count >=0) {
-                    statement.setInt(index++, count);
-                }
-                statement.setLong(index++, dt);
-                statement.setLong(index++, dt);
-                statement.setString(index++, groupId);
-
-                int c = statement.executeUpdate();
-                LOG.info("Update rows {}", c);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            } finally {
-                DBUtil.closeDB(connection, statement);
+            if (count >= 0) {
+                sql = "update t_group set `_member_count` = ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
+            } else {
+                sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
             }
-        });
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+            if (count >=0) {
+                statement.setInt(index++, count);
+            }
+            statement.setLong(index++, dt);
+            statement.setLong(index++, dt);
+            statement.setString(index++, groupId);
+
+            int c = statement.executeUpdate();
+            LOG.info("Update rows {}", c);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     void persistGroupMember(final String groupId, final List<WFCMessage.GroupMember> memberList) {
