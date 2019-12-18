@@ -333,20 +333,18 @@ public class MemorySessionStore implements ISessionsStore {
 
         Session session = sessions.get(clientID);
 
-        if (session == null || !session.username.equals(username)) {
-            if (session != null && !session.username.equals(username)) {
-                if (userSessions.get(username) != null) {
-                    userSessions.get(username).remove(clientID);
-                }
+        if (session != null && !session.username.equals(username)) {
+            if (userSessions.get(username) != null) {
+                userSessions.get(username).remove(clientID);
             }
-            ClientSession clientSession = new ClientSession(clientID, this);
-            session = databaseStore.getSession(username, clientID, clientSession);
-
-            if (session == null) {
-                session = databaseStore.createSession(username, clientID, clientSession, platform);
-            }
-            sessions.put(clientID, session);
         }
+        ClientSession clientSession = new ClientSession(clientID, this);
+        session = databaseStore.getSession(username, clientID, clientSession);
+
+        if (session == null) {
+            session = databaseStore.createSession(username, clientID, clientSession, platform);
+        }
+        sessions.put(clientID, session);
 
 
         if (session.getDeleted() > 0) {
