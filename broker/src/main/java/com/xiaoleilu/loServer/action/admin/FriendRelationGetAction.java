@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.pojos.OutputStringList;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -44,7 +45,7 @@ public class FriendRelationGetAction extends AdminAction {
                 }
             }
             response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(list);
+            RestResult result = RestResult.ok(new OutputStringList(list));
             response.setContent(new Gson().toJson(result));
         }
         return true;

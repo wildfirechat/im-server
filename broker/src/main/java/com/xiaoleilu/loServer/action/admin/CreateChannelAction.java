@@ -44,7 +44,8 @@ public class CreateChannelAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateChannel inputCreateChannel = getRequestBody(request.getNettyRequest(), InputCreateChannel.class);
             if (inputCreateChannel != null
-                && !StringUtil.isNullOrEmpty(inputCreateChannel.getName())) {
+                && !StringUtil.isNullOrEmpty(inputCreateChannel.getName())
+                && !StringUtil.isNullOrEmpty(inputCreateChannel.getOwner())) {
 
 
                 if(StringUtil.isNullOrEmpty(inputCreateChannel.getTargetId())) {

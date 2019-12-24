@@ -51,6 +51,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 				this.doAction(ctx, request, response);
 			}
 		} catch (Exception e) {
+		    e.printStackTrace();
 			Action errorAction = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
 			request.putParam(UnknownErrorAction.ERROR_PARAM_NAME, e);
 			response.setContent(e.toString());
