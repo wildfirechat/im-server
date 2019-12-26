@@ -139,6 +139,12 @@ public class ProtoConstants {
         int SearchUserType_Mobile = 3;
     }
 
+    public interface UserStatus {
+        int Normal = 0;
+        int Muted = 1;
+        int Forbidden = 2;
+    }
+
 
 
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;

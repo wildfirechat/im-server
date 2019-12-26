@@ -52,7 +52,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     return ErrorCode.INVALID_PARAMETER;
                 }
                 int userStatus = m_messagesStore.getUserStatus(fromUser);
-                if (userStatus == 1 || userStatus == 2) {
+                if (userStatus == ProtoConstants.UserStatus.Muted || userStatus == ProtoConstants.UserStatus.Forbidden) {
                     return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
                 }
 
@@ -60,6 +60,11 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     errorCode = m_messagesStore.isAllowUserMessage(message.getConversation().getTarget(), fromUser);
                     if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
                         return errorCode;
+                    }
+
+                    userStatus = m_messagesStore.getUserStatus(message.getConversation().getTarget());
+                    if (userStatus == ProtoConstants.UserStatus.Forbidden) {
+                        return ErrorCode.ERROR_CODE_USER_FORBIDDEN;
                     }
                 }
 

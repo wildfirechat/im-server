@@ -17,6 +17,7 @@
 package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.interception.InterceptHandler;
@@ -265,7 +266,7 @@ public class ProtocolProcessor {
         // handle user authentication
         if (msg.variableHeader().hasUserName()) {
             int status = m_messagesStore.getUserStatus(msg.payload().userName());
-            if (status == 2) {
+            if (status == ProtoConstants.UserStatus.Forbidden) {
                 failedBlocked(channel);
                 return false;
             }

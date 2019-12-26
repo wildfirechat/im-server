@@ -129,7 +129,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
 
         try {
-            mDisableStrangerChat = Boolean.parseBoolean(Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
+            mDisableStrangerChat = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
         } catch (Exception e) {
             e.printStackTrace();
         }
