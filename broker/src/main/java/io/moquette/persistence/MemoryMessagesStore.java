@@ -25,6 +25,7 @@ import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
+import io.moquette.BrokerConstants;
 import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.IMatchingCondition;
@@ -118,12 +119,20 @@ public class MemoryMessagesStore implements IMessagesStore {
     private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
+    private boolean mDisableStrangerChat = false;
+
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
+
+        try {
+            mDisableStrangerChat = Boolean.parseBoolean(Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1624,7 +1633,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public boolean isBlacked(String fromUser, String userId) {
+    public ErrorCode isAllowUserMessage(String fromUser, String userId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
@@ -1637,14 +1646,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         for (FriendData friendData : friendDatas) {
             if (friendData.getFriendUid().equals(userId)) {
                 if (friendData.getBlacked() == 1) {
-                    return true;
+                    return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
                 } else {
-                    return false;
+                    return ErrorCode.ERROR_CODE_SUCCESS;
                 }
             }
         }
 
-        return false;
+        if (mDisableStrangerChat) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
+        return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
     @Override

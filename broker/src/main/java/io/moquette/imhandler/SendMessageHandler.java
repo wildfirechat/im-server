@@ -39,6 +39,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -56,11 +57,11 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 }
 
                 if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Private) {
-                    if (m_messagesStore.isBlacked(message.getConversation().getTarget(), fromUser)) {
-                        return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
+                    errorCode = m_messagesStore.isAllowUserMessage(message.getConversation().getTarget(), fromUser);
+                    if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                        return errorCode;
                     }
                 }
-
 
                 if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group ) {
                     errorCode = m_messagesStore.canSendMessageInGroup(fromUser, message.getConversation().getTarget());
