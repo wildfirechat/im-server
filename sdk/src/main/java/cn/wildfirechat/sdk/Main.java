@@ -40,6 +40,7 @@ public class Main {
         createRobot.setUserId("robot1");
         createRobot.setName("robot1");
         createRobot.setDisplayName("机器人");
+        createRobot.setOwner("userId1");
         createRobot.setSecret("123456");
         createRobot.setCallback("http://127.0.0.1:8883/robot/recvmsg");
         IMResult<OutputCreateRobot> resultCreateRobot = UserAdmin.createRobot(createRobot);
@@ -281,6 +282,15 @@ public class Main {
             System.out.println("cancel group manager success");
         } else {
             System.out.println("cancel group manager failure");
+            System.exit(-1);
+        }
+
+
+        voidIMResult = GroupAdmin.quitGroup("user4", groupInfo.getTarget_id(), null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("quit group success");
+        } else {
+            System.out.println("quit group failure");
             System.exit(-1);
         }
 
