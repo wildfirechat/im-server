@@ -285,7 +285,7 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void cleanDuplatedToken(String cid, int pushType, String token, boolean isVoip) {
+    public void cleanDuplatedToken(String cid, int pushType, String token, boolean isVoip, String packageName) {
         if (StringUtil.isNullOrEmpty(token) || isVoip) {
             return;
         }
@@ -293,7 +293,7 @@ public class MemorySessionStore implements ISessionsStore {
         Iterator<Map.Entry<String, Session>> it = sessions.entrySet().iterator();
         while (it.hasNext()) {
             Session session = it.next().getValue();
-            if (!session.getClientID().equals(cid) && (session.pushType == pushType && token.equals(session.deviceToken))) {
+            if (!session.getClientID().equals(cid) && (session.pushType == pushType && token.equals(session.deviceToken)) && (!StringUtil.isNullOrEmpty(packageName) && packageName.equals(session.getAppName()))) {
                 session.deviceToken = null;
             }
         }

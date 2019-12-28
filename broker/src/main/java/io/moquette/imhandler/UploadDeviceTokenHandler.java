@@ -31,7 +31,7 @@ public class UploadDeviceTokenHandler extends IMHandler<WFCMessage.UploadDeviceT
                 session.setDeviceToken(request.getDeviceToken());
                 session.setPushType(request.getPushType());
                 m_sessionsStore.updateSessionToken(session, false);
-                m_sessionsStore.cleanDuplatedToken(session.getClientID(), session.getPushType(), session.getDeviceToken(), false);
+                m_sessionsStore.cleanDuplatedToken(session.getClientID(), session.getPushType(), session.getDeviceToken(), false, session.getAppName());
             }
 
             return ErrorCode.ERROR_CODE_SUCCESS;
