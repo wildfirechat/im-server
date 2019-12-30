@@ -32,7 +32,7 @@ abstract public class GroupHandler<T> extends IMHandler<T> {
             builder.setFromUser(fromUser);
             long messageId = MessageShardingUtil.generateId();
             builder.setMessageId(messageId);
-            saveAndPublish(fromUser, null, builder.build());
+            saveAndPublish(fromUser, null, builder.build(), false);
         }
     }
 

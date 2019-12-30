@@ -145,6 +145,11 @@ public class ProtoConstants {
         int Forbidden = 2;
     }
 
+    public interface BlacklistStrategy {
+        int Message_Reject = 0;
+        int Message_Ignore = 1;
+    }
+
 
 
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;

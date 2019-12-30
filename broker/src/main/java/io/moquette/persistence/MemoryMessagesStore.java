@@ -119,6 +119,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
+    private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
+    private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private boolean mDisableStrangerChat = false;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
@@ -130,6 +132,18 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mDisableStrangerChat = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mFriendRequestDuration = Long.parseLong(Server.getConfig().getProperty(FRIEND_Repeat_Request_Duration));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mFriendRejectDuration = Long.parseLong(Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,12 +202,24 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
     @Override
-    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers) {
+    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers, boolean ignoreMsg) {
         WFCMessage.Message message = messageBuilder.build();
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         int type = message.getConversation().getType();
+        int pullType = ProtoConstants.PullType.Pull_Normal;
 
-        int pullType = 0;
+        if (ignoreMsg) {
+            if (type == ProtoConstants.ConversationType.ConversationType_ChatRoom) {
+                pullType = ProtoConstants.PullType.Pull_ChatRoom;
+            }
+
+            if (message.getContent().getPersistFlag() != Transparent) {
+                notifyReceivers.add(fromUser);
+            }
+            return pullType;
+        }
+
+
         if (type == ProtoConstants.ConversationType.ConversationType_Private) {
             notifyReceivers.add(fromUser);
             notifyReceivers.add(message.getConversation().getTarget());
@@ -1840,9 +1866,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
-            if (System.currentTimeMillis() - existRequest.getUpdateDt() > 7 * 24 * 60 * 60 * 1000) {
+            if (System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
                 if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
-                    && System.currentTimeMillis() - existRequest.getUpdateDt() < 30 * 24 * 60 * 60 * 1000) {
+                    && System.currentTimeMillis() - existRequest.getUpdateDt() < mFriendRejectDuration) {
                     return ErrorCode.ERROR_CODE_FRIEND_REQUEST_BLOCKED;
                 }
             } else {
@@ -1974,7 +2000,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (existRequest != null) {
-            if (System.currentTimeMillis() - existRequest.getUpdateDt() > 7 * 24 * 60 * 60 * 1000) {
+            if (System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
                 return ErrorCode.ERROR_CODE_FRIEND_REQUEST_OVERTIME;
             } else {
                 existRequest = existRequest.toBuilder().setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Accepted).setUpdateDt(System.currentTimeMillis()).build();
