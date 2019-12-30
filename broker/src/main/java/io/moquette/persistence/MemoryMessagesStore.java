@@ -1659,22 +1659,26 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode isAllowUserMessage(String fromUser, String userId) {
+    public ErrorCode isAllowUserMessage(String targetUser, String fromUser) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
-        Collection<FriendData> friendDatas = friendsMap.get(fromUser);
+        Collection<FriendData> friendDatas = friendsMap.get(targetUser);
 
         if (friendDatas == null || friendDatas.size() == 0) {
-            friendDatas = loadFriend(friendsMap, fromUser);
+            friendDatas = loadFriend(friendsMap, targetUser);
         }
 
         for (FriendData friendData : friendDatas) {
-            if (friendData.getFriendUid().equals(userId)) {
+            if (friendData.getFriendUid().equals(fromUser)) {
                 if (friendData.getBlacked() == 1) {
                     return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
                 } else {
-                    return ErrorCode.ERROR_CODE_SUCCESS;
+                    if (friendData.getState() == 0) {
+                        return ErrorCode.ERROR_CODE_SUCCESS;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
