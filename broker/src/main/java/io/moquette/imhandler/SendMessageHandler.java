@@ -42,8 +42,8 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
         }
 
         try {
-            mBlacklistStrategy = Integer.parseInt(Server.getConfig().getProperty(BrokerConstants.MESSAGE_Blacklist_Strategy));
-        } catch (NumberFormatException e) {
+            mBlacklistStrategy = Integer.parseInt(mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Blacklist_Strategy));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

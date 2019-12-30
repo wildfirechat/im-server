@@ -137,13 +137,13 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         try {
-            mFriendRequestDuration = Long.parseLong(Server.getConfig().getProperty(FRIEND_Repeat_Request_Duration));
+            mFriendRequestDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Repeat_Request_Duration));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            mFriendRejectDuration = Long.parseLong(Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
+            mFriendRejectDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2432,7 +2432,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         else if(modifyType == Modify_Channel_OnlyCallback) {
             try {
                 newInfoBuilder.setAutomatic(Integer.parseInt(value));
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

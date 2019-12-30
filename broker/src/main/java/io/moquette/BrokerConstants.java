@@ -119,7 +119,7 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_Disable_Stranger_Chat = "message.disable_stranger_chat";
 
-    public static final String MESSAGE_Blacklist_Strategy = "blacklist.strategy";
+    public static final String MESSAGE_Blacklist_Strategy = "message.blacklist.strategy";
     public static final String FRIEND_Repeat_Request_Duration = "friend.repeat_request_duration";
     public static final String FRIEND_Reject_Request_Duration = "friend.reject_request_duration";
 

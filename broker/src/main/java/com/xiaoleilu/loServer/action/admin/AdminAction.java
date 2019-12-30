@@ -50,7 +50,7 @@ abstract public class AdminAction extends Action {
         Long ts;
         try {
             ts = Long.parseLong(timestamp);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ErrorCode.INVALID_PARAMETER;
         }
