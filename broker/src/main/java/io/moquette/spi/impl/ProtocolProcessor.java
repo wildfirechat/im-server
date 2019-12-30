@@ -284,6 +284,7 @@ public class ProtocolProcessor {
                 }
 
                 if (session.getDeleted() != 0) {
+                    LOG.error("user {} session {} is deleted. login failure", msg.payload().userName(), clientId);
                     return false;
                 }
                 
