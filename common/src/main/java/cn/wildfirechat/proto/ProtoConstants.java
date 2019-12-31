@@ -125,6 +125,8 @@ public class ProtoConstants {
         int UserType_Normal = 0;
         int UserType_Robot = 1;
         int UserType_Device = 2;
+        int UserType_Admin = 3;
+        int UserType_Super_Admin = 100;
     }
 
 

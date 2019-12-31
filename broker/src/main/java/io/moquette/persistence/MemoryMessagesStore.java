@@ -22,6 +22,7 @@ import cn.wildfirechat.proto.WFCMessage;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
+import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
@@ -1684,6 +1685,20 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (mDisableStrangerChat) {
+            //在禁止私聊时，允许机器人，物联网设备及管理员进行私聊。
+            IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+            WFCMessage.User target = mUserMap.get(targetUser);
+            if (target != null && target.getType() != ProtoConstants.UserType.UserType_Normal) {
+                return ErrorCode.ERROR_CODE_SUCCESS;
+            }
+            target = mUserMap.get(fromUser);
+            if (target != null && target.getType() != ProtoConstants.UserType.UserType_Normal) {
+                return ErrorCode.ERROR_CODE_SUCCESS;
+            }
+            //admin的usertype为3，所以不需要hardcode为admin添加例外
+//            if (targetUser.equals("admin") || fromUser.equals("admin")) {
+//                return ErrorCode.ERROR_CODE_SUCCESS;
+//            }
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
