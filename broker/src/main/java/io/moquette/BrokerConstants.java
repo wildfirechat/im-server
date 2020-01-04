@@ -88,6 +88,8 @@ public final class BrokerConstants {
     public static final String PUSH_ANDROID_SERVER_ADDRESS = "push.android.server.address";
     public static final String PUSH_IOS_SERVER_ADDRESS = "push.ios.server.address";
 
+    public static final String USER_ONLINE_STATUS_CALLBACK = "user.online_status_callback";
+
     public static final String HZ_Cluster_Node_External_IP = "node_external_ip";
     public static final String HZ_Cluster_Node_External_Long_Port = "node_external_long_port";
     public static final String HZ_Cluster_Node_External_Short_Port = "node_external_short_port";

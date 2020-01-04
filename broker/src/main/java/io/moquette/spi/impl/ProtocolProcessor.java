@@ -17,8 +17,13 @@
 package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.pojos.SendMessageData;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import com.google.gson.Gson;
+import com.hazelcast.core.Member;
+import com.hazelcast.util.StringUtil;
+import io.moquette.BrokerConstants;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
@@ -40,9 +45,12 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.HttpUtils;
 import win.liyufan.im.Utility;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
@@ -59,7 +67,7 @@ import static io.moquette.server.ConnectionDescriptor.ConnectionState.*;
  */
 
 public class ProtocolProcessor {
-
+    private static ExecutorService executorCallback = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public void kickoffSession(final MemorySessionStore.Session session) {
         mServer.getImBusinessScheduler().execute(()->{
@@ -154,7 +162,14 @@ public class ProtocolProcessor {
                 this.connectionDescriptors, this.messagesPublisher, sessionsStore, server.getImBusinessScheduler(), server);
 
         mServer = server;
+
+        String onlineStatusCallback = server.getConfig().getProperty(BrokerConstants.USER_ONLINE_STATUS_CALLBACK);
+        if (!com.hazelcast.util.StringUtil.isNullOrEmpty(onlineStatusCallback)) {
+            mUserOnlineStatusCallback = onlineStatusCallback;
+        }
     }
+
+    private String mUserOnlineStatusCallback;
 
     public void processConnect(Channel channel, MqttConnectMessage msg) {
         MqttConnectPayload payload = msg.payload();
@@ -236,6 +251,22 @@ public class ProtocolProcessor {
         }
 
         LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
+    }
+
+    private static class UserOnlineStatus {
+        public String userId;
+        public int status; //0 offline; 1 online; -1 logout
+
+        public UserOnlineStatus(String userId, int status) {
+            this.userId = userId;
+            this.status = status;
+        }
+    }
+
+    public void forwardOnlineStatusEvent(String userId, int status) {
+        if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
+            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, status))));
+        }
     }
 
     private MqttConnAckMessage connAck(MqttConnectReturnCode returnCode) {

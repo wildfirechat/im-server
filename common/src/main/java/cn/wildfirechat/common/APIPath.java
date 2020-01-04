@@ -23,6 +23,8 @@ public interface APIPath {
 
     String Friend_Update_Status = "/admin/friend/status";
     String Friend_Get_List = "/admin/friend/list";
+    String Friend_Get_Alias = "/admin/friend/get_alias";
+    String Friend_Set_Alias = "/admin/friend/set_alias";
 
     String Msg_Send = "/admin/message/send";
     String Msg_Recall = "/admin/message/recall";

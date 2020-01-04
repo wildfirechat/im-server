@@ -386,6 +386,12 @@ public class MemoryMessagesStore implements IMessagesStore {
                             continue;
                         }
 
+                        if (bundle.getMessage().getContent().getExpireDuration() > 0) {
+                            if (System.currentTimeMillis() < bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration()) {
+                                continue;
+                            }
+                        }
+
                         size += bundle.getMessage().getSerializedSize();
                         if (size >= 512 * 1024) { //3M
                             if(builder.getMessageCount() == 0){
