@@ -18,6 +18,7 @@ package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.SendMessageData;
+import cn.wildfirechat.pojos.UserOnlineStatus;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
@@ -254,25 +255,6 @@ public class ProtocolProcessor {
         }
 
         LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
-    }
-
-    private static class UserOnlineStatus {
-        public static final int ONLINE = 0;
-        public static final int OFFLINE = 1;
-        public static final int LOGOUT = -1;
-        public String userId;
-        public String clientId;
-        public int platform;
-        public int status;
-        public long timestamp;
-
-        public UserOnlineStatus(String userId, String clientId, int platform, int status) {
-            this.userId = userId;
-            this.clientId = clientId;
-            this.platform = platform;
-            this.status = status;
-            this.timestamp = System.currentTimeMillis();
-        }
     }
 
     public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status) {
