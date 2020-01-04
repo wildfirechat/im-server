@@ -4,6 +4,7 @@ public class UserOnlineStatus {
     public static final int ONLINE = 0;
     public static final int OFFLINE = 1;
     public static final int LOGOUT = -1;
+
     public String userId;
     public String clientId;
     public int platform;

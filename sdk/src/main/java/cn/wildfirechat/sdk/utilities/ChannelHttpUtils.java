@@ -22,23 +22,23 @@ import java.nio.charset.Charset;
 public class ChannelHttpUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelHttpUtils.class);
 
-    private static String url;
-    private static String channelId;
-    private static String channelSecret;
+    private String imurl;
+    private String channelId;
+    private String channelSecret;
 
-    public static void init(String url, String channelId, String secret) {
-        ChannelHttpUtils.url = url;
-        ChannelHttpUtils.channelId = channelId;
-        ChannelHttpUtils.channelSecret = secret;
+    public ChannelHttpUtils(String imurl, String channelId, String secret) {
+        this.imurl = imurl;
+        this.channelId = channelId;
+        this.channelSecret = secret;
     }
 
-    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
-        if (isNullOrEmpty(url) || isNullOrEmpty(path)) {
+    public <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
+        if (isNullOrEmpty(imurl) || isNullOrEmpty(path)) {
             LOG.error("Not init IM SDK correctly. Do you forget init it?");
             throw new Exception("SDK url or secret lack!");
         }
 
-        String url = ChannelHttpUtils.url + path;
+        String url = imurl + path;
         HttpPost post = null;
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();
@@ -54,7 +54,9 @@ public class ChannelHttpUtils {
             post.setHeader("Connection", "Keep-Alive");
             post.setHeader("nonce", nonce + "");
             post.setHeader("timestamp", "" + timestamp);
+            post.setHeader("cid", channelId);
             post.setHeader("sign", sign);
+
 
             String jsonStr = null;
             if (object != null) {

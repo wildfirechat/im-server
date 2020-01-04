@@ -10,6 +10,7 @@ import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_Member_Count;
@@ -455,6 +456,15 @@ public class Main {
         }
 
 
+        voidIMResult = UserAdmin.destroyUser("user11");
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("destroy user success");
+        } else {
+            System.out.println("destroy user failure");
+            System.exit(-1);
+        }
+
+
         //初始化机器人API
         RobotHttpUtils.init("http://localhost", "robot1", "123456");
         //***********************************************
@@ -483,8 +493,87 @@ public class Main {
             System.exit(-1);
         }
 
+        //测试频道API功能，仅专业版支持
+        //1. 先创建频道
+        inputCreateChannel = new InputCreateChannel();
+        inputCreateChannel.setName("testChannel");
+        inputCreateChannel.setOwner("user1");
+        resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
+        if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("create channel failure");
+            System.exit(-1);
+        }
 
-        voidIMResult = UserAdmin.destroyUser("user1");
+        //2. 初始化api
+        ChannelServiceApi channelServiceApi = new ChannelServiceApi("http://localhost", inputCreateChannel.getTargetId(), inputCreateChannel.getSecret());
+
+        //3. 测试channel api功能
+        resultVoid = channelServiceApi.subscribe(Arrays.asList("user2","user3"));
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user2") && resultStringList.getResult().getList().contains("user3")) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        resultVoid = channelServiceApi.unsubscribe(Arrays.asList("user2"));
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        resultStringList = channelServiceApi.getSubscriberList();
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user2") && !resultStringList.getResult().getList().contains("user3")) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        resultGetUserInfo1 = channelServiceApi.getUserInfo("user2");
+        if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get user info success");
+        } else {
+            System.out.println("get user info by name failure");
+            System.exit(-1);
+        }
+
+
+        payload = new MessagePayload();
+        payload.setType(1);
+        payload.setSearchableContent("hello world");
+
+        resultSendMessage = channelServiceApi.sendMessage(0, null,payload);
+        if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("send message success");
+        } else {
+            System.out.println("send message failure");
+            System.exit(-1);
+        }
+
+        payload.setSearchableContent("hello to user2");
+
+        resultSendMessage = channelServiceApi.sendMessage(0, Arrays.asList("user2"),payload);
+        if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("send message success");
+        } else {
+            System.out.println("send message failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Desc, "this is a test channel, update at:" + new Date().toString());
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("destroy user success");
         } else {
