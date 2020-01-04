@@ -83,11 +83,10 @@ abstract public class IMHandler<T> {
                 }
             }
 
-
             for (Method method : getClass().getDeclaredMethods()
                  ) {
 
-                if (method.getName() == actionName && method.getParameterCount() == 6) {
+                if (method.getName() == actionName && method.getParameterCount() == 6 && !method.getParameterTypes()[4].equals(Object.class)) {
                     dataCls = method.getParameterTypes()[4];
                     break;
                 }
@@ -239,18 +238,18 @@ abstract public class IMHandler<T> {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
-        this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, false);
+        mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 
-    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message) {
+    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message, boolean ignoreMsg) {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         message = m_messagesStore.storeMessage(username, clientID, message);
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
-        this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, ignoreMsg);
+        mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 

@@ -113,4 +113,22 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, kickoffGroupMember, Void.class);
     }
 
+    public static IMResult<Void> quitGroup(String operator, String groupId, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+        String path = APIPath.Group_Member_Quit;
+        InputQuitGroup quitGroup = new InputQuitGroup();
+        quitGroup.setGroup_id(groupId);
+        quitGroup.setOperator(operator);
+        quitGroup.setTo_lines(to_lines);
+        quitGroup.setNotify_message(notify_message);
+        return AdminHttpUtils.httpJsonPost(path, quitGroup, Void.class);
+    }
+
+    public static IMResult<OutputGroupIds> getUserGroups(String user) throws Exception {
+        String path = APIPath.Get_User_Groups;
+        InputUserId inputUserId = new InputUserId();
+        inputUserId.setUserId(user);
+        return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputGroupIds.class);
+    }
+
+
 }

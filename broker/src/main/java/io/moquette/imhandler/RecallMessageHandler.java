@@ -37,7 +37,7 @@ public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
 
 
         //等待客户端实现根据撤回消息更新内容，之后可以删掉这段代码
-        m_messagesStore.getNotifyReceivers(fromUser, message.toBuilder(), notifyReceivers);
+        m_messagesStore.getNotifyReceivers(fromUser, message.toBuilder(), notifyReceivers, false);
         this.publisher.publishRecall2Receivers(int64Buf.getId(), fromUser, notifyReceivers, clientID);
 
         return errorCode;

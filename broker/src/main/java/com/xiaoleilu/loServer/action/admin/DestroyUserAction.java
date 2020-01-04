@@ -10,7 +10,10 @@ package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.pojos.InputDestroyUser;
+import cn.wildfirechat.pojos.InputOutputUserInfo;
+import cn.wildfirechat.pojos.OutputCreateUser;
+import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -20,19 +23,18 @@ import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.UUIDGenerator;
 
+import java.util.Base64;
 import java.util.concurrent.Executor;
 
-@Route(APIPath.Create_Channel)
+@Route(APIPath.Destroy_User)
 @HttpMethod("POST")
-public class CreateChannelAction extends AdminAction {
+public class DestroyUserAction extends AdminAction {
 
     @Override
     public boolean isTransactionAction() {
@@ -42,26 +44,26 @@ public class CreateChannelAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputCreateChannel inputCreateChannel = getRequestBody(request.getNettyRequest(), InputCreateChannel.class);
-            if (inputCreateChannel != null
-                && !StringUtil.isNullOrEmpty(inputCreateChannel.getName())
-                && !StringUtil.isNullOrEmpty(inputCreateChannel.getOwner())) {
+            InputDestroyUser inputDestroyUser = getRequestBody(request.getNettyRequest(), InputDestroyUser.class);
+            if (inputDestroyUser != null
+                && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
 
-
-                if(StringUtil.isNullOrEmpty(inputCreateChannel.getTargetId())) {
-                    inputCreateChannel.setTargetId(messagesStore.getShortUUID());
-                }
-
-                RPCCenter.getInstance().sendRequest(inputCreateChannel.getOwner(), null, IMTopic.CreateChannelTopic, inputCreateChannel.toProtoChannelInfo().toByteArray(), inputCreateChannel.getOwner(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
+                RPCCenter.getInstance().sendRequest(inputDestroyUser.getUserId(), null, IMTopic.DestroyUserTopic, idBuf.toByteArray(), inputDestroyUser.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, new OutputCreateChannel(inputCreateChannel.getTargetId()));
+                        ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
+                        if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
+                            //ba errorcode qudiao
+                            byte[] data = new byte[result.length -1];
+                            for (int i = 0; i < data.length; i++) {
+                                data[i] = result[i+1];
+                            }
+                            String token = Base64.getEncoder().encodeToString(data);
+
+                            sendResponse(response, null, null);
                         } else {
-                            sendResponse(response, errorCode, null);
+                            sendResponse(response, errorCode1, null);
                         }
                     }
 

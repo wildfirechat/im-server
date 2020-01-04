@@ -8,10 +8,11 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.*;
-import cn.wildfirechat.proto.WFCMessage;
+import cn.wildfirechat.pojos.InputKickoffGroupMember;
+import cn.wildfirechat.pojos.InputQuitGroup;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -24,15 +25,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.internal.StringUtil;
 import win.liyufan.im.IMTopic;
-import win.liyufan.im.UUIDGenerator;
 
 import java.util.concurrent.Executor;
 
-@Route(APIPath.Create_Channel)
+@Route(APIPath.Group_Member_Quit)
 @HttpMethod("POST")
-public class CreateChannelAction extends AdminAction {
+public class QuitGroupMemberAction extends AdminAction {
 
     @Override
     public boolean isTransactionAction() {
@@ -42,24 +41,16 @@ public class CreateChannelAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputCreateChannel inputCreateChannel = getRequestBody(request.getNettyRequest(), InputCreateChannel.class);
-            if (inputCreateChannel != null
-                && !StringUtil.isNullOrEmpty(inputCreateChannel.getName())
-                && !StringUtil.isNullOrEmpty(inputCreateChannel.getOwner())) {
-
-
-                if(StringUtil.isNullOrEmpty(inputCreateChannel.getTargetId())) {
-                    inputCreateChannel.setTargetId(messagesStore.getShortUUID());
-                }
-
-                RPCCenter.getInstance().sendRequest(inputCreateChannel.getOwner(), null, IMTopic.CreateChannelTopic, inputCreateChannel.toProtoChannelInfo().toByteArray(), inputCreateChannel.getOwner(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+            InputQuitGroup inputQuitGroup = getRequestBody(request.getNettyRequest(), InputQuitGroup.class);
+            if (inputQuitGroup.isValide()) {
+                RPCCenter.getInstance().sendRequest(inputQuitGroup.getOperator(), null, IMTopic.QuitGroupTopic, inputQuitGroup.toProtoGroupRequest().toByteArray(), inputQuitGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();
                         byteBuf.writeBytes(result);
                         ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, new OutputCreateChannel(inputCreateChannel.getTargetId()));
+                            sendResponse(response, null, null);
                         } else {
                             sendResponse(response, errorCode, null);
                         }
@@ -88,7 +79,6 @@ public class CreateChannelAction extends AdminAction {
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
                 response.setContent(new Gson().toJson(result));
             }
-
         }
         return true;
     }

@@ -56,3 +56,6 @@ broker/media
 common/target
 server/target
 sdk/target
+moments/target
+monitor
+wildfire_jmeter

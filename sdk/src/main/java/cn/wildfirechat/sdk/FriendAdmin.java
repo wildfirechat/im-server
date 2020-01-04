@@ -15,12 +15,12 @@ public class FriendAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
-    public static IMResult<Void> getFriendStatusList(String userId, int status) throws Exception {
+    public static IMResult<OutputStringList> getFriendStatusList(String userId, int status) throws Exception {
         String path = APIPath.Friend_Get_List;
         InputGetFriendList input = new InputGetFriendList();
         input.setUserId(userId);
         input.setStatus(status);
-        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputStringList.class);
     }
 
 }

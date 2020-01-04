@@ -11,6 +11,7 @@ public interface APIPath {
     String Sensitive_Query = "/admin/sensitive/query";
 
     String Create_User = "/admin/user/create";
+    String Destroy_User = "/admin/user/destroy";
     String Create_Robot = "/admin/robot/create";
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
@@ -36,7 +37,9 @@ public interface APIPath {
     String Group_Member_List = "/admin/group/member/list";
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
+    String Group_Member_Quit = "/admin/group/member/quit";
     String Group_Set_Manager = "/admin/group/manager/set";
+    String Get_User_Groups = "/admin/group/of_user";
 
 
     String Create_Channel = "/admin/channel/create";

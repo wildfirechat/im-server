@@ -40,6 +40,7 @@ public class Main {
         createRobot.setUserId("robot1");
         createRobot.setName("robot1");
         createRobot.setDisplayName("机器人");
+        createRobot.setOwner("userId1");
         createRobot.setSecret("123456");
         createRobot.setCallback("http://127.0.0.1:8883/robot/recvmsg");
         IMResult<OutputCreateRobot> resultCreateRobot = UserAdmin.createRobot(createRobot);
@@ -98,7 +99,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<OutputGetIMTokenData> resultGetToken = UserAdmin.getUserToken(userInfo.getUserId(), "client111");
+        IMResult<OutputGetIMTokenData> resultGetToken = UserAdmin.getUserToken(userInfo.getUserId(), "client111", ProtoConstants.Platform.Platform_Android);
         if (resultGetToken != null && resultGetToken.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get token success: " + resultGetToken.getResult().getToken());
         } else {
@@ -285,6 +286,27 @@ public class Main {
         }
 
 
+        voidIMResult = GroupAdmin.quitGroup("user4", groupInfo.getTarget_id(), null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("quit group success");
+        } else {
+            System.out.println("quit group failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGroupIds> groupIdsIMResult = GroupAdmin.getUserGroups("user1");
+        if (groupIdsIMResult != null && groupIdsIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (groupIdsIMResult.getResult().getGroupIds().contains(groupInfo.getTarget_id())) {
+                System.out.println("get user groups success");
+            } else {
+                System.out.println("get user groups failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("get user groups failure");
+            System.exit(-1);
+        }
+
 
         //***********************************************
         //****  消息相关功能
@@ -330,7 +352,7 @@ public class Main {
             System.out.println("multi message failure");
             System.exit(-1);
         }
-        
+
         IMResult<SystemSettingPojo> resultGetSystemSetting  =  GeneralAdmin.getSystemSetting(Group_Max_Member_Count);
         if (resultGetSystemSetting != null && resultGetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
@@ -357,6 +379,7 @@ public class Main {
 
         InputCreateChannel inputCreateChannel = new InputCreateChannel();
         inputCreateChannel.setName("MyChannel");
+        inputCreateChannel.setOwner("user1");
         IMResult<OutputCreateChannel> resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
         if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
@@ -364,6 +387,56 @@ public class Main {
             System.out.println("create channel failure");
             System.exit(-1);
         }
+
+
+        //***********************************************
+        //****  好友相关功能
+        //***********************************************
+        //先创建2个用户
+        userInfo = new InputOutputUserInfo();
+        userInfo.setUserId("ff1");
+        userInfo.setName("ff1");
+        userInfo.setMobile("13800000000");
+        userInfo.setDisplayName("ff1");
+
+        resultCreateUser = UserAdmin.createUser(userInfo);
+        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
+        } else {
+            System.out.println("Create user failure");
+            System.exit(-1);
+        }
+
+        userInfo = new InputOutputUserInfo();
+        userInfo.setUserId("ff2");
+        userInfo.setName("ff2");
+        userInfo.setMobile("13800000001");
+        userInfo.setDisplayName("ff2");
+
+        resultCreateUser = UserAdmin.createUser(userInfo);
+        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
+        } else {
+            System.out.println("Create user failure");
+            System.exit(-1);
+        }
+
+        IMResult<Void> updateFriendStatusResult = FriendAdmin.updateFriendStatus("ff1", "ff2", 1);
+        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputStringList> resultGetFriendList = FriendAdmin.getFriendStatusList("ff1", 1);
+        if (resultGetFriendList != null && resultGetFriendList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultGetFriendList.getResult().getList().contains("ff2")) {
+            System.out.println("get friend status success");
+        } else {
+            System.out.println("get friend status failure");
+            System.exit(-1);
+        }
+
 
         //初始化机器人API
         RobotHttpUtils.init("http://localhost", "robot1", "123456");
@@ -390,6 +463,15 @@ public class Main {
             System.out.println("robot get user info success");
         } else {
             System.out.println("robot get user info by userId failure");
+            System.exit(-1);
+        }
+
+
+        voidIMResult = UserAdmin.destroyUser("user1");
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("destroy user success");
+        } else {
+            System.out.println("destroy user failure");
             System.exit(-1);
         }
     }

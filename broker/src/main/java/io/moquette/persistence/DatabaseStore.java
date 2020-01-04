@@ -16,6 +16,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
+import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +31,11 @@ import java.sql.*;
 import java.util.*;
 import java.util.function.Function;
 
+
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.persistence.MemoryMessagesStore.USER_STATUS;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
+import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
 
 public class DatabaseStore {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseStore.class);
@@ -146,8 +149,12 @@ public class DatabaseStore {
         }
         return null;
     }
-
-    List<WFCMessage.User> searchUserFromDB(String keyword, boolean buzzy, int page) {
+    //searchType
+    // 0 模糊匹配displayName, 精确匹配账户名和电话号码
+    // 1 精确匹配账户名和电话号码
+    // 2 精确匹配账户名
+    // 3 精确匹配电话号码
+    List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -167,18 +174,29 @@ public class DatabaseStore {
                 ", `_social`" +
                 ", `_extra`" +
                 ", `_dt` from t_user";
-            if (buzzy) {
-                sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
-            } else {
-                sql += " where (`_name` = ? or `_mobile` = ?) ";
+            switch (searchType) {
+                case SearchUserType_Name_Mobile:
+                    sql += " where (`_name` = ? or `_mobile` = ?) ";
+                    break;
+                case SearchUserType_Name:
+                    sql += " where `_name` = ? ";
+                    break;
+                case SearchUserType_Mobile:
+                    sql += " where `_mobile` = ? ";
+                    break;
+                case SearchUserType_General:
+                default:
+                    sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
+                    break;
             }
+
 
             sql += " and _type <> 2"; //can search normal user(0) and robot(1), can not search things
 
-            if (buzzy) {
-                sql += " limit 20";
-            } else {
+            if (searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
                 sql += " limit 1";
+            } else {
+                sql += " limit 20";
             }
             
             if (page > 0) {
@@ -188,12 +206,24 @@ public class DatabaseStore {
 
             statement = connection.prepareStatement(sql);
             int index = 1;
-            if (buzzy) {
-                statement.setString(index++, "%" + keyword + "%");
+
+            switch (searchType) {
+                case SearchUserType_Name_Mobile:
+                    statement.setString(index++, keyword);
+                    statement.setString(index++, keyword);
+                    break;
+                case SearchUserType_Name:
+                case SearchUserType_Mobile:
+                    statement.setString(index++, keyword);
+                    break;
+                case SearchUserType_General:
+                default:
+                    statement.setString(index++, "%" + keyword + "%");
+                    statement.setString(index++, keyword);
+                    statement.setString(index++, keyword);
+                    break;
             }
 
-            statement.setString(index++, keyword);
-            statement.setString(index++, keyword);
 
             rs = statement.executeQuery();
             while (rs.next()) {
@@ -638,11 +668,12 @@ public class DatabaseStore {
         String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + MessageShardingUtil.getMessageTable(messageId) +" where _mid = ? limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, messageId);
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
                 builder.setMessageId(messageId);
@@ -661,12 +692,11 @@ public class DatabaseStore {
                 WFCMessage.Message message = builder.build();
                 return new MessageBundle(messageId, message.getFromUser(), null, message);
             }
-            resultSet.close();
         } catch (SQLException | IOException e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         } finally {
-            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return null;
     }
@@ -786,6 +816,40 @@ public class DatabaseStore {
         });
     }
 
+    void clearUserMessage(final String userId) {
+        mScheduler.execute(()->{
+            String tableName = getUserMessageTable(userId);
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "delete from " + tableName + " where _uid = ?";
+                statement = connection.prepareStatement(sql);
+                statement.setString(1, userId);
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+
+                try {
+                    if (statement!=null) {
+                        statement.close();
+                    }
+                    statement = null;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e);
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+
+    }
+
     void removeFavGroup(final String groupId, final List<String> memberIds) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -848,6 +912,31 @@ public class DatabaseStore {
                 statement.setLong(index++, entry.getUpdateDt());
                 statement.setString(index++, entry.getValue());
                 statement.setLong(index++, entry.getUpdateDt());
+
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
+    void clearUserSetting(final String userId) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "delete from t_user_setting where `_uid` = ?";
+
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setString(index++, userId);
 
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
@@ -950,90 +1039,154 @@ public class DatabaseStore {
     }
 
     void persistGroupInfo(final WFCMessage.GroupInfo groupInfo) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
-                String sql = "insert into t_group (`_gid`" +
-                    ", `_name`" +
-                    ", `_portrait`" +
-                    ", `_owner`" +
-                    ", `_type`" +
-                    ", `_extra`" +
-                    ", `_dt`" +
-                    ", `_member_count`" +
-                    ", `_mute`" +
-                    ", `_join_type`" +
-                    ", `_private_chat`" +
-                    ", `_searchable`" +
-                    ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE " +
-                    "`_name` = ?," +
-                    "`_portrait` = ?," +
-                    "`_owner` = ?," +
-                    "`_type` = ?," +
-                    "`_extra` = ?," +
-                    "`_dt` = ?," +
-                    "`_member_count` = ?," +
-                    "`_mute` = ?" +
-                    ", `_join_type` = ?" +
-                    ", `_private_chat` = ?" +
-                    ", `_searchable` = ?, " +
-                    "`_member_dt` = ?";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "insert into t_group (`_gid`" +
+                ", `_name`" +
+                ", `_portrait`" +
+                ", `_owner`" +
+                ", `_type`" +
+                ", `_extra`" +
+                ", `_dt`" +
+                ", `_member_count`" +
+                ", `_mute`" +
+                ", `_join_type`" +
+                ", `_private_chat`" +
+                ", `_searchable`" +
+                ", `_member_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                " ON DUPLICATE KEY UPDATE " +
+                "`_name` = ?," +
+                "`_portrait` = ?," +
+                "`_owner` = ?," +
+                "`_type` = ?," +
+                "`_extra` = ?," +
+                "`_dt` = ?," +
+                "`_member_count` = ?," +
+                "`_mute` = ?" +
+                ", `_join_type` = ?" +
+                ", `_private_chat` = ?" +
+                ", `_searchable` = ?, " +
+                "`_member_dt` = ?";
 
 
-                statement = connection.prepareStatement(sql);
+            statement = connection.prepareStatement(sql);
 
+            int index = 1;
+            statement.setString(index++, groupInfo.getTargetId());
+            statement.setString(index++, groupInfo.getName());
+            statement.setString(index++, groupInfo.getPortrait());
+            statement.setString(index++, groupInfo.getOwner());
+            statement.setInt(index++, groupInfo.getType());
+            statement.setString(index++, groupInfo.getExtra());
+            statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            statement.setInt(index++, groupInfo.getMemberCount());
+            statement.setInt(index++, groupInfo.getMute());
+            statement.setInt(index++, groupInfo.getJoinType());
+            statement.setInt(index++, groupInfo.getPrivateChat());
+            statement.setInt(index++, groupInfo.getSearchable());
+            statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+
+            statement.setString(index++, groupInfo.getName());
+            statement.setString(index++, groupInfo.getPortrait());
+            statement.setString(index++, groupInfo.getOwner());
+            statement.setInt(index++, groupInfo.getType());
+            statement.setString(index++, groupInfo.getExtra());
+            statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            statement.setInt(index++, groupInfo.getMemberCount());
+            statement.setInt(index++, groupInfo.getMute());
+            statement.setInt(index++, groupInfo.getJoinType());
+            statement.setInt(index++, groupInfo.getPrivateChat());
+            statement.setInt(index++, groupInfo.getSearchable());
+            statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    List<MemorySessionStore.Session> getUserActivedSessions(String uid) {
+        String sql = "select  `_cid`, `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt` from t_user_session where `_uid` = ? and `_deleted` = 0";
+        Connection connection = null;
+        PreparedStatement statement = null;
+        List<MemorySessionStore.Session> result = new ArrayList<>();
+        ResultSet resultSet = null;
+        try {
+            connection = DBUtil.getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, uid);
+
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
                 int index = 1;
-                statement.setString(index++, groupInfo.getTargetId());
-                statement.setString(index++, groupInfo.getName());
-                statement.setString(index++, groupInfo.getPortrait());
-                statement.setString(index++, groupInfo.getOwner());
-                statement.setInt(index++, groupInfo.getType());
-                statement.setString(index++, groupInfo.getExtra());
-                statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                statement.setInt(index++, groupInfo.getMemberCount());
-                statement.setInt(index++, groupInfo.getMute());
-                statement.setInt(index++, groupInfo.getJoinType());
-                statement.setInt(index++, groupInfo.getPrivateChat());
-                statement.setInt(index++, groupInfo.getSearchable());
-                statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
+                String cid = resultSet.getString(index++);
 
-                statement.setString(index++, groupInfo.getName());
-                statement.setString(index++, groupInfo.getPortrait());
-                statement.setString(index++, groupInfo.getOwner());
-                statement.setInt(index++, groupInfo.getType());
-                statement.setString(index++, groupInfo.getExtra());
-                statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                statement.setInt(index++, groupInfo.getMemberCount());
-                statement.setInt(index++, groupInfo.getMute());
-                statement.setInt(index++, groupInfo.getJoinType());
-                statement.setInt(index++, groupInfo.getPrivateChat());
-                statement.setInt(index++, groupInfo.getSearchable());
-                statement.setLong(index++, groupInfo.getMemberUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-                int count = statement.executeUpdate();
-                LOG.info("Update rows {}", count);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            } finally {
-                DBUtil.closeDB(connection, statement);
+                ClientSession clientSession = new ClientSession(cid, Server.getServer().getStore().sessionsStore());
+                MemorySessionStore.Session session = new MemorySessionStore.Session(uid, cid, clientSession);
+
+                session.setAppName(resultSet.getString(index++));
+                session.setDeviceToken(resultSet.getString(index++));
+                session.setVoipDeviceToken(resultSet.getString(index++));
+                session.setSecret(resultSet.getString(index++));
+                session.setDbSecret(resultSet.getString(index++));
+                session.setPlatform(resultSet.getInt(index++));
+                session.setPushType(resultSet.getInt(index++));
+
+                session.setDeviceName(resultSet.getString(index++));
+                session.setDeviceVersion(resultSet.getString(index++));
+                session.setPhoneName(resultSet.getString(index++));
+                session.setLanguage(resultSet.getString(index++));
+                session.setCarrierName(resultSet.getString(index++));
+                session.setUpdateDt(resultSet.getLong(index++));
+                result.add(session);
             }
-        });
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, resultSet);
+        }
+        return result;
+    }
+
+    void clearUserSessions(String uid) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_user_session where `_uid`=?";
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setString(index++, uid);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     MemorySessionStore.Session getSession(String uid, String clientId, ClientSession clientSession) {
-        String sql = "select  `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt` from t_user_session where `_uid` = ? and `_cid` = ? limit 1";
+        String sql = "select  `_package_name`,`_token`,`_voip_token`,`_secret`,`_db_secret`,`_platform`,`_push_type`,`_device_name`,`_device_version`,`_phone_name`,`_language`,`_carrier_name`, `_dt`, `_deleted` from t_user_session where `_uid` = ? and `_cid` = ? limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setString(1, uid);
             statement.setString(2, clientId);
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 MemorySessionStore.Session session = new MemorySessionStore.Session(uid, clientId, clientSession);
 
@@ -1051,15 +1204,15 @@ public class DatabaseStore {
                 session.setPhoneName(resultSet.getString(index++));
                 session.setLanguage(resultSet.getString(index++));
                 session.setCarrierName(resultSet.getString(index++));
-                session.setUpdateDt(resultSet.getLong(index));
+                session.setUpdateDt(resultSet.getLong(index++));
+                session.setDeleted(resultSet.getInt(index));
                 return session;
             }
-            resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         } finally {
-            DBUtil.closeDB(connection, statement);
+            DBUtil.closeDB(connection, statement, resultSet);
         }
         return null;
     }
@@ -1121,6 +1274,64 @@ public class DatabaseStore {
                     statement.setInt(index++, pushType);
                 }
                 statement.setLong(index++, System.currentTimeMillis());
+                statement.setString(index++, uid);
+                statement.setString(index++, cid);
+
+                int c = statement.executeUpdate();
+                LOG.info("Update rows {}", c);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
+    void updateSessionDeleted(String uid, String cid, int deleted) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "update t_user_session set `_deleted` = ? where `_uid` = ? and `_cid` = ?";
+
+                statement = connection.prepareStatement(sql);
+
+                int index = 1;
+                statement.setInt(index++, deleted);
+                statement.setString(index++, uid);
+                statement.setString(index++, cid);
+
+                int c = statement.executeUpdate();
+                LOG.info("Update rows {}", c);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e);
+            } finally {
+                DBUtil.closeDB(connection, statement);
+            }
+        });
+    }
+
+    void updateSessionPlatform(String uid, String cid, int platform) {
+        mScheduler.execute(()->{
+            Connection connection = null;
+            PreparedStatement statement = null;
+
+            try {
+                connection = DBUtil.getConnection();
+
+                String sql = "update t_user_session set `_platform` = ? where `_uid` = ? and `_cid` = ?";
+
+                statement = connection.prepareStatement(sql);
+
+                int index = 1;
+                statement.setInt(index++, platform);
                 statement.setString(index++, uid);
                 statement.setString(index++, cid);
 
@@ -1228,23 +1439,71 @@ public class DatabaseStore {
         });
     }
 
-    MemorySessionStore.Session createSession(String uid, String clientId, ClientSession clientSession) {
+    void clearMultiEndpoint(String uid, String clientId, int platform) {
+        LOG.info("clearMultiEndpoint {}, {}", uid, clientId);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql;
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX
+                    || platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
+            } else {
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and `_platform` = ? and `_cid` <> ? and `_deleted` = 0";
+            }
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+
+            statement.setInt(index++, 1);
+            statement.setString(index++, "");
+            statement.setString(index++, "");
+            statement.setLong(index++, System.currentTimeMillis());
+
+            statement.setString(index++, uid);
+
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_Windows);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_OSX);
+            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_iOS);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_Android);
+            } else {
+                statement.setInt(index++, platform);
+            }
+
+            statement.setString(index++, clientId);
+
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    MemorySessionStore.Session createSession(String uid, String clientId, ClientSession clientSession, int platform) {
         Connection connection = null;
         PreparedStatement statement = null;
         LOG.info("Database create session {},{}", uid, clientId);
         try {
             connection = DBUtil.getConnection();
-            String sql = "insert into t_user_session  (`_uid`,`_cid`,`_secret`,`_db_secret`, `_dt`) values (?,?,?,?,?)";
+            String sql = "insert into t_user_session  (`_uid`,`_cid`,`_platform`,`_secret`,`_db_secret`, `_dt`) values (?,?,?,?,?,?)";
 
             statement = connection.prepareStatement(sql);
 
             int index = 1;
 
             MemorySessionStore.Session session = new MemorySessionStore.Session(uid, clientId, clientSession);
-
+            session.setPlatform(platform);
 
             statement.setString(index++, uid);
             statement.setString(index++, clientId);
+            statement.setInt(index++, platform);
 
 
             session.setSecret(UUID.randomUUID().toString());
@@ -1269,40 +1528,67 @@ public class DatabaseStore {
         return null;
     }
 
-    void updateGroupMemberCountDt(final String groupId, final int count, final long dt) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
+    Set<String> getUserGroupIds(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select `_gid` from t_group_member where `_mid` = ? and `_type` <> ?";
+            statement = connection.prepareStatement(sql);
 
-                String sql ;
+            statement.setString(1, userId);
+            statement.setInt(2, ProtoConstants.GroupMemberType.GroupMemberType_Removed);
 
-                if (count >= 0) {
-                    sql = "update t_group set `_member_count` = ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
-                } else {
-                    sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
-                }
-                statement = connection.prepareStatement(sql);
 
-                int index = 1;
-                if (count >=0) {
-                    statement.setInt(index++, count);
-                }
-                statement.setLong(index++, dt);
-                statement.setLong(index++, dt);
-                statement.setString(index++, groupId);
-
-                int c = statement.executeUpdate();
-                LOG.info("Update rows {}", c);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            } finally {
-                DBUtil.closeDB(connection, statement);
+            rs = statement.executeQuery();
+            Set<String> out = new HashSet<>();
+            while (rs.next()) {
+                String uid = rs.getString(1);
+                out.add(uid);
             }
-        });
+            return out;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return null;
+    }
+    void updateGroupMemberCountDt(final String groupId, final int count, final long dt) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            String sql ;
+
+            if (count >= 0) {
+                sql = "update t_group set `_member_count` = ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
+            } else {
+                sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
+            }
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+            if (count >=0) {
+                statement.setInt(index++, count);
+            }
+            statement.setLong(index++, dt);
+            statement.setLong(index++, dt);
+            statement.setString(index++, groupId);
+
+            int c = statement.executeUpdate();
+            LOG.info("Update rows {}", c);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     void persistGroupMember(final String groupId, final List<WFCMessage.GroupMember> memberList) {
@@ -1873,6 +2159,7 @@ public class DatabaseStore {
                     ", `_social`=?" +
                     ", `_extra`=?" +
                     ", `_type`=?" +
+                    ", `_deleted`=?" +
                     ", `_dt`=?";
 
                 statement = connection.prepareStatement(sql);
@@ -1906,6 +2193,7 @@ public class DatabaseStore {
 
                 statement.setString(index++, user.getExtra());
                 statement.setInt(index++, user.getType());
+                statement.setInt(index++, user.getDeleted());
                 statement.setLong(index++, user.getUpdateDt() == 0 ? System.currentTimeMillis() : user.getUpdateDt());
 
                 int count = statement.executeUpdate();
@@ -2032,6 +2320,7 @@ public class DatabaseStore {
                 ", `_social`" +
                 ", `_extra`" +
                 ", `_type`" +
+                ", `_deleted`" +
                 ", `_dt` from t_user where `_uid` = ?";
             statement = connection.prepareStatement(sql);
 
@@ -2085,6 +2374,9 @@ public class DatabaseStore {
 
                 int type = rs.getInt(index++);
                 builder.setType(type);
+
+                int deleted = rs.getInt(index++);
+                builder.setDeleted(deleted);
 
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
@@ -2153,7 +2445,7 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select distinct(`_uid`) from t_user_session";
+            String sql = "select distinct(`_uid`) from t_user_session where `_deleted` = 0";
             statement = connection.prepareStatement(sql);
 
 
@@ -2211,19 +2503,72 @@ public class DatabaseStore {
         return null;
     }
 
+
+    void removeUserFriend(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "update t_friend  set `_alias` = '', `_state` = 1, `_blacked` = 0, `_dt` = ? where `_uid` = ? or `_friend_uid` = ?";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setLong(index++, System.currentTimeMillis());
+            statement.setString(index++, userId);
+            statement.setString(index++, userId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    void removeUserFriendRequest(String userId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_friend_request  where _uid = ? or _friend_uid = ?";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setString(index++, userId);
+            statement.setString(index++, userId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     List<WFCMessage.FriendRequest> getPersistFriendRequests(String userId) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select   `_uid`" +
+            String sql = "select  `_uid`" +
                 ", `_friend_uid`" +
                 ", `_reason`" +
                 ", `_status`" +
                 ", `_dt`" +
                 ", `_from_read_status`" +
-                ", `_to_read_status` from t_friend_request where `_uid` = ? or `_friend_uid` = ?";
+                ", `_to_read_status` from t_friend_request where `_uid` = ? UNION ALL " +
+                "select   `_uid`" +
+                ", `_friend_uid`" +
+                ", `_reason`" +
+                ", `_status`" +
+                ", `_dt`" +
+                ", `_from_read_status`" +
+                ", `_to_read_status` from t_friend_request where `_friend_uid` = ?";
             statement = connection.prepareStatement(sql);
 
             int index = 1;

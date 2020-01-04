@@ -57,7 +57,7 @@ public class RouteAction extends Action {
             try {
                 bytes = Base64.getDecoder().decode(str);
             } catch (IllegalArgumentException e) {
-                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
                 return true;
             }
 
@@ -65,7 +65,7 @@ public class RouteAction extends Action {
             byte[] cbytes = Base64.getDecoder().decode(cid);
             cbytes = AES.AESDecrypt(cbytes, "", true);
             if (cbytes == null) {
-                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
                 return true;
             }
             cid = new String(cbytes);
@@ -74,7 +74,7 @@ public class RouteAction extends Action {
             byte[] ubytes = Base64.getDecoder().decode(uid);
             ubytes = AES.AESDecrypt(ubytes, "", true);
             if (ubytes == null) {
-                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
                 return true;
             }
             uid = new String(ubytes);
@@ -82,7 +82,7 @@ public class RouteAction extends Action {
 
             MemorySessionStore.Session session = sessionsStore.sessionForClientAndUser(uid, cid);
             if (session == null) {
-                ErrorCode errorCode = sessionsStore.createNewSession(uid, cid, true, true);
+                ErrorCode errorCode = sessionsStore.loadActiveSession(uid, cid);
                 if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
                     sendResponse(response, errorCode, null, base64Response);
                     return true;

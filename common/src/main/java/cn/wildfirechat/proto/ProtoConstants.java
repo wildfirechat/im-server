@@ -132,6 +132,23 @@ public class ProtoConstants {
         int Group_Max_Member_Count = 1;
     }
 
+    public interface SearchUserType {
+        int SearchUserType_General = 0;
+        int SearchUserType_Name_Mobile = 1;
+        int SearchUserType_Name = 2;
+        int SearchUserType_Mobile = 3;
+    }
+
+    public interface UserStatus {
+        int Normal = 0;
+        int Muted = 1;
+        int Forbidden = 2;
+    }
+
+    public interface BlacklistStrategy {
+        int Message_Reject = 0;
+        int Message_Ignore = 1;
+    }
 
 
 

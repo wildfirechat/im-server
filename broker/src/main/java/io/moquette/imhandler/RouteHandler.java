@@ -32,7 +32,7 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         boolean isSessionAlreadyStored = clientSession != null;
         if (!isSessionAlreadyStored) {
-            m_sessionsStore.createNewSession(fromUser, clientID, true, true);
+            m_sessionsStore.loadActiveSession(fromUser, clientID);
         } else {
             m_sessionsStore.updateExistSession(fromUser, clientID, request, true);
         }

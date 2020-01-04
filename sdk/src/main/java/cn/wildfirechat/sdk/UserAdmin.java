@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
@@ -34,9 +35,9 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, robot, OutputCreateRobot.class);
     }
 
-    public static IMResult<OutputGetIMTokenData> getUserToken(String userId, String clientId) throws Exception {
+    public static IMResult<OutputGetIMTokenData> getUserToken(String userId, String clientId, int platform) throws Exception {
         String path = APIPath.User_Get_Token;
-        InputGetToken getToken = new InputGetToken(userId, clientId);
+        InputGetToken getToken = new InputGetToken(userId, clientId, platform);
         return AdminHttpUtils.httpJsonPost(path, getToken, OutputGetIMTokenData.class);
     }
 
@@ -55,6 +56,13 @@ public class UserAdmin {
     public static IMResult<OutputUserBlockStatusList> getBlockedList() throws Exception {
         String path = APIPath.User_Get_Blocked_List;
         return AdminHttpUtils.httpJsonPost(path, null, OutputUserBlockStatusList.class);
+    }
+
+    public static IMResult<Void> destroyUser(String userId) throws Exception {
+        String path = APIPath.Destroy_User;
+        InputDestroyUser inputDestroyUser = new InputDestroyUser();
+        inputDestroyUser.setUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, inputDestroyUser, Void.class);
     }
 
     //not implement
