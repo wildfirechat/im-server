@@ -437,6 +437,23 @@ public class Main {
             System.exit(-1);
         }
 
+        String alias = "hello" + System.currentTimeMillis();
+        IMResult<Void> updateFriendAlias = FriendAdmin.updateFriendAlias("ff1", "ff2", alias);
+        if (updateFriendAlias != null && updateFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGetAlias> getFriendAlias = FriendAdmin.getFriendAlias("ff1", "ff2");
+        if (getFriendAlias != null && getFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getFriendAlias.getResult().getAlias().equals(alias)) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
 
         //初始化机器人API
         RobotHttpUtils.init("http://localhost", "robot1", "123456");

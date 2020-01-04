@@ -248,24 +248,36 @@ public class ProtocolProcessor {
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
         if(session != null) {
             session.refreshLastActiveTime();
+            forwardOnlineStatusEvent(payload.userName(), clientId, session.getPlatform(), UserOnlineStatus.ONLINE);
+        } else {
+            forwardOnlineStatusEvent(payload.userName(), clientId, ProtoConstants.Platform.Platform_UNSET, UserOnlineStatus.ONLINE);
         }
 
         LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
     }
 
     private static class UserOnlineStatus {
+        public static final int ONLINE = 0;
+        public static final int OFFLINE = 1;
+        public static final int LOGOUT = -1;
         public String userId;
-        public int status; //0 offline; 1 online; -1 logout
+        public String clientId;
+        public int platform;
+        public int status;
+        public long timestamp;
 
-        public UserOnlineStatus(String userId, int status) {
+        public UserOnlineStatus(String userId, String clientId, int platform, int status) {
             this.userId = userId;
+            this.clientId = clientId;
+            this.platform = platform;
             this.status = status;
+            this.timestamp = System.currentTimeMillis();
         }
     }
 
-    public void forwardOnlineStatusEvent(String userId, int status) {
+    public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status) {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
-            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, status))));
+            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status))));
         }
     }
 
@@ -526,7 +538,7 @@ public class ProtocolProcessor {
         }
 
         if (!clearSession) {
-            processConnectionLost(clientID, channel);
+            processConnectionLost(clientID, channel, clearSession);
             return;
         }
 
@@ -567,9 +579,16 @@ public class ProtocolProcessor {
 
         LOG.info("The DISCONNECT message has been processed. CId={}", clientID);
 
+        String username = NettyUtils.userName(channel);
+        MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+        if(session != null) {
+            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), UserOnlineStatus.LOGOUT);
+        }
+
         channel.closeFuture();
 
         //disconnect the session
+
         m_sessionsStore.sessionForClient(clientID).disconnect(clearSession);
     }
 
@@ -600,17 +619,21 @@ public class ProtocolProcessor {
         return true;
     }
 
-    public void processConnectionLost(String clientID, Channel channel) {
+    public void processConnectionLost(String clientID, Channel channel, boolean clearSession) {
         LOG.info("Processing connection lost event. CId={}", clientID);
+
+        String username = NettyUtils.userName(channel);
+        MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+        if(session != null) {
+            session.refreshLastActiveTime();
+            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE);
+        }
+
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
         if(connectionDescriptors.removeConnection(oldConnDescr)) {
-            MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
-            if(session != null) {
-                session.refreshLastActiveTime();
-            }
-            String username = NettyUtils.userName(channel);
             m_interceptor.notifyClientConnectionLost(clientID, username);
         }
+
     }
 
     /**

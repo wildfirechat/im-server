@@ -9,7 +9,9 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.pojos.InputGetAlias;
 import cn.wildfirechat.pojos.InputGetFriendList;
+import cn.wildfirechat.pojos.OutputGetAlias;
 import cn.wildfirechat.pojos.OutputStringList;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -36,16 +38,19 @@ public class AliasGetAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputGetFriendList inputGetFriendList = getRequestBody(request.getNettyRequest(), InputGetFriendList.class);
-            List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), null, 0);
+            InputGetAlias input = getRequestBody(request.getNettyRequest(), InputGetAlias.class);
+            List<FriendData> dataList = messagesStore.getFriendList(input.getOperator(), null, 0);
             List<String> list = new ArrayList<>();
+            OutputGetAlias out = new OutputGetAlias(input.getOperator(), input.getTargetId());
+
             for (FriendData data : dataList) {
-                if (data.getState() == inputGetFriendList.getStatus()) {
-                    list.add(data.getFriendUid());
+                if (data.getFriendUid().equals(input.getTargetId())) {
+                    out.setAlias(data.getAlias());
+                    break;
                 }
             }
             response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(new OutputStringList(list));
+            RestResult result = RestResult.ok(out);
             response.setContent(new Gson().toJson(result));
         }
         return true;

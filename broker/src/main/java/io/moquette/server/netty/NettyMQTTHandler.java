@@ -103,7 +103,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
         String clientID = NettyUtils.clientID(ctx.channel());
         if (clientID != null && !clientID.isEmpty()) {
             LOG.info("Notifying connection lost event. MqttClientId = {}.", clientID);
-            m_processor.processConnectionLost(clientID, ctx.channel());
+            m_processor.processConnectionLost(clientID, ctx.channel(), false);
         }
         ctx.close();
     }
