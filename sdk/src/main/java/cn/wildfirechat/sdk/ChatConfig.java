@@ -12,8 +12,4 @@ public class ChatConfig {
     public static void initRobot(String url, String robotId, String secret) {
         RobotHttpUtils.init(url, robotId, secret);
     }
-
-    public static void initChannel(String url, String channelId, String secret) {
-        ChannelHttpUtils.init(url, channelId, secret);
-    }
 }
