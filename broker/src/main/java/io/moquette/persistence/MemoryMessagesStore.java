@@ -124,6 +124,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private boolean mDisableStrangerChat = false;
 
+    private long mChatroomParticipantIdleTime = 900000;
+    private boolean mChatroomRejoinWhenActive = true;
+
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
@@ -145,6 +148,18 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mFriendRejectDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mChatroomRejoinWhenActive = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CHATROOM_Rejoin_When_Active));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mChatroomParticipantIdleTime = Long.parseLong(m_Server.getConfig().getProperty(CHATROOM_Participant_Idle_Time, "900000"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -575,13 +590,21 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean checkUserClientInChatroom(String user, String clientId, String chatroomId) {
         MemorySessionStore.Session session = m_Server.getStore().sessionsStore().getSession(clientId);
-        if (session == null || System.currentTimeMillis() - session.getLastChatroomActiveTime() > 5 * 60 * 1000) {
-            handleQuitChatroom(user, clientId, chatroomId);
-            return false;
-        }
 
         String existChatroomId = (String)m_Server.getHazelcastInstance().getMap(USER_CHATROOM).get(user);
-        if (StringUtil.isNullOrEmpty(existChatroomId) && (chatroomId == null || !existChatroomId.equals(chatroomId))) {
+        if (StringUtil.isNullOrEmpty(existChatroomId) || !existChatroomId.equals(chatroomId)) {
+            if (mChatroomRejoinWhenActive) {
+                if (!StringUtil.isNullOrEmpty(existChatroomId)) {
+                    handleQuitChatroom(user, clientId, existChatroomId);
+                }
+                handleJoinChatroom(user, clientId, chatroomId);
+            } else {
+                return false;
+            }
+        }
+
+        if (!mChatroomRejoinWhenActive && !checkChatroomParticipantIdelTime(session)) {
+            handleQuitChatroom(user, clientId, chatroomId);
             return false;
         }
 
@@ -2156,6 +2179,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         chatroomMessages.remove(userId);
         mWriteLock.unlock();
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public boolean checkChatroomParticipantIdelTime(MemorySessionStore.Session session) {
+        if (session == null) {
+            return false;
+        }
+
+        if(mChatroomParticipantIdleTime > 0 && System.currentTimeMillis() - session.getLastChatroomActiveTime() > mChatroomParticipantIdleTime) {
+            return false;
+        }
+        return true;
     }
 
     @Override

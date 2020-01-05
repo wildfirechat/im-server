@@ -216,7 +216,7 @@ public class MessagesPublisher {
                         targetSession.refreshLastChatroomActiveTime();
                     }
 
-                    if(System.currentTimeMillis() - targetSession.getLastChatroomActiveTime() > 5*60*1000) {
+                    if (!m_messagesStore.checkChatroomParticipantIdelTime(targetSession)) {
                         m_messagesStore.handleQuitChatroom(user, targetSession.getClientID(), target);
                         continue;
                     }

@@ -125,6 +125,10 @@ public final class BrokerConstants {
     public static final String FRIEND_Repeat_Request_Duration = "friend.repeat_request_duration";
     public static final String FRIEND_Reject_Request_Duration = "friend.reject_request_duration";
 
+    public static final String CHATROOM_Participant_Idle_Time = "chatroom.participant_idle_time";
+    public static final String CHATROOM_Rejoin_When_Active = "chatroom.rejoin_when_active";
+
+
     private BrokerConstants() {
     }
 }

@@ -21,6 +21,7 @@ import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import io.moquette.persistence.DatabaseStore;
+import io.moquette.persistence.MemorySessionStore;
 import io.moquette.persistence.UserClientEntry;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
@@ -172,6 +173,8 @@ public interface IMessagesStore {
 
     ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId);
     ErrorCode handleQuitChatroom(String userId, String clientId, String chatroomId);
+
+    boolean checkChatroomParticipantIdelTime(MemorySessionStore.Session session);
 
     ErrorCode getUserSettings(String userId, long version, WFCMessage.GetUserSettingResult.Builder builder);
     WFCMessage.UserSettingEntry getUserSetting(String userId, int scope, String key);
