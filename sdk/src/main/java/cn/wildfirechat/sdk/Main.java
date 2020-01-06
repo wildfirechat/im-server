@@ -510,7 +510,15 @@ public class Main {
         ChannelServiceApi channelServiceApi = new ChannelServiceApi("http://localhost", inputCreateChannel.getTargetId(), inputCreateChannel.getSecret());
 
         //3. 测试channel api功能
-        resultVoid = channelServiceApi.subscribe(Arrays.asList("user2","user3"));
+        resultVoid = channelServiceApi.subscribe("user2");
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("block user done");
+        } else {
+            System.out.println("block user failure");
+            System.exit(-1);
+        }
+
+        resultVoid = channelServiceApi.subscribe("user3");
         if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("block user done");
         } else {
@@ -526,7 +534,7 @@ public class Main {
             System.exit(-1);
         }
 
-        resultVoid = channelServiceApi.unsubscribe(Arrays.asList("user2"));
+        resultVoid = channelServiceApi.unsubscribe("user2");
         if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("block user done");
         } else {
@@ -535,7 +543,7 @@ public class Main {
         }
 
         resultStringList = channelServiceApi.getSubscriberList();
-        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user2") && !resultStringList.getResult().getList().contains("user3")) {
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user3") && !resultStringList.getResult().getList().contains("user2")) {
             System.out.println("block user done");
         } else {
             System.out.println("block user failure");

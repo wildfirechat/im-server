@@ -52,7 +52,6 @@ public interface APIPath {
     String Channel_Update_Profile = "/channel/update_profile";
     String Channel_Message_Send = "/channel/message/send";
     String Channel_Subscribe = "/channel/subscribe";
-    String Channel_Unsubscribe = "/channel/unsubscribe";
     String Channel_Subscriber_List = "/channel/subscriber_list";
 
     String Robot_User_Info = "/robot/user_info";

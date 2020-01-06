@@ -15,15 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InputChannelSubscribe {
-    private List<String> targets;
+    private String target;
     private int subscribe; //1，订阅；0，取消订阅
 
-    public List<String> getTargets() {
-        return targets;
+    public String getTarget() {
+        return target;
     }
 
-    public void setTargets(List<String> targets) {
-        this.targets = targets;
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     public int getSubscribe() {
