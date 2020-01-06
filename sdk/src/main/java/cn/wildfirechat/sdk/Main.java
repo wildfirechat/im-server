@@ -494,13 +494,13 @@ public class Main {
         }
 
         //测试频道API功能，仅专业版支持
-        //1. 先创建频道
+        //1. 先使用admin api创建频道
         inputCreateChannel = new InputCreateChannel();
         inputCreateChannel.setName("testChannel");
         inputCreateChannel.setOwner("user1");
         resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
         if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("success");
+            System.out.println("create channel success");
         } else {
             System.out.println("create channel failure");
             System.exit(-1);
@@ -512,41 +512,41 @@ public class Main {
         //3. 测试channel api功能
         resultVoid = channelServiceApi.subscribe("user2");
         if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("block user done");
+            System.out.println("subscribe success");
         } else {
-            System.out.println("block user failure");
+            System.out.println("subscribe failure");
             System.exit(-1);
         }
 
         resultVoid = channelServiceApi.subscribe("user3");
         if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("block user done");
+            System.out.println("subscribe done");
         } else {
-            System.out.println("block user failure");
+            System.out.println("subscribe failure");
             System.exit(-1);
         }
 
         IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
         if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user2") && resultStringList.getResult().getList().contains("user3")) {
-            System.out.println("block user done");
+            System.out.println("get subscriber done");
         } else {
-            System.out.println("block user failure");
+            System.out.println("get subscriber failure");
             System.exit(-1);
         }
 
         resultVoid = channelServiceApi.unsubscribe("user2");
         if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("block user done");
+            System.out.println("unsubscriber done");
         } else {
-            System.out.println("block user failure");
+            System.out.println("unsubscriber failure");
             System.exit(-1);
         }
 
         resultStringList = channelServiceApi.getSubscriberList();
         if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("user3") && !resultStringList.getResult().getList().contains("user2")) {
-            System.out.println("block user done");
+            System.out.println("get subscriber done");
         } else {
-            System.out.println("block user failure");
+            System.out.println("get subscriber failure");
             System.exit(-1);
         }
 
@@ -554,7 +554,7 @@ public class Main {
         if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get user info success");
         } else {
-            System.out.println("get user info by name failure");
+            System.out.println("get user info failure");
             System.exit(-1);
         }
 
@@ -565,9 +565,9 @@ public class Main {
 
         resultSendMessage = channelServiceApi.sendMessage(0, null,payload);
         if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("send message success");
+            System.out.println("send message to all the subscriber success");
         } else {
-            System.out.println("send message failure");
+            System.out.println("send message to all the subscriber  failure");
             System.exit(-1);
         }
 
@@ -575,14 +575,22 @@ public class Main {
 
         resultSendMessage = channelServiceApi.sendMessage(0, Arrays.asList("user2"),payload);
         if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("send message success");
+            System.out.println("send message to user2 success");
         } else {
-            System.out.println("send message failure");
+            System.out.println("send message to user2 failure");
             System.exit(-1);
         }
 
         voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Desc, "this is a test channel, update at:" + new Date().toString());
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("modify channel profile success");
+        } else {
+            System.out.println("modify channel profile failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGetChannelInfo> outputGetChannelInfoIMResult = channelServiceApi.getChannelInfo();
+        if (outputGetChannelInfoIMResult != null && outputGetChannelInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("destroy user success");
         } else {
             System.out.println("destroy user failure");

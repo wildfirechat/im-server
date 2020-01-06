@@ -50,6 +50,7 @@ public interface APIPath {
 
     String Channel_User_Info = "/channel/user_info";
     String Channel_Update_Profile = "/channel/update_profile";
+    String Channel_Get_Profile = "/channel/get_profile";
     String Channel_Message_Send = "/channel/message/send";
     String Channel_Subscribe = "/channel/subscribe";
     String Channel_Subscriber_List = "/channel/subscriber_list";

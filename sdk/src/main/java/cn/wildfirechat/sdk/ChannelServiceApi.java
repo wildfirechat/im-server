@@ -32,6 +32,11 @@ public class ChannelServiceApi {
         return httpUtils.httpJsonPost(path, modifyChannelInfo, Void.class);
     }
 
+    public IMResult<OutputGetChannelInfo> getChannelInfo() throws Exception {
+        String path = APIPath.Channel_Get_Profile;
+        return httpUtils.httpJsonPost(path, null, OutputGetChannelInfo.class);
+    }
+
     public IMResult<SendMessageResult> sendMessage(int line, List<String> targets, MessagePayload payload) throws Exception {
         String path = APIPath.Channel_Message_Send;
         SendChannelMessageData messageData = new SendChannelMessageData();
