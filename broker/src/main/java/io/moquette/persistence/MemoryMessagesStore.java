@@ -1259,8 +1259,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (members == null || members.size() == 0) {
             members = loadGroupMemberFromDB(hzInstance, groupId);
         }
-        for (WFCMessage.GroupMember member : members
-            ) {
+        
+        boolean isInGroup = false;
+        for (WFCMessage.GroupMember member : members) {
             if (member.getMemberId().equals(memberId)) {
                 if (member.getType() == GroupMemberType_Silent) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
@@ -1273,9 +1274,14 @@ public class MemoryMessagesStore implements IMessagesStore {
                 if (member.getMemberId().equals(memberId) && member.getType() == GroupMemberType_Removed) {
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 }
+                isInGroup = true;
                 break;
             }
 
+        }
+
+        if (!isInGroup) {
+            return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
         }
 
         return ErrorCode.ERROR_CODE_SUCCESS;
