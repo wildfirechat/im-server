@@ -103,4 +103,19 @@ public class OutputGetChannelInfo {
     public void setAutomatic(int automatic) {
         this.automatic = automatic;
     }
+
+    public static OutputGetChannelInfo fromPbInfo(WFCMessage.ChannelInfo channelInfo) {
+        OutputGetChannelInfo out = new OutputGetChannelInfo();
+        out.automatic = channelInfo.getAutomatic();
+        out.callback = channelInfo.getCallback();
+        out.channelId = channelInfo.getTargetId();
+        out.desc = channelInfo.getDesc();
+        out.extra = channelInfo.getExtra();
+        out.name = channelInfo.getName();
+        out.owner = channelInfo.getOwner();
+        out.portrait = channelInfo.getPortrait();
+        out.status = channelInfo.getStatus();
+        out.updateDt = channelInfo.getUpdateDt();
+        return out;
+    }
 }

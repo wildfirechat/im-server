@@ -58,7 +58,7 @@ public class ChannelHttpUtils {
             post.setHeader("sign", sign);
 
 
-            String jsonStr = null;
+            String jsonStr = "";
             if (object != null) {
                 jsonStr = new Gson().toJson(object);
             }
