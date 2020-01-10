@@ -1417,7 +1417,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request) {
+    public ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request) throws Exception {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
 
@@ -1480,8 +1480,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (modified) {
             builder.setUpdateDt(System.currentTimeMillis());
             user = builder.build();
+            databaseStore.updateUser(user);
             mUserMap.set(userId, user);
-//            databaseStore.updateUser(user);
             return ErrorCode.ERROR_CODE_SUCCESS;
         } else {
             return ErrorCode.ERROR_CODE_NOT_MODIFIED;
@@ -1526,9 +1526,10 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void addUserInfo(WFCMessage.User user, String password) {
+    public void addUserInfo(WFCMessage.User user, String password) throws Exception {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+        databaseStore.updateUser(user);
         mUserMap.put(user.getUid(), user);
         databaseStore.updateUserPassword(user.getUid(), password);
     }
@@ -1539,7 +1540,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
         WFCMessage.User us = mUserMap.get(userId);
         if (us != null) {
-            us = WFCMessage.User.newBuilder().setUid(userId).setUpdateDt(System.currentTimeMillis()).setDisplayName("已删除用户").setName(userId).setDeleted(1).build();
+            us = WFCMessage.User.newBuilder().setUid(userId).setUpdateDt(System.currentTimeMillis()).setDisplayName("").setName(userId).setDeleted(1).build();
+            try {
+                databaseStore.updateUser(us);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mUserMap.put(userId, us);
         }
 

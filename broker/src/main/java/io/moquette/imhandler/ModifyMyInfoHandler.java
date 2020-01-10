@@ -18,6 +18,11 @@ import win.liyufan.im.IMTopic;
 public class ModifyMyInfoHandler extends IMHandler<WFCMessage.ModifyMyInfoRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ModifyMyInfoRequest request, Qos1PublishHandler.IMCallback callback) {
+        try {
             return m_messagesStore.modifyUserInfo(fromUser, request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ErrorCode.ERROR_CODE_SERVER_ERROR;
+        }
     }
 }

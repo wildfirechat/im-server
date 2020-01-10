@@ -55,7 +55,15 @@ public class CreateRobotAction extends AdminAction {
                 WFCMessage.User newUser = inputCreateRobot.toUser();
 
 
-                messagesStore.addUserInfo(newUser, inputCreateRobot.getPassword());
+                try {
+                    messagesStore.addUserInfo(newUser, inputCreateRobot.getPassword());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.setStatus(HttpResponseStatus.OK);
+                    RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
+                    response.setContent(new Gson().toJson(result));
+                    return true;
+                }
 
                 if (StringUtil.isNullOrEmpty(inputCreateRobot.getOwner())) {
                     inputCreateRobot.setOwner(inputCreateRobot.getUserId());

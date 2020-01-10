@@ -129,13 +129,13 @@ public interface IMessagesStore {
     WFCMessage.Robot getRobot(String robotId);
     void addRobot(WFCMessage.Robot robot);
     ErrorCode getUserInfo(List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder);
-    ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request);
+    ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request) throws Exception;
 
     ErrorCode modifyUserStatus(String userId, int status);
     int getUserStatus(String userId);
     List<InputOutputUserBlockStatus> getUserStatusList();
 
-    void addUserInfo(WFCMessage.User user, String password);
+    void addUserInfo(WFCMessage.User user, String password) throws Exception;
     void destoryUser(String userId);
     WFCMessage.User getUserInfo(String userId);
     WFCMessage.User getUserInfoByName(String name);

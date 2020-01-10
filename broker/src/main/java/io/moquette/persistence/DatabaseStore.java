@@ -2128,7 +2128,7 @@ public class DatabaseStore {
         });
     }
 
-    void updateUser(final WFCMessage.User user) {
+    void updateUser(final WFCMessage.User user) throws Exception {
         LOG.info("Database update user info {} {}", user.getUid(), user.getUpdateDt());
             Connection connection = null;
             PreparedStatement statement = null;
@@ -2202,6 +2202,7 @@ public class DatabaseStore {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
                 Utility.printExecption(LOG, e);
+                throw new Exception(e.getMessage());
             } finally {
                 DBUtil.closeDB(connection, statement);
             }

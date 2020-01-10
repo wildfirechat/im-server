@@ -19,7 +19,7 @@ import java.util.Map;
 public class UserLoader implements MapStore<String, WFCMessage.User> {
     @Override
     public void store(String s, WFCMessage.User user) {
-        getDatabaseStore().updateUser(user);
+//        getDatabaseStore().updateUser(user);
     }
 
     @Override

@@ -75,7 +75,16 @@ public class CreateUserAction extends AdminAction {
 
                 newUserBuilder.setUpdateDt(System.currentTimeMillis());
 
-                messagesStore.addUserInfo(newUserBuilder.build(), inputCreateUser.getPassword());
+
+                try {
+                    messagesStore.addUserInfo(newUserBuilder.build(), inputCreateUser.getPassword());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.setStatus(HttpResponseStatus.OK);
+                    RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
+                    response.setContent(new Gson().toJson(result));
+                    return true;
+                }
 
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.ok(new OutputCreateUser(inputCreateUser.getUserId(), inputCreateUser.getName()));
