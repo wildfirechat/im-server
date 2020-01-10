@@ -187,6 +187,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                                         gzip.close();
                                     } catch (Exception e) {
                                         e.printStackTrace();
+                                        Utility.printExecption(LOG, e);
                                     }
                                     data = out.toByteArray();
                                     code = (byte)ErrorCode.ERROR_CODE_SUCCESS_GZIPED.code;

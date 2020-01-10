@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.Utility;
 
 /**
  * Action处理单元
@@ -52,6 +53,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			}
 		} catch (Exception e) {
 		    e.printStackTrace();
+            Utility.printExecption(Logger, e);
 			Action errorAction = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
 			request.putParam(UnknownErrorAction.ERROR_PARAM_NAME, e);
 			response.setContent(e.toString());

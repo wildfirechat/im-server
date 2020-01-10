@@ -138,30 +138,35 @@ public class MemoryMessagesStore implements IMessagesStore {
             mDisableStrangerChat = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
 
         try {
             mFriendRequestDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Repeat_Request_Duration));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
 
         try {
             mFriendRejectDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
 
         try {
             mChatroomRejoinWhenActive = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CHATROOM_Rejoin_When_Active));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
 
         try {
             mChatroomParticipantIdleTime = Long.parseLong(m_Server.getConfig().getProperty(CHATROOM_Participant_Idle_Time, "900000"));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
     }
 
@@ -1545,6 +1550,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 databaseStore.updateUser(us);
             } catch (Exception e) {
                 e.printStackTrace();
+                Utility.printExecption(LOG, e);
             }
             mUserMap.put(userId, us);
         }
@@ -2296,6 +2302,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                Utility.printExecption(LOG, e);
                             }
 
                         }
@@ -2506,6 +2513,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 newInfoBuilder.setAutomatic(Integer.parseInt(value));
             } catch (Exception e) {
                 e.printStackTrace();
+                Utility.printExecption(LOG, e);
             }
         }
 

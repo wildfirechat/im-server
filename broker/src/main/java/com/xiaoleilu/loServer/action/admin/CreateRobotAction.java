@@ -22,11 +22,15 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import win.liyufan.im.UUIDGenerator;
+import win.liyufan.im.Utility;
 
 @Route(APIPath.Create_Robot)
 @HttpMethod("POST")
 public class CreateRobotAction extends AdminAction {
+    private static final Logger LOG = LoggerFactory.getLogger(CreateRobotAction.class);
 
     @Override
     public boolean isTransactionAction() {
@@ -59,6 +63,7 @@ public class CreateRobotAction extends AdminAction {
                     messagesStore.addUserInfo(newUser, inputCreateRobot.getPassword());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Utility.printExecption(LOG, e);
                     response.setStatus(HttpResponseStatus.OK);
                     RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
                     response.setContent(new Gson().toJson(result));

@@ -29,6 +29,7 @@ import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.Utility;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -272,6 +273,7 @@ public class MemorySessionStore implements ISessionsStore {
             supportMultiEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_ENDPOINT));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
     }
 

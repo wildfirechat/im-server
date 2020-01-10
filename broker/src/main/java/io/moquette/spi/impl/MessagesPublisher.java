@@ -87,6 +87,7 @@ public class MessagesPublisher {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
         chatroomScheduler.shutdown();
     }

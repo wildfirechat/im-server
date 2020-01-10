@@ -12,6 +12,7 @@ import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
+import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.spi.impl.Utils;
@@ -21,9 +22,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.wildfirechat.common.ErrorCode;
+import org.slf4j.LoggerFactory;
 import win.liyufan.im.RateLimiter;
+import win.liyufan.im.Utility;
 
 abstract public class ChannelAction extends Action {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChannelAction.class);
     private final RateLimiter mLimitCounter = new RateLimiter(10, 200);
     protected WFCMessage.ChannelInfo channelInfo;
 
@@ -47,6 +51,7 @@ abstract public class ChannelAction extends Action {
             ts = Long.parseLong(timestamp);
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
             return ErrorCode.INVALID_PARAMETER;
         }
 

@@ -17,6 +17,7 @@ import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.MessageShardingUtil;
+import win.liyufan.im.Utility;
 
 import java.util.Set;
 
@@ -39,12 +40,14 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             mSensitiveType = Integer.parseInt(mServer.getConfig().getProperty(BrokerConstants.SENSITIVE_Filter_Type));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
 
         try {
             mBlacklistStrategy = Integer.parseInt(mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Blacklist_Strategy));
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
         }
     }
 

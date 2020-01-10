@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import com.google.gson.Gson;
+import com.xiaoleilu.loServer.LoServer;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.handler.Request;
@@ -17,9 +18,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.wildfirechat.common.ErrorCode;
+import org.slf4j.LoggerFactory;
 import win.liyufan.im.RateLimiter;
+import win.liyufan.im.Utility;
 
 abstract public class AdminAction extends Action {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AdminAction.class);
     private static String SECRET_KEY = "123456";
     private static boolean NO_CHECK_TIME = false;
     private final RateLimiter mLimitCounter = new RateLimiter(10, 500);
@@ -52,6 +56,7 @@ abstract public class AdminAction extends Action {
             ts = Long.parseLong(timestamp);
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
             return ErrorCode.INVALID_PARAMETER;
         }
 

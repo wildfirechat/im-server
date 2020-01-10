@@ -13,6 +13,7 @@ import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
+import win.liyufan.im.Utility;
 
 @Handler(IMTopic.ModifyMyInfoTopic)
 public class ModifyMyInfoHandler extends IMHandler<WFCMessage.ModifyMyInfoRequest> {
@@ -22,6 +23,7 @@ public class ModifyMyInfoHandler extends IMHandler<WFCMessage.ModifyMyInfoReques
             return m_messagesStore.modifyUserInfo(fromUser, request);
         } catch (Exception e) {
             e.printStackTrace();
+            Utility.printExecption(LOG, e);
             return ErrorCode.ERROR_CODE_SERVER_ERROR;
         }
     }

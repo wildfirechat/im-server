@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import com.xiaoleilu.loServer.action.ClassUtil;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.Utility;
 
 import java.io.IOException;
 
@@ -141,6 +142,7 @@ public class LoServer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Utility.printExecption(Logger, e);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
