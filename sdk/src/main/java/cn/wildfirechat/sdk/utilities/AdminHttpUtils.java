@@ -67,31 +67,33 @@ public class AdminHttpUtils {
             HttpResponse response = httpClient.execute(post);
 
             int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode != HttpStatus.SC_OK){
-                LOG.info("Request error: "+statusCode);
-                throw new Exception("Http request error with code:" + statusCode);
-            }else{
-                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity()
-                    .getContent(),"utf-8"));
-                StringBuffer sb = new StringBuffer();
+            String content = null;
+            if (response.getEntity().getContentLength() > 0) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "utf-8"));
+                StringBuilder sb = new StringBuilder();
                 String line;
                 String NL = System.getProperty("line.separator");
                 while ((line = in.readLine()) != null) {
-                    sb.append(line + NL);
+                    sb.append(line).append(NL);
                 }
 
                 in.close();
 
-                String content = sb.toString();
+                content = sb.toString();
                 LOG.info("http request response content: {}", content);
+            }
 
+            if(statusCode != HttpStatus.SC_OK){
+                LOG.info("Request error: " + statusCode + " error msg:" + content);
+                throw new Exception("Http request error with code:" + statusCode);
+            } else {
                 return fromJsonObject(content, clazz);
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
-        }finally{
-            if(post != null){
+        } finally {
+            if(post != null) {
                 post.releaseConnection();
             }
         }
