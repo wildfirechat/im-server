@@ -597,6 +597,14 @@ public class MemoryMessagesStore implements IMessagesStore {
         MemorySessionStore.Session session = m_Server.getStore().sessionsStore().getSession(clientId);
 
         String existChatroomId = (String)m_Server.getHazelcastInstance().getMap(USER_CHATROOM).get(user);
+        if (chatroomId == null) {
+            if (existChatroomId == null) {
+                return false;
+            } else {
+                chatroomId = existChatroomId;
+            }
+        }
+
         if (StringUtil.isNullOrEmpty(existChatroomId) || !existChatroomId.equals(chatroomId)) {
             if (mChatroomRejoinWhenActive) {
                 if (!StringUtil.isNullOrEmpty(existChatroomId)) {
