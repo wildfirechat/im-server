@@ -22,7 +22,6 @@ import cn.wildfirechat.proto.WFCMessage;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
-import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
@@ -122,6 +121,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
+    private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
+
     private boolean mDisableStrangerChat = false;
 
     private long mChatroomParticipantIdleTime = 900000;
@@ -150,6 +151,13 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mFriendRejectDuration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Reject_Request_Duration));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        }
+
+        try {
+            mFriendRequestExpiration = Long.parseLong(m_Server.getConfig().getProperty(FRIEND_Request_Expiration_Duration));
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
@@ -2074,8 +2082,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (existRequest != null) {
-            if (mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
-                return ErrorCode.ERROR_CODE_FRIEND_REQUEST_OVERTIME;
+            if (mFriendRequestExpiration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestExpiration) {
+                return ErrorCode.ERROR_CODE_FRIEND_REQUEST_EXPIRED;
             } else {
                 existRequest = existRequest.toBuilder().setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Accepted).setUpdateDt(System.currentTimeMillis()).build();
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
