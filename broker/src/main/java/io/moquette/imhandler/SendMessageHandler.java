@@ -71,6 +71,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
                         if (errorCode == ErrorCode.ERROR_CODE_IN_BLACK_LIST && mBlacklistStrategy != ProtoConstants.BlacklistStrategy.Message_Reject) {
                             ignoreMsg = true;
+                            errorCode = ErrorCode.ERROR_CODE_SUCCESS;
                         } else {
                             return errorCode;
                         }
