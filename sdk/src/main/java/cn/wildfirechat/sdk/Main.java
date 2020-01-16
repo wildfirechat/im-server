@@ -469,6 +469,55 @@ public class Main {
             System.out.println("destroy user failure");
             System.exit(-1);
         }
+
+        String chatroomId = "chatroomId1";
+        String chatroomTitle = "TESTCHATROM";
+        String chatroomDesc = "this is a test chatroom";
+        String chatroomPortrait = "http://pic.com/test123.png";
+        String chatroomExtra = "{\'managers:[\"user1\",\"user2\"]}";
+        IMResult<OutputCreateChatroom> chatroomIMResult = ChatroomAdmin.createChatroom(chatroomId,chatroomTitle, chatroomDesc, chatroomPortrait,chatroomExtra,ProtoConstants.ChatroomState.Chatroom_State_Normal);
+        if (chatroomIMResult != null && chatroomIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && chatroomIMResult.getResult().getChatroomId().equals(chatroomId)) {
+            System.out.println("create chatroom success");
+        } else {
+            System.out.println("create chatroom failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGetChatroomInfo> getChatroomInfoIMResult = ChatroomAdmin.getChatroomInfo(chatroomId);
+        if (getChatroomInfoIMResult != null && getChatroomInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (!getChatroomInfoIMResult.getResult().getChatroomId().equals(chatroomId)
+                || !getChatroomInfoIMResult.getResult().getTitle().equals(chatroomTitle)
+                || !getChatroomInfoIMResult.getResult().getDesc().equals(chatroomDesc)
+                || !getChatroomInfoIMResult.getResult().getPortrait().equals(chatroomPortrait)
+                || !getChatroomInfoIMResult.getResult().getExtra().equals(chatroomExtra)
+                || getChatroomInfoIMResult.getResult().getState() != ProtoConstants.ChatroomState.Chatroom_State_Normal) {
+                System.out.println("chatroom info incorrect");
+                System.exit(-1);
+            } else {
+                System.out.println("chatroom info incorrect");
+            }
+        } else {
+            System.out.println("get chatroom info failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = ChatroomAdmin.destroyChatroom(chatroomId);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("destroy chatroom done!");
+        } else {
+            System.out.println("destroy chatroom failure");
+            System.exit(-1);
+        }
+
+        getChatroomInfoIMResult = ChatroomAdmin.getChatroomInfo(chatroomId);
+        if (getChatroomInfoIMResult != null && getChatroomInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getChatroomInfoIMResult.getResult().getState() == ProtoConstants.ChatroomState.Chatroom_State_End) {
+            System.out.println("chatroom destroyed!");
+        } else {
+            System.out.println("chatroom not destroyed!");
+            System.exit(-1);
+        }
+
+        System.out.println("Congratulation, all admin test case passed!!!!!!!");
     }
 
     static void testRobot() throws Exception {

@@ -6,8 +6,15 @@ import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
 public class ChatroomAdmin {
-    public static IMResult<OutputCreateChatroom> createChatroom(InputCreateChatroom input) throws Exception {
+    public static IMResult<OutputCreateChatroom> createChatroom(String chatroomId, String title, String desc ,String portrait, String extra, Integer state) throws Exception {
         String path = APIPath.Create_Chatroom;
+        InputCreateChatroom input = new InputCreateChatroom();
+        input.setChatroomId(chatroomId);
+        input.setTitle(title);
+        input.setDesc(desc);
+        input.setPortrait(portrait);
+        input.setExtra(extra);
+        input.setState(state);
         return AdminHttpUtils.httpJsonPost(path, input, OutputCreateChatroom.class);
     }
 

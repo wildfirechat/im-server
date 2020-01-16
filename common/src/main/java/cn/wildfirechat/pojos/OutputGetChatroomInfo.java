@@ -18,6 +18,7 @@ public class OutputGetChatroomInfo {
     private String desc;
     private String portrait;
     private String extra;
+    private int state;
     private int memberCount;
     private long createDt;
     private long updateDt;
@@ -28,6 +29,8 @@ public class OutputGetChatroomInfo {
         this.desc = chatroomInfo.getDesc();
         this.portrait = chatroomInfo.getPortrait();
         this.memberCount = memberCount;
+        this.extra = chatroomInfo.getExtra();
+        this.state = chatroomInfo.getState();
         this.createDt = chatroomInfo.getCreateDt();
         this.updateDt = chatroomInfo.getUpdateDt();
     }
@@ -97,5 +100,13 @@ public class OutputGetChatroomInfo {
 
     public void setExtra(String extra) {
         this.extra = extra;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 }
