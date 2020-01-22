@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -43,7 +44,8 @@ public class CreateUserAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputOutputUserInfo inputCreateUser = getRequestBody(request.getNettyRequest(), InputOutputUserInfo.class);
             if (inputCreateUser != null
-                && !StringUtil.isNullOrEmpty(inputCreateUser.getName())) {
+                && !StringUtil.isNullOrEmpty(inputCreateUser.getName())
+                && (inputCreateUser.getType() == ProtoConstants.UserType.UserType_Normal || inputCreateUser.getType() == ProtoConstants.UserType.UserType_Admin || inputCreateUser.getType() == ProtoConstants.UserType.UserType_Super_Admin)) {
 
                 if(StringUtil.isNullOrEmpty(inputCreateUser.getPassword())) {
                     inputCreateUser.setPassword(UUIDGenerator.getUUID());
@@ -78,6 +80,7 @@ public class CreateUserAction extends AdminAction {
                 if (inputCreateUser.getExtra() != null)
                     newUserBuilder.setExtra(inputCreateUser.getExtra());
 
+                newUserBuilder.setType(inputCreateUser.getType());
                 newUserBuilder.setUpdateDt(System.currentTimeMillis());
 
 

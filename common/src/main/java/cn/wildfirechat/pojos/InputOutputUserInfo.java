@@ -24,6 +24,7 @@ public class InputOutputUserInfo {
     private String company;
     private String social;
     private String extra;
+    private int type;
     private long updateDt;
 
     public static InputOutputUserInfo fromPbUser(WFCMessage.User pbUser) {
@@ -39,6 +40,7 @@ public class InputOutputUserInfo {
         inputCreateUser.company = pbUser.getCompany();
         inputCreateUser.social = pbUser.getSocial();
         inputCreateUser.extra = pbUser.getExtra();
+        inputCreateUser.type = pbUser.getType();
         inputCreateUser.updateDt = pbUser.getUpdateDt();
         return inputCreateUser;
     }
@@ -74,6 +76,7 @@ public class InputOutputUserInfo {
         if (getExtra() != null)
             newUserBuilder.setExtra(getExtra());
         newUserBuilder.setGender(gender);
+        newUserBuilder.setType(type);
 
         newUserBuilder.setUpdateDt(System.currentTimeMillis());
         return newUserBuilder.build();
@@ -173,5 +176,13 @@ public class InputOutputUserInfo {
 
     public void setGender(int gender) {
         this.gender = gender;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }
