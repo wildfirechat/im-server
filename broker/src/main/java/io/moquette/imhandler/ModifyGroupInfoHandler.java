@@ -31,7 +31,7 @@ public class ModifyGroupInfoHandler extends GroupHandler<WFCMessage.ModifyGroupI
                 if (request.getType() == Modify_Group_Name) {
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupNameNotifyContent();
                 } else if(request.getType() == Modify_Group_Portrait) {
-                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getChangeGroupPortraitNotifyContent();
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupPortraitNotifyContent();
                 } else if(request.getType() == Modify_Group_Mute) {
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupMuteNotifyContent();
                 } else if(request.getType() == Modify_Group_JoinType) {
