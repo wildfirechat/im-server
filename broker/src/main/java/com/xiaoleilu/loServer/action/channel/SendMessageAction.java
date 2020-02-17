@@ -10,6 +10,7 @@ package com.xiaoleilu.loServer.action.channel;
 
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.pojos.SendChannelMessageData;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -44,11 +45,15 @@ public class SendMessageAction extends ChannelAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
+            SendChannelMessageData sendChannelMessageData = getRequestBody(request.getNettyRequest(), SendChannelMessageData.class);
+            SendMessageData sendMessageData = new SendMessageData();
             sendMessageData.setConv(new Conversation());
             sendMessageData.getConv().setType(ConversationType_Channel);
             sendMessageData.getConv().setTarget(channelInfo.getTargetId());
+            sendMessageData.getConv().setLine(sendChannelMessageData.getLine());
             sendMessageData.setSender(channelInfo.getOwner());
+            sendMessageData.setPayload(sendChannelMessageData.getPayload());
+            sendMessageData.setToUsers(sendChannelMessageData.getTargets());
             if (SendMessageData.isValide(sendMessageData)) {
                 RPCCenter.getInstance().sendRequest(sendMessageData.getSender(), null, IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override

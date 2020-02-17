@@ -258,8 +258,17 @@ public class MemoryMessagesStore implements IMessagesStore {
 
             if (!StringUtil.isNullOrEmpty(message.getToUser())) {
                 notifyReceivers.add(message.getToUser());
-            } else if(!message.getToList().isEmpty()) {
-                notifyReceivers.addAll(message.getToList());
+            } else if(message.getToList()!=null && !message.getToList().isEmpty()) {
+                MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+                Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
+                if (members == null || members.size() == 0) {
+                    members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
+                }
+                for (WFCMessage.GroupMember member : members) {
+                    if (member.getType() != GroupMemberType_Removed && message.getToList().contains(member.getMemberId())) {
+                        notifyReceivers.add(member.getMemberId());
+                    }
+                }
             } else {
                 MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
                 Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
@@ -296,14 +305,20 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (channelInfo != null) {
                 notifyReceivers.add(fromUser);
                 if (channelInfo.getOwner().equals(fromUser)) {
+                    MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
                     if (StringUtil.isNullOrEmpty(message.getToUser())) {
-                        MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
-                        notifyReceivers.addAll(listeners.get(message.getConversation().getTarget()));
-                    } else {
-                        MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
                         if (listeners.values().contains(message.getToUser())) {
                             notifyReceivers.add(message.getToUser());
                         }
+                    } else if(message.getToList() != null && !message.getToList().isEmpty()) {
+                        Collection<String> ls = listeners.get(message.getConversation().getTarget());
+                        for (String to:message.getToList()) {
+                            if (ls.contains(to)) {
+                                notifyReceivers.add(to);
+                            }
+                        }
+                    } else {
+                        notifyReceivers.addAll(listeners.get(message.getConversation().getTarget()));
                     }
                 } else {
                     if (StringUtil.isNullOrEmpty(channelInfo.getCallback()) || channelInfo.getAutomatic() == 0) {

@@ -12,10 +12,13 @@ import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.netty.util.internal.StringUtil;
 
+import java.util.List;
+
 public class SendMessageData {
     private String sender;
     private Conversation conv;
     private MessagePayload payload;
+    private List<String> toUsers;
 
     public String getSender() {
         return sender;
@@ -41,6 +44,14 @@ public class SendMessageData {
         this.payload = payload;
     }
 
+    public List<String> getToUsers() {
+        return toUsers;
+    }
+
+    public void setToUsers(List<String> toUsers) {
+        this.toUsers = toUsers;
+    }
+
     public static boolean isValide(SendMessageData sendMessageData) {
         if(sendMessageData == null ||
             sendMessageData.getConv() == null ||
@@ -55,10 +66,18 @@ public class SendMessageData {
     }
 
     public WFCMessage.Message toProtoMessage() {
-        return WFCMessage.Message.newBuilder().setFromUser(sender)
-            .setConversation(WFCMessage.Conversation.newBuilder().setType(conv.getType()).setTarget(conv.getTarget()).setLine(conv.getLine()))
-            .setContent(payload.toProtoMessageContent())
-            .build();
+        if (toUsers != null && toUsers.size() > 0) {
+            return WFCMessage.Message.newBuilder().setFromUser(sender)
+                .setConversation(WFCMessage.Conversation.newBuilder().setType(conv.getType()).setTarget(conv.getTarget()).setLine(conv.getLine()))
+                .setContent(payload.toProtoMessageContent())
+                .addAllTo(toUsers)
+                .build();
+        } else {
+            return WFCMessage.Message.newBuilder().setFromUser(sender)
+                .setConversation(WFCMessage.Conversation.newBuilder().setType(conv.getType()).setTarget(conv.getTarget()).setLine(conv.getLine()))
+                .setContent(payload.toProtoMessageContent())
+                .build();
+        }
     }
 
     public static SendMessageData fromProtoMessage(WFCMessage.Message protoMessage) {
