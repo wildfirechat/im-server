@@ -306,7 +306,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 notifyReceivers.add(fromUser);
                 if (channelInfo.getOwner().equals(fromUser)) {
                     MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
-                    if (StringUtil.isNullOrEmpty(message.getToUser())) {
+                    if (!StringUtil.isNullOrEmpty(message.getToUser())) {
                         if (listeners.values().contains(message.getToUser())) {
                             notifyReceivers.add(message.getToUser());
                         }
