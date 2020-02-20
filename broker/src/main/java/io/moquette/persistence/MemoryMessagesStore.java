@@ -2624,6 +2624,19 @@ public class MemoryMessagesStore implements IMessagesStore {
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
+    private Collection<String> getChannelListener(String channelId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
+        Collection<String> result = listeners.get(channelId);
+        if (result.isEmpty()) {
+            result = databaseStore.getChannelListener(channelId);
+            for (String userId : result) {
+                listeners.put(channelId, userId);
+            }
+        }
+        return result;
+    }
+
     @Override
     public WFCMessage.ChannelInfo getChannelInfo(String channelId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
@@ -2633,12 +2646,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public boolean checkUserInChannel(String user, String channelId) {
-        MultiMap<String, String> chatroomMembers = m_Server.getHazelcastInstance().getMultiMap(CHANNEL_LISTENERS);
+        Collection<String> chatroomMembers = getChannelListener(channelId);
         if (chatroomMembers == null) {
             return false;
         }
 
-        if(!chatroomMembers.containsEntry(channelId, user)) {
+        if(!chatroomMembers.contains(user)) {
             IMap<String, WFCMessage.ChannelInfo> mIMap = m_Server.getHazelcastInstance().getMap(CHANNELS);
             WFCMessage.ChannelInfo info = mIMap.get(channelId);
             if (info == null || !info.getOwner().equals(user)) {
