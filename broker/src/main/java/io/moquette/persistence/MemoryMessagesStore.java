@@ -305,20 +305,19 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (channelInfo != null) {
                 notifyReceivers.add(fromUser);
                 if (channelInfo.getOwner().equals(fromUser)) {
-                    MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
+                    Collection<String> listeners = getChannelListener(message.getConversation().getTarget());
                     if (!StringUtil.isNullOrEmpty(message.getToUser())) {
-                        if (listeners.values().contains(message.getToUser())) {
+                        if (listeners.contains(message.getToUser())) {
                             notifyReceivers.add(message.getToUser());
                         }
                     } else if(message.getToList() != null && !message.getToList().isEmpty()) {
-                        Collection<String> ls = listeners.get(message.getConversation().getTarget());
                         for (String to:message.getToList()) {
-                            if (ls.contains(to)) {
+                            if (listeners.contains(to)) {
                                 notifyReceivers.add(to);
                             }
                         }
                     } else {
-                        notifyReceivers.addAll(listeners.get(message.getConversation().getTarget()));
+                        notifyReceivers.addAll(listeners);
                     }
                 } else {
                     if (StringUtil.isNullOrEmpty(channelInfo.getCallback()) || channelInfo.getAutomatic() == 0) {
@@ -2613,6 +2612,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode listenChannel(String operator, String channelId, boolean listen) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
+
+        getChannelListener(channelId);
 
         if (listen) {
             listeners.put(channelId, operator);

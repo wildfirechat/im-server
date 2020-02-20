@@ -3001,7 +3001,7 @@ public class DatabaseStore {
             rs = statement.executeQuery();
             while (rs.next()) {
 
-                String value = rs.getString(index++);
+                String value = rs.getString(1);
                 if (!StringUtil.isNullOrEmpty(value)) {
                     out.add(value);
                 }
