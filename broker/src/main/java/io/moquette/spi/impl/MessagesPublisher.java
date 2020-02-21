@@ -23,6 +23,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.util.StringUtil;
 import cn.wildfirechat.pojos.OutputNotifyChannelSubscribeStatus;
 import cn.wildfirechat.pojos.SendMessageData;
+import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.persistence.*;
 import io.moquette.persistence.MemorySessionStore.Session;
 import io.moquette.server.ConnectionDescriptorStore;
@@ -316,11 +317,19 @@ public class MessagesPublisher {
                     boolean isHiddenDetail = m_messagesStore.getUserPushHiddenDetail(user);
 
                     if(!nameLoaded) {
-                        senderName = getUserDisplayName(sender);
+                        senderName = getUserDisplayName(sender, conversationType == ProtoConstants.ConversationType.ConversationType_Group ? target : null);
                         targetName = getTargetName(target, conversationType);
                         nameLoaded = true;
                     }
-                    this.messageSender.sendPush(sender, conversationType, target, line, messageHead, targetSession.getClientID(), pushContent, messageContentType, serverTime, senderName, targetName, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
+
+                    String name = senderName;
+                    if (!sender.equals(user)) {
+                        FriendData fd = m_messagesStore.getFriendData(user, sender);
+                        if (fd != null && !StringUtil.isNullOrEmpty(fd.getAlias())) {
+                            name = fd.getAlias();
+                        }
+                    }
+                    this.messageSender.sendPush(sender, conversationType, target, line, messageHead, targetSession.getClientID(), pushContent, messageContentType, serverTime, name, targetName, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
                 }
 
             }
@@ -356,21 +365,33 @@ public class MessagesPublisher {
         }
     }
 
-    String getUserDisplayName(String userId) {
+    String getUserDisplayName(String userId, String groupId) {
         WFCMessage.User user = m_messagesStore.getUserInfo(userId);
+        String userName = null;
         if(user != null) {
-            return user.getDisplayName();
+            userName = user.getDisplayName();
         }
-        return null;
+        if (!StringUtil.isNullOrEmpty(groupId)) {
+            WFCMessage.GroupMember member = m_messagesStore.getGroupMember(groupId, userId);
+            if (member != null && !StringUtil.isNullOrEmpty(member.getAlias())) {
+                userName = member.getAlias();
+            }
+        }
+        return userName;
     }
 
     String getTargetName(String targetId, int cnvType) {
         if (cnvType == ProtoConstants.ConversationType.ConversationType_Private) {
-            return getUserDisplayName(targetId);
+            return getUserDisplayName(targetId, null);
         } else if(cnvType == ProtoConstants.ConversationType.ConversationType_Group) {
             WFCMessage.GroupInfo group = m_messagesStore.getGroupInfo(targetId);
             if(group != null) {
                 return group.getName();
+            }
+        } else if(cnvType == ProtoConstants.ConversationType.ConversationType_Channel) {
+            WFCMessage.ChannelInfo channelInfo = m_messagesStore.getChannelInfo(targetId);
+            if (channelInfo != null) {
+                return channelInfo.getName();
             }
         }
         return null;

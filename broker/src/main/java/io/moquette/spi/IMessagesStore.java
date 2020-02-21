@@ -167,6 +167,7 @@ public interface IMessagesStore {
     ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin);
     ErrorCode deleteFriend(String userId, String friendUid, long[] head);
     ErrorCode blackUserRequest(String fromUser, String targetUserId, int status, long[] head);
+    FriendData getFriendData(String fromUser, String targetUserId);
     ErrorCode SyncFriendRequestUnread(String userId, long unreadDt, long[] head);
     ErrorCode isAllowUserMessage(String fromUser, String userId);
     ErrorCode setFriendAliasRequest(String fromUser, String targetUserId, String alias, long[] head);

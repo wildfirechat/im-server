@@ -2166,6 +2166,25 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public FriendData getFriendData(String fromUser, String targetUserId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+        Collection<FriendData> friends = friendsMap.get(fromUser);
+        if (friends == null || friends.size() == 0) {
+            friends = loadFriend(friendsMap, fromUser);
+        }
+
+        for (FriendData fd:friends) {
+            if (fd.getFriendUid().equals(targetUserId)) {
+                return fd;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public ErrorCode setFriendAliasRequest(String fromUser, String targetUserId, String alias, long[] heads){
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
