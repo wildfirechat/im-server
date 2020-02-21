@@ -10,6 +10,7 @@ package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
@@ -46,7 +47,12 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 builder.setMessageId(messageId);
                 saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
-                contentBuilder.setContent("你们已经成为好友了，现在可以开始聊天了");
+                MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+                if (session != null && session.getLanguage() != null && session.getLanguage().toLowerCase().contains("en")) {
+                    contentBuilder.setContent("This's the greeting");
+                } else {
+                    contentBuilder.setContent("你们已经成为好友了，现在可以开始聊天了");
+                }
                 builder.setContent(contentBuilder);
                 messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);
