@@ -19,6 +19,11 @@
             <directory>../broker/migrate/h2/</directory>
             <outputDirectory>/migrate/h2</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>../broker/config/i18n/</directory>
+            <outputDirectory>/config/i18n</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>

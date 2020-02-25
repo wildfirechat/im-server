@@ -37,21 +37,26 @@ public class I18n {
             bundleMap.put(language, bundle);
         }
 
-        return bundle.getString(key);
+        try {
+            return bundle.getString(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "糟糕，字符串 " + key + " 没有找到";
     }
 
     public static void test() throws MalformedURLException {
 
         // 设置定制的语言国家代码
-        Locale locale1 = new Locale("zh_CN");
-        Locale locale2 = new Locale("en_US");
+        Locale locale1 = new Locale("zh");
+        Locale locale2 = new Locale("en");
         ResourceBundle rb = ResourceBundle.getBundle("messages", locale1, Loader);
 
 
 
         // 获得相应的key值
-        String greeting = rb.getString("greeting");
-        String userInfo = rb.getString("test");
+        String greeting = rb.getString("Above_Greeting_Message");
+        String userInfo = rb.getString("Friend_Can_Start_Chat");
 
         System.out.println(greeting);
         System.out.println(userInfo);
