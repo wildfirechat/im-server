@@ -28,7 +28,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
             long[] heads = new long[2];
             ErrorCode errorCode = m_messagesStore.handleFriendRequest(fromUser, request, builder, heads, isAdmin);
 
-            if (errorCode == ERROR_CODE_SUCCESS && !isAdmin) {
+            if (errorCode == ERROR_CODE_SUCCESS && !isAdmin && builder.getConversation() != null) {
                 long messageId = MessageShardingUtil.generateId();
                 long timestamp = System.currentTimeMillis();
                 builder.setMessageId(messageId);
