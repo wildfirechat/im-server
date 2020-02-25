@@ -254,7 +254,7 @@ public class UploadFileAction extends Action {
                 }
 
 
-                String filePath = dir + "/" + requestId;
+                String filePath = dir + "/" + (StringUtil.isNullOrEmpty(remoteFileName) ? requestId : remoteFileName);
                 logger.info("the file path is " + filePath);
 
                 File tmpFile = new File(filePath);
