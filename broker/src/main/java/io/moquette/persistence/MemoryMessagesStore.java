@@ -2103,10 +2103,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
                 if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted){
                     MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
-                    FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getStatus(), 0, System.currentTimeMillis());
+                    FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", 0, 0, System.currentTimeMillis());
                     databaseStore.persistOrUpdateFriendData(friendData1);
 
-                    FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getStatus(), 0, friendData1.getTimestamp());
+                    FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", 0, 0, friendData1.getTimestamp());
                     databaseStore.persistOrUpdateFriendData(friendData2);
 
                     requestMap.remove(userId);
