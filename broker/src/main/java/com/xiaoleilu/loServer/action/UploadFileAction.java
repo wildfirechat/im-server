@@ -279,7 +279,7 @@ public class UploadFileAction extends Action {
                             fileUpload.release();
 
                             response.setStatus(HttpResponseStatus.OK);
-                            String relativePath = datePath + "/" +  requestId;
+                            String relativePath = datePath + "/" +  (StringUtil.isNullOrEmpty(remoteFileName) ? requestId : remoteFileName);
                             response.setContent("{\"key\":\"" + relativePath + "\"}");
                             break;
                         }
