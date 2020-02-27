@@ -113,7 +113,8 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 	 * @param response 响应对象
 	 */
 	private void doAction(ChannelHandlerContext ctx, Request request, Response response){
-	    if( "/route".equalsIgnoreCase(request.getPath()) && "OPTIONS".equalsIgnoreCase(request.getMethod())){
+	    if(("/route".equalsIgnoreCase(request.getPath()) || request.getPath().startsWith("/fs/"))
+            && "OPTIONS".equalsIgnoreCase(request.getMethod())){
 	        handleOptions(ctx, request, response);
 	        return;
         }

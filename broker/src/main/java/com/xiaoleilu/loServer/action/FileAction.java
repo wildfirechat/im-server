@@ -35,6 +35,7 @@ public class FileAction extends Action {
 
     @Override
     public boolean action(Request request, Response response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
         if (false == Request.METHOD_GET.equalsIgnoreCase(request.getMethod())) {
             response.sendError(HttpResponseStatus.METHOD_NOT_ALLOWED, "Please use GET method to request file!");
             return true;
