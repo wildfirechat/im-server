@@ -114,10 +114,19 @@ public class ProtoConstants {
     }
 
     //Channel -> status
-    public interface ChannelStatus {
-        int Channel_Status_Public = 0;
-        int Channel_Status_Private = 1;
-        int Channel_Status_Destoryed = 2;
+    //第0位表示是否允许查看用户所有信息，还是只允许看用户id，用户名称，用户昵称和用户头像
+    //第1位表示是否允许查看非订阅用户信息
+    //第2位表示是否允许主动添加用户订阅关系
+    //第3位表示是否允许给非订阅用户发送消息
+    //第4位表示是否私有
+    //第6位表示是否删除
+    public interface ChannelState {
+        int Channel_State_Mask_FullInfo = 0x01;
+        int Channel_State_Mask_Unsubscribed_User_Access = 0x02;
+        int Channel_State_Mask_Active_Subscribe = 0x04;
+        int Channel_State_Mask_Message_Unsubscribed = 0x08;
+        int Channel_State_Mask_Private = 0x10;
+        int Channel_State_Mask_Deleted = 0x40;
     }
 
 

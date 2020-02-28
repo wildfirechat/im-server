@@ -50,8 +50,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
-
-import static cn.wildfirechat.proto.ProtoConstants.ChannelStatus.Channel_Status_Destoryed;
+import static cn.wildfirechat.proto.ProtoConstants.ChannelState.Channel_State_Mask_Deleted;
 import static cn.wildfirechat.proto.ProtoConstants.GroupMemberType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyChannelInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
@@ -2617,7 +2616,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         WFCMessage.ChannelInfo.Builder newInfoBuilder = oldInfo.toBuilder();
 
-        newInfoBuilder.setStatus(Channel_Status_Destoryed);
+        newInfoBuilder.setStatus(oldInfo.getStatus() | Channel_State_Mask_Deleted);
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());
         return ErrorCode.ERROR_CODE_SUCCESS;

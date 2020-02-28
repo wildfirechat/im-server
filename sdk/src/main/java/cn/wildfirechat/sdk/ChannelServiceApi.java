@@ -24,6 +24,18 @@ public class ChannelServiceApi {
         return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
+    public IMResult<InputOutputUserInfo> getUserInfoByName(String userName) throws Exception {
+        String path = APIPath.Channel_User_Info;
+        InputGetUserInfo getUserInfo = new InputGetUserInfo(null, userName, null);
+        return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+    }
+
+    public IMResult<InputOutputUserInfo> getUserInfoByMobile(String mobile) throws Exception {
+        String path = APIPath.Channel_User_Info;
+        InputGetUserInfo getUserInfo = new InputGetUserInfo(null, null, mobile);
+        return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+    }
+
     public IMResult<Void> modifyChannelInfo(/*ProtoConstants.ModifyChannelInfoType*/int type, String value) throws Exception {
         String path = APIPath.Channel_Update_Profile;
         InputModifyChannelInfo modifyChannelInfo = new InputModifyChannelInfo();
