@@ -9,7 +9,6 @@
 package cn.wildfirechat.pojos;
 
 
-import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.netty.util.internal.StringUtil;
 
@@ -22,7 +21,7 @@ public class InputCreateChannel {
     private int auto;
     private String secret;
     private String desc;
-    private int status;
+    private int state;
     private String extra;
     private long updateDt;
 
@@ -41,7 +40,7 @@ public class InputCreateChannel {
             builder = builder.setSecret(secret);
         if (!StringUtil.isNullOrEmpty(desc))
             builder = builder.setDesc(desc);
-        builder = builder.setStatus(status);
+        builder = builder.setStatus(state);
         if (!StringUtil.isNullOrEmpty(extra))
             builder = builder.setExtra(extra);
         if (!StringUtil.isNullOrEmpty(name))
@@ -116,12 +115,12 @@ public class InputCreateChannel {
         this.desc = desc;
     }
 
-    public int getStatus() {
-        return status;
+    public int getState() {
+        return state;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setState(int state) {
+        this.state = state;
     }
 
     public String getExtra() {
