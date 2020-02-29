@@ -17,18 +17,33 @@ import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_M
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        //admin使用的是18080端口，超级管理接口，理论上不能对外开放端口，也不能让非内部服务知悉密钥。
         testAdmin();
+
+        //Robot和Channel都是使用的80端口，第三方可以创建或者为第三方创建，第三方可以使用robot或者channel与IM系统进行对接。
         testRobot();
-//        testChannel();
+        //testChannel();
     }
+
 
     static void testAdmin() throws Exception {
         //初始化服务API
         AdminHttpUtils.init("http://localhost:18080", "123456");
 
-        //***********************************************
-        //****  用户相关的API
-        //***********************************************
+        testUser();
+        testUserRelation();
+        testGroup();
+        testChatroom();
+        testMessage();
+        testGeneralApi();
+
+        System.out.println("Congratulation, all admin test case passed!!!!!!!");
+    }
+
+    //***********************************************
+    //****  用户相关的API
+    //***********************************************
+    static void testUser() throws Exception {
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
         userInfo.setUserId("userId1");
         userInfo.setName("user1");
@@ -175,9 +190,104 @@ public class Main {
             System.exit(-1);
         }
 
-        //***********************************************
-        //****  群组相关功能
-        //***********************************************
+        //慎用，这个方法可能功能不完全，如果用户不在需要，建议使用block功能屏蔽用户
+        IMResult<Void> voidIMResult = UserAdmin.destroyUser("user11");
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("destroy user success");
+        } else {
+            System.out.println("destroy user failure");
+            System.exit(-1);
+        }
+    }
+
+    //***********************************************
+    //****  用户关系相关的API
+    //***********************************************
+    static void testUserRelation() throws Exception {
+
+        //先创建2个用户
+        InputOutputUserInfo userInfo = new InputOutputUserInfo();
+        userInfo.setUserId("ff1");
+        userInfo.setName("ff1");
+        userInfo.setMobile("13800000000");
+        userInfo.setDisplayName("ff1");
+
+        IMResult<OutputCreateUser> resultCreateUser = UserAdmin.createUser(userInfo);
+        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
+        } else {
+            System.out.println("Create user failure");
+            System.exit(-1);
+        }
+
+        userInfo = new InputOutputUserInfo();
+        userInfo.setUserId("ff2");
+        userInfo.setName("ff2");
+        userInfo.setMobile("13800000001");
+        userInfo.setDisplayName("ff2");
+
+        resultCreateUser = UserAdmin.createUser(userInfo);
+        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
+        } else {
+            System.out.println("Create user failure");
+            System.exit(-1);
+        }
+
+        IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true);
+        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputStringList> resultGetFriendList = RelationAdmin.getFriendList("ff1");
+        if (resultGetFriendList != null && resultGetFriendList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultGetFriendList.getResult().getList().contains("ff2")) {
+            System.out.println("get friend status success");
+        } else {
+            System.out.println("get friend status failure");
+            System.exit(-1);
+        }
+
+        updateFriendStatusResult = RelationAdmin.setUserBlacklist("ff1", "ff2", true);
+        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update blacklist status success");
+        } else {
+            System.out.println("update blacklist status failure");
+            System.exit(-1);
+        }
+
+        resultGetFriendList = RelationAdmin.getUserBlacklist("ff1");
+        if (resultGetFriendList != null && resultGetFriendList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultGetFriendList.getResult().getList().contains("ff2")) {
+            System.out.println("get blacklist status success");
+        } else {
+            System.out.println("get blacklist status failure");
+            System.exit(-1);
+        }
+
+        String alias = "hello" + System.currentTimeMillis();
+        IMResult<Void> updateFriendAlias = RelationAdmin.updateFriendAlias("ff1", "ff2", alias);
+        if (updateFriendAlias != null && updateFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGetAlias> getFriendAlias = RelationAdmin.getFriendAlias("ff1", "ff2");
+        if (getFriendAlias != null && getFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getFriendAlias.getResult().getAlias().equals(alias)) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+    }
+    //***********************************************
+    //****  群组相关功能
+    //***********************************************
+    static void testGroup() throws Exception {
+
         IMResult<Void> voidIMResult1 = GroupAdmin.dismissGroup("user1", "groupId1", null, null);
 
         PojoGroupInfo groupInfo = new PojoGroupInfo();
@@ -314,10 +424,12 @@ public class Main {
             System.exit(-1);
         }
 
+    }
 
-        //***********************************************
-        //****  消息相关功能
-        //***********************************************
+    //***********************************************
+    //****  消息相关功能
+    //***********************************************
+    static void testMessage() throws Exception {
         Conversation conversation = new Conversation();
         conversation.setTarget("user2");
         conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
@@ -334,7 +446,7 @@ public class Main {
         }
 
 
-        voidIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
+        IMResult<Void> voidIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("recall message success");
         } else {
@@ -359,7 +471,12 @@ public class Main {
             System.out.println("multi message failure");
             System.exit(-1);
         }
+    }
 
+    //***********************************************
+    //****  一些其它的功能，比如创建频道，更新用户设置等
+    //***********************************************
+    static void testGeneralApi() throws Exception {
         IMResult<SystemSettingPojo> resultGetSystemSetting  =  GeneralAdmin.getSystemSetting(Group_Max_Member_Count);
         if (resultGetSystemSetting != null && resultGetSystemSetting.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
@@ -394,81 +511,8 @@ public class Main {
             System.out.println("create channel failure");
             System.exit(-1);
         }
-
-
-        //***********************************************
-        //****  好友相关功能
-        //***********************************************
-        //先创建2个用户
-        userInfo = new InputOutputUserInfo();
-        userInfo.setUserId("ff1");
-        userInfo.setName("ff1");
-        userInfo.setMobile("13800000000");
-        userInfo.setDisplayName("ff1");
-
-        resultCreateUser = UserAdmin.createUser(userInfo);
-        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
-        } else {
-            System.out.println("Create user failure");
-            System.exit(-1);
-        }
-
-        userInfo = new InputOutputUserInfo();
-        userInfo.setUserId("ff2");
-        userInfo.setName("ff2");
-        userInfo.setMobile("13800000001");
-        userInfo.setDisplayName("ff2");
-
-        resultCreateUser = UserAdmin.createUser(userInfo);
-        if (resultCreateUser != null && resultCreateUser.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("Create user " + resultCreateUser.getResult().getName() + " success");
-        } else {
-            System.out.println("Create user failure");
-            System.exit(-1);
-        }
-
-        IMResult<Void> updateFriendStatusResult = FriendAdmin.updateFriendStatus("ff1", "ff2", 1);
-        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("update friend status success");
-        } else {
-            System.out.println("update friend status failure");
-            System.exit(-1);
-        }
-
-        IMResult<OutputStringList> resultGetFriendList = FriendAdmin.getFriendStatusList("ff1", 1);
-        if (resultGetFriendList != null && resultGetFriendList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultGetFriendList.getResult().getList().contains("ff2")) {
-            System.out.println("get friend status success");
-        } else {
-            System.out.println("get friend status failure");
-            System.exit(-1);
-        }
-
-        String alias = "hello" + System.currentTimeMillis();
-        IMResult<Void> updateFriendAlias = FriendAdmin.updateFriendAlias("ff1", "ff2", alias);
-        if (updateFriendAlias != null && updateFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("update friend status success");
-        } else {
-            System.out.println("update friend status failure");
-            System.exit(-1);
-        }
-
-        IMResult<OutputGetAlias> getFriendAlias = FriendAdmin.getFriendAlias("ff1", "ff2");
-        if (getFriendAlias != null && getFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getFriendAlias.getResult().getAlias().equals(alias)) {
-            System.out.println("update friend status success");
-        } else {
-            System.out.println("update friend status failure");
-            System.exit(-1);
-        }
-
-
-        voidIMResult = UserAdmin.destroyUser("user11");
-        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("destroy user success");
-        } else {
-            System.out.println("destroy user failure");
-            System.exit(-1);
-        }
+    }
+    static void testChatroom() throws Exception {
 
         String chatroomId = "chatroomId1";
         String chatroomTitle = "TESTCHATROM";
@@ -501,7 +545,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = ChatroomAdmin.destroyChatroom(chatroomId);
+        IMResult<Void> voidIMResult = ChatroomAdmin.destroyChatroom(chatroomId);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("destroy chatroom done!");
         } else {
@@ -516,8 +560,6 @@ public class Main {
             System.out.println("chatroom not destroyed!");
             System.exit(-1);
         }
-
-        System.out.println("Congratulation, all admin test case passed!!!!!!!");
     }
 
     static void testRobot() throws Exception {

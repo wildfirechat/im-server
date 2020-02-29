@@ -5,21 +5,36 @@ import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
-public class FriendAdmin {
-    public static IMResult<Void> updateFriendStatus(String operator, String targetId, int status) throws Exception {
+public class RelationAdmin {
+    public static IMResult<Void> setUserFriend(String userId, String targetId, boolean isFriend) throws Exception {
         String path = APIPath.Friend_Update_Status;
         InputFriendRequest input = new InputFriendRequest();
-        input.setUserId(operator);
+        input.setUserId(userId);
         input.setFriendUid(targetId);
-        input.setStatus(status);
+        input.setStatus(isFriend ? 0 : 1); //历史遗留问题，在IM数据库中0是好友，1是好友被删除。
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
-    public static IMResult<OutputStringList> getFriendStatusList(String operator, int status) throws Exception {
+    public static IMResult<OutputStringList> getFriendList(String userId) throws Exception {
         String path = APIPath.Friend_Get_List;
-        InputGetFriendList input = new InputGetFriendList();
-        input.setUserId(operator);
-        input.setStatus(status);
+        InputUserId input = new InputUserId();
+        input.setUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputStringList.class);
+    }
+
+    public static IMResult<Void> setUserBlacklist(String userId, String targetId, boolean isBlacklist) throws Exception {
+        String path = APIPath.Blacklist_Update_Status;
+        InputBlacklistRequest input = new InputBlacklistRequest();
+        input.setUserId(userId);
+        input.setTargetUid(targetId);
+        input.setStatus(isBlacklist ? 1 : 0);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    public static IMResult<OutputStringList> getUserBlacklist(String userId) throws Exception {
+        String path = APIPath.Blacklist_Get_List;
+        InputUserId input = new InputUserId();
+        input.setUserId(userId);
         return AdminHttpUtils.httpJsonPost(path, input, OutputStringList.class);
     }
 
