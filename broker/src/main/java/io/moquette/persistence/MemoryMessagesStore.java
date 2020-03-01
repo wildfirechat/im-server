@@ -2682,6 +2682,16 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public Collection<String> getChannelSubscriber(String channelId) {
+        MultiMap<String, String> channelMembers = m_Server.getHazelcastInstance().getMultiMap(CHANNEL_LISTENERS);
+        if (channelMembers == null) {
+            return new ArrayList<>();
+        }
+
+        return channelMembers.get(channelId);
+    }
+
+    @Override
     public Set<String> handleSensitiveWord(String message) {
         updateSensitiveWord();
         return mSensitiveFilter.getSensitiveWords(message, SensitiveFilter.MatchType.MAX_MATCH);

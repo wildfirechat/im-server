@@ -493,7 +493,7 @@ public class DatabaseStore {
             try {
                 connection = DBUtil.getConnection();
                 String sql = "insert into " + MessageShardingUtil.getMessageTable(message.getMessageId()) +
-                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_data` = ?," +
                     "`_searchable_key` = ?," +
@@ -515,6 +515,13 @@ public class DatabaseStore {
                 statement.setString(index++, searchableContent);
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
                 statement.setInt(index++, message.getContent().getType());
+                String to = message.getToUser();
+                if (!StringUtil.isNullOrEmpty(message.getToUser())) {
+                    if (message.getToList()!= null && message.getToList().size() == 1) {
+                        to = message.getToList().get(0);
+                    }
+                }
+                statement.setString(index++, to);
 
                 statement.setBlob(index++, blob);
                 statement.setString(index++, searchableContent);
@@ -721,21 +728,27 @@ public class DatabaseStore {
     }
 
     List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
-        List<WFCMessage.Message> messages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count, MessageShardingUtil.getMessageTable(beforeUid));
-        if (messages != null && messages.size() < count) {
-            String nexTable = MessageShardingUtil.getPreviousMessageTable(beforeUid);
-            if (!StringUtil.isNullOrEmpty(nexTable)) {
-                List<WFCMessage.Message> nextMessages = loadRemoteMessagesFromTable(user, conversation, beforeUid, count - messages.size(), nexTable);
-                if (nextMessages != null) {
-                    messages.addAll(nextMessages);
+        List<WFCMessage.Message> messages = new ArrayList<>();
+        long[] before = new long[1];
+        before[0] = beforeUid;
+        boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages);
+        if (messages.size() < count) {
+            if (hasMore) {
+                loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages);
+            } else {
+                String nexTable = MessageShardingUtil.getPreviousMessageTable(before[0]);
+                if (!StringUtil.isNullOrEmpty(nexTable)) {
+                    loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages);
                 }
             }
         }
+
         return messages;
     }
 
-    List<WFCMessage.Message> loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long beforeUid, int count, String table) {
-        String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + table +" where";
+    boolean loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long[] before, int count, String table, List<WFCMessage.Message> messages) {
+        long beforeUid = before[0];
+        String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_to` from " + table +" where";
         if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
             sql += " _type = ? and _line = ? and _mid < ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?))";
         } else {
@@ -747,7 +760,6 @@ public class DatabaseStore {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        List<WFCMessage.Message> out = new ArrayList<>();
         try {
             connection = DBUtil.getConnection();
             statement = connection.prepareStatement(sql);
@@ -764,9 +776,12 @@ public class DatabaseStore {
             statement.setInt(index++, count);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
+                count--;
                 WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
                 index = 1;
                 builder.setMessageId(resultSet.getLong(index++));
+                before[0] = builder.getMessageId();
+
                 builder.setFromUser(resultSet.getString(index++));
                 WFCMessage.Conversation.Builder cb = WFCMessage.Conversation.newBuilder();
                 cb.setType(resultSet.getInt(index++));
@@ -777,9 +792,22 @@ public class DatabaseStore {
 
                 WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
                 builder.setContent(messageContent);
+
                 builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
+                String to = resultSet.getString(index++);
+                if (!StringUtil.isNullOrEmpty(to)) {
+                    if (to.equals(user) || builder.getFromUser().equals(user)) {
+                        builder.setToUser(to);
+                    } else {
+                        continue;
+                    }
+                }
                 WFCMessage.Message message = builder.build();
-                out.add(message);
+                messages.add(message);
+            }
+
+            if (count == 0) {
+                return true;
             }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
@@ -787,7 +815,7 @@ public class DatabaseStore {
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
-        return out;
+        return false;
     }
 
     void persistUserMessage(final String userId, final long messageId, final long messageSeq) {

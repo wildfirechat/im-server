@@ -32,6 +32,12 @@ public class LoadRemoteMessagesHandler extends IMHandler<WFCMessage.LoadRemoteMe
             }
         }
 
+        if (request.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
+            if (m_messagesStore.checkUserInChannel(fromUser, request.getConversation().getTarget())) {
+                return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
+            }
+        }
+
         WFCMessage.PullMessageResult result = m_messagesStore.loadRemoteMessages(fromUser, request.getConversation(), beforeUid, request.getCount());
         byte[] data = result.toByteArray();
         LOG.info("User {} load message with count({}), payload size({})", fromUser, result.getMessageCount(), data.length);

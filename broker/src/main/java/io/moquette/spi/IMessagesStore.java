@@ -196,6 +196,7 @@ public interface IMessagesStore {
     ErrorCode listenChannel(String operator, String channelId, boolean listen);
     WFCMessage.ChannelInfo getChannelInfo(String channelId);
     boolean checkUserInChannel(String user, String channelId);
+    Collection<String> getChannelSubscriber(String channelId);
 
     Set<String> handleSensitiveWord(String message);
     boolean addSensitiveWords(List<String> words);
