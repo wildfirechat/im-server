@@ -516,7 +516,7 @@ public class DatabaseStore {
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
                 statement.setInt(index++, message.getContent().getType());
                 String to = message.getToUser();
-                if (!StringUtil.isNullOrEmpty(message.getToUser())) {
+                if (StringUtil.isNullOrEmpty(message.getToUser())) {
                     if (message.getToList()!= null && message.getToList().size() == 1) {
                         to = message.getToList().get(0);
                     }
