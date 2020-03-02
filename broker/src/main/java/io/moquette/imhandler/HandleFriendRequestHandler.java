@@ -37,8 +37,11 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
-
-                WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent(I18n.getString(session.getLanguage(), "Above_Greeting_Message"));
+                String language = "zh_CN";
+                if (session != null) {
+                    language = session.getLanguage();
+                }
+                WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
                 
                 builder = WFCMessage.Message.newBuilder();
                 builder.setFromUser(request.getTargetUid());
@@ -51,7 +54,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 builder.setMessageId(messageId);
                 saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
-                contentBuilder.setContent(I18n.getString(session.getLanguage(), "Friend_Can_Start_Chat"));
+                contentBuilder.setContent(I18n.getString(language, "Friend_Can_Start_Chat"));
                 builder.setContent(contentBuilder);
                 messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);

@@ -279,6 +279,9 @@ public class MemorySessionStore implements ISessionsStore {
 
     @Override
     public Session getSession(String clientID) {
+        if (StringUtil.isNullOrEmpty(clientID)) {
+            return null;
+        }
         Session session = sessions.get(clientID);
         if (session == null) {
             LOG.error("Can't find the session for client <{}>", clientID);
