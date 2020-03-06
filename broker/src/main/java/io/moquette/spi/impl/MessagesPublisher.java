@@ -344,6 +344,10 @@ public class MessagesPublisher {
                 Collection<Session> sessions = m_sessionsStore.sessionForUser(user);
 
                 for (Session targetSession : sessions) {
+                    if(System.currentTimeMillis() - targetSession.getLastActiveTime() > 60 * 60 * 1000) {
+                        continue;
+                    }
+
                     if (targetSession.getClientID() == null) {
                         continue;
                     }
