@@ -30,6 +30,9 @@ public class FriendPullHandler extends IMHandler<WFCMessage.Version> {
             if (!StringUtil.isNullOrEmpty(data.getAlias())) {
                 builder1.setAlias(data.getAlias());
             }
+            if (!StringUtil.isNullOrEmpty(data.getExtra())) {
+                builder1.setExtra(data.getExtra());
+            }
             builder.addEntry(builder1.build());
         }
         byte[] data = builder.build().toByteArray();
