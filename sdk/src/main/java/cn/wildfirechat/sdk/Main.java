@@ -234,7 +234,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true);
+        IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true, "{\"from\":1}");
         if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("update friend status success");
         } else {

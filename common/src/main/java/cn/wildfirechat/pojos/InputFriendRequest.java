@@ -13,6 +13,7 @@ public class InputFriendRequest {
     private String userId;
     private String friendUid;
     private int status;
+    private String extra;
 
 
     public String getUserId() {
@@ -37,5 +38,13 @@ public class InputFriendRequest {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }

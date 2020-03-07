@@ -380,7 +380,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt` from t_friend";
+            String sql = "select `_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt`, `_extra` from t_friend";
             statement = connection.prepareStatement(sql);
 
             int index;
@@ -410,6 +410,8 @@ public class DatabaseStore {
 
                 long longvalue = rs.getLong(index++);
                 builder.setTimestamp(longvalue);
+
+                builder.setExtra(rs.getString(index++));
 
                 friendsMap.put(builder.getUserId(), builder);
             }
@@ -2501,7 +2503,7 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt` from t_friend where `_uid` = ?";
+            String sql = "select `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt`, `_extra` from t_friend where `_uid` = ?";
             statement = connection.prepareStatement(sql);
 
 
@@ -2517,8 +2519,9 @@ public class DatabaseStore {
                 int state = rs.getInt(3);
                 int blacked = rs.getInt(4);
                 long timestamp = rs.getLong(5);
+                String extra = rs.getString(6);
 
-                FriendData data = new FriendData(userId, uid, alias, state, blacked, timestamp);
+                FriendData data = new FriendData(userId, uid, alias, extra, state, blacked, timestamp);
                 out.add(data);
             }
             return out;
@@ -2538,7 +2541,7 @@ public class DatabaseStore {
         PreparedStatement statement = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "update t_friend  set `_alias` = '', `_state` = 1, `_blacked` = 0, `_dt` = ? where `_uid` = ? or `_friend_uid` = ?";
+            String sql = "update t_friend  set `_alias` = '', `_state` = 1, `_blacked` = 0, `_dt` = ?, `_extra` = 0 where `_uid` = ? or `_friend_uid` = ?";
 
             statement = connection.prepareStatement(sql);
             int index = 1;
@@ -2721,12 +2724,13 @@ public class DatabaseStore {
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
-                String sql = "insert into t_friend (`_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt`) values(?, ?, ?, ?, ?, ?)" +
+                String sql = "insert into t_friend (`_uid`, `_friend_uid`, `_alias`, `_state`, `_blacked`, `_dt`, `_extra`) values(?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_alias` = ?," +
                     "`_state` = ?," +
                     "`_blacked` = ?," +
-                    "`_dt` = ?";
+                    "`_dt` = ?," +
+                    "`_extra` = ?";
 
 
                 statement = connection.prepareStatement(sql);
@@ -2737,10 +2741,12 @@ public class DatabaseStore {
                 statement.setInt(index++, request.getState());
                 statement.setInt(index++, request.getBlacked());
                 statement.setLong(index++, request.getTimestamp());
+                statement.setString(index++, request.getExtra());
                 statement.setString(index++, request.getAlias());
                 statement.setInt(index++, request.getState());
                 statement.setInt(index++, request.getBlacked());
                 statement.setLong(index++, request.getTimestamp());
+                statement.setString(index++, request.getExtra());
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
             } catch (SQLException e) {

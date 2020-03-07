@@ -2040,9 +2040,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
             if (friendData1 == null) {
-                friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getStatus(), 0, System.currentTimeMillis());
+                friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getExtra(), request.getStatus(), 0, System.currentTimeMillis());
             } else {
                 friendData1.setState(request.getStatus());
+                friendData1.setExtra(request.getExtra());
                 friendData1.setTimestamp(System.currentTimeMillis());
             }
 
@@ -2062,7 +2063,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                     }
                 }
                 if (friendData2 == null) {
-                    friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getStatus(), 0, friendData1.getTimestamp());
+                    friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getExtra(), request.getStatus(), 0, friendData1.getTimestamp());
                 } else {
                     friendsMap.remove(request.getTargetUid(), friendData2);
                     friendData2.setState(request.getStatus());
@@ -2103,10 +2104,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
                 if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted){
                     MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
-                    FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", 0, 0, System.currentTimeMillis());
+                    FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getExtra(), 0, 0, System.currentTimeMillis());
                     databaseStore.persistOrUpdateFriendData(friendData1);
 
-                    FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", 0, 0, friendData1.getTimestamp());
+                    FriendData friendData2 = new FriendData(request.getTargetUid(), userId, "", request.getExtra(), 0, 0, friendData1.getTimestamp());
                     databaseStore.persistOrUpdateFriendData(friendData2);
 
                     requestMap.remove(userId);
@@ -2152,7 +2153,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (friendData == null) {
-            friendData = new FriendData(fromUser, targetUserId, "", 1, state, System.currentTimeMillis());
+            friendData = new FriendData(fromUser, targetUserId, "", "", 1, state, System.currentTimeMillis());
         }
         friendData.setBlacked(state);
         friendData.setTimestamp(System.currentTimeMillis());

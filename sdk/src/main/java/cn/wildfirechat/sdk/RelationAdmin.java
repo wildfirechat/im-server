@@ -6,12 +6,13 @@ import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
 public class RelationAdmin {
-    public static IMResult<Void> setUserFriend(String userId, String targetId, boolean isFriend) throws Exception {
+    public static IMResult<Void> setUserFriend(String userId, String targetId, boolean isFriend, String extra) throws Exception {
         String path = APIPath.Friend_Update_Status;
         InputFriendRequest input = new InputFriendRequest();
         input.setUserId(userId);
         input.setFriendUid(targetId);
         input.setStatus(isFriend ? 0 : 1); //历史遗留问题，在IM数据库中0是好友，1是好友被删除。
+        input.setExtra(extra);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 

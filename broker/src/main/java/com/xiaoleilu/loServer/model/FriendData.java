@@ -14,15 +14,17 @@ public class FriendData implements Serializable {
     private String userId;
     private String friendUid;
     private String alias;
+    private String extra;
     private int state;
     private int blacked;
     private long timestamp;
 
 
-    public FriendData(String userId, String friendUid, String alias, int state, int blacked, long timestamp) {
+    public FriendData(String userId, String friendUid, String alias, String extra, int state, int blacked, long timestamp) {
         this.userId = userId;
         this.friendUid = friendUid;
         this.alias = alias;
+        this.extra = extra;
         this.state = state;
         this.blacked = blacked;
         this.timestamp = timestamp;
@@ -53,6 +55,14 @@ public class FriendData implements Serializable {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 
     public int getState() {

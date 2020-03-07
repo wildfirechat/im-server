@@ -46,7 +46,7 @@ public class FriendRelationAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(friendAdd.getUserId())
                 && !StringUtil.isNullOrEmpty(friendAdd.getFriendUid())
             ) {
-                WFCMessage.HandleFriendRequest friendRequest = WFCMessage.HandleFriendRequest.newBuilder().setTargetUid(friendAdd.getFriendUid()).setStatus(friendAdd.getStatus()).build();
+                WFCMessage.HandleFriendRequest friendRequest = WFCMessage.HandleFriendRequest.newBuilder().setTargetUid(friendAdd.getFriendUid()).setStatus(friendAdd.getStatus()).setExtra(friendAdd.getExtra()).build();
                 RPCCenter.getInstance().sendRequest(friendAdd.getUserId(), null, IMTopic.HandleFriendRequestTopic, friendRequest.toByteArray(), friendAdd.getFriendUid(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
