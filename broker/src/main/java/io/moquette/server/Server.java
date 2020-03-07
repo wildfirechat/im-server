@@ -35,11 +35,13 @@ import io.moquette.spi.IStore;
 import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.spi.impl.security.AES;
+import io.moquette.spi.impl.subscriptions.Token;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
 import io.moquette.spi.security.Tokenor;
 import io.netty.util.ResourceLeakDetector;
+import io.netty.util.internal.StringUtil;
 import win.liyufan.im.DBUtil;
 
 import org.slf4j.Logger;
@@ -387,6 +389,14 @@ public class Server {
         hazelcastInstance.getCluster().getLocalMember().setIntAttribute(HZ_Cluster_Node_ID, nodeId);
         hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_IP, serverIp);
         Tokenor.setKey(config.getProperty(BrokerConstants.TOKEN_SECRET_KEY));
+        String expirTimeStr = config.getProperty(TOKEN_EXPIRE_TIME);
+        if (!StringUtil.isNullOrEmpty(expirTimeStr)) {
+            try {
+                Tokenor.setExpiredTime(Long.parseLong(expirTimeStr));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
         RPCCenter.getInstance().init(this);
         return true;
     }

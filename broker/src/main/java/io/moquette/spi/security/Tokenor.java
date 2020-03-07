@@ -6,11 +6,16 @@ import io.moquette.spi.impl.security.AES;
 
 public class Tokenor {
 	private static String KEY = "testim";
+	private static long expiredTime = Long.MAX_VALUE;
 
 	public static void setKey(String key) {
 	    if (!StringUtil.isNullOrEmpty(key)) {
             KEY = key;
         }
+    }
+
+    public static void setExpiredTime(long expiredTime) {
+        Tokenor.expiredTime = expiredTime;
     }
 
     public static String getUserId(byte[] password) {
@@ -21,8 +26,8 @@ public class Tokenor {
             if (signKey.startsWith(KEY + "|")) {
                 signKey = signKey.substring(KEY.length() + 1);
                 long timestamp = Long.parseLong(signKey.substring(0, signKey.indexOf('|')));
-                if (System.currentTimeMillis() - timestamp > 7 * 24 * 60 *60 *1000) {
-                    //return false;
+                if (expiredTime > 0 && System.currentTimeMillis() - timestamp > expiredTime) {
+                    return null;
                 }
                 String id = signKey.substring(signKey.indexOf('|') + 1);
                 return id;
