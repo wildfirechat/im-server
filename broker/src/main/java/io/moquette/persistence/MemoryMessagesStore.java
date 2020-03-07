@@ -1500,7 +1500,8 @@ public class MemoryMessagesStore implements IMessagesStore {
                     modified = true;
                     break;
                 case Modify_Social:
-
+                    builder.setSocial(entry.getValue());
+                    modified = true;
                     break;
                 case Modify_Extra:
                     builder.setExtra(entry.getValue());
