@@ -14,6 +14,7 @@ import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
+import io.netty.util.internal.StringUtil;
 import win.liyufan.im.I18n;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.MessageShardingUtil;
@@ -38,7 +39,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
                 String language = "zh_CN";
-                if (session != null) {
+                if (session != null && !StringUtil.isNullOrEmpty(session.getLanguage())) {
                     language = session.getLanguage();
                 }
                 WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
