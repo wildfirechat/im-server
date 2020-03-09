@@ -30,5 +30,13 @@ public class ChatroomAdmin {
         InputGetChatroomInfo input = new InputGetChatroomInfo(chatroomId);
         return AdminHttpUtils.httpJsonPost(path, input, OutputGetChatroomInfo.class);
     }
+
+    public static IMResult<OutputStringList> getChatroomMembers(String chatroomId) throws Exception {
+        String path = APIPath.Chatroom_GetMembers;
+        InputGetChatroomInfo input = new InputGetChatroomInfo(chatroomId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputStringList.class);
+    }
+
+
     
 }

@@ -545,6 +545,13 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputStringList> memberList = ChatroomAdmin.getChatroomMembers(chatroomId);
+        if (memberList != null && memberList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get chatroom member success");
+        } else {
+            System.out.println("get chatroom member failure: " + memberList.getErrorCode().msg);
+        }
+
         IMResult<Void> voidIMResult = ChatroomAdmin.destroyChatroom(chatroomId);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("destroy chatroom done!");

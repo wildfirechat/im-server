@@ -4,6 +4,7 @@ public interface APIPath {
     String Create_Chatroom = "/admin/chatroom/create";
     String Chatroom_Destroy = "/admin/chatroom/del";
     String Chatroom_Info = "/admin/chatroom/info";
+    String Chatroom_GetMembers = "/admin/chatroom/members";
 
 
     String Sensitive_Add = "/admin/sensitive/add";
