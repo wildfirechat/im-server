@@ -32,6 +32,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -83,15 +85,11 @@ abstract public class IMHandler<T> {
                 }
             }
 
-            for (Method method : getClass().getDeclaredMethods()
-                 ) {
-
-                if (method.getName() == actionName && method.getParameterCount() == 6 && !method.getParameterTypes()[4].equals(Object.class)) {
-                    dataCls = method.getParameterTypes()[4];
-                    break;
-                }
-            }
-
+            Type t = getClass().getGenericSuperclass();
+            ParameterizedType p = (ParameterizedType) t ;
+            Class<T> c = (Class<T>) p.getActualTypeArguments()[0];
+            dataCls = c;
+            
             if (dataCls.getSuperclass().equals(GeneratedMessage.class)) {
                 parseDataMethod = dataCls.getMethod("parseFrom", byte[].class);
             } else if (dataCls.isPrimitive()) {
