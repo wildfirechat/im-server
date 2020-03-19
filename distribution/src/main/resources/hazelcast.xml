@@ -57,6 +57,13 @@
         </map-store>
     </map>
 
+    <map name="user_friends_empty">
+        <time-to-live-seconds>86400</time-to-live-seconds>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">1000000</max-size>
+        <eviction-percentage>10</eviction-percentage>
+    </map>
+
     <set name="node_ids"/>
 
     <multimap name="user_setting">
