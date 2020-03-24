@@ -109,8 +109,6 @@ public class ProtocolProcessor {
 
     protected ConnectionDescriptorStore connectionDescriptors;
 
-    private boolean allowAnonymous;
-    private boolean allowZeroByteClientId;
     private IAuthorizator m_authorizator;
 
     private IMessagesStore m_messagesStore;
@@ -147,8 +145,6 @@ public class ProtocolProcessor {
         LOG.info("Initializing MQTT protocol processor...");
         this.connectionDescriptors = connectionDescriptors;
         this.m_interceptor = interceptor;
-        this.allowAnonymous = false;
-        this.allowZeroByteClientId = false;
         m_authorizator = authorizator;
         m_authenticator = authenticator;
         m_messagesStore = storageService;
@@ -199,9 +195,7 @@ public class ProtocolProcessor {
 
         MqttVersion mqttVersion = MqttVersion.fromProtocolLevel(msg.variableHeader().version());
         if (!login(channel, msg, clientId, mqttVersion)) {
-            MqttConnAckMessage badId = connAck(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD);
-
-            channel.writeAndFlush(badId);
+            channel.flush();
             channel.close();
             LOG.error("The MQTT login failure. Username={}", payload.userName());
             return;
@@ -303,6 +297,7 @@ public class ProtocolProcessor {
                 if (session == null) {
                     ErrorCode errorCode = m_sessionsStore.loadActiveSession(msg.payload().userName(), clientId);
                     if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                        failedNoSession(channel);
                         return false;
                     }
                     session = m_sessionsStore.getSession(clientId);
@@ -310,6 +305,7 @@ public class ProtocolProcessor {
 
                 if (session.getDeleted() != 0) {
                     LOG.error("user {} session {} is deleted. login failure", msg.payload().userName(), clientId);
+                    failedNoSession(channel);
                     return false;
                 }
                 
@@ -327,7 +323,7 @@ public class ProtocolProcessor {
                     return false;
                 }
                 session.setMqttVersion(mqttVersion);
-            } else if (!this.allowAnonymous) {
+            } else {
                 LOG.error("Client didn't supply any password and MQTT anonymous mode is disabled CId={}", clientId);
                 failedCredentials(channel);
                 return false;
@@ -339,12 +335,12 @@ public class ProtocolProcessor {
                 return false;
             }
             NettyUtils.userName(channel, msg.payload().userName());
-        } else if (!this.allowAnonymous) {
+            return true;
+        } else {
             LOG.error("Client didn't supply any credentials and MQTT anonymous mode is disabled. CId={}", clientId);
             failedCredentials(channel);
             return false;
         }
-        return true;
     }
 
     private boolean sendAck(ConnectionDescriptor descriptor, MqttConnectMessage msg, final String clientId) {
