@@ -128,23 +128,25 @@ public class Qos1PublishHandler extends QosPublishHandler {
             String userId = new String(payloadContent);
 
             int status;
-            ClientSession clientSession = m_sessionStore.sessionForClient(userId);
-            if (clientSession == null) {
-                status = 2;
-            } else {
-                ConnectionDescriptor descriptor = connectionDescriptors.getConnection(clientSession.clientID);
+            Collection<MemorySessionStore.Session> useSessions = m_sessionStore.sessionForUser(userId);
+            OutputCheckUserOnline out = new OutputCheckUserOnline();
+
+            for (MemorySessionStore.Session session : useSessions) {
+                if (session.getDeleted() > 0) {
+                    continue;
+                }
+
+                ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
                 if (descriptor == null) {
                     status = 1;
                 } else {
                     status = 0;
                 }
+
+                out.addSession(userId, session.getClientID(), session.getPlatform(), status, session.getLastActiveTime());
             }
 
-            OutputCheckUserOnline out = new OutputCheckUserOnline();
-            out.setStatus(status);
-            RestResult result = RestResult.ok(out);
-
-            callback.onRouteHandled(new Gson().toJson(result).getBytes());
+            callback.onRouteHandled(new Gson().toJson(out).getBytes());
         });
     }
 

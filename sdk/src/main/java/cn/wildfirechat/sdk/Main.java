@@ -190,6 +190,14 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputCheckUserOnline> outputCheckUserOnline = UserAdmin.checkUserOnlineStatus(userInfo.getUserId());
+        if (outputCheckUserOnline != null && outputCheckUserOnline.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("check user online status success:" + outputCheckUserOnline.getResult().getSessions().size());
+        } else {
+            System.out.println("block user online failure");
+            System.exit(-1);
+        }
+
         //慎用，这个方法可能功能不完全，如果用户不在需要，建议使用block功能屏蔽用户
         IMResult<Void> voidIMResult = UserAdmin.destroyUser("user11");
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
