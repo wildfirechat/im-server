@@ -18,11 +18,13 @@ package io.moquette.spi.impl;
 
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import cn.wildfirechat.push.PushServer;
 import com.google.gson.Gson;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.util.StringUtil;
 import cn.wildfirechat.pojos.OutputNotifyChannelSubscribeStatus;
 import cn.wildfirechat.pojos.SendMessageData;
+import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.persistence.*;
 import io.moquette.persistence.MemorySessionStore.Session;
@@ -402,12 +404,18 @@ public class MessagesPublisher {
     }
 
     public void publishNotification(String topic, String receiver, long head) {
-        publishNotificationLocal(topic, receiver, head);
+        publishNotification(topic, receiver, head, null, null);
     }
 
-    void publishNotificationLocal(String topic, String receiver, long head) {
+    public void publishNotification(String topic, String receiver, long head, String fromUser, String pushContent) {
+        publishNotificationLocal(topic, receiver, head, fromUser, pushContent);
+    }
+
+    void publishNotificationLocal(String topic, String receiver, long head, String fromUser, String pushContent) {
         Collection<Session> sessions = m_sessionsStore.sessionForUser(receiver);
+        String fromUserName = null;
         for (Session targetSession : sessions) {
+            boolean needPush = !StringUtil.isNullOrEmpty(pushContent);
             boolean targetIsActive = this.connectionDescriptors.isConnected(targetSession.getClientSession().clientID);
             if (targetIsActive) {
                 ByteBuf payload = Unpooled.buffer();
@@ -418,9 +426,24 @@ public class MessagesPublisher {
                 boolean result = this.messageSender.sendPublish(targetSession.getClientSession(), publishMsg);
                 if (!result) {
                     LOG.warn("Publish friend request failure");
+                } else {
+                    needPush = false;
                 }
             }
+            if (needPush) {
+                if (fromUserName == null) {
+                    WFCMessage.User userInfo = m_messagesStore.getUserInfo(fromUser);
+                    if (userInfo == null) {
+                        fromUserName = "";
+                    } else {
+                        fromUserName = userInfo.getDisplayName();
+                    }
+                }
 
+                if (IMTopic.NotifyFriendRequestTopic.equals(topic)) {
+                    messageSender.sendPush(fromUser, receiver, targetSession.getClientID(), pushContent, PushServer.PushMessageType.PUSH_MESSAGE_TYPE_FRIEND_REQUEST, System.currentTimeMillis(), fromUserName, targetSession.getUnReceivedMsgs() + 1, targetSession.getLanguage());
+                }
+            }
         }
     }
 

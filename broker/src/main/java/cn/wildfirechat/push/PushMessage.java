@@ -46,4 +46,13 @@ public class PushMessage {
         this.isHiddenDetail = isHiddenDetail;
         this.language = language;
     }
+    public PushMessage(String sender, String target, long serverTime, String senderName, int unReceivedMsg, String language, int pushMessageType) {
+        this.sender = sender;
+        this.target = target;
+        this.senderName = senderName;
+        this.serverTime = serverTime;
+        this.unReceivedMsg = unReceivedMsg;
+        this.pushMessageType = pushMessageType;
+        this.language = language;
+    }
 }

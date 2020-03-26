@@ -40,6 +40,14 @@ class PersistentQueueMessageSender {
     void sendPush(String sender, int conversationType, String target, int line, long messageHead, String deviceId, String pushContent, int messageContentType, long serverTime, String senderName, String targetName, int unReceivedMsg, int mentionType, boolean isHiddenDetail, String language) {
         LOG.info("Send push to {}, message from {}", deviceId, sender);
         PushMessage pushMessage = new PushMessage(sender, conversationType, target, line, messageContentType, serverTime, senderName, targetName, unReceivedMsg, mentionType, isHiddenDetail, language);
+        pushMessage.pushContent = pushContent;
+        PushServer.getServer().pushMessage(pushMessage, deviceId, pushContent);
+    }
+
+    void sendPush(String sender, String target, String deviceId, String pushContent, int pushContentType, long serverTime, String senderName, int unReceivedMsg, String language) {
+        LOG.info("Send push to {}, message from {}", deviceId, sender);
+        PushMessage pushMessage = new PushMessage(sender, target, serverTime, senderName, unReceivedMsg, language, pushContentType);
+        pushMessage.pushContent = pushContent;
         PushServer.getServer().pushMessage(pushMessage, deviceId, pushContent);
     }
 
