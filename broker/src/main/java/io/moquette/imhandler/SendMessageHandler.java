@@ -108,7 +108,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
 
 
-            if (!isAdmin && message.getContent().getType() == Text) {
+            if (!isAdmin) {
                 Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
                 if (matched != null && !matched.isEmpty()) {
                     m_messagesStore.storeSensitiveMessage(message);
