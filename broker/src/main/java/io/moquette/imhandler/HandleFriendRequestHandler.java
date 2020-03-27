@@ -30,39 +30,41 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
             long[] heads = new long[2];
             ErrorCode errorCode = m_messagesStore.handleFriendRequest(fromUser, request, builder, heads, isAdmin);
 
-            if (errorCode == ERROR_CODE_SUCCESS && !isAdmin && builder.getConversation() != null) {
-                long messageId = MessageShardingUtil.generateId();
-                long timestamp = System.currentTimeMillis();
-                builder.setMessageId(messageId);
-                builder.setServerTimestamp(timestamp);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+            if (errorCode == ERROR_CODE_SUCCESS) {
+                if (!isAdmin && builder.getConversation() != null) {
+                    long messageId = MessageShardingUtil.generateId();
+                    long timestamp = System.currentTimeMillis();
+                    builder.setMessageId(messageId);
+                    builder.setServerTimestamp(timestamp);
+                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
-                MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
-                String language = "zh_CN";
-                if (session != null && !StringUtil.isNullOrEmpty(session.getLanguage())) {
-                    language = session.getLanguage();
+                    MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+                    String language = "zh_CN";
+                    if (session != null && !StringUtil.isNullOrEmpty(session.getLanguage())) {
+                        language = session.getLanguage();
+                    }
+                    WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
+
+                    builder = WFCMessage.Message.newBuilder();
+                    builder.setFromUser(request.getTargetUid());
+                    builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
+                    builder.setContent(contentBuilder);
+                    timestamp = System.currentTimeMillis();
+                    builder.setServerTimestamp(timestamp);
+
+                    messageId = MessageShardingUtil.generateId();
+                    builder.setMessageId(messageId);
+                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+
+                    contentBuilder.setContent(I18n.getString(language, "Friend_Can_Start_Chat"));
+                    builder.setContent(contentBuilder);
+                    messageId = MessageShardingUtil.generateId();
+                    builder.setMessageId(messageId);
+                    timestamp = System.currentTimeMillis();
+                    builder.setServerTimestamp(timestamp);
+                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+
                 }
-                WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder().setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
-                
-                builder = WFCMessage.Message.newBuilder();
-                builder.setFromUser(request.getTargetUid());
-                builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
-                builder.setContent(contentBuilder);
-                timestamp = System.currentTimeMillis();
-                builder.setServerTimestamp(timestamp);
-
-                messageId = MessageShardingUtil.generateId();
-                builder.setMessageId(messageId);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), false);
-
-                contentBuilder.setContent(I18n.getString(language, "Friend_Can_Start_Chat"));
-                builder.setContent(contentBuilder);
-                messageId = MessageShardingUtil.generateId();
-                builder.setMessageId(messageId);
-                timestamp = System.currentTimeMillis();
-                builder.setServerTimestamp(timestamp);
-                saveAndPublish(request.getTargetUid(), null, builder.build(), false);
-
                 publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
                 publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
             }
