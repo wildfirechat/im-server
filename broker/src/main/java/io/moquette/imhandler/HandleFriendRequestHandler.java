@@ -31,7 +31,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
             ErrorCode errorCode = m_messagesStore.handleFriendRequest(fromUser, request, builder, heads, isAdmin);
 
             if (errorCode == ERROR_CODE_SUCCESS) {
-                if (!isAdmin && builder.getConversation() != null) {
+                if (!isAdmin && builder.getConversation() != null && request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
                     long messageId = MessageShardingUtil.generateId();
                     long timestamp = System.currentTimeMillis();
                     builder.setMessageId(messageId);
@@ -64,9 +64,9 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                     builder.setServerTimestamp(timestamp);
                     saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
+                    publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
+                    publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
                 }
-                publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
-                publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
             }
             return errorCode;
     }
