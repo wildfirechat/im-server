@@ -5,6 +5,11 @@ public interface APIPath {
     String Chatroom_Destroy = "/admin/chatroom/del";
     String Chatroom_Info = "/admin/chatroom/info";
     String Chatroom_GetMembers = "/admin/chatroom/members";
+    String Chatroom_SetBlacklist = "/admin/chatroom/set_black_status";
+    String Chatroom_GetBlacklist = "/admin/chatroom/get_black_status";
+    String Chatroom_SetManager = "/admin/chatroom/set_manager";
+    String Chatroom_GetManagerList = "/admin/chatroom/get_manager_list";
+    String Chatroom_MuteAll = "/admin/chatroom/mute_all";
 
 
     String Sensitive_Add = "/admin/sensitive/add";

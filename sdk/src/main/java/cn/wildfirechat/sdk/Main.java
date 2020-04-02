@@ -575,6 +575,105 @@ public class Main {
             System.out.println("chatroom not destroyed!");
             System.exit(-1);
         }
+
+        //下面仅专业版支持
+        /*
+        //设置用户聊天室黑名单。0正常；1禁言；2禁止加入。
+        IMResult<Void> voidIMResult1 = ChatroomAdmin.setChatroomBlacklist("chatroom1", "oto9o9__", 1);
+        if (voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("add chatroom black success");
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }
+
+        //获取聊天室黑名单
+        IMResult<OutputChatroomBlackInfos> blackInfos = ChatroomAdmin.getChatroomBlacklist("chatroom1");
+        if (blackInfos != null && blackInfos.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !blackInfos.getResult().infos.isEmpty()) {
+            boolean success = false;
+            for (OutputChatroomBlackInfos.OutputChatroomBlackInfo info : blackInfos.getResult().infos) {
+                if (info.userId.equals("oto9o9__")) {
+                    success = true;
+                    break;
+                }
+            }
+            if (success) {
+                System.out.println("add chatroom black success");
+            } else {
+                System.out.println("add chatroom black failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }
+
+        //取消用户聊天室黑名单。0正常；1禁言；2禁止加入。
+        voidIMResult1 = ChatroomAdmin.setChatroomBlacklist("chatroom1", "oto9o9__", 0);
+        if (voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("remove chatroom black success");
+        } else {
+            System.out.println("remove chatroom black failure");
+            System.exit(-1);
+        }
+
+        //获取聊天室黑名单
+        blackInfos = ChatroomAdmin.getChatroomBlacklist("chatroom1");
+        if (blackInfos != null && blackInfos.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            boolean success = true;
+            for (OutputChatroomBlackInfos.OutputChatroomBlackInfo info : blackInfos.getResult().infos) {
+                if (info.userId.equals("oto9o9__")) {
+                    success = false;
+                    break;
+                }
+            }
+            if (success) {
+                System.out.println("remove chatroom black success");
+            } else {
+                System.out.println("remove chatroom black failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("remove chatroom black failure");
+            System.exit(-1);
+        }
+
+        //设置聊天室管理员
+        IMResult<Void> voidIMResult2 = ChatroomAdmin.setChatroomManager("chatroom1", "UserId1", 1);
+        if (voidIMResult2 != null && voidIMResult2.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("add chatroom manager success");
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }
+
+        //获取聊天室管理员
+        IMResult<OutputStringList> managers = ChatroomAdmin.getChatroomManagerList("chatroom1");
+        if (managers != null && managers.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !managers.getResult().getList().isEmpty() && managers.getResult().getList().contains("UserId1")) {
+                System.out.println("add chatroom black success");
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }
+
+        //取消聊天室管理员
+        IMResult<Void> voidIMResult3 = ChatroomAdmin.setChatroomManager("chatroom1", "UserId1", 0);
+        if (voidIMResult3 != null && voidIMResult3.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("add chatroom manager success");
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }
+
+        //获取聊天室管理员
+        IMResult<OutputStringList> managers2 = ChatroomAdmin.getChatroomManagerList("chatroom1");
+        if (managers2 != null && managers2.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !managers2.getResult().getList().contains("UserId1")) {
+            System.out.println("add chatroom black success");
+        } else {
+            System.out.println("add chatroom black failure");
+            System.exit(-1);
+        }*/
+
     }
 
     static void testRobot() throws Exception {

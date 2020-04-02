@@ -84,6 +84,12 @@
     <map name="user_chatroom">
     </map>
 
+    <multimap name="chatroom_black">
+    </multimap>
+
+    <multimap name="chatroom_manager">
+    </multimap>
+
     <map name="robots">
         <!-- 7 days -->
         <time-to-live-seconds>604800</time-to-live-seconds>
