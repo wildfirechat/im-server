@@ -118,6 +118,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
+    private boolean mDisableSearch = false;
+    private boolean mDisableNicknameSearch = false;
+
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
@@ -130,6 +133,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
+
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
@@ -139,6 +143,21 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(MESSAGE_Disable_Stranger_Chat, mDisableStrangerChat + "");
+        }
+        try {
+            mDisableSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_Search));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Disable_Search, mDisableSearch + "");
+        }
+        try {
+            mDisableNicknameSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_NickName_Search));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Disable_NickName_Search, mDisableNicknameSearch + "");
         }
 
         try {
@@ -146,6 +165,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Repeat_Request_Duration, mFriendRequestDuration + "");
         }
 
         try {
@@ -153,6 +173,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Reject_Request_Duration, mFriendRejectDuration + "");
         }
 
         try {
@@ -160,6 +181,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Request_Expiration_Duration, mFriendRequestExpiration + "");
         }
 
         try {
@@ -167,6 +189,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(CHATROOM_Rejoin_When_Active, mChatroomRejoinWhenActive + "");
         }
 
         try {
@@ -174,7 +197,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
+            printMissConfigLog(CHATROOM_Participant_Idle_Time, mChatroomParticipantIdleTime + "");
         }
+    }
+
+    private void printMissConfigLog(String config, String defaultValue) {
+        LOG.info("配置文件中缺少配置项目 {}, 缺省值为 {}，可以忽略本提醒，或者更新配置项", config, defaultValue);
     }
 
     @Override
@@ -1612,6 +1640,14 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
     @Override
     public List<WFCMessage.User> searchUser(String keyword, int searchType, int page) {
+        if (mDisableSearch) {
+            return new ArrayList<>();
+        }
+
+        if (mDisableNicknameSearch && searchType == ProtoConstants.SearchUserType.SearchUserType_General) {
+            searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile;
+        }
+
         return databaseStore.searchUserFromDB(keyword, searchType, page);
     }
 
