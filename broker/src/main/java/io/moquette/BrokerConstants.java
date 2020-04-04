@@ -126,6 +126,7 @@ public final class BrokerConstants {
 
     public static final String FRIEND_Disable_Search = "friend.disable_search";
     public static final String FRIEND_Disable_NickName_Search = "friend.disable_nick_name_search";
+    public static final String FRIEND_Disable_Friend_Request = "friend.disable_friend_request";
     public static final String FRIEND_Repeat_Request_Duration = "friend.repeat_request_duration";
     public static final String FRIEND_Reject_Request_Duration = "friend.reject_request_duration";
     public static final String FRIEND_Request_Expiration_Duration = "friend.request_expiration_duration";

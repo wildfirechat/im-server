@@ -120,7 +120,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private boolean mDisableSearch = false;
     private boolean mDisableNicknameSearch = false;
-
+    private boolean mDisableFriendRequest = false;
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
@@ -158,6 +158,13 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
             printMissConfigLog(FRIEND_Disable_NickName_Search, mDisableNicknameSearch + "");
+        }
+        try {
+            mDisableFriendRequest = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_Friend_Request));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_Disable_Friend_Request, mDisableFriendRequest + "");
         }
 
         try {
@@ -1981,6 +1988,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head) {
+        if (mDisableFriendRequest) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.FriendRequest> requestMap = hzInstance.getMultiMap(USER_FRIENDS_REQUEST);
         Collection<WFCMessage.FriendRequest> requests = requestMap.get(userId);
