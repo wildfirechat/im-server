@@ -1587,23 +1587,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (session.getPlatform() == Platform_Linux || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
             updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
-        } else if(session.getPlatform() == Platform_WEB) {
-            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform()  + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
-        } else if(session.getPlatform() == Platform_WX) {
-            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform()  + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
         } else {
-            boolean isPCOnline = false;
-            String pcClientid = null;
-            String pcName = null;
-            int pcPlatform = 0;
-
-            boolean isWebOnline = false;
-            String webClientid = null;
-            String webName = null;
-
-            boolean isWXOnline = false;
-            String wxClientid = null;
-            String wxName = null;
+            String value = null;
             for (MemorySessionStore.Session s : m_Server.getStore().sessionsStore().sessionForUser(session.username)) {
                 if (s.getDeleted() != 0 || !m_Server.getConnectionsManager().isConnected(s.getClientID())) {
                     continue;
@@ -1613,56 +1598,25 @@ public class MemoryMessagesStore implements IMessagesStore {
                     case Platform_Linux:
                     case Platform_Windows:
                     case Platform_OSX:
-                        isPCOnline = true;
-                        pcClientid = s.getClientID();
-                        pcName = s.getPhoneName();
-                        pcPlatform = s.getPlatform();
-                        break;
-                    case Platform_WEB:
-                        isWebOnline = true;
-                        webClientid = s.getClientID();
-                        webName = s.getPhoneName();
-                        break;
-                    case Platform_WX:
-                        isWXOnline = true;
-                        wxClientid = s.getClientID();
-                        wxName = s.getPhoneName();
+                        value = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
                         break;
                     default:
                         break;
                 }
+
+                if (value != null) {
+                    break;
+                }
             }
 
             WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
-            if (isPCOnline) {
+            if (value != null) {
                 if (pcentry == null || StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis() + "|" + pcPlatform + "|" + pcClientid + "|" + pcName) : "").build());
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(value).build());
                 }
             } else {
                 if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue())) {
                     updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build());
-                }
-            }
-
-            WFCMessage.UserSettingEntry webentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "Web");
-            if (isWebOnline) {
-                if (webentry == null || StringUtil.isNullOrEmpty(webentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WEB + "|" + webClientid + "|" + webName) : "").build());
-                }
-            } else {
-                if (webentry != null && !StringUtil.isNullOrEmpty(webentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue("").build());
-                }
-            }
-
-            WFCMessage.UserSettingEntry wxentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "WX");
-            if (isWXOnline) {
-                if (wxentry == null || StringUtil.isNullOrEmpty(wxentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WX + "|" + wxClientid + "|" + wxName) : "").build());
-                }
-            } else {
-                if (wxentry != null && !StringUtil.isNullOrEmpty(wxentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WX + "|" + wxClientid + "|" + wxName) : "").build());
                 }
             }
         }
