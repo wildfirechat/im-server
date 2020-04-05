@@ -26,6 +26,7 @@ import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
 import io.moquette.BrokerConstants;
+import io.moquette.imhandler.IMHandler;
 import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.IMatchingCondition;
@@ -55,10 +56,12 @@ import static cn.wildfirechat.proto.ProtoConstants.GroupMemberType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyChannelInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
+import static cn.wildfirechat.proto.ProtoConstants.Platform.*;
 import static io.moquette.BrokerConstants.*;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static win.liyufan.im.MyInfoType.*;
+import static win.liyufan.im.UserSettingScope.kUserSettingPCOnline;
 
 public class MemoryMessagesStore implements IMessagesStore {
     private static final String MESSAGES_MAP = "messages_map";
@@ -125,6 +128,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
 
+    private boolean mMultiPlatformNotification = false;
     private boolean mDisableStrangerChat = false;
 
     private long mChatroomParticipantIdleTime = 900000;
@@ -145,6 +149,15 @@ public class MemoryMessagesStore implements IMessagesStore {
             Utility.printExecption(LOG, e);
             printMissConfigLog(MESSAGE_Disable_Stranger_Chat, mDisableStrangerChat + "");
         }
+
+        try {
+            mMultiPlatformNotification = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_PLATFROM_NOTIFICATION, "false"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(SERVER_MULTI_PLATFROM_NOTIFICATION, mDisableStrangerChat + "");
+        }
+
         try {
             mDisableSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_Search));
         } catch (Exception e) {
@@ -1560,6 +1573,102 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public void updateUserOnlineSetting(MemorySessionStore.Session session, boolean online) {
+        if(!mMultiPlatformNotification) {
+            return;
+        }
+        if (m_Server.getStore().sessionsStore().isMultiEndpointSupported()) {
+            return;
+        }
+
+        if (m_Server.isShutdowning()) {
+            return;
+        }
+
+        if (session.getPlatform() == Platform_Linux || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
+        } else if(session.getPlatform() == Platform_WEB) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform()  + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
+        } else if(session.getPlatform() == Platform_WX) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform()  + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
+        } else {
+            boolean isPCOnline = false;
+            String pcClientid = null;
+            String pcName = null;
+            int pcPlatform = 0;
+
+            boolean isWebOnline = false;
+            String webClientid = null;
+            String webName = null;
+
+            boolean isWXOnline = false;
+            String wxClientid = null;
+            String wxName = null;
+            for (MemorySessionStore.Session s : m_Server.getStore().sessionsStore().sessionForUser(session.username)) {
+                if (s.getDeleted() != 0 || !m_Server.getConnectionsManager().isConnected(s.getClientID())) {
+                    continue;
+                }
+
+                switch (s.getPlatform()) {
+                    case Platform_Linux:
+                    case Platform_Windows:
+                    case Platform_OSX:
+                        isPCOnline = true;
+                        pcClientid = s.getClientID();
+                        pcName = s.getPhoneName();
+                        pcPlatform = s.getPlatform();
+                        break;
+                    case Platform_WEB:
+                        isWebOnline = true;
+                        webClientid = s.getClientID();
+                        webName = s.getPhoneName();
+                        break;
+                    case Platform_WX:
+                        isWXOnline = true;
+                        wxClientid = s.getClientID();
+                        wxName = s.getPhoneName();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
+            if (isPCOnline) {
+                if (pcentry == null || StringUtil.isNullOrEmpty(pcentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis() + "|" + pcPlatform + "|" + pcClientid + "|" + pcName) : "").build());
+                }
+            } else {
+                if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build());
+                }
+            }
+
+            WFCMessage.UserSettingEntry webentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "Web");
+            if (isWebOnline) {
+                if (webentry == null || StringUtil.isNullOrEmpty(webentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WEB + "|" + webClientid + "|" + webName) : "").build());
+                }
+            } else {
+                if (webentry != null && !StringUtil.isNullOrEmpty(webentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Web").setValue("").build());
+                }
+            }
+
+            WFCMessage.UserSettingEntry wxentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "WX");
+            if (isWXOnline) {
+                if (wxentry == null || StringUtil.isNullOrEmpty(wxentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WX + "|" + wxClientid + "|" + wxName) : "").build());
+                }
+            } else {
+                if (wxentry != null && !StringUtil.isNullOrEmpty(wxentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("WX").setValue(online ? (System.currentTimeMillis() + "|" + Platform_WX + "|" + wxClientid + "|" + wxName) : "").build());
+                }
+            }
+        }
+    }
+
+    @Override
     public ErrorCode modifyUserStatus(String userId, int status) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, Integer> mUserMap = hzInstance.getMap(USER_STATUS);
@@ -2501,6 +2610,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         userGlobalSlientMap.remove(userId);
         userConvSlientMap.remove(userId);
         userPushHiddenDetail.remove(userId);
+        IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserSettingTopic, userId, updateDt);
         return updateDt;
     }
 

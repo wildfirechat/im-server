@@ -65,6 +65,9 @@ abstract public class IMHandler<T> {
 
     protected static String actionName;
 
+    public static MessagesPublisher getPublisher() {
+        return publisher;
+    }
 
     public IMHandler() {
         try {

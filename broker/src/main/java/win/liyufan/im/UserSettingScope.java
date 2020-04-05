@@ -11,6 +11,7 @@ public interface UserSettingScope {
     int kUserSettingConversationSync = 7;
     int kUserSettingMyChannels = 8;
     int kUserSettingListenedChannels = 9;
+    int kUserSettingPCOnline = 10;
 
     int kUserSettingCustomBegin = 1000;
 }

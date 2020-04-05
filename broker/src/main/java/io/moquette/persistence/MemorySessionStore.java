@@ -680,4 +680,8 @@ public class MemorySessionStore implements ISessionsStore {
         // TODO this missing last step breaks the junit test
         sessions.remove(clientID);
     }
+    @Override
+    public boolean isMultiEndpointSupported() {
+        return supportMultiEndpoint;
+    }
 }

@@ -149,4 +149,6 @@ public interface ISessionsStore {
     int getSecondPhaseAckPendingMessages(String clientID);
 
     void cleanSession(String clientID);
+
+    boolean isMultiEndpointSupported();
 }

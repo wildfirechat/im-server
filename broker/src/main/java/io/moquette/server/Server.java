@@ -82,6 +82,8 @@ public class Server {
 
     private ServerAcceptor m_acceptor;
 
+    private boolean m_shutdowning = false;
+
     public volatile boolean m_initialized;
 
     private ProtocolProcessor m_processor;
@@ -415,9 +417,15 @@ public class Server {
         m_processor.onRpcMsg(fromUser, clientId, message, messageId, from, request, isAdmin);
     }
 
+    public boolean isShutdowning() {
+        return m_shutdowning;
+    }
+
     public void stopServer() {
         System.out.println("Server will flush data to db before shutting down, please wait 5 seconds!");
         LOG.info("Unbinding server from the configured ports");
+        m_shutdowning = true;
+
         m_acceptor.close();
         LOG.trace("Stopping MQTT protocol processor");
         m_processorBootstrapper.shutdown();

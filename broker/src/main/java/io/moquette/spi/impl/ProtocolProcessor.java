@@ -244,6 +244,7 @@ public class ProtocolProcessor {
         if(session != null) {
             session.refreshLastActiveTime();
             forwardOnlineStatusEvent(payload.userName(), clientId, session.getPlatform(), UserOnlineStatus.ONLINE);
+            m_messagesStore.updateUserOnlineSetting(session, true);
         } else {
             forwardOnlineStatusEvent(payload.userName(), clientId, ProtoConstants.Platform.Platform_UNSET, UserOnlineStatus.ONLINE);
         }
@@ -560,6 +561,9 @@ public class ProtocolProcessor {
         String username = NettyUtils.userName(channel);
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
+            m_messagesStore.updateUserOnlineSetting(session, false);
+        }
+        if(session != null) {
             forwardOnlineStatusEvent(username, clientID, session.getPlatform(), UserOnlineStatus.LOGOUT);
         }
 
@@ -605,6 +609,7 @@ public class ProtocolProcessor {
         if(session != null) {
             session.refreshLastActiveTime();
             forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE);
+            m_messagesStore.updateUserOnlineSetting(session, false);
         }
 
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
