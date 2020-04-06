@@ -122,7 +122,7 @@ public interface IMessagesStore {
     boolean isMemberInGroup(String member, String groupId);
     ErrorCode canSendMessageInGroup(String member, String groupId);
 
-    ErrorCode recallMessage(long messageUid, String operatorId, boolean isAdmin);
+    ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin);
 
     void clearUserMessages(String userId);
 

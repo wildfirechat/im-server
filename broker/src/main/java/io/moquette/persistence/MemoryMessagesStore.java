@@ -1370,7 +1370,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode recallMessage(long messageUid, String operatorId, boolean isAdmin) {
+    public ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 
@@ -1421,8 +1421,14 @@ public class MemoryMessagesStore implements IMessagesStore {
                 return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
 
-            message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(new StringBuffer().append(messageUid).toString().getBytes())).build()).build();
+            String searchContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
+            String cont = message.getContent().getContent() == null ? "" : message.getContent().getContent();
+            String extra = message.getContent().getExtra() == null ? "" : message.getContent().getExtra();
+            String recalledContent = "{\"s\":\"" + message.getFromUser() +  "\",\"ts\":" + message.getServerTimestamp() +  ",\"t\":" + message.getContent().getType() + ",\"sc\":\"" + searchContent + "\",\"c\":\"" + cont + "\",\"e\":\"" + extra  + "\"}";
+
+            message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent).build()).build();
             messageBundle.setMessage(message);
+            messageBundle.setFromClientId(clientId);
 
             databaseStore.deleteMessage(messageUid);
 
