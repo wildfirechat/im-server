@@ -258,8 +258,8 @@ public class Main {
             System.exit(-1);
         }
 
-        updateFriendStatusResult = RelationAdmin.setUserBlacklist("ff1", "ff2", true);
-        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+        IMResult<Void> updateBlacklistStatusResult = RelationAdmin.setUserBlacklist("ff1", "ff2", true);
+        if (updateBlacklistStatusResult != null && updateBlacklistStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("update blacklist status success");
         } else {
             System.out.println("update blacklist status failure");

@@ -28,7 +28,7 @@ public class RelationAdmin {
         InputBlacklistRequest input = new InputBlacklistRequest();
         input.setUserId(userId);
         input.setTargetUid(targetId);
-        input.setStatus(isBlacklist ? 1 : 0);
+        input.setStatus(isBlacklist ? 2 : 1);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
