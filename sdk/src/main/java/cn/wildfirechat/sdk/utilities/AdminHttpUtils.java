@@ -31,9 +31,13 @@ public class AdminHttpUtils {
     }
 
     public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
-        if (isNullOrEmpty(adminUrl) || isNullOrEmpty(path)) {
-            LOG.error("Not init IM SDK correctly. Do you forget init it?");
-            throw new Exception("SDK url or secret lack!");
+        if (isNullOrEmpty(adminUrl) || isNullOrEmpty(adminSecret)) {
+            LOG.error("野火IM Server SDK必须先初始化才能使用，是不是忘记初始化了！！！！");
+            throw new Exception("SDK没有初始化");
+        }
+
+        if (isNullOrEmpty(path)) {
+            throw new Exception("路径缺失");
         }
 
         String url = adminUrl + path;
