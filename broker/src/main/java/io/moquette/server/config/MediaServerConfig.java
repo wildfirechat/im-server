@@ -15,6 +15,10 @@ public class MediaServerConfig {
     public static String QINIU_BUCKET_VIDEO_DOMAIN;
     public static String QINIU_BUCKET_FILE_NAME;
     public static String QINIU_BUCKET_FILE_DOMAIN;
+    public static String QINIU_BUCKET_STICKER_NAME;
+    public static String QINIU_BUCKET_STICKER_DOMAIN;
+    public static String QINIU_BUCKET_MOMENTS_NAME;
+    public static String QINIU_BUCKET_MOMENTS_DOMAIN;
     public static String QINIU_BUCKET_PORTRAIT_NAME;
     public static String QINIU_BUCKET_PORTRAIT_DOMAIN;
     public static String QINIU_BUCKET_FAVORITE_NAME;

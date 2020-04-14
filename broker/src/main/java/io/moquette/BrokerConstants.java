@@ -77,6 +77,10 @@ public final class BrokerConstants {
     public static final String QINIU_BUCKET_VIDEO_DOMAIN = "qiniu.bucket_video_domain";
     public static final String QINIU_BUCKET_FILE_NAME= "qiniu.bucket_file_name";
     public static final String QINIU_BUCKET_FILE_DOMAIN = "qiniu.bucket_file_domain";
+    public static final String QINIU_BUCKET_STICKER_NAME= "qiniu.bucket_sticker_name";
+    public static final String QINIU_BUCKET_STICKER_DOMAIN = "qiniu.bucket_sticker_domain";
+    public static final String QINIU_BUCKET_MOMENTS_NAME= "qiniu.bucket_moments_name";
+    public static final String QINIU_BUCKET_MOMENTS_DOMAIN = "qiniu.bucket_moments_domain";
     public static final String QINIU_BUCKET_PORTRAIT_NAME= "qiniu.bucket_portrait_name";
     public static final String QINIU_BUCKET_PORTRAIT_DOMAIN = "qiniu.bucket_portrait_domain";
     public static final String QINIU_BUCKET_FAVORITE_NAME= "qiniu.bucket_favorite_name";

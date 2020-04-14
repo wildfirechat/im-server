@@ -319,6 +319,12 @@ public class Server {
         MediaServerConfig.QINIU_BUCKET_FILE_NAME = config.getProperty(BrokerConstants.QINIU_BUCKET_FILE_NAME);
         MediaServerConfig.QINIU_BUCKET_FILE_DOMAIN = config.getProperty(BrokerConstants.QINIU_BUCKET_FILE_DOMAIN);
 
+        MediaServerConfig.QINIU_BUCKET_STICKER_NAME = config.getProperty(BrokerConstants.QINIU_BUCKET_STICKER_NAME);
+        MediaServerConfig.QINIU_BUCKET_STICKER_DOMAIN = config.getProperty(BrokerConstants.QINIU_BUCKET_STICKER_DOMAIN);
+
+        MediaServerConfig.QINIU_BUCKET_MOMENTS_NAME = config.getProperty(BrokerConstants.QINIU_BUCKET_MOMENTS_NAME);
+        MediaServerConfig.QINIU_BUCKET_MOMENTS_DOMAIN = config.getProperty(BrokerConstants.QINIU_BUCKET_MOMENTS_DOMAIN);
+
         MediaServerConfig.QINIU_BUCKET_PORTRAIT_NAME = config.getProperty(BrokerConstants.QINIU_BUCKET_PORTRAIT_NAME);
         MediaServerConfig.QINIU_BUCKET_PORTRAIT_DOMAIN = config.getProperty(BrokerConstants.QINIU_BUCKET_PORTRAIT_DOMAIN);
 
