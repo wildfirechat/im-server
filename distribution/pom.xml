@@ -6,7 +6,7 @@
         <!--<relativePath>../pom.xml</relativePath>-->
         <artifactId>wildfirechat-parent</artifactId>
         <groupId>cn.wildfirechat</groupId>
-        <version>0.39</version>
+        <version>0.40</version>
     </parent>
 
     <artifactId>distribution</artifactId>

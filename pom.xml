@@ -12,7 +12,7 @@
     <artifactId>wildfirechat-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.39</version>
+    <version>0.40</version>
     <name>Wildfire Chat</name>
     <description>Wildfire Chat Server</description>
     <inceptionYear>2019</inceptionYear>
