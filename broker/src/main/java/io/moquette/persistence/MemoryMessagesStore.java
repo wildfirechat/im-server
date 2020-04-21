@@ -1833,12 +1833,11 @@ public class MemoryMessagesStore implements IMessagesStore {
                 Member member = m_Server.getHazelcastInstance().getCluster().getLocalMember();
                 String serverIp = member.getStringAttribute(HZ_Cluster_Node_External_IP);
                 String longPort = member.getStringAttribute(HZ_Cluster_Node_External_Long_Port);
-                String shortPort = member.getStringAttribute(HZ_Cluster_Node_External_Short_Port);
                 if (!StringUtil.isNullOrEmpty(serverIp)) {
                     serverIPs.add(serverIp);
                 }
                 ports.add(Integer.parseInt(longPort));
-                ports.add(Integer.parseInt(shortPort));
+                ports.add(80);
             } else {
                 return ErrorCode.ERROR_CODE_TOKEN_ERROR;
             }

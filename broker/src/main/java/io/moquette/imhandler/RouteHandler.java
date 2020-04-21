@@ -18,7 +18,6 @@ import win.liyufan.im.IMTopic;
 
 import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_IP;
 import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_Long_Port;
-import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_Short_Port;
 
 @Handler(IMTopic.RouteTopic)
 public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
@@ -27,7 +26,6 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
         Member member = mServer.getHazelcastInstance().getCluster().getLocalMember();
         String serverIp = member.getStringAttribute(HZ_Cluster_Node_External_IP);
         String longPort = member.getStringAttribute(HZ_Cluster_Node_External_Long_Port);
-        String shortPort = member.getStringAttribute(HZ_Cluster_Node_External_Short_Port);
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         boolean isSessionAlreadyStored = clientSession != null;
@@ -37,7 +35,7 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
             m_sessionsStore.updateExistSession(fromUser, clientID, request, true);
         }
 
-        WFCMessage.RouteResponse response = WFCMessage.RouteResponse.newBuilder().setHost(serverIp).setLongPort(Integer.parseInt(longPort)).setShortPort(Integer.parseInt(shortPort)).build();
+        WFCMessage.RouteResponse response = WFCMessage.RouteResponse.newBuilder().setHost(serverIp).setLongPort(Integer.parseInt(longPort)).setShortPort(80).build();
 
         byte[] data = response.toByteArray();
         ackPayload.ensureWritable(data.length).writeBytes(data);

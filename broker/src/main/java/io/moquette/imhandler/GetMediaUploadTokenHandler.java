@@ -80,9 +80,9 @@ public class GetMediaUploadTokenHandler extends IMHandler<WFCMessage.GetUploadTo
             resultBuilder.setPort(80);
         } else {
             token = UploadFileAction.getToken(type);
-            resultBuilder.setDomain("http://" + MediaServerConfig.SERVER_IP + ":" + MediaServerConfig.HTTP_SERVER_PORT)
+            resultBuilder.setDomain("http://" + MediaServerConfig.SERVER_IP)
                 .setServer(MediaServerConfig.SERVER_IP);
-            resultBuilder.setPort(MediaServerConfig.HTTP_SERVER_PORT);
+            resultBuilder.setPort(80);
         }
 
         resultBuilder.setToken(token);
