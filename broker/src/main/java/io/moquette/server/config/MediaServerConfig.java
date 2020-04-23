@@ -25,6 +25,7 @@ public class MediaServerConfig {
     public static String QINIU_BUCKET_FAVORITE_DOMAIN;
     
     public static String SERVER_IP = "localhost";
+    public static int HTTP_SERVER_PORT = 8080;
     public static String FILE_STROAGE_ROOT = "fs";
     public static boolean USER_QINIU = false;
 

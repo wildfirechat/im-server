@@ -334,6 +334,8 @@ public class Server {
 
     	MediaServerConfig.SERVER_IP = getServerIp(config);
 
+        MediaServerConfig.HTTP_SERVER_PORT = Integer.parseInt(config.getProperty(BrokerConstants.HTTP_SERVER_PORT));
+
         MediaServerConfig.FILE_STROAGE_ROOT = config.getProperty(BrokerConstants.FILE_STORAGE_ROOT, MediaServerConfig.FILE_STROAGE_ROOT);
         File file = new File(MediaServerConfig.FILE_STROAGE_ROOT);
         if (!file.exists()) {
@@ -373,6 +375,7 @@ public class Server {
 
 
         String longPort = config.getProperty(BrokerConstants.PORT_PROPERTY_NAME);
+        String shortPort = config.getProperty(BrokerConstants.HTTP_SERVER_PORT);
         String nodeIdStr = config.getProperty(BrokerConstants.NODE_ID);
         ISet<Integer> nodeIdSet = hazelcastInstance.getSet(BrokerConstants.NODE_IDS);
         int nodeId;
@@ -390,6 +393,7 @@ public class Server {
         nodeIdSet.add(nodeId);
 
         hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_Long_Port, longPort);
+        hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_Short_Port, shortPort);
         hazelcastInstance.getCluster().getLocalMember().setIntAttribute(HZ_Cluster_Node_ID, nodeId);
         hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_IP, serverIp);
         Tokenor.setKey(config.getProperty(BrokerConstants.TOKEN_SECRET_KEY));
