@@ -74,4 +74,5 @@ public interface IMTopic {
     String DestroyUserTopic = "DESTROYUSER";
 
     String LoadRemoteMessagesTopic = "LRM";
+    String KickoffPCClientTopic = "KPCC";
 }

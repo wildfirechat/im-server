@@ -653,6 +653,25 @@ public class MemorySessionStore implements ISessionsStore {
         return sessions.get(clientID).secondPhaseStore.size();
     }
 
+
+    @Override
+    public ErrorCode kickoffPCClient(String operator, String pcClientId) {
+        Session session = sessions.get(pcClientId);
+        if (session != null) {
+            if (session.getPlatform() == ProtoConstants.Platform.Platform_LINUX
+                || session.getPlatform() == ProtoConstants.Platform.Platform_WEB
+                || session.getPlatform() == ProtoConstants.Platform.Platform_Windows
+                || session.getPlatform() == ProtoConstants.Platform.Platform_OSX) {
+                databaseStore.updateSessionDeleted(operator, pcClientId, 1);
+                sessions.remove(pcClientId);
+                mServer.getProcessor().kickoffSession(session);
+            } else {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        }
+        return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
     @Override
     public void cleanSession(String clientID) {
         LOG.info("Fooooooooo <{}>", clientID);

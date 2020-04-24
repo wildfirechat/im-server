@@ -151,4 +151,6 @@ public interface ISessionsStore {
     void cleanSession(String clientID);
 
     boolean isMultiEndpointSupported();
+
+    ErrorCode kickoffPCClient(String operator, String pcClientId);
 }
