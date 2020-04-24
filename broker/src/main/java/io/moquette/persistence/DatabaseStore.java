@@ -33,7 +33,6 @@ import java.util.function.Function;
 
 
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
-import static io.moquette.persistence.MemoryMessagesStore.USER_STATUS;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
 
@@ -1476,7 +1475,7 @@ public class DatabaseStore {
         try {
             connection = DBUtil.getConnection();
             String sql;
-            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Linux) {
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX) {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
             } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
@@ -1494,10 +1493,10 @@ public class DatabaseStore {
 
             statement.setString(index++, uid);
 
-            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Linux) {
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX) {
                 statement.setInt(index++, ProtoConstants.Platform.Platform_Windows);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_OSX);
-                statement.setInt(index++, ProtoConstants.Platform.Platform_Linux);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_LINUX);
             } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
                 statement.setInt(index++, ProtoConstants.Platform.Platform_iOS);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_Android);

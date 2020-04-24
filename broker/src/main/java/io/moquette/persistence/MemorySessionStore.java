@@ -381,8 +381,8 @@ public class MemorySessionStore implements ISessionsStore {
                             if (s.getPlatform() == ProtoConstants.Platform.Platform_Android || s.getPlatform() == ProtoConstants.Platform.Platform_iOS) {
                                 remove = true;
                             }
-                        } else if(platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_Linux) {
-                            if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_Linux) {
+                        } else if(platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_LINUX) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_LINUX) {
                                 remove = true;
                             }
                         } else {

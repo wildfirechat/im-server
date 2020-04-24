@@ -1591,7 +1591,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             return;
         }
 
-        if (session.getPlatform() == Platform_Linux || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
+        if (session.getPlatform() == Platform_LINUX || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
             updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
         } else {
             String value = null;
@@ -1601,7 +1601,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
 
                 switch (s.getPlatform()) {
-                    case Platform_Linux:
+                    case Platform_LINUX:
                     case Platform_Windows:
                     case Platform_OSX:
                         value = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
