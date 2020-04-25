@@ -219,6 +219,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             Utility.printExecption(LOG, e);
             printMissConfigLog(CHATROOM_Participant_Idle_Time, mChatroomParticipantIdleTime + "");
         }
+
+        try {
+            boolean disableRemoteMessageSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_DISABLE_REMOTE_SEARCH, "false"));
+            databaseStore.setDisableRemoteMessageSearch(disableRemoteMessageSearch);
+        } catch (Exception e) {
+        }
     }
 
     private void printMissConfigLog(String config, String defaultValue) {

@@ -39,6 +39,10 @@ import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
 public class DatabaseStore {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseStore.class);
     private final ThreadPoolExecutorWrapper mScheduler;
+    private boolean disableRemoteMessageSearch = false;
+    public void setDisableRemoteMessageSearch(boolean disableRemoteMessageSearch) {
+        this.disableRemoteMessageSearch = disableRemoteMessageSearch;
+    }
 
     public DatabaseStore(ThreadPoolExecutorWrapper scheduler) {
         this.mScheduler = scheduler;
@@ -493,13 +497,24 @@ public class DatabaseStore {
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
-                String sql = "insert into " + MessageShardingUtil.getMessageTable(message.getMessageId()) +
-                    " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE " +
-                    "`_data` = ?," +
-                    "`_searchable_key` = ?," +
-                    "`_dt` = ?," +
-                    "`_content_type` = ?";
+                String table = MessageShardingUtil.getMessageTable(message.getMessageId());
+                String sql;
+                if (disableRemoteMessageSearch) {
+                    sql = "insert into " + table +
+                        " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                        " ON DUPLICATE KEY UPDATE " +
+                        "`_data` = ?," +
+                        "`_dt` = ?," +
+                        "`_content_type` = ?";
+                } else {
+                    sql = "insert into " + table +
+                        " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_searchable_key`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                        " ON DUPLICATE KEY UPDATE " +
+                        "`_data` = ?," +
+                        "`_searchable_key` = ?," +
+                        "`_dt` = ?," +
+                        "`_content_type` = ?";
+                }
 
                 String searchableContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
 
@@ -513,7 +528,9 @@ public class DatabaseStore {
                 Blob blob = connection.createBlob();
                 blob.setBytes(1, message.getContent().toByteArray());
                 statement.setBlob(index++, blob);
-                statement.setString(index++, searchableContent);
+                if (!disableRemoteMessageSearch) {
+                    statement.setString(index++, searchableContent);
+                }
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
                 statement.setInt(index++, message.getContent().getType());
                 String to = message.getToUser();
@@ -525,7 +542,9 @@ public class DatabaseStore {
                 statement.setString(index++, to);
 
                 statement.setBlob(index++, blob);
-                statement.setString(index++, searchableContent);
+                if (!disableRemoteMessageSearch) {
+                    statement.setString(index++, searchableContent);
+                }
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
                 statement.setInt(index++, message.getContent().getType());
 
