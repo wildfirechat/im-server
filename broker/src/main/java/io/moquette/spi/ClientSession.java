@@ -109,11 +109,14 @@ public class ClientSession {
     }
 
 
-    public void disconnect(boolean cleanSession) {
+    public void disconnect(boolean cleanSession, boolean disableSession) {
         if (cleanSession) {
             LOG.info("Client disconnected. Removing its subscriptions. ClientId={}", clientID);
             // cleanup topic subscriptions
             cleanSession();
+        } else if(disableSession) {
+            LOG.info("Client disconnected. disable session. ClientId={}", clientID);
+            m_sessionsStore.disableSession(this.clientID);
         }
     }
 

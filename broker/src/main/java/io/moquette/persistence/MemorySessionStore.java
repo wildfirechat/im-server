@@ -672,6 +672,18 @@ public class MemorySessionStore implements ISessionsStore {
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
+
+    @Override
+    public void disableSession(String clientId) {
+        Session session = sessions.get(clientId);
+        if (session != null && session.getDeleted() == 0) {
+            databaseStore.updateSessionDeleted(session.getUsername(), clientId, 1);
+            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
+            sessionSet.remove(clientId);
+            sessions.remove(clientId);
+        }
+    }
+
     @Override
     public void cleanSession(String clientID) {
         LOG.info("Fooooooooo <{}>", clientID);

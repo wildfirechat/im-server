@@ -75,7 +75,7 @@ public class ProtocolProcessor {
             ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
             try {
                 if (descriptor != null) {
-                    processDisconnect(descriptor.getChannel(), true);
+                    processDisconnect(descriptor.getChannel(), true, false);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -92,7 +92,7 @@ public class ProtocolProcessor {
                 ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
                 try {
                     if (descriptor != null) {
-                        processDisconnect(descriptor.getChannel(), true);
+                        processDisconnect(descriptor.getChannel(), true, false);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -505,19 +505,19 @@ public class ProtocolProcessor {
        //not use
     }
 
-    public void processDisconnect(Channel channel, boolean clearSession) throws InterruptedException {
+    public void processDisconnect(Channel channel, boolean isDup, boolean isRetain) throws InterruptedException {
         final String clientID = NettyUtils.clientID(channel);
-        LOG.info("Processing DISCONNECT message. CId={}, clearSession={}", clientID, clearSession);
+        LOG.info("Processing DISCONNECT message. CId={}, clearSession={}", clientID, isDup);
         channel.flush();
 
         if (clientID == null) {
-            LOG.error("Error. Cid not exist!!!", clientID, clearSession);
+            LOG.error("Error. Cid not exist!!!", clientID, isDup);
             channel.close();
             return;
         }
 
-        if (!clearSession) {
-            processConnectionLost(clientID, channel, clearSession);
+        if (!isDup && !isRetain) {
+            processConnectionLost(clientID, channel, isDup);
             return;
         }
 
@@ -571,7 +571,7 @@ public class ProtocolProcessor {
 
         //disconnect the session
 
-        m_sessionsStore.sessionForClient(clientID).disconnect(clearSession);
+        m_sessionsStore.sessionForClient(clientID).disconnect(isDup, isRetain);
     }
 
 
