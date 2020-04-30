@@ -2,7 +2,6 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
-import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
@@ -71,14 +70,18 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, inputDestroyUser, Void.class);
     }
 
-    //not implement
-//    public static IMResult<OutputUserBlockStatusList> getUserOnlineStatus(String userId) throws Exception {
-//        String path = APIPath.User_Get_Online_Status;
-//        InputGetUserInfo inputGetUserInfo = new InputGetUserInfo(userId, null);
-//        return AdminHttpUtils.httpJsonPost(path, null, OutputUserBlockStatusList.class);
-//    }
+    //仅专业版支持
+    public static IMResult<OutputCreateDevice> createOrUpdateDevice(InputCreateDevice device) throws Exception {
+        String path = APIPath.CreateOrUpdate_Device;
+        return AdminHttpUtils.httpJsonPost(path, device, OutputCreateDevice.class);
+    }
 
-
-
+    //仅专业版支持
+    public static IMResult<OutputDevice> getDevice(String deviceId) throws Exception {
+        String path = APIPath.Get_Device;
+        InputDeviceId inputDeviceId = new InputDeviceId();
+        inputDeviceId.setDeviceId(deviceId);
+        return AdminHttpUtils.httpJsonPost(path, inputDeviceId, OutputDevice.class);
+    }
 
 }

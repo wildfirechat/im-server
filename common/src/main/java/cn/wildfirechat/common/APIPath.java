@@ -19,6 +19,8 @@ public interface APIPath {
     String Create_User = "/admin/user/create";
     String Destroy_User = "/admin/user/destroy";
     String Create_Robot = "/admin/robot/create";
+    String CreateOrUpdate_Device = "/admin/device/create";
+    String Get_Device = "/admin/device/get";
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
     String User_Get_Info = "/admin/user/get_info";

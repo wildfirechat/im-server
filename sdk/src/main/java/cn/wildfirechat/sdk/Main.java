@@ -73,6 +73,25 @@ public class Main {
             System.exit(-1);
         }
 
+        InputCreateDevice createDevice = new InputCreateDevice();
+        createDevice.setDeviceId("deviceId1");
+        createDevice.setOwner("userId1");
+        IMResult<OutputCreateDevice> resultCreateDevice = UserAdmin.createOrUpdateDevice(createDevice);
+        if (resultCreateDevice != null && resultCreateDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create device " + resultCreateDevice.getResult().getDeviceId() + " success");
+        } else {
+            System.out.println("Create device failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputDevice> getDevice = UserAdmin.getDevice("deviceId1");
+        if (getDevice != null && getDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getDevice.getResult().getDeviceId().equals("deviceId1") && getDevice.getResult().getOwner().equals("userId1")) {
+            System.out.println("Get device " + resultCreateDevice.getResult().getDeviceId() + " success");
+        } else {
+            System.out.println("Get device failure");
+            System.exit(-1);
+        }
+
         IMResult<InputOutputUserInfo> resultGetUserInfo1 = UserAdmin.getUserByName(userInfo.getName());
         if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             if (userInfo.getUserId().equals(resultGetUserInfo1.getResult().getUserId())
