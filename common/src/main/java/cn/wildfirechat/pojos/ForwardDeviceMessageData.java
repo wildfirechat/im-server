@@ -15,13 +15,11 @@ import java.util.List;
 
 public class ForwardDeviceMessageData {
     private String deviceId;
-    private String owner;
     private int type;
     private byte[] data;
 
-    public ForwardDeviceMessageData(String deviceId, String owner, int type, byte[] data) {
+    public ForwardDeviceMessageData(String deviceId, int type, byte[] data) {
         this.deviceId = deviceId;
-        this.owner = owner;
         this.type = type;
         this.data = data;
     }
@@ -32,14 +30,6 @@ public class ForwardDeviceMessageData {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
     }
 
     public int getType() {

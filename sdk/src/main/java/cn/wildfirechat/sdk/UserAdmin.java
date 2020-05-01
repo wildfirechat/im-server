@@ -84,4 +84,11 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, inputDeviceId, OutputDevice.class);
     }
 
+    public static IMResult<OutputDeviceList> getUserDevices(String userId) throws Exception {
+        String path = APIPath.Get_User_Devices;
+        InputUserId inputUserId = new InputUserId();
+        inputUserId.setUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputDeviceList.class);
+    }
+
 }

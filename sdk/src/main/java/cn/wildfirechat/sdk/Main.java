@@ -73,24 +73,7 @@ public class Main {
             System.exit(-1);
         }
 
-        InputCreateDevice createDevice = new InputCreateDevice();
-        createDevice.setDeviceId("deviceId1");
-        createDevice.setOwner("userId1");
-        IMResult<OutputCreateDevice> resultCreateDevice = UserAdmin.createOrUpdateDevice(createDevice);
-        if (resultCreateDevice != null && resultCreateDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("Create device " + resultCreateDevice.getResult().getDeviceId() + " success");
-        } else {
-            System.out.println("Create device failure");
-            System.exit(-1);
-        }
 
-        IMResult<OutputDevice> getDevice = UserAdmin.getDevice("deviceId1");
-        if (getDevice != null && getDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getDevice.getResult().getDeviceId().equals("deviceId1") && getDevice.getResult().getOwner().equals("userId1")) {
-            System.out.println("Get device " + resultCreateDevice.getResult().getDeviceId() + " success");
-        } else {
-            System.out.println("Get device failure");
-            System.exit(-1);
-        }
 
         IMResult<InputOutputUserInfo> resultGetUserInfo1 = UserAdmin.getUserByName(userInfo.getName());
         if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -875,5 +858,50 @@ public class Main {
             System.out.println("destroy user failure");
             System.exit(-1);
         }
+    }
+
+    //***********************************************
+    //****  物联网相关的API，仅专业版支持
+    //***********************************************
+    static void testDevice() throws Exception {
+        InputCreateDevice createDevice = new InputCreateDevice();
+        createDevice.setDeviceId("deviceId1");
+        createDevice.setOwners(Arrays.asList("opoGoG__", "userId1"));
+        IMResult<OutputCreateDevice> resultCreateDevice = UserAdmin.createOrUpdateDevice(createDevice);
+        if (resultCreateDevice != null && resultCreateDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create device " + resultCreateDevice.getResult().getDeviceId() + " success");
+        } else {
+            System.out.println("Create device failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputDevice> getDevice = UserAdmin.getDevice("deviceId1");
+        if (getDevice != null && getDevice.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getDevice.getResult().getDeviceId().equals("deviceId1") && getDevice.getResult().getOwners().contains("opoGoG__")) {
+            System.out.println("Get device " + resultCreateDevice.getResult().getDeviceId() + " success");
+        } else {
+            System.out.println("Get device failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputDeviceList> getUserDevices = UserAdmin.getUserDevices("userId1");
+        if (getUserDevices != null && getUserDevices.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            boolean success = false;
+            for (OutputDevice outputDevice : getUserDevices.getResult().getDevices()) {
+                if (outputDevice.getDeviceId().equals("deviceId1")) {
+                    success = true;
+                    break;
+                }
+            }
+            if (success) {
+                System.out.println("Get user device success");
+            } else {
+                System.out.println("Get user device failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("Get device failure");
+            System.exit(-1);
+        }
+
     }
 }

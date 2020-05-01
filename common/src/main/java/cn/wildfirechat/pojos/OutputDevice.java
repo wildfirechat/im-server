@@ -10,12 +10,14 @@ package cn.wildfirechat.pojos;
 
 import cn.wildfirechat.proto.WFCMessage;
 
+import java.util.List;
+
 public class OutputDevice {
     private int state;
     private String deviceId;
     private String token;
     private String secret;
-    private String owner;
+    private List<String> owners;
     private String extra;
 
     public OutputDevice(String deviceId, String token, String secret) {
@@ -56,12 +58,12 @@ public class OutputDevice {
         this.state = state;
     }
 
-    public String getOwner() {
-        return owner;
+    public List<String> getOwners() {
+        return owners;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwners(List<String> owners) {
+        this.owners = owners;
     }
 
     public String getExtra() {

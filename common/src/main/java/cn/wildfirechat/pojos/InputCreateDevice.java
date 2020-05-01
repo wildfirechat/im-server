@@ -12,30 +12,19 @@ package cn.wildfirechat.pojos;
 import cn.wildfirechat.proto.WFCMessage;
 import io.netty.util.internal.StringUtil;
 
+import java.util.List;
+
 public class InputCreateDevice {
     private String deviceId;
-    private String owner;
+    private List<String> owners;
     private String extra;
 
-    public WFCMessage.Device toDevice() {
-        WFCMessage.Device.Builder builder = WFCMessage.Device.newBuilder();
-        if (!StringUtil.isNullOrEmpty(deviceId))
-            builder.setUid(deviceId);
-        if (!StringUtil.isNullOrEmpty(owner))
-            builder.setOwner(owner);
-        if (!StringUtil.isNullOrEmpty(extra))
-            builder.setExtra(extra);
-        builder.setState(0);
-        return builder.build();
+    public List<String> getOwners() {
+        return owners;
     }
 
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwners(List<String> owners) {
+        this.owners = owners;
     }
 
     public String getExtra() {
