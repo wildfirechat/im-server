@@ -6,6 +6,7 @@ import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
+import io.netty.util.internal.StringUtil;
 
 
 import java.util.ArrayList;
@@ -898,6 +899,14 @@ public class Main {
                 System.out.println("Get user device failure");
                 System.exit(-1);
             }
+        } else {
+            System.out.println("Get device failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputDeviceHost> getDeviceHost = UserAdmin.getDeviceHost("deviceId1");
+        if (getDeviceHost != null && getDeviceHost.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !StringUtil.isNullOrEmpty(getDeviceHost.getResult().getHost())) {
+            System.out.println("Get user device success");
         } else {
             System.out.println("Get device failure");
             System.exit(-1);
