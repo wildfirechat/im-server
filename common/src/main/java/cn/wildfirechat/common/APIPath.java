@@ -22,7 +22,6 @@ public interface APIPath {
     String CreateOrUpdate_Device = "/admin/device/create";
     String Get_Device = "/admin/device/get";
     String Get_User_Devices = "/admin/device/user_devices";
-    String Get_Device_Host = "/admin/device/host";
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
     String User_Get_Info = "/admin/user/get_info";

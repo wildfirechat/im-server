@@ -903,14 +903,5 @@ public class Main {
             System.out.println("Get device failure");
             System.exit(-1);
         }
-
-        IMResult<OutputDeviceHost> getDeviceHost = UserAdmin.getDeviceHost("deviceId1");
-        if (getDeviceHost != null && getDeviceHost.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !StringUtil.isNullOrEmpty(getDeviceHost.getResult().getHost())) {
-            System.out.println("Get user device success");
-        } else {
-            System.out.println("Get device failure");
-            System.exit(-1);
-        }
-
     }
 }

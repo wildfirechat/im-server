@@ -90,11 +90,4 @@ public class UserAdmin {
         inputUserId.setUserId(userId);
         return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputDeviceList.class);
     }
-
-    public static IMResult<OutputDeviceHost> getDeviceHost(String deviceId) throws Exception {
-        String path = APIPath.Get_Device_Host;
-        InputDeviceId inputUserId = new InputDeviceId();
-        inputUserId.setDeviceId(deviceId);
-        return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputDeviceHost.class);
-    }
 }
