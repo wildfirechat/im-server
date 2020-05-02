@@ -60,3 +60,5 @@ moments/target
 monitor
 wildfire_jmeter
 git.properties
+wildfirechat.license
+broker/logs
