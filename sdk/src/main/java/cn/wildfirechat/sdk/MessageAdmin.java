@@ -25,6 +25,30 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
     }
 
+    public static IMResult<Void> deleteMessage(long messageUid) throws Exception {
+        String path = APIPath.Msg_Delete;
+        DeleteMessageData deleteMessageData = new DeleteMessageData();
+        deleteMessageData.setMessageUid(messageUid);
+        return AdminHttpUtils.httpJsonPost(path, deleteMessageData, Void.class);
+    }
+
+
+
+    /**
+     * 撤回群发或者广播的消息
+     * @param target 目标用户
+     * @param messageUid 消息唯一ID
+     * @return
+     * @throws Exception
+     */
+    public static IMResult<Void> recallBroadcastOrMulticastMessage(String target, long messageUid) throws Exception {
+        String path = APIPath.Msg_Recall;
+        RecallMessageData messageData = new RecallMessageData();
+        messageData.setOperator(target);
+        messageData.setMessageUid(messageUid);
+        return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
+    }
+
     public static IMResult<BroadMessageResult> broadcastMessage(String sender, int line, MessagePayload payload) throws Exception {
         String path = APIPath.Msg_Broadcast;
         BroadMessageData messageData = new BroadMessageData();

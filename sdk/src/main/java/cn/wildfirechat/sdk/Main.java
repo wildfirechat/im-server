@@ -465,6 +465,13 @@ public class Main {
             System.exit(-1);
         }
 
+        voidIMResult = MessageAdmin.deleteMessage(resultSendMessage.getResult().getMessageUid());
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("delete message success");
+        } else {
+            System.out.println("delete message failure");
+            System.exit(-1);
+        }
 
         IMResult<BroadMessageResult> resultBroadcastMessage = MessageAdmin.broadcastMessage("user1", 0, payload);
         if (resultBroadcastMessage != null && resultBroadcastMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
