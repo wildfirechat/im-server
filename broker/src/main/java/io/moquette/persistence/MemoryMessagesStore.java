@@ -2147,6 +2147,21 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
 
+        if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
+            Collection<FriendData> friendDatas = getFriendDatas(hzInstance, userId);
+            for (FriendData fd : friendDatas) {
+                if (fd.getFriendUid().equals(request.getTargetUid())) {
+                    if (fd.getState() == 0) {
+                        return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        IMap<String, Boolean> friendEmpty = hzInstance.getMap(USER_FRIENDS_EMPTY);
+
         if (isAdmin) {
             MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
