@@ -52,7 +52,7 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, transferGroup, Void.class);
     }
 
-    public static IMResult<Void> modifyGroupInfo(String operator, String groupId, int type, String value, List<Integer> to_lines) throws Exception {
+    public static IMResult<Void> modifyGroupInfo(String operator, String groupId, int type, String value, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Group_Modify_Info;
         InputModifyGroupInfo modifyGroupInfo = new InputModifyGroupInfo();
         modifyGroupInfo.setGroup_id(groupId);
@@ -60,6 +60,7 @@ public class GroupAdmin {
         modifyGroupInfo.setTo_lines(to_lines);
         modifyGroupInfo.setType(type);
         modifyGroupInfo.setValue(value);
+        modifyGroupInfo.setNotify_message(notify_message);
         return AdminHttpUtils.httpJsonPost(path, modifyGroupInfo, Void.class);
     }
 
@@ -129,6 +130,5 @@ public class GroupAdmin {
         inputUserId.setUserId(user);
         return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputGroupIds.class);
     }
-
 
 }
