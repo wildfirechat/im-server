@@ -2148,8 +2148,14 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
 
         if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
-            Collection<FriendData> friendDatas = getFriendDatas(hzInstance, userId);
-            for (FriendData fd : friendDatas) {
+            MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+            Collection<FriendData> friends = friendsMap.get(userId);
+            if (friends == null || friends.size() == 0) {
+                friends = loadFriend(friendsMap, userId);
+            }
+
+            for (FriendData fd : friends) {
                 if (fd.getFriendUid().equals(request.getTargetUid())) {
                     if (fd.getState() == 0) {
                         return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
@@ -2159,8 +2165,6 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
         }
-
-        IMap<String, Boolean> friendEmpty = hzInstance.getMap(USER_FRIENDS_EMPTY);
 
         if (isAdmin) {
             MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
