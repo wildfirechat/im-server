@@ -14,6 +14,7 @@ import cn.wildfirechat.pojos.InputGetGroup;
 import cn.wildfirechat.pojos.OutputGroupMemberList;
 import cn.wildfirechat.pojos.PojoGroupInfo;
 import cn.wildfirechat.pojos.PojoGroupMember;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -56,6 +57,9 @@ public class GetGroupMembersAction extends AdminAction {
                     OutputGroupMemberList out = new OutputGroupMemberList();
                     out.setMembers(new ArrayList<>());
                     for (WFCMessage.GroupMember member : members) {
+                        if (member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Removed) {
+                            continue;
+                        }
                         PojoGroupMember pm = new PojoGroupMember();
                         pm.setMember_id(member.getMemberId());
                         pm.setAlias(member.getAlias());
