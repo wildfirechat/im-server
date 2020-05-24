@@ -53,6 +53,7 @@ public interface APIPath {
     String Group_Member_Kickoff = "/admin/group/member/del";
     String Group_Member_Quit = "/admin/group/member/quit";
     String Group_Set_Manager = "/admin/group/manager/set";
+    String Group_Mute_Member = "/admin/group/manager/mute";
     String Get_User_Groups = "/admin/group/of_user";
 
 

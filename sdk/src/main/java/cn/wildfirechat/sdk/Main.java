@@ -37,6 +37,7 @@ public class Main {
         testChatroom();
         testMessage();
         testGeneralApi();
+        testDevice();
 
         System.out.println("Congratulation, all admin test case passed!!!!!!!");
     }
@@ -412,6 +413,23 @@ public class Main {
             System.out.println("cancel group manager failure");
             System.exit(-1);
         }
+
+        voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), true, null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("mute group member success");
+        } else {
+            System.out.println("mute group member failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), false, null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("unmute group member success");
+        } else {
+            System.out.println("unmute group member failure");
+            System.exit(-1);
+        }
+
 
 
         voidIMResult = GroupAdmin.quitGroup("user4", groupInfo.getTarget_id(), null, null);
