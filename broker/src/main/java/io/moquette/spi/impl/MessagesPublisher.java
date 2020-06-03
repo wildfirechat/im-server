@@ -549,7 +549,7 @@ public class MessagesPublisher {
     }
 
     public void forwardMessage(final WFCMessage.Message message, String forwardUrl) {
-        executorCallback.execute(() -> HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class)));
+        executorCallback.execute(() -> HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class)));
     }
 
     public void notifyChannelListenStatusChanged(WFCMessage.ChannelInfo channelInfo, String user, boolean listen) {
