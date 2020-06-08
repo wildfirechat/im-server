@@ -17,7 +17,7 @@ import java.util.List;
 
 abstract public class GroupHandler<T> extends IMHandler<T> {
     protected void sendGroupNotification(String fromUser, String targetId, List<Integer> lines, WFCMessage.MessageContent content) {
-        if (lines != null) {
+        if (lines == null) {
             lines = new ArrayList<>();
         }
 
