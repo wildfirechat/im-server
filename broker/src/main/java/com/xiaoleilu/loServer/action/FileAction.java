@@ -109,7 +109,8 @@ public class FileAction extends Action {
 		}
 
 		// 路径安全检查
-		if (httpPath.contains("/.") || httpPath.contains("./") || httpPath.charAt(0) == '.' || httpPath.charAt(httpPath.length() - 1) == '.' || ReUtil.isMatch(INSECURE_URI, httpPath)) {
+        String path = httpPath.substring(0, httpPath.lastIndexOf("/"));
+		if (path.contains("/.") || path.contains("./") || path.charAt(0) == '.' || path.charAt(path.length() - 1) == '.' || ReUtil.isMatch(INSECURE_URI, path)) {
 			return null;
 		}
 
