@@ -2271,6 +2271,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public ErrorCode blackUserRequest(String fromUser, String targetUserId, int state, long[] heads) {
+        if(state != 0 && state != 1 && state != 2){
+            return ErrorCode.INVALID_PARAMETER;
+        }
+
         if (state == 2) {
             state = 1;
         }
