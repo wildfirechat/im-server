@@ -253,7 +253,7 @@ public class MessagesPublisher {
                         }
                     }
 
-                    if (!StringUtil.isNullOrEmpty(pushContent) || messageContentType == 400 || messageContentType == 402) {
+                    if (!StringUtil.isNullOrEmpty(pushContent) || messageContentType == 400) {
                         if (!isSlient) {
                             targetSession.setUnReceivedMsgs(targetSession.getUnReceivedMsgs() + 1);
                         }
