@@ -331,7 +331,7 @@ public class DatabaseStore {
             String sql = "select `_mid`" +
                 ", `_alias`" +
                 ", `_type`" +
-                ", `_dt` from t_group_member where _gid = ?";
+                ", `_dt`, `_create_dt` from t_group_member where _gid = ?";
             statement = connection.prepareStatement(sql);
 
             statement.setString(1, groupId);
@@ -357,6 +357,9 @@ public class DatabaseStore {
 
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
+
+                longValue = rs.getLong(index++);
+                builder.setCreateDt(longValue);
 
                 WFCMessage.GroupMember member = builder.build();
                 groupMembers.put(groupId, member);
@@ -1652,7 +1655,7 @@ public class DatabaseStore {
                     ", `_mid`" +
                     ", `_alias`" +
                     ", `_type`" +
-                    ", `_dt`) values(?, ?, ?, ?, ?)" +
+                    ", `_dt`, `_create_dt`) values(?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_alias` = ?," +
                     "`_type` = ?," +
@@ -1673,6 +1676,7 @@ public class DatabaseStore {
                     statement.setString(index++, member.getAlias());
                     statement.setInt(index++, member.getType());
                     statement.setLong(index++, dt);
+                    statement.setLong(index++, member.getCreateDt());
                     statement.setString(index++, member.getAlias());
                     statement.setInt(index++, member.getType());
                     statement.setLong(index++, dt);

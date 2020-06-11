@@ -781,9 +781,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
             if (member.getMemberId().equals(groupInfo.getOwner())) {
-                member = member.toBuilder().setUpdateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
             } else {
-                member = member.toBuilder().setUpdateDt(dt).build();
+                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
             }
             groupMembers.put(groupId, member);
             updatedMemberList.add(member);
@@ -843,9 +843,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         ArrayList<String> newInviteUsers = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
             if (member.getMemberId().equals(groupInfo.getOwner())) {
-                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setAlias("").build();
+                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setCreateDt(updateDt).setAlias("").build();
             } else {
-                member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setAlias("").build();
+                member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setCreateDt(updateDt).setAlias("").build();
             }
             tmp.add(member);
             newInviteUsers.add(member.getMemberId());
