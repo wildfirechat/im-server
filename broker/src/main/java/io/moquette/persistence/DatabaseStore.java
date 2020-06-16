@@ -1341,7 +1341,6 @@ public class DatabaseStore {
     }
 
     void updateSessionDeleted(String uid, String cid, int deleted) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
 
@@ -1366,11 +1365,9 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     void updateSessionPlatform(String uid, String cid, int platform) {
-        mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
 
@@ -1395,7 +1392,6 @@ public class DatabaseStore {
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
-        });
     }
 
     private boolean strEqual(String left, String right) {
