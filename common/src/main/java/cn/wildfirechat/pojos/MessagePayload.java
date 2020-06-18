@@ -28,6 +28,8 @@ public class MessagePayload {
     private int expireDuration;
     private int mentionedType;
     private List<String> mentionedTarget;
+    private String extra;
+
 
     public int getType() {
         return type;
@@ -117,6 +119,14 @@ public class MessagePayload {
         this.mentionedTarget = mentionedTarget;
     }
 
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
+    }
+
     public WFCMessage.MessageContent toProtoMessageContent() {
         WFCMessage.MessageContent.Builder builder = WFCMessage.MessageContent.newBuilder()
             .setType(type)
@@ -137,6 +147,8 @@ public class MessagePayload {
             builder.setRemoteMediaUrl(remoteMediaUrl);
         if (mentionedTarget != null && mentionedTarget.size() > 0)
             builder.addAllMentionedTarget(mentionedTarget);
+        if (!StringUtil.isNullOrEmpty(extra))
+            builder.setExtra(extra);
 
         return builder.build();
     }
@@ -159,6 +171,7 @@ public class MessagePayload {
         payload.mentionedType = protoContent.getMentionedType();
         payload.mentionedTarget = new ArrayList<>();
         payload.mentionedTarget.addAll(protoContent.getMentionedTargetList());
+        payload.extra = protoContent.getExtra();
         return payload;
     }
 }
