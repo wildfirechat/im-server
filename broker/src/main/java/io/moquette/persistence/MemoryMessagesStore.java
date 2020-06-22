@@ -1063,13 +1063,21 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Normal) {
-                if (oldInfo.getOwner() == null) {
-                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
-                }
-                if (!oldInfo.getOwner().equals(operator)) {
-                    if (modifyType == Modify_Group_Extra) {
+                if (!operator.equals(oldInfo.getOwner())) {
+                    WFCMessage.GroupMember gm = getGroupMember(groupId, operator);
+                    boolean isManager = false;
+                    if (gm != null && gm.getType() == GroupMemberType_Manager) {
+                        isManager = true;
+                    }
+                    if (!isManager && modifyType != Modify_Group_Name && modifyType != Modify_Group_Portrait && modifyType != Modify_Group_Extra) {
                         return ErrorCode.ERROR_CODE_NOT_RIGHT;
                     }
+                }
+            }
+
+            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Free) {
+                if (modifyType != Modify_Group_Name && modifyType != Modify_Group_Portrait && modifyType != Modify_Group_Extra) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
             }
         }
