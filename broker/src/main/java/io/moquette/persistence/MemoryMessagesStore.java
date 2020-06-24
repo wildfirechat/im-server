@@ -806,6 +806,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
 
+        int maxCount = Integer.MAX_VALUE;
+
         if (!isAdmin) {
             boolean isMember = false;
             boolean isManager = false;
@@ -835,6 +837,15 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (!isMember && !(memberList.size() == 1 && operator.equals(memberList.get(0).getMemberId()))) {
                 return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
             }
+
+            SystemSettingPojo maxMemberSetting = databaseStore.getSystemSetting(ProtoConstants.SystemSettingType.Group_Max_Member_Count);
+            if (maxMemberSetting != null) {
+                try {
+                    maxCount = Integer.parseInt(maxMemberSetting.value);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         long updateDt = System.currentTimeMillis();
@@ -856,6 +867,18 @@ public class MemoryMessagesStore implements IMessagesStore {
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
         if (members == null || members.size() == 0) {
             members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
+        if (maxCount != Integer.MAX_VALUE) {
+            int existCount = 0;
+            for (WFCMessage.GroupMember member : members) {
+                if (member.getType() != GroupMemberType_Removed) {
+                    existCount++;
+                }
+            }
+            if (existCount + newInviteUsers.size() > maxCount) {
+                return ErrorCode.ERROR_CODE_GROUP_EXCEED_MAX_MEMBER_COUNT;
+            }
         }
 
         for (WFCMessage.GroupMember member : members) {

@@ -44,6 +44,7 @@ public enum ErrorCode {
 
     ERROR_CODE_ALREADY_FRIENDS(23, "already friends"),
 
+    ERROR_CODE_GROUP_EXCEED_MAX_MEMBER_COUNT(240, "group exceed max member count"),
     ERROR_CODE_GROUP_MUTED(241, "group is muted"),
     ERROR_CODE_SENSITIVE_MATCHED(242, "sensitive matched"),
     ERROR_CODE_SIGN_EXPIRED(243, "sign expired"),
