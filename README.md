@@ -43,11 +43,6 @@
 
 ![野火IM](http://static.wildfirechat.cn/download_qrcode.png)
 
-#### 加入野火官方体验交流群
-使用野火IM移动客户端扫码下面二维码（不是使用微信扫码），和野火IM的爱好者一起畅谈野火IM的问题和经验：
-
-![野火IM官方交流群](http://static.wildfirechat.cn/wildfirechat_official_group.jpeg)
-
 #### 应用截图
 ![ios-demo](http://static.wildfirechat.cn/ios-demo.gif)
 
