@@ -127,6 +127,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
+    private boolean mFriendNewWelcomeMessage = false;
 
     private boolean mMultiPlatformNotification = false;
     private boolean mDisableStrangerChat = false;
@@ -203,6 +204,15 @@ public class MemoryMessagesStore implements IMessagesStore {
             Utility.printExecption(LOG, e);
             printMissConfigLog(FRIEND_Request_Expiration_Duration, mFriendRequestExpiration + "");
         }
+
+        try {
+            mFriendNewWelcomeMessage = Boolean.parseBoolean(m_Server.getConfig().getProperty(FRIEND_New_Welcome_Message));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(FRIEND_New_Welcome_Message, mFriendNewWelcomeMessage + "");
+        }
+
 
         try {
             mChatroomRejoinWhenActive = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CHATROOM_Rejoin_When_Active));
@@ -2434,6 +2444,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean isNewFriendWelcomeMessage() {
+        return mFriendNewWelcomeMessage;
     }
 
     @Override
