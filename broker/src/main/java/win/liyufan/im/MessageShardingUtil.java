@@ -13,7 +13,7 @@ import java.util.Date;
 
 public class MessageShardingUtil {
     private static SpinLock mLock = new SpinLock();
-    private static int rotateId = 0;
+    private static volatile int rotateId = 0;
     private static int nodeId = 0;
 
     private static int rotateIdWidth = 15;
