@@ -1469,8 +1469,8 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             String searchContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
-            String cont = message.getContent().getContent() == null ? "" : message.getContent().getContent();
-            String extra = message.getContent().getExtra() == null ? "" : message.getContent().getExtra();
+            String cont = message.getContent().getContent() == null ? "" : message.getContent().getContent().replace("\"", "\\\"");
+            String extra = message.getContent().getExtra() == null ? "" : message.getContent().getExtra().replace("\"", "\\\"");
             String recalledContent = "{\"s\":\"" + message.getFromUser() +  "\",\"ts\":" + message.getServerTimestamp() +  ",\"t\":" + message.getContent().getType() + ",\"sc\":\"" + searchContent + "\",\"c\":\"" + cont + "\",\"e\":\"" + extra  + "\"}";
 
             message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent).build()).build();
