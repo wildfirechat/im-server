@@ -86,10 +86,10 @@ public class DatabaseStore {
         try {
             connection = DBUtil.getConnection();
             String sql = "insert into t_settings " +
-                " (`id`, `value`, `desc`) values(?, ?, ?)" +
+                " (`id`, `_value`, `_desc`) values(?, ?, ?)" +
                 " ON DUPLICATE KEY UPDATE " +
-                "`value` = ?," +
-                "`desc` = ?";
+                "`_value` = ?," +
+                "`_desc` = ?";
 
 
             statement = connection.prepareStatement(sql);
@@ -120,7 +120,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `value`, `desc` from t_settings where `id` = ?";
+            String sql = "select `_value`, `_desc` from t_settings where `id` = ?";
 
             statement = connection.prepareStatement(sql);
             int index = 1;
