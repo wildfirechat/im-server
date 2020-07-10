@@ -574,7 +574,7 @@ public class Main {
                 System.out.println("chatroom info incorrect");
                 System.exit(-1);
             } else {
-                System.out.println("chatroom info incorrect");
+                System.out.println("chatroom info correct");
             }
         } else {
             System.out.println("get chatroom info failure");
