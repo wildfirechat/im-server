@@ -2318,6 +2318,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (state == 2) {
             state = 1;
+        } else {
+            state = 0;
         }
 
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
