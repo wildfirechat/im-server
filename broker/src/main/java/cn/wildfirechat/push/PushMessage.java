@@ -23,6 +23,7 @@ public class PushMessage {
     //推送类型，android推送分为小米/华为/魅族等。ios分别为开发和发布。
     public int pushType;
     public String pushContent;
+    public String pushData;
     public int unReceivedMsg;
     public int mentionedType;
     public String packageName;
