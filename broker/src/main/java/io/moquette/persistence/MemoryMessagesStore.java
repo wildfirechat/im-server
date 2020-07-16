@@ -493,7 +493,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                         }
 
                         if (bundle.getMessage().getContent().getExpireDuration() > 0) {
-                            if (System.currentTimeMillis() < bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration()) {
+                            if (System.currentTimeMillis() > bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration()*1000) {
                                 continue;
                             }
                         }
@@ -587,6 +587,12 @@ public class MemoryMessagesStore implements IMessagesStore {
                 MessageBundle bundle = mIMap.get(targetMessageId);
                 if (bundle != null) {
                     if (exceptClientId == null || !exceptClientId.equals(bundle.getFromClientId()) || !fromUser.equals(bundle.getFromUser())) {
+                        if (bundle.getMessage().getContent().getExpireDuration() > 0) {
+                            if (System.currentTimeMillis() > bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration() * 1000) {
+                                continue;
+                            }
+                        }
+
                         size += bundle.getMessage().getSerializedSize();
                         if (size >= 3 * 1024 * 1024) { //3M
                             break;

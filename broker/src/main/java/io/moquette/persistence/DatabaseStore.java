@@ -826,7 +826,16 @@ public class DatabaseStore {
                     }
                 }
                 WFCMessage.Message message = builder.build();
-                messages.add(message);
+                boolean expired = false;
+                if (message.getContent().getExpireDuration() > 0) {
+                    if (System.currentTimeMillis() > message.getServerTimestamp() + message.getContent().getExpireDuration()*1000) {
+                        expired = true;
+                    }
+                }
+
+                if (!expired) {
+                    messages.add(message);
+                }
             }
 
             if (count == 0) {
