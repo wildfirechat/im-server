@@ -34,6 +34,7 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.security.Tokenor;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttVersion;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.*;
@@ -1471,7 +1472,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             String searchContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
             String cont = message.getContent().getContent() == null ? "" : message.getContent().getContent().replace("\"", "\\\"");
             String extra = message.getContent().getExtra() == null ? "" : message.getContent().getExtra().replace("\"", "\\\"");
-            String recalledContent = "{\"s\":\"" + message.getFromUser() +  "\",\"ts\":" + message.getServerTimestamp() +  ",\"t\":" + message.getContent().getType() + ",\"sc\":\"" + searchContent + "\",\"c\":\"" + cont + "\",\"e\":\"" + extra  + "\"}";
+            JSONObject json = new JSONObject();
+            json.put("s", message.getFromUser());
+            json.put("ts", message.getServerTimestamp());
+            json.put("t", message.getContent().getType());
+            json.put("sc", message.getContent().getSearchableContent());
+            json.put("c", message.getContent().getContent());
+            json.put("e", message.getContent().getExtra());
+            String recalledContent = json.toJSONString();
 
             message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent).build()).build();
             messageBundle.setMessage(message);
