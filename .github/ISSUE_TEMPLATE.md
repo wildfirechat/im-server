@@ -1,13 +1,17 @@
-### Expected behavior
+## 提issue小提示
+为了尽快定位问题，需要提供足够的信息，请按照我们的要求格式来提问。***如果您不按照格式提问，我们将无法回复您的问题***
 
-### Actual behavior
+#### 操作说明
+详细说明操作那个界面，每一步骤都要说得详细，如果是SDK或者api使用问题，需要详细说明调用的那个函数，参数都是什么。
 
-### Steps to reproduce
+#### 表现现象
+描述一下什么现象，比如说函数返回error，errorcode是多少，或者界面上是什么状态，比如发送消息显示发送失败的红点。不要笼统的说功能有问题，不起作用。
 
-### Minimal yet complete reproducer code (or URL to code) or complete log file
+#### 预期结果
+你认为正确的表现应该是什么样的。
 
-### Moquette MQTT version
+#### 补充条件
+是否是毕现的，还是偶现的？是否只有在特殊的网络/设备/平台上出现，还是所有的都出现。还有您用的版本是什么时候的，是不是最新版
 
-### JVM version (e.g. `java -version`)
-
-### OS version (e.g. `uname -a`)
+#### demo对比结果
+请用demo对比测试，demo上是什么状态。
