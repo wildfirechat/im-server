@@ -46,15 +46,10 @@ public class InputCreateGroup extends InputGroupBase {
             groupInfoBuilder.setExtra(group_info.getExtra());
         }
 
-        if (group_info.history_message > 0 && group_info.history_message < 128) {
-            groupInfoBuilder.setHistoryMessage(group_info.history_message);
-        }
         if (group_info.join_type > 0 && group_info.join_type < 128) {
             groupInfoBuilder.setJoinType(group_info.join_type);
         }
-        if (group_info.max_member_count > 0) {
-            groupInfoBuilder.setMaxMemberCount(group_info.max_member_count);
-        }
+
         if (group_info.mute > 0 && group_info.mute < 128) {
             groupInfoBuilder.setMute(group_info.mute);
         }
