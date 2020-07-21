@@ -24,27 +24,46 @@ public class InputCreateGroup extends InputGroupBase {
     public WFCMessage.CreateGroupRequest toProtoGroupRequest() {
         WFCMessage.Group.Builder groupBuilder = WFCMessage.Group.newBuilder();
         WFCMessage.GroupInfo.Builder groupInfoBuilder = WFCMessage.GroupInfo.newBuilder();
-        if (!StringUtil.isNullOrEmpty(group.getGroup_info().target_id)) {
-            groupInfoBuilder.setTargetId(group.getGroup_info().getTarget_id());
+        PojoGroupInfo group_info = group.getGroup_info();
+        if (!StringUtil.isNullOrEmpty(group_info.target_id)) {
+            groupInfoBuilder.setTargetId(group_info.getTarget_id());
         }
 
-        if (!StringUtil.isNullOrEmpty(group.getGroup_info().name)) {
-            groupInfoBuilder.setName(group.getGroup_info().getName());
+        if (!StringUtil.isNullOrEmpty(group_info.name)) {
+            groupInfoBuilder.setName(group_info.getName());
         }
 
-        if (!StringUtil.isNullOrEmpty(group.getGroup_info().portrait)) {
-            groupInfoBuilder.setPortrait(group.getGroup_info().getPortrait());
+        if (!StringUtil.isNullOrEmpty(group_info.portrait)) {
+            groupInfoBuilder.setPortrait(group_info.getPortrait());
         }
-        if (!StringUtil.isNullOrEmpty(group.getGroup_info().owner)) {
-            groupInfoBuilder.setOwner(group.getGroup_info().getOwner());
-        }
-
-            groupInfoBuilder.setType(group.getGroup_info().getType());
-
-        if (!StringUtil.isNullOrEmpty(group.getGroup_info().extra)) {
-            groupInfoBuilder.setExtra(group.getGroup_info().getExtra());
+        if (!StringUtil.isNullOrEmpty(group_info.owner)) {
+            groupInfoBuilder.setOwner(group_info.getOwner());
         }
 
+        groupInfoBuilder.setType(group_info.getType());
+
+        if (!StringUtil.isNullOrEmpty(group_info.extra)) {
+            groupInfoBuilder.setExtra(group_info.getExtra());
+        }
+
+        if (group_info.history_message > 0 && group_info.history_message < 128) {
+            groupInfoBuilder.setHistoryMessage(group_info.history_message);
+        }
+        if (group_info.join_type > 0 && group_info.join_type < 128) {
+            groupInfoBuilder.setJoinType(group_info.join_type);
+        }
+        if (group_info.max_member_count > 0) {
+            groupInfoBuilder.setMaxMemberCount(group_info.max_member_count);
+        }
+        if (group_info.mute > 0 && group_info.mute < 128) {
+            groupInfoBuilder.setMute(group_info.mute);
+        }
+        if (group_info.private_chat > 0 && group_info.private_chat < 128) {
+            groupInfoBuilder.setPrivateChat(group_info.private_chat);
+        }
+        if (group_info.searchable > 0) {
+            groupInfoBuilder.setSearchable(group_info.searchable);
+        }
 
         groupBuilder.setGroupInfo(groupInfoBuilder);
         for (PojoGroupMember pojoGroupMember : group.getMembers()) {
