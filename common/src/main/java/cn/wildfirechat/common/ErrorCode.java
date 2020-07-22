@@ -29,10 +29,6 @@ public enum ErrorCode {
     //Group error
     ERROR_CODE_GROUP_ALREADY_EXIST(11, "group aleady exist"),
 
-
-    //user error
-    ERROR_CODE_PASSWORD_INCORRECT(15, "password incorrect"),
-
     //user error
     ERROR_CODE_FRIEND_ALREADY_REQUEST(16, "already send request"),
     ERROR_CODE_FRIEND_REQUEST_BLOCKED(18, "friend request blocked"),
