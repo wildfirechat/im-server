@@ -1955,60 +1955,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
-    @Override
-    public ErrorCode login(String name, String password, List<String> userIdRet) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-        try {
-            connection = DBUtil.getConnection();
-            String sql = "select `_uid`, `_passwd_md5` from t_user where `_name` = ?";
-
-            statement = connection.prepareStatement(sql);
-
-            int index = 1;
-            statement.setString(index++, name);
-
-            rs = statement.executeQuery();
-            if (rs.next()) {
-                String uid = rs.getString(1);
-
-                int status = getUserStatus(uid);
-                if (status == 1) {
-                    return ErrorCode.ERROR_CODE_USER_FORBIDDEN;
-                }
-                String pwd_md5 = rs.getString(2);
-                try {
-                    MessageDigest md5 = MessageDigest.getInstance("MD5");
-                    String passwdMd5 = Base64.getEncoder().encodeToString(md5.digest(password.getBytes("utf-8")));
-                    if (passwdMd5.equals(pwd_md5)) {
-                        LOG.info("login success userName={}, userId={}", name, uid);
-                        userIdRet.add(uid);
-                        return ErrorCode.ERROR_CODE_SUCCESS;
-                    } else {
-                        LOG.info("login failure incorrect password, userName={}, userId={}", name, uid);
-                        return ErrorCode.ERROR_CODE_PASSWORD_INCORRECT;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Utility.printExecption(LOG, e);
-                    LOG.info("login failure execption password, userName={}", name);
-                    return ErrorCode.ERROR_CODE_PASSWORD_INCORRECT;
-                }
-            } else {
-                LOG.info("login failure user not exist, userName={}", name);
-                return ErrorCode.ERROR_CODE_NOT_EXIST;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Utility.printExecption(LOG, e);
-            LOG.info("login failure db execption, userName={}", name);
-            return ErrorCode.ERROR_CODE_SERVER_ERROR;
-        } finally {
-            DBUtil.closeDB(connection, statement, rs);
-        }
-    }
-
     synchronized Collection<FriendData> loadFriend(MultiMap<String, FriendData> friendsMap, String userId) {
         Collection<FriendData> friends = databaseStore.getPersistFriends(userId);
         if (friends != null) {

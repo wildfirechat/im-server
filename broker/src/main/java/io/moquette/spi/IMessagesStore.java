@@ -159,7 +159,6 @@ public interface IMessagesStore {
     WFCMessage.PullMessageResult fetchChatroomMessage(String fromUser, String chatroomId, String exceptClientId, long fromMessageId);
 
     ErrorCode verifyToken(String userId, String token, List<String> serverIPs, List<Integer> ports);
-    ErrorCode login(String name, String password, List<String> userIdRet);
 
     List<FriendData> getFriendList(String userId, String clientId, long version);
     void clearUserFriend(String userId);
