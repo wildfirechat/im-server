@@ -254,7 +254,7 @@ public class MessagesPublisher {
                     }
 
                     if (!StringUtil.isNullOrEmpty(pushContent) || messageContentType == 400) {
-                        if (!isSlient) {
+                        if (!isSlient && (persistFlag & 0x02) > 0) {
                             targetSession.setUnReceivedMsgs(targetSession.getUnReceivedMsgs() + 1);
                         }
                     }
