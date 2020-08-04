@@ -423,26 +423,6 @@ public class Main {
             System.exit(-1);
         }
 
-        if (commercialServer) {
-            voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), true, null, null);
-            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("mute group member success");
-            } else {
-                System.out.println("mute group member failure");
-                System.exit(-1);
-            }
-
-            voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), false, null, null);
-            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("unmute group member success");
-            } else {
-                System.out.println("unmute group member failure");
-                System.exit(-1);
-            }
-        }
-
-
-
 
         voidIMResult = GroupAdmin.quitGroup("user4", groupInfo.getTarget_id(), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -465,6 +445,44 @@ public class Main {
             System.exit(-1);
         }
 
+
+        //仅专业版支持
+        if (commercialServer) {
+            //开启群成员禁言
+            voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("mute group member success");
+            } else {
+                System.out.println("mute group member failure");
+                System.exit(-1);
+            }
+            //关闭群成员禁言
+            voidIMResult = GroupAdmin.muteGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("unmute group member success");
+            } else {
+                System.out.println("unmute group member failure");
+                System.exit(-1);
+            }
+
+            //开启群成员白名单，当群全局禁言时，白名单用户可以发言
+            voidIMResult = GroupAdmin.allowGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("allow group member success");
+            } else {
+                System.out.println("allow group member failure");
+                System.exit(-1);
+            }
+
+            //关闭群成员白名单
+            voidIMResult = GroupAdmin.allowGroupMemeber("user1", groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("unallow group member success");
+            } else {
+                System.out.println("unallow group member failure");
+                System.exit(-1);
+            }
+        }
     }
 
     //***********************************************

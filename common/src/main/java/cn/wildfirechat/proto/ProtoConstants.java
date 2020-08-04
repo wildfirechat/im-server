@@ -28,6 +28,7 @@ public class ProtoConstants {
         int GroupMemberType_Owner = 2;
         int GroupMemberType_Silent = 3;
         int GroupMemberType_Removed = 4;
+        int GroupMemberType_Allowed = 5;
     }
 
     //message FriendRequest -> status
@@ -182,5 +183,6 @@ public class ProtoConstants {
 
     public static final int MESSAGE_CONTENT_TYPE_SET_MANAGER = 117;
     public static final int MESSAGE_CONTENT_TYPE_MUTE_MEMBER = 118;
+    public static final int MESSAGE_CONTENT_TYPE_ALLOW_MEMBER = 119;
 }
 
