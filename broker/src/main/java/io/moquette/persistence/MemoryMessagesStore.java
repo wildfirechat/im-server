@@ -871,9 +871,16 @@ public class MemoryMessagesStore implements IMessagesStore {
         ArrayList<String> newInviteUsers = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
             if (member.getMemberId().equals(groupInfo.getOwner())) {
-                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setCreateDt(updateDt).setAlias("").build();
+                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setCreateDt(updateDt).build();
             } else {
-                member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setCreateDt(updateDt).setAlias("").build();
+                if (isAdmin) {
+                    if (member.getType() != GroupMemberType_Owner)
+                        member = member.toBuilder().setUpdateDt(updateDt).setCreateDt(updateDt).build();
+                    else
+                        return ErrorCode.INVALID_PARAMETER;
+                } else {
+                    member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setCreateDt(updateDt).build();
+                }
             }
             tmp.add(member);
             newInviteUsers.add(member.getMemberId());
