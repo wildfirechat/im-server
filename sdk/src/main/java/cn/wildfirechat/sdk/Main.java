@@ -382,7 +382,11 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = GroupAdmin.addGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("use4", "user5"), null, null);
+        PojoGroupMember m = new PojoGroupMember();
+        m.setMember_id("user1");
+        m.setAlias("hello user1");
+        
+        voidIMResult = GroupAdmin.addGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList(m), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("add group member success");
         } else {

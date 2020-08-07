@@ -72,17 +72,11 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputGroupMemberList.class);
     }
 
-    public static IMResult<Void> addGroupMembers(String operator, String groupId, List<String> groupMemberIds, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+    public static IMResult<Void> addGroupMembers(String operator, String groupId, List<PojoGroupMember> groupMembers, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Group_Member_Add;
         InputAddGroupMember addGroupMember = new InputAddGroupMember();
         addGroupMember.setGroup_id(groupId);
-        List<PojoGroupMember> members = new ArrayList<>();
-        for (String mid : groupMemberIds) {
-            PojoGroupMember m = new PojoGroupMember();
-            m.setMember_id(mid);
-            members.add(m);
-        }
-        addGroupMember.setMembers(members);
+        addGroupMember.setMembers(groupMembers);
         addGroupMember.setOperator(operator);
         addGroupMember.setTo_lines(to_lines);
         addGroupMember.setNotify_message(notify_message);
