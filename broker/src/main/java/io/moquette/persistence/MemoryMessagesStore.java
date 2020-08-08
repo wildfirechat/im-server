@@ -136,6 +136,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
 
+    private long mRecallTimeLimit = 300;
+
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
@@ -234,6 +236,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         try {
             boolean disableRemoteMessageSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_DISABLE_REMOTE_SEARCH, "false"));
             databaseStore.setDisableRemoteMessageSearch(disableRemoteMessageSearch);
+        } catch (Exception e) {
+        }
+
+        try {
+            mRecallTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_RECALL_TIME_LIMIT));
         } catch (Exception e) {
         }
     }
@@ -1436,6 +1443,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 
         MessageBundle messageBundle = mIMap.get(messageUid);
+        long now = System.currentTimeMillis();
         if (messageBundle != null) {
             WFCMessage.Message message = messageBundle.getMessage();
             boolean canRecall = false;
@@ -1443,7 +1451,11 @@ public class MemoryMessagesStore implements IMessagesStore {
                 canRecall = true;
             }
             if (!isAdmin && message.getFromUser().equals(operatorId)) {
-                canRecall = true;
+                if (now - message.getServerTimestamp() > mRecallTimeLimit * 1000) {
+                    return ErrorCode.ERROR_CODE_RECALL_TIME_EXPIRED;
+                } else {
+                    canRecall = true;
+                }
             }
 
             if (!canRecall && message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group) {
@@ -1451,7 +1463,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
                 WFCMessage.GroupInfo groupInfo = groupMap.get(message.getConversation().getTarget());
                 if (groupInfo == null) {
-                    return ErrorCode.ERROR_CODE_NOT_EXIST;
+                    return ErrorCode.ERROR_CODE_RECALL_TIME_EXPIRED;
                 }
                 if (operatorId.equals(groupInfo.getOwner())) {
                     canRecall = true;
@@ -1482,9 +1494,6 @@ public class MemoryMessagesStore implements IMessagesStore {
                 return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
 
-            String searchContent = message.getContent().getSearchableContent() == null ? "" : message.getContent().getSearchableContent();
-            String cont = message.getContent().getContent() == null ? "" : message.getContent().getContent().replace("\"", "\\\"");
-            String extra = message.getContent().getExtra() == null ? "" : message.getContent().getExtra().replace("\"", "\\\"");
             JSONObject json = new JSONObject();
             json.put("s", message.getFromUser());
             json.put("ts", message.getServerTimestamp());
