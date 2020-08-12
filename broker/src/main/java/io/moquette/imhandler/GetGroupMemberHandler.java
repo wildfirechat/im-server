@@ -24,7 +24,7 @@ public class GetGroupMemberHandler extends IMHandler<WFCMessage.PullGroupMemberR
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
         List<WFCMessage.GroupMember> members = new ArrayList<>();
-        ErrorCode errorCode = m_messagesStore.getGroupMembers(request.getTarget(), request.getHead(), members);
+        ErrorCode errorCode = m_messagesStore.getGroupMembers(fromUser, request.getTarget(), request.getHead(), members);
 
         if (errorCode == ERROR_CODE_SUCCESS) {
             WFCMessage.PullGroupMemberResult result = WFCMessage.PullGroupMemberResult.newBuilder().addAllMember(members).build();

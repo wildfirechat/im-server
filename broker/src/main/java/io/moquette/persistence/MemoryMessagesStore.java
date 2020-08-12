@@ -1237,7 +1237,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members) {
+    public ErrorCode getGroupMembers(String fromUser, String groupId, long maxDt, List<WFCMessage.GroupMember> members) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -1253,9 +1253,29 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (memberCollection == null || memberCollection.size() == 0) {
             memberCollection = loadGroupMemberFromDB(hzInstance, groupId);
         }
+        boolean notInGroup = true;
+        WFCMessage.GroupMember self = null;
         for (WFCMessage.GroupMember member:memberCollection) {
             if (member.getUpdateDt() > maxDt) {
                 members.add(member);
+            }
+            if (fromUser != null && notInGroup) {
+                if (member.getMemberId().equals(fromUser)) {
+                    if (member.getType() != GroupMemberType_Removed) {
+                        notInGroup = false;
+                    } else {
+                        self = member;
+                        break;
+                    }
+                }
+            }
+        }
+
+        //server api fromUser is null
+        if (fromUser != null && notInGroup) {
+            members.clear();
+            if (self != null) {
+                members.add(self.toBuilder().setUpdateDt(0).setType(GroupMemberType_Normal).build());
             }
         }
 

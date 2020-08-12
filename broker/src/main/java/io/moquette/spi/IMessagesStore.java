@@ -115,7 +115,7 @@ public interface IMessagesStore {
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
     Set<String> getUserGroupIds(String userId);
-    ErrorCode getGroupMembers(String groupId, long maxDt, List<WFCMessage.GroupMember> members);
+    ErrorCode getGroupMembers(String fromUser, String groupId, long maxDt, List<WFCMessage.GroupMember> members);
     WFCMessage.GroupMember getGroupMember(String groupId, String memberId);
     ErrorCode transferGroup(String operator, String groupId, String newOwner, boolean isAdmin);
     ErrorCode setGroupManager(String operator, String groupId, int type, List<String> userList, boolean isAdmin);

@@ -46,7 +46,7 @@ public class GetGroupMembersAction extends AdminAction {
                 && (!StringUtil.isNullOrEmpty(inputGetGroup.getGroupId()))) {
 
                 List<WFCMessage.GroupMember> members = new ArrayList<>();
-                ErrorCode errorCode = messagesStore.getGroupMembers(inputGetGroup.getGroupId(), 0, members);
+                ErrorCode errorCode = messagesStore.getGroupMembers(null, inputGetGroup.getGroupId(), 0, members);
 
 
                 response.setStatus(HttpResponseStatus.OK);
