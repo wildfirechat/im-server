@@ -1521,9 +1521,19 @@ public class MemoryMessagesStore implements IMessagesStore {
             json.put("sc", message.getContent().getSearchableContent());
             json.put("c", message.getContent().getContent());
             json.put("e", message.getContent().getExtra());
+            if (message.getContent().getData() != null && message.getContent().getData().size() > 0) {
+                json.put("b", Base64.getEncoder().encode(message.getContent().getData().toByteArray()));
+            }
+            if (message.getContent().getMediaType() > 0) {
+                json.put("mt", message.getContent().getMediaType());
+            }
+            if (!StringUtil.isNullOrEmpty(message.getContent().getRemoteMediaUrl())) {
+                json.put("mu", message.getContent().getRemoteMediaUrl());
+            }
+
             String recalledContent = json.toJSONString();
 
-            message = message.toBuilder().setContent(message.getContent().toBuilder().setContent(operatorId).setType(80).clearSearchableContent().setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent).build()).build();
+            message = message.toBuilder().setContent(WFCMessage.MessageContent.newBuilder().setContent(operatorId).setType(80).setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent)).build();
             messageBundle.setMessage(message);
             messageBundle.setFromClientId(clientId);
 
