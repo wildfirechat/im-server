@@ -243,18 +243,16 @@ public class ProtocolProcessor {
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
         if(session != null) {
             session.refreshLastActiveTime();
-            forwardOnlineStatusEvent(payload.userName(), clientId, session.getPlatform(), UserOnlineStatus.ONLINE);
+            forwardOnlineStatusEvent(payload.userName(), clientId, session.getPlatform(), UserOnlineStatus.ONLINE, session.getAppName());
             m_messagesStore.updateUserOnlineSetting(session, true);
-        } else {
-            forwardOnlineStatusEvent(payload.userName(), clientId, ProtoConstants.Platform.Platform_UNSET, UserOnlineStatus.ONLINE);
         }
 
         LOG.info("The CONNECT message has been processed. CId={}, username={}", clientId, payload.userName());
     }
 
-    public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status) {
+    public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status, String packageName) {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
-            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status))));
+            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName))));
         }
     }
 
@@ -562,9 +560,7 @@ public class ProtocolProcessor {
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
             m_messagesStore.updateUserOnlineSetting(session, false);
-        }
-        if(session != null) {
-            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), UserOnlineStatus.LOGOUT);
+            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), UserOnlineStatus.LOGOUT, session.getAppName());
         }
 
         channel.closeFuture();
@@ -608,7 +604,7 @@ public class ProtocolProcessor {
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
             session.refreshLastActiveTime();
-            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE);
+            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
             m_messagesStore.updateUserOnlineSetting(session, false);
         }
 

@@ -10,12 +10,14 @@ public class UserOnlineStatus {
     public int platform;
     public int status;
     public long timestamp;
+    public String packageName;
 
-    public UserOnlineStatus(String userId, String clientId, int platform, int status) {
+    public UserOnlineStatus(String userId, String clientId, int platform, int status, String packageName) {
         this.userId = userId;
         this.clientId = clientId;
         this.platform = platform;
         this.status = status;
+        this.packageName = packageName;
         this.timestamp = System.currentTimeMillis();
     }
 }
