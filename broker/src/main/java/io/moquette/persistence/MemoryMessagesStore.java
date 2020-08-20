@@ -787,6 +787,21 @@ public class MemoryMessagesStore implements IMessagesStore {
         } else {
             groupId = groupInfo.getTargetId();
         }
+
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+
+        List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
+        for (WFCMessage.GroupMember member : memberList) {
+            if (member.getMemberId().equals(groupInfo.getOwner())) {
+                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            } else {
+                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
+            }
+            groupMembers.put(groupId, member);
+            updatedMemberList.add(member);
+            dt++;
+        }
+
         groupInfo = groupInfo.toBuilder()
             .setTargetId(groupId)
             .setName(groupInfo.getName())
@@ -799,20 +814,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setOwner(StringUtil.isNullOrEmpty(groupInfo.getOwner()) ? fromUser : groupInfo.getOwner())
             .build();
 
-        mIMap.put(groupId, groupInfo);
-        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
-
-        List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
-        for (WFCMessage.GroupMember member : memberList) {
-            if (member.getMemberId().equals(groupInfo.getOwner())) {
-                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
-            } else {
-                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
-            }
-            groupMembers.put(groupId, member);
-            updatedMemberList.add(member);
-        }
-
+        mIMap.set(groupId, groupInfo);
         databaseStore.persistGroupMember(groupId, updatedMemberList);
 
         return groupInfo;
@@ -891,6 +893,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
             tmp.add(member);
             newInviteUsers.add(member.getMemberId());
+            updateDt++;
         }
         memberList = tmp;
 
