@@ -61,8 +61,8 @@ public class CreateChannelAction extends AdminAction {
                         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                             byte[] data = new byte[byteBuf.readableBytes()];
                             byteBuf.readBytes(data);
-                            String secret = new String(data);
-                            sendResponse(response, null, new OutputCreateChannel(inputCreateChannel.getTargetId(), secret));
+                            String channelId = new String(data);
+                            sendResponse(response, null, new OutputCreateChannel(channelId));
                         } else {
                             sendResponse(response, errorCode, null);
                         }
