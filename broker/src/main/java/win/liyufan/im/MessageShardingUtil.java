@@ -14,6 +14,7 @@ import java.util.Date;
 public class MessageShardingUtil {
     private static SpinLock mLock = new SpinLock();
     private static volatile int rotateId = 0;
+    private static volatile long timeId = 0;
     private static int nodeId = 0;
 
     private static int rotateIdWidth = 15;
@@ -33,13 +34,41 @@ public class MessageShardingUtil {
      * 所以时间限制是到2157/5/15（2的42次幂代表的时间 + (2018-1970)）。节点数限制是小于64，每台服务器每毫秒最多发送32768条消息
      * @return
      */
-    public static long generateId() {
+    public static long generateId() throws Exception {
         mLock.lock();
         rotateId = (rotateId + 1)&rotateIdMask;
         mLock.unLock();
 
         long id = System.currentTimeMillis() - T201801010000;
 
+        if (id > timeId) {
+            timeId = id;
+            rotateId = 1;
+        } else if(id == timeId) {
+            if (rotateId == (rotateIdMask - 1)) { //当前空间已经用完，等待下一个空间打开
+                while (id <= timeId) {
+                    id = System.currentTimeMillis() - T201801010000;
+                }
+                mLock.unLock();
+                return generateId();
+            }
+        } else { //id < timeId;
+            if (rotateId > (rotateIdMask -1)*9/10) { //空间已经接近用完
+                if (timeId - id < 3000) { //时间回拨小于3秒，等待时间赶上回拨之前记录
+                    while (id < timeId) {
+                        id = System.currentTimeMillis() - T201801010000;
+                    }
+                    mLock.unLock();
+                    return generateId();
+                } else { //时间回拨大于3秒，抛出异常，这段时间消息将不可用。
+                    mLock.unLock();
+                    throw new Exception("Time turn back " + (timeId - id) + " ms, it too long!!!");
+                }
+            } else {
+                id = timeId;
+            }
+
+        }
 
         id <<= nodeIdWidth;
         id += (nodeId & nodeIdMask);

@@ -33,7 +33,13 @@ public class BroadcastMessageHandler extends IMHandler<WFCMessage.Message> {
             }
 
             long timestamp = System.currentTimeMillis();
-            long messageId = MessageShardingUtil.generateId();
+            long messageId = 0;
+            try {
+                messageId = MessageShardingUtil.generateId();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ErrorCode.ERROR_CODE_SERVER_ERROR;
+            }
             message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(message.getConversation().getLine()).setType(ProtoConstants.ConversationType.ConversationType_Private).build()).build();
 
             long count = saveAndBroadcast(fromUser, clientID, message);

@@ -32,50 +32,54 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
             if (errorCode == ERROR_CODE_SUCCESS) {
                 if (!isAdmin && builder.getConversation() != null && request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
-                    long messageId = MessageShardingUtil.generateId();
-                    long timestamp = System.currentTimeMillis();
-                    builder.setMessageId(messageId);
-                    builder.setServerTimestamp(timestamp);
-                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+                    try {
+                        long messageId = MessageShardingUtil.generateId();
+                        long timestamp = System.currentTimeMillis();
+                        builder.setMessageId(messageId);
+                        builder.setServerTimestamp(timestamp);
+                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
 
-                    MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
-                    String language = "zh_CN";
-                    if (session != null && !StringUtil.isNullOrEmpty(session.getLanguage())) {
-                        language = session.getLanguage();
+                        MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+                        String language = "zh_CN";
+                        if (session != null && !StringUtil.isNullOrEmpty(session.getLanguage())) {
+                            language = session.getLanguage();
+                        }
+                        WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder();
+                        if (m_messagesStore.isNewFriendWelcomeMessage()) {
+                            contentBuilder.setType(92);
+                        } else {
+                            contentBuilder.setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
+                        }
+
+                        builder = WFCMessage.Message.newBuilder();
+                        builder.setFromUser(request.getTargetUid());
+                        builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
+                        builder.setContent(contentBuilder);
+                        timestamp = System.currentTimeMillis();
+                        builder.setServerTimestamp(timestamp);
+
+                        messageId = MessageShardingUtil.generateId();
+                        builder.setMessageId(messageId);
+                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+
+                        if (m_messagesStore.isNewFriendWelcomeMessage()) {
+                            contentBuilder.setType(93);
+                        } else {
+                            contentBuilder.setContent(I18n.getString(language, "Friend_Can_Start_Chat"));
+                        }
+
+                        builder.setContent(contentBuilder);
+                        messageId = MessageShardingUtil.generateId();
+                        builder.setMessageId(messageId);
+                        timestamp = System.currentTimeMillis();
+                        builder.setServerTimestamp(timestamp);
+                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+
+                        publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
+                        publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    WFCMessage.MessageContent.Builder contentBuilder = WFCMessage.MessageContent.newBuilder();
-                    if (m_messagesStore.isNewFriendWelcomeMessage()) {
-                        contentBuilder.setType(92);
-                    } else {
-                        contentBuilder.setType(90).setContent(I18n.getString(language, "Above_Greeting_Message"));
-                    }
-
-                    builder = WFCMessage.Message.newBuilder();
-                    builder.setFromUser(request.getTargetUid());
-                    builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
-                    builder.setContent(contentBuilder);
-                    timestamp = System.currentTimeMillis();
-                    builder.setServerTimestamp(timestamp);
-
-                    messageId = MessageShardingUtil.generateId();
-                    builder.setMessageId(messageId);
-                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
-
-                    if (m_messagesStore.isNewFriendWelcomeMessage()) {
-                        contentBuilder.setType(93);
-                    } else {
-                        contentBuilder.setContent(I18n.getString(language, "Friend_Can_Start_Chat"));
-                    }
-
-                    builder.setContent(contentBuilder);
-                    messageId = MessageShardingUtil.generateId();
-                    builder.setMessageId(messageId);
-                    timestamp = System.currentTimeMillis();
-                    builder.setServerTimestamp(timestamp);
-                    saveAndPublish(request.getTargetUid(), null, builder.build(), false);
-
-                    publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
-                    publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
                 }
             }
             return errorCode;
