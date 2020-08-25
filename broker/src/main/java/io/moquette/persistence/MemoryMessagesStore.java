@@ -776,7 +776,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public WFCMessage.GroupInfo createGroup(String fromUser, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList) {
+    public WFCMessage.GroupInfo createGroup(String fromUser, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -790,9 +790,14 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
 
+        String owner = fromUser;
+        if (isAdmin && !StringUtil.isNullOrEmpty(groupInfo.getOwner())) {
+            owner = groupInfo.getOwner();
+        }
+
         List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
-            if (member.getMemberId().equals(groupInfo.getOwner())) {
+            if (member.getMemberId().equals(owner)) {
                 member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
             } else {
                 member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
@@ -811,7 +816,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setUpdateDt(dt)
             .setMemberUpdateDt(dt)
             .setMemberCount(memberList.size())
-            .setOwner(StringUtil.isNullOrEmpty(groupInfo.getOwner()) ? fromUser : groupInfo.getOwner())
+            .setOwner(owner)
             .build();
 
         mIMap.set(groupId, groupInfo);

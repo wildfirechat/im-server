@@ -104,7 +104,7 @@ public interface IMessagesStore {
     WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType);
     WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count);
     long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String userId, long messageId);
-    WFCMessage.GroupInfo createGroup(String operator, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList);
+    WFCMessage.GroupInfo createGroup(String operator, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList, boolean isAdmin);
     ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList);
     ErrorCode kickoffGroupMembers(String operator, boolean isAdmin, String groupId, List<String> memberList);
     ErrorCode quitGroup(String operator, String groupId);
