@@ -1283,7 +1283,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (fromUser != null && notInGroup) {
             members.clear();
             if (self != null) {
-                members.add(self.toBuilder().setUpdateDt(0).setType(GroupMemberType_Normal).build());
+                members.add(self.toBuilder().setUpdateDt(0).setType(GroupMemberType_Removed).build());
             }
         }
 
