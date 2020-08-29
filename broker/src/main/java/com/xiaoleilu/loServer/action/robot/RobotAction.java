@@ -38,9 +38,21 @@ abstract public class RobotAction extends Action {
     @Override
     public ErrorCode preAction(Request request, Response response) {
         String nonce = request.getHeader("nonce");
+        if (!StringUtil.isNullOrEmpty(nonce)) {
+            nonce = request.getHeader("Nonce");
+        }
         String timestamp = request.getHeader("timestamp");
+        if (!StringUtil.isNullOrEmpty(timestamp)) {
+            timestamp = request.getHeader("Timestamp");
+        }
         String sign = request.getHeader("sign");
+        if (!StringUtil.isNullOrEmpty(sign)) {
+            sign = request.getHeader("Sign");
+        }
         String rid = request.getHeader("rid");
+        if (!StringUtil.isNullOrEmpty(rid)) {
+            rid = request.getHeader("Rid");
+        }
         if (StringUtil.isNullOrEmpty(nonce) || StringUtil.isNullOrEmpty(timestamp) || StringUtil.isNullOrEmpty(sign) || StringUtil.isNullOrEmpty(rid)) {
             return ErrorCode.INVALID_PARAMETER;
         }
