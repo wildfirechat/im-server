@@ -1783,6 +1783,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void addUserInfo(WFCMessage.User user, String password) throws Exception {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+        if (databaseStore.isUidAndNameConflict(user.getUid(), user.getName())) {
+            throw new Exception("用户名不能重复，必须唯一！！！");
+        }
         databaseStore.updateUser(user);
         mUserMap.put(user.getUid(), user);
         databaseStore.updateUserPassword(user.getUid(), password);

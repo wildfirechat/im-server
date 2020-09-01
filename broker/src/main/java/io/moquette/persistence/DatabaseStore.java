@@ -2186,6 +2186,33 @@ public class DatabaseStore {
             }
         });
     }
+    
+    boolean isUidAndNameConflict(String uid, String name) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        long start = System.currentTimeMillis();
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select _uid from t_user where _name = ? and _uid <> ? limit 1";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, name);
+            statement.setString(2, uid);
+            rs = statement.executeQuery();
+            if (rs.next()) {
+                String conflictId = rs.getString(1);
+                LOG.error("user {} already have name {} !!!", conflictId, name);
+                return true;
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return false;
+    }
 
     void updateUser(final WFCMessage.User user) throws Exception {
         LOG.info("Database update user info {} {}", user.getUid(), user.getUpdateDt());

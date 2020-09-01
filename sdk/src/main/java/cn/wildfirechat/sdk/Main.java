@@ -52,7 +52,9 @@ public class Main {
     //***********************************************
     static void testUser() throws Exception {
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
+        //用户ID，必须保证唯一性
         userInfo.setUserId("userId1");
+        //用户名，一般是用户登录帐号，也必须保证唯一性。也就是说所有用户的userId必须不能重复，所有用户的name必须不能重复，但可以同一个用户的userId和name是同一个，一般建议userId使用一个uuid，name是"微信号"且可以修改，
         userInfo.setName("user1");
         userInfo.setMobile("13900000000");
         userInfo.setDisplayName("user 1");
