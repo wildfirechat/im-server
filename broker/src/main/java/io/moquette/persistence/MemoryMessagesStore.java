@@ -2301,6 +2301,27 @@ public class MemoryMessagesStore implements IMessagesStore {
             } else {
                 existRequest = existRequest.toBuilder().setStatus(request.getStatus()).setUpdateDt(System.currentTimeMillis()).build();
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
+
+                if (request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
+                    Collection<WFCMessage.FriendRequest> targetRequests = requestMap.get(request.getTargetUid());
+                    if (targetRequests == null || targetRequests.size() == 0) {
+                        targetRequests = loadFriendRequest(requestMap, request.getTargetUid());
+                    }
+
+                    WFCMessage.FriendRequest existTargetRequest = null;
+                    for (WFCMessage.FriendRequest tmpRequest : targetRequests) {
+                        if (tmpRequest.getFromUid().equals(userId)) {
+                            existTargetRequest = tmpRequest;
+                            break;
+                        }
+                    }
+
+                    if (existTargetRequest != null && existTargetRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Sent) {
+                        existTargetRequest = existTargetRequest.toBuilder().setStatus(request.getStatus()).setUpdateDt(existRequest.getUpdateDt()).build();
+                        databaseStore.persistOrUpdateFriendRequest(existTargetRequest);
+                    }
+                }
+
                 if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted){
                     MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
                     FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getExtra(), 0, 0, System.currentTimeMillis());
