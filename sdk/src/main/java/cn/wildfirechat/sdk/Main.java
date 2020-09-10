@@ -269,6 +269,23 @@ public class Main {
             System.exit(-1);
         }
 
+        updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", false, null);
+        if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("update friend status success");
+        } else {
+            System.out.println("update friend status failure");
+            System.exit(-1);
+        }
+
+        resultGetFriendList = RelationAdmin.getFriendList("ff1");
+        if (resultGetFriendList != null && resultGetFriendList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !resultGetFriendList.getResult().getList().contains("ff2")) {
+            System.out.println("get friend status success");
+        } else {
+            System.out.println("get friend status failure");
+            System.exit(-1);
+        }
+
+
         IMResult<Void> updateBlacklistStatusResult = RelationAdmin.setUserBlacklist("ff1", "ff2", true);
         if (updateBlacklistStatusResult != null && updateBlacklistStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("update blacklist status success");
