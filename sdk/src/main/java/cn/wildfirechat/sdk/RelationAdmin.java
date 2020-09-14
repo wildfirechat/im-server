@@ -8,7 +8,7 @@ import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 public class RelationAdmin {
     public static IMResult<Void> setUserFriend(String userId, String targetId, boolean isFriend, String extra) throws Exception {
         String path = APIPath.Friend_Update_Status;
-        InputFriendRequest input = new InputFriendRequest();
+        InputUpdateFriendStatusRequest input = new InputUpdateFriendStatusRequest();
         input.setUserId(userId);
         input.setFriendUid(targetId);
         input.setStatus(isFriend ? 0 : 1); //历史遗留问题，在IM数据库中0是好友，1是好友被删除。
@@ -50,6 +50,14 @@ public class RelationAdmin {
 
     public static IMResult<OutputGetAlias> getFriendAlias(String operator, String targetId) throws Exception {
         String path = APIPath.Friend_Get_Alias;
+        InputGetAlias input = new InputGetAlias();
+        input.setOperator(operator);
+        input.setTargetId(targetId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputGetAlias.class);
+    }
+
+    public static IMResult<OutputGetAlias> sendFrienRequest(String operator, String targetId, String reason, String extra) throws Exception {
+        String path = APIPath.Friend_Send_Request;
         InputGetAlias input = new InputGetAlias();
         input.setOperator(operator);
         input.setTargetId(targetId);

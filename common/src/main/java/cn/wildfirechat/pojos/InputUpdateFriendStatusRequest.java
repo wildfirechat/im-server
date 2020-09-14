@@ -9,7 +9,7 @@
 package cn.wildfirechat.pojos;
 
 
-public class InputFriendRequest {
+public class InputUpdateFriendStatusRequest {
     private String userId;
     private String friendUid;
     private int status;

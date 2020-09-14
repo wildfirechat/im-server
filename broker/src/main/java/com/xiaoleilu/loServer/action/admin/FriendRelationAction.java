@@ -16,7 +16,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import cn.wildfirechat.pojos.InputFriendRequest;
+import cn.wildfirechat.pojos.InputUpdateFriendStatusRequest;
 import io.moquette.persistence.RPCCenter;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
@@ -41,7 +41,7 @@ public class FriendRelationAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputFriendRequest friendAdd = getRequestBody(request.getNettyRequest(), InputFriendRequest.class);
+            InputUpdateFriendStatusRequest friendAdd = getRequestBody(request.getNettyRequest(), InputUpdateFriendStatusRequest.class);
             if (friendAdd != null
                 && !StringUtil.isNullOrEmpty(friendAdd.getUserId())
                 && !StringUtil.isNullOrEmpty(friendAdd.getFriendUid())
