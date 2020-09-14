@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Route(APIPath.Friend_Get_List)
@@ -40,6 +41,7 @@ public class FriendRelationGetAction extends AdminAction {
             InputUserId inputGetFriendList = getRequestBody(request.getNettyRequest(), InputUserId.class);
             List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), null, 0);
             List<String> list = new ArrayList<>();
+            dataList.sort(Comparator.comparingLong(FriendData::getTimestamp));
             for (FriendData data : dataList) {
                 if (data.getState() == 0) {
                     list.add(data.getFriendUid());
