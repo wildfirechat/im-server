@@ -23,7 +23,7 @@ public class AddFriendHandler extends GroupHandler<WFCMessage.AddFriendRequest> 
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddFriendRequest request, Qos1PublishHandler.IMCallback callback) {
             long[] head = new long[1];
-            ErrorCode errorCode = m_messagesStore.saveAddFriendRequest(fromUser, request, head);
+            ErrorCode errorCode = m_messagesStore.saveAddFriendRequest(fromUser, request, head, isAdmin);
             if (errorCode == ERROR_CODE_SUCCESS) {
                 WFCMessage.User user = m_messagesStore.getUserInfo(request.getTargetUid());
                 if (user != null && user.getType() == ProtoConstants.UserType.UserType_Normal) {

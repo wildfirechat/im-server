@@ -36,6 +36,8 @@ public interface APIPath {
     String Blacklist_Get_List = "/admin/blacklist/list";
     String Friend_Get_Alias = "/admin/friend/get_alias";
     String Friend_Set_Alias = "/admin/friend/set_alias";
+    String Friend_Send_Request = "/admin/friend/send_request";
+    String Friend_Get_Requests = "/admin/friend/get_requests";
 
     String Msg_Send = "/admin/message/send";
     String Msg_Recall = "/admin/message/recall";

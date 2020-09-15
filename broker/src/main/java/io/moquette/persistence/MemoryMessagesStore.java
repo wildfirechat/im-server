@@ -2120,7 +2120,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head) {
+    public ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head, boolean isAdmin) {
         if (mDisableFriendRequest) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
@@ -2141,7 +2141,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
+        if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted && !isAdmin) {
             if (mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
                 if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
                     && System.currentTimeMillis() - existRequest.getUpdateDt() < mFriendRejectDuration) {
@@ -2165,7 +2165,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 break;
             }
         }
-        if (friendData1 != null && friendData1.getBlacked() > 0) {
+        if (friendData1 != null && friendData1.getBlacked() > 0 && !isAdmin) {
             return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
         }
 

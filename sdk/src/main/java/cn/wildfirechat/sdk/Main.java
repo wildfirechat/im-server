@@ -253,6 +253,30 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<Void> result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello", true);
+        if (result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("send friend request success");
+        } else {
+            System.out.println("failure");
+            System.exit(-1);
+        }
+
+        result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello2", false);
+        if (result != null && result.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("failure");
+            System.exit(-1);
+        }
+
+        result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello3", true);
+        if (result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("send friend request success");
+            System.exit(-1);
+        }
+
         IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true, "{\"from\":1}");
         if (updateFriendStatusResult != null && updateFriendStatusResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("update friend status success");

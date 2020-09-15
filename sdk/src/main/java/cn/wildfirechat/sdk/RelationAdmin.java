@@ -56,11 +56,13 @@ public class RelationAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputGetAlias.class);
     }
 
-    public static IMResult<OutputGetAlias> sendFrienRequest(String operator, String targetId, String reason, String extra) throws Exception {
+    public static IMResult<Void> sendFrienRequest(String userId, String targetId, String reason, boolean force) throws Exception {
         String path = APIPath.Friend_Send_Request;
-        InputGetAlias input = new InputGetAlias();
-        input.setOperator(operator);
-        input.setTargetId(targetId);
-        return AdminHttpUtils.httpJsonPost(path, input, OutputGetAlias.class);
+        InputAddFriendRequest input = new InputAddFriendRequest();
+        input.setUserId(userId);
+        input.setFriendUid(targetId);
+        input.setReason(reason);
+        input.setForce(force);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 }
