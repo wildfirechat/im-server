@@ -22,7 +22,7 @@ public class SensitiveAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
-    public static IMResult<InputOutputSensitiveWords> getSensitives(List<String> sensitives) throws Exception {
+    public static IMResult<InputOutputSensitiveWords> getSensitives() throws Exception {
         String path = APIPath.Sensitive_Query;
         return AdminHttpUtils.httpJsonPost(path, null, InputOutputSensitiveWords.class);
     }

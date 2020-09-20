@@ -39,6 +39,7 @@ public class Main {
         testChatroom();
         testMessage();
         testGeneralApi();
+        testSensitiveApi();
         if (commercialServer) {
             testDevice();
         }
@@ -967,6 +968,40 @@ public class Main {
                 System.out.println("destroy user failure");
                 System.exit(-1);
             }
+        }
+    }
+    static void testSensitiveApi() throws Exception {
+        List<String> words = Arrays.asList("a","b","c");
+        IMResult<Void> addResult = SensitiveAdmin.addSensitives(words);
+        if (addResult != null && addResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Add sensitive word response success");
+        } else {
+            System.out.println("Add sensitive word response error");
+            System.exit(-1);
+        }
+
+        IMResult<InputOutputSensitiveWords> swResult = SensitiveAdmin.getSensitives();
+        if (swResult != null && swResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && swResult.getResult().getWords().containsAll(words)) {
+            System.out.println("Sensitive word added");
+        } else {
+            System.out.println("Sensitive word not added");
+            System.exit(-1);
+        }
+
+        IMResult<Void> removeResult = SensitiveAdmin.removeSensitives(words);
+        if (removeResult != null && removeResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Remove sensitive word response success");
+        } else {
+            System.out.println("Remove sensitive word response error");
+            System.exit(-1);
+        }
+
+        swResult = SensitiveAdmin.getSensitives();
+        if (swResult != null && swResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !swResult.getResult().getWords().containsAll(words)) {
+            System.out.println("Sensitive word removed");
+        } else {
+            System.out.println("Sensitive word not removed");
+            System.exit(-1);
         }
     }
 
