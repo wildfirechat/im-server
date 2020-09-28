@@ -78,11 +78,10 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-                    if (request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted || isAdmin) {
-                        publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
-                        publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
-                    }
+                }
+                if (request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted || isAdmin) {
+                    publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
+                    publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
                 }
             }
             return errorCode;
