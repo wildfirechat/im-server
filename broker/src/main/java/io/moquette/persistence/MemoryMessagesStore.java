@@ -2746,10 +2746,10 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean getSilentWhenPcOnline(String userId) {
         WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingMuteWhenPCOnline, null);
-        if (entry == null || !entry.getValue().equals("0")) {
-            return false;
-        } else {
+        if (entry != null && "1".equals(entry.getValue())) {
             return true;
+        } else {
+            return false;
         }
     }
 
