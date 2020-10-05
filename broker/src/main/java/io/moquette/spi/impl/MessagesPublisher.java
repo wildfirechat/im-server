@@ -25,7 +25,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.util.StringUtil;
 import cn.wildfirechat.pojos.OutputNotifyChannelSubscribeStatus;
 import cn.wildfirechat.pojos.SendMessageData;
-import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.persistence.*;
 import io.moquette.persistence.MemorySessionStore.Session;
@@ -198,6 +197,23 @@ public class MessagesPublisher {
             if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
                 targetClients = m_messagesStore.getChatroomMemberClient(user);
             }
+            boolean isPcOnline = false;
+
+            if (!user.equals(sender)) {
+                for (Session targetSession : sessions) {
+                    if (targetSession.getPlatform() == ProtoConstants.Platform.Platform_WEB
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_Windows
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_LINUX
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_OSX) {
+                        boolean targetIsActive = this.connectionDescriptors.isConnected(targetSession.getClientSession().clientID);
+                        if (targetIsActive) {
+                            isPcOnline = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
             for (Session targetSession : sessions) {
                 //超过7天不活跃的用户忽略
                 if(System.currentTimeMillis() - targetSession.getLastActiveTime() > 7 * 24 * 60 * 60 * 1000) {
@@ -249,6 +265,11 @@ public class MessagesPublisher {
 
                         if (m_messagesStore.getUserGlobalSlient(user)) {
                             LOG.info("The user {} is global sliented", user);
+                            isSlient = true;
+                        }
+
+                        if (isPcOnline && m_messagesStore.getSilentWhenPcOnline(user)) {
+                            LOG.info("The user {} pc online and silent when pc online", user);
                             isSlient = true;
                         }
                     }

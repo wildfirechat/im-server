@@ -2744,6 +2744,16 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public boolean getSilentWhenPcOnline(String userId) {
+        WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingMuteWhenPCOnline, null);
+        if (entry == null || !entry.getValue().equals("0")) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
     public ErrorCode createChannel(String operator, WFCMessage.ChannelInfo channelInfo) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);

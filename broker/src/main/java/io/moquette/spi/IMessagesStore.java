@@ -188,6 +188,7 @@ public interface IMessagesStore {
     boolean getUserGlobalSlient(String userId);
     boolean getUserPushHiddenDetail(String userId);
     boolean getUserConversationSlient(String userId, WFCMessage.Conversation conversation);
+    boolean getSilentWhenPcOnline(String userId);
 
     ErrorCode createChannel(String operator, WFCMessage.ChannelInfo channelInfo);
     void clearUserChannels(String userId);

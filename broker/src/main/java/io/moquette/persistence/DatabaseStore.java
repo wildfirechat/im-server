@@ -1051,6 +1051,10 @@ public class DatabaseStore {
 
                 out.add(builder.build());
             }
+            if (out.isEmpty()) {
+                WFCMessage.UserSettingEntry.Builder builder = WFCMessage.UserSettingEntry.newBuilder().setScope(999).setKey("").setValue("").setUpdateDt(0);
+                out.add(builder.build());
+            }
             return out;
         } catch (SQLException e) {
             // TODO Auto-generated catch block
