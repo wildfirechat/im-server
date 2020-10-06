@@ -75,6 +75,10 @@ abstract public class ChannelAction extends Action {
         if (channelInfo == null) {
             return ErrorCode.INVALID_PARAMETER;
         }
+        
+        if (StringUtil.isNullOrEmpty(channelInfo.getSecret())) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
 
         String str = nonce + "|" + channelInfo.getSecret() + "|" + timestamp;
         String localSign = DigestUtils.sha1Hex(str);

@@ -80,6 +80,10 @@ abstract public class RobotAction extends Action {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
+        if (StringUtil.isNullOrEmpty(robot.getSecret())) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         String str = nonce + "|" + robot.getSecret() + "|" + timestamp;
         String localSign = DigestUtils.sha1Hex(str);
         return localSign.equals(sign) ? ErrorCode.ERROR_CODE_SUCCESS : ErrorCode.ERROR_CODE_AUTH_FAILURE;
