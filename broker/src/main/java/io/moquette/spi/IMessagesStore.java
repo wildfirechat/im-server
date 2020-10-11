@@ -111,7 +111,7 @@ public interface IMessagesStore {
     void clearUserGroups(String userId);
     ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
     ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value, boolean isAdmin);
-    ErrorCode modifyGroupAlias(String operator, String groupId, String alias);
+    ErrorCode modifyGroupAlias(String operator, String groupId, String alias, String memberId, boolean isAdmin);
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
     Set<String> getUserGroupIds(String userId);

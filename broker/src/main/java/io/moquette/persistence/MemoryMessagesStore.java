@@ -1172,7 +1172,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode modifyGroupAlias(String operator, String groupId, String alias) {
+    public ErrorCode modifyGroupAlias(String operator, String groupId, String alias, String memberId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
 
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
@@ -1186,23 +1186,70 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        long updateDt = System.currentTimeMillis();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
         if (members == null || members.size() == 0) {
             members = loadGroupMemberFromDB(hzInstance, groupId);
         }
+
+        if (StringUtil.isNullOrEmpty(memberId)) {
+            memberId = operator;
+        } else {
+            if (!isAdmin && !operator.equals(groupInfo.getOwner())) {
+                WFCMessage.GroupMember operatorMember = null;
+                WFCMessage.GroupMember targetMember = null;
+                for (WFCMessage.GroupMember member : members) {
+                    if (member.getMemberId().equals(operator)) {
+                        operatorMember = member;
+                        if (targetMember != null) {
+                            break;
+                        }
+                    }
+                    if ((member.getMemberId().equals(memberId))) {
+                        targetMember = member;
+                        if (operatorMember != null) {
+                            break;
+                        }
+                    }
+                }
+
+                if (operatorMember == null) {
+                    LOG.error("Modify group member alias error, the operator {} is not in group", operator);
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                }
+
+                if (targetMember == null) {
+                    LOG.error("Modify group member alias error, the member {} is not in group", memberId);
+                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                }
+
+                if (operatorMember.getType() == GroupMemberType_Manager && targetMember.getType() != GroupMemberType_Manager) {
+                    LOG.error("Modify group member alias error, the operator {} type is {} and the member {} type is {}", operator, operatorMember.getType(), memberId, targetMember.getType());
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+            }
+        }
+
+        long updateDt = System.currentTimeMillis();
+
+        boolean inGroup = false;
         for (WFCMessage.GroupMember member : members) {
-            if (member.getMemberId().equals(operator)) {
+            if (member.getMemberId().equals(memberId)) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setAlias(alias).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
                 databaseStore.updateGroupMemberCountDt(groupId, -1, updateDt);
                 groupMembers.put(groupId, member);
 
-                mIMap.put(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+                mIMap.set(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+                inGroup = true;
                 break;
             }
+        }
+
+        if (!inGroup) {
+            LOG.error("Modify group member alias error, the member {} is not in group", memberId);
+            return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
         }
 
         return ErrorCode.ERROR_CODE_SUCCESS;

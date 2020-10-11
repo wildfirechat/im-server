@@ -8,25 +8,25 @@
 
 package io.moquette.imhandler;
 
-import cn.wildfirechat.proto.WFCMessage;
+import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
+import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
-import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
-@Handler(IMTopic.ModifyGroupAliasTopic)
-public class ModifyGroupAliasHandler extends GroupHandler<WFCMessage.ModifyGroupMemberAlias> {
+@Handler(IMTopic.ModifyGroupMemberAliasTopic)
+public class ModifyGroupMemberAliasHandler extends GroupHandler<WFCMessage.ModifyGroupMemberAlias> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ModifyGroupMemberAlias request, Qos1PublishHandler.IMCallback callback) {
-        ErrorCode errorCode = m_messagesStore.modifyGroupAlias(fromUser, request.getGroupId(), request.getAlias(), null, isAdmin);
+        ErrorCode errorCode = m_messagesStore.modifyGroupAlias(fromUser, request.getGroupId(), request.getAlias(), request.getMemberId(), isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS && request.hasNotifyContent()) {
             if (request.hasNotifyContent()&& request.getNotifyContent().getType() > 0) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());
             } else {
-                WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getAlias(), "").getModifyGroupMemberAliasNotifyContent();
+                WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getAlias(), request.getMemberId()).getModifyGroupMemberAliasNotifyContent();
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content);
             }
         }

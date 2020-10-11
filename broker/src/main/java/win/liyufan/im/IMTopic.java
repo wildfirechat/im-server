@@ -28,6 +28,7 @@ public interface IMTopic {
 	String DismissGroupTopic = "GD";
 	String ModifyGroupInfoTopic = "GMI";
     String ModifyGroupAliasTopic = "GMA";
+    String ModifyGroupMemberAliasTopic = "GMMA";
     String GetGroupInfoTopic = "GPGI";
     String GetGroupMemberTopic = "GPGM";
     String TransferGroupTopic = "GTG";
