@@ -29,6 +29,7 @@ import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.persistence.*;
 import io.moquette.persistence.MemorySessionStore.Session;
 import io.moquette.server.ConnectionDescriptorStore;
+import io.moquette.server.Server;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.netty.buffer.ByteBuf;
@@ -175,7 +176,7 @@ public class MessagesPublisher {
                             message = m_messagesStore.getMessage(messageHead);
                         }
                         final WFCMessage.Message finalMsg = message;
-                        executorCallback.execute(() -> HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class)));
+                        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class)));
                         continue;
                     }
                 }
@@ -531,7 +532,7 @@ public class MessagesPublisher {
         if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
             WFCMessage.ChannelInfo channelInfo = m_messagesStore.getChannelInfo(message.getConversation().getTarget());
             if (channelInfo != null && !StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
-                executorCallback.execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class)));
+                Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class)));
             }
         }
         long messageId = message.getMessageId();
@@ -571,13 +572,14 @@ public class MessagesPublisher {
     }
 
     public void forwardMessage(final WFCMessage.Message message, String forwardUrl) {
-        executorCallback.execute(() -> HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class)));
+        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class)));
     }
 
     public void notifyChannelListenStatusChanged(WFCMessage.ChannelInfo channelInfo, String user, boolean listen) {
         if (channelInfo == null || StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
             return;
         }
-        executorCallback.execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class)));
+
+        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class)));
     }
 }

@@ -16,14 +16,14 @@
 
 package io.moquette.persistence;
 
-import cn.wildfirechat.pojos.SystemSettingPojo;
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
-import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import cn.wildfirechat.common.ErrorCode;
 import io.moquette.BrokerConstants;
 import io.moquette.imhandler.IMHandler;
@@ -53,6 +53,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import static cn.wildfirechat.proto.ProtoConstants.ChannelState.Channel_State_Mask_Deleted;
+import static cn.wildfirechat.proto.ProtoConstants.ChannelUpdateEventType.*;
+import static cn.wildfirechat.proto.ProtoConstants.ChatroomMemberUpdateEventType.Chatroom_Member_Event_Join;
+import static cn.wildfirechat.proto.ProtoConstants.ChatroomMemberUpdateEventType.Chatroom_Member_Event_Leave;
+import static cn.wildfirechat.proto.ProtoConstants.ChatroomUpdateEventType.Chatroom_Event_Create;
+import static cn.wildfirechat.proto.ProtoConstants.ChatroomUpdateEventType.Chatroom_Event_Destroy;
 import static cn.wildfirechat.proto.ProtoConstants.GroupMemberType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyChannelInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
@@ -137,6 +142,14 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mChatroomRejoinWhenActive = true;
 
     private long mRecallTimeLimit = 300;
+
+    private String mGroupInfoUpdateCallback;
+    private String mGroupMemberUpdateCallback;
+    private String mRelationUpdateCallback;
+    private String mUserInfoUpdateCallback;
+    private String mChannelInfoUpdateCallback;
+    private String mChatroomInfoUpdateCallback;
+    private String mChatroomMemberUpdateCallback;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -242,6 +255,48 @@ public class MemoryMessagesStore implements IMessagesStore {
         try {
             mRecallTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_RECALL_TIME_LIMIT));
         } catch (Exception e) {
+        }
+
+        try {
+            mGroupInfoUpdateCallback = server.getConfig().getProperty(GROUP_INFO_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mGroupMemberUpdateCallback = server.getConfig().getProperty(GROUP_MEMBER_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mRelationUpdateCallback = server.getConfig().getProperty(RELATION_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mUserInfoUpdateCallback = server.getConfig().getProperty(USER_INFO_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mChannelInfoUpdateCallback = server.getConfig().getProperty(CHANNEL_INFO_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mChatroomInfoUpdateCallback = server.getConfig().getProperty(CHATROOM_INFO_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mChatroomMemberUpdateCallback = server.getConfig().getProperty(CHATROOM_MEMBER_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
         }
     }
 
@@ -822,9 +877,79 @@ public class MemoryMessagesStore implements IMessagesStore {
         mIMap.set(groupId, groupInfo);
         databaseStore.persistGroupMember(groupId, updatedMemberList);
 
+        callbackGroupEvent(fromUser, groupInfo.getTargetId(), ProtoConstants.GroupUpdateEventType.Group_Event_Create);
         return groupInfo;
     }
 
+
+    private void callbackGroupEvent(String operatorId, String groupId, int type) {
+        if (!StringUtil.isNullOrEmpty(mGroupInfoUpdateCallback)) {
+            GroupUpdateEvent event = new GroupUpdateEvent();
+            event.operatorId = operatorId;
+            event.groupId = groupId;
+            event.type = type;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, new Gson().toJson(event)));
+        }
+    }
+
+    private void callbackGroupMemberEvent(String operatorId, String groupId, List<String> memberIds, int type, String value) {
+        if (!StringUtil.isNullOrEmpty(mGroupMemberUpdateCallback)) {
+            GroupMemberUpdateEvent event = new GroupMemberUpdateEvent();
+            event.operatorId = operatorId;
+            event.groupId = groupId;
+            event.memberIds = memberIds;
+            event.type = type;
+            event.value = value;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mGroupMemberUpdateCallback, new Gson().toJson(event)));
+        }
+    }
+
+    private void callbackRelationEvent(String userId, String targetId, int type, String value) {
+        if (!StringUtil.isNullOrEmpty(mRelationUpdateCallback)) {
+            RelationUpdateEvent event = new RelationUpdateEvent();
+            event.userId = userId;
+            event.targetId = targetId;
+            event.type = type;
+            event.value = value;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mRelationUpdateCallback, new Gson().toJson(event)));
+        }
+    }
+
+    private void callbackUserInfoEvent(WFCMessage.User user) {
+        if (!StringUtil.isNullOrEmpty(mUserInfoUpdateCallback)) {
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mUserInfoUpdateCallback, new Gson().toJson(InputOutputUserInfo.fromPbUser(user))));
+        }
+    }
+
+    private void callbackChannelInfoUpdateEvent(String operatorId, String channelId, int type) {
+        if (!StringUtil.isNullOrEmpty(mChannelInfoUpdateCallback)) {
+            ChannelUpdateEvent event = new ChannelUpdateEvent();
+            event.operatorId = operatorId;
+            event.channelId = channelId;
+            event.type = type;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChannelInfoUpdateCallback, new Gson().toJson(event)));
+        }
+    }
+
+    private void callbackChatroomInfoUpdateEvent(String chatroomId, int type) {
+        if (!StringUtil.isNullOrEmpty(mChatroomInfoUpdateCallback)) {
+            ChatroomUpdateEvent event = new ChatroomUpdateEvent();
+            event.chatroomId = chatroomId;
+            event.type = type;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChatroomInfoUpdateCallback, new Gson().toJson(event)));
+        }
+    }
+
+    private void callbackChatroomMemberEvent(String operatorId, String chatroomId, List<String> memberIds, int type) {
+        if (!StringUtil.isNullOrEmpty(mChatroomMemberUpdateCallback)) {
+            ChatroomMemberUpdateEvent event = new ChatroomMemberUpdateEvent();
+            event.operatorId = operatorId;
+            event.chatroomId = chatroomId;
+            event.memberIds = memberIds;
+            event.type = type;
+            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChatroomMemberUpdateCallback, new Gson().toJson(event)));
+        }
+    }
 
     @Override
     public ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList) {
@@ -940,6 +1065,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         mIMap.put(groupId, groupInfo.toBuilder().setMemberUpdateDt(updateDt).setUpdateDt(updateDt).setMemberCount(count).build());
         databaseStore.persistGroupMember(groupId, memberList);
         databaseStore.updateGroupMemberCountDt(groupId, count, updateDt);
+
+        List<String> memberIds = new ArrayList<>();
+        for (WFCMessage.GroupMember member : memberList) {
+            if (member.getType() != GroupMemberType_Removed) {
+                memberIds.add(member.getMemberId());
+            }
+        }
+
+        callbackGroupMemberEvent(operator, groupId, memberIds, ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Join, null);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -948,6 +1082,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         removeGroupMember(groupId, memberList);
         removeFavGroup(groupId, memberList);
         removeGroupUserSettings(groupId, memberList);
+
+        callbackGroupMemberEvent(operator, groupId, memberList, ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Kickoff, null);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1026,6 +1162,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         removeGroupMember(groupId, Arrays.asList(operator));
         removeFavGroup(groupId, Arrays.asList(operator));
         removeGroupUserSettings(groupId, Arrays.asList(operator));
+
+        callbackGroupMemberEvent(operator, groupId, Arrays.asList(operator), ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Leave, null);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1093,6 +1231,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         removeFavGroup(groupId, ids);
         removeGroupUserSettings(groupId, ids);
 
+        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Destroy);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1168,6 +1307,16 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(groupId, newInfoBuilder.build());
+
+        if (modifyType == Modify_Group_Mute) {
+            if (newInfoBuilder.getMute() > 0) {
+                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Mute);
+            } else {
+                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Unmute);
+            }
+        } else {
+            callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Update);
+        }
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1252,6 +1401,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
         }
 
+        callbackGroupMemberEvent(operator, groupId, Arrays.asList(memberId), ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Alias, alias);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1407,6 +1557,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
+        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Transfer);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -1445,6 +1596,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         mIMap.put(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+
+        callbackGroupMemberEvent(operator, groupId, userList, ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Type_Update, (type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager) + "");
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1733,6 +1886,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             user = builder.build();
             databaseStore.updateUser(user);
             mUserMap.set(userId, user);
+
+            callbackUserInfoEvent(user);
+
             return ErrorCode.ERROR_CODE_SUCCESS;
         } else {
             return ErrorCode.ERROR_CODE_NOT_MODIFIED;
@@ -1836,6 +1992,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         databaseStore.updateUser(user);
         mUserMap.put(user.getUid(), user);
         databaseStore.updateUserPassword(user.getUid(), password);
+
+        callbackUserInfoEvent(user);
     }
 
     @Override
@@ -1930,6 +2088,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             chatroomInfo = builder.build();
         }
         chatroomInfoMap.put(chatroomId, chatroomInfo);
+        callbackChatroomInfoUpdateEvent(chatroomId, Chatroom_Event_Create);
     }
 
     @Override
@@ -1940,6 +2099,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (room != null) {
             room = room.toBuilder().setUpdateDt(System.currentTimeMillis()).setState(ProtoConstants.ChatroomState.Chatroom_State_End).build();
             chatroomInfoMap.put(chatroomId, room);
+            callbackChatroomInfoUpdateEvent(chatroomId, Chatroom_Event_Destroy);
         }
     }
 
@@ -2326,6 +2486,8 @@ public class MemoryMessagesStore implements IMessagesStore {
             heads[1] = friendData1.getTimestamp();
             friendsMap.remove(userId);
             friendsMap.remove(request.getTargetUid());
+
+            callbackRelationEvent(userId, request.getTargetUid(), 0, "" + request.getStatus());
             return ErrorCode.ERROR_CODE_SUCCESS;
         }
 
@@ -2388,6 +2550,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
                     msgBuilder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(userId).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
                     msgBuilder.setContent(WFCMessage.MessageContent.newBuilder().setType(1).setSearchableContent(existRequest.getReason()).build());
+
+                    callbackRelationEvent(userId, request.getTargetUid(), 0, "1");
                 }
                 return ErrorCode.ERROR_CODE_SUCCESS;
             }
@@ -2436,6 +2600,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         heads[0] = friendData.getTimestamp();
 
+        callbackRelationEvent(fromUser, targetUserId, 2, state+"");
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2489,6 +2654,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         friendsMap.remove(fromUser);
 
+        callbackRelationEvent(fromUser, targetUserId, 1, alias);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2507,6 +2673,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         chatroomMessages.put(userId, new TreeMap<>());
         mWriteLock.unlock();
 
+        callbackChatroomMemberEvent(userId, chatroomId, Arrays.asList(userId), Chatroom_Member_Event_Join);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -2519,6 +2686,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         mWriteLock.lock();
         chatroomMessages.remove(userId);
         mWriteLock.unlock();
+
+        callbackChatroomMemberEvent(userId, chatroomId, Arrays.asList(userId), Chatroom_Member_Event_Leave);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2577,6 +2746,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         friendsMap.remove(userId);
         friendsMap.remove(friendUid);
+        callbackRelationEvent(userId, friendUid, 0, "0");
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2807,6 +2977,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         mIMap.put(channelInfo.getTargetId(), channelInfo);
 
+        callbackChannelInfoUpdateEvent(operator, channelInfo.getTargetId(), Channel_Event_Create);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2859,6 +3030,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());
+        callbackChannelInfoUpdateEvent(operator, channelId, Channel_Event_Update);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2885,6 +3057,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         newInfoBuilder.setOwner(newOwner);
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());
+
+        callbackChannelInfoUpdateEvent(operator, channelId, Channel_Event_Transfer);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -2909,6 +3083,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         newInfoBuilder.setStatus(oldInfo.getStatus() | Channel_State_Mask_Deleted);
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());
+
+        callbackChannelInfoUpdateEvent(operator, channelId, Channel_Event_Destroy);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 

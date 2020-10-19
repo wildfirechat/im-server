@@ -94,6 +94,7 @@ public class Server {
 
     private ThreadPoolExecutorWrapper dbScheduler;
     private ThreadPoolExecutorWrapper imBusinessScheduler;
+    private ThreadPoolExecutorWrapper callbackScheduler;
 
     private IConfig mConfig;
 
@@ -243,6 +244,7 @@ public class Server {
         int threadNum = Runtime.getRuntime().availableProcessors() * 2;
         dbScheduler = new ThreadPoolExecutorWrapper(Executors.newScheduledThreadPool(threadNum), threadNum, "db");
         imBusinessScheduler = new ThreadPoolExecutorWrapper(Executors.newScheduledThreadPool(threadNum), threadNum, "business");
+        callbackScheduler = new ThreadPoolExecutorWrapper(Executors.newScheduledThreadPool(1), 1, "callback");
 
         final String handlerProp = System.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
         if (handlerProp != null) {
@@ -447,6 +449,7 @@ public class Server {
 
         dbScheduler.shutdown();
         imBusinessScheduler.shutdown();
+        callbackScheduler.shutdown();
 
         LOG.info("Moquette server has been stopped.");
     }
@@ -506,5 +509,9 @@ public class Server {
 
     public ThreadPoolExecutorWrapper getImBusinessScheduler() {
         return imBusinessScheduler;
+    }
+
+    public ThreadPoolExecutorWrapper getCallbackScheduler() {
+        return callbackScheduler;
     }
 }

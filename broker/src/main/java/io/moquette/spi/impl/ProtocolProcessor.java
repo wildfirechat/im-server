@@ -252,7 +252,7 @@ public class ProtocolProcessor {
 
     public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status, String packageName) {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
-            executorCallback.execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName))));
+            mServer.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName))));
         }
     }
 

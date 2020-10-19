@@ -12,6 +12,9 @@ public class UserOnlineStatus {
     public long timestamp;
     public String packageName;
 
+    public UserOnlineStatus() {
+    }
+
     public UserOnlineStatus(String userId, String clientId, int platform, int status, String packageName) {
         this.userId = userId;
         this.clientId = clientId;

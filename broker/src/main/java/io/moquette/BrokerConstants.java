@@ -94,6 +94,17 @@ public final class BrokerConstants {
 
     public static final String USER_ONLINE_STATUS_CALLBACK = "user.online_status_callback";
 
+    public static final String GROUP_INFO_UPDATE_CALLBACK = "group.group_info_update_callback";
+    public static final String GROUP_MEMBER_UPDATE_CALLBACK = "group.group_member_update_callback";
+    public static final String RELATION_UPDATE_CALLBACK = "relation.relation_update_callback";
+    public static final String USER_INFO_UPDATE_CALLBACK = "user.user_info_update_callback";
+
+
+    public static final String CHANNEL_INFO_UPDATE_CALLBACK = "channel.channel_info_update_callback";
+    public static final String CHATROOM_INFO_UPDATE_CALLBACK = "chatroom.chatroom_info_update_callback";
+    public static final String CHATROOM_MEMBER_UPDATE_CALLBACK = "chatroom.chatroom_member_update_callback";
+
+
     public static final String HZ_Cluster_Node_External_IP = "node_external_ip";
     public static final String HZ_Cluster_Node_External_Long_Port = "node_external_long_port";
     public static final String HZ_Cluster_Node_External_Short_Port = "node_external_short_port";

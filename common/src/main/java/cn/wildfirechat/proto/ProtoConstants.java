@@ -164,7 +164,42 @@ public class ProtoConstants {
         int Message_Ignore = 1;
     }
 
+    public interface GroupUpdateEventType {
+        int Group_Event_Create = 0;
+        int Group_Event_Update = 1;
+        int Group_Event_Transfer = 2;
+        int Group_Event_Mute = 3;
+        int Group_Event_Unmute = 4;
+        int Group_Event_Destroy = 5;
+    }
 
+    public interface GroupMemberUpdateEventType {
+        int Group_Member_Event_Join = 0;
+        int Group_Member_Event_Leave = 1;
+        int Group_Member_Event_Kickoff = 2;
+        int Group_Member_Event_Type_Update = 3;
+        int Group_Member_Event_Alias = 4;
+    }
+
+    public interface ChannelUpdateEventType {
+        int Channel_Event_Create = 0;
+        int Channel_Event_Update = 1;
+        int Channel_Event_Transfer = 2;
+        int Channel_Event_Destroy = 3;
+    }
+
+    public interface ChatroomUpdateEventType {
+        int Chatroom_Event_Create = 0;
+        int Chatroom_Event_Destroy = 1;
+    }
+
+    public interface ChatroomMemberUpdateEventType {
+        int Chatroom_Member_Event_Join = 0;
+        int Chatroom_Member_Event_Leave = 1;
+        int Chatroom_Member_Event_Kickoff = 2;
+        int Chatroom_Member_Event_Mute = 3;
+        int Chatroom_Member_Event_Unmute = 4;
+    }
 
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
     public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
