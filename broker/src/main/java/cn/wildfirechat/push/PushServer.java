@@ -34,6 +34,7 @@ public class PushServer {
         int PUSH_MESSAGE_TYPE_VOIP_INVITE = 1;
         int PUSH_MESSAGE_TYPE_VOIP_BYE = 2;
         int PUSH_MESSAGE_TYPE_FRIEND_REQUEST = 3;
+        int PUSH_MESSAGE_TYPE_VOIP_ANSWER = 4;
     }
 
     private static PushServer INSTANCE = new PushServer();
