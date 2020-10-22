@@ -755,14 +755,22 @@ public class DatabaseStore {
         long[] before = new long[1];
         before[0] = beforeUid;
         boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages);
-        if (messages.size() < count) {
-            if (hasMore) {
-                loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages);
-            } else {
-                String nexTable = MessageShardingUtil.getPreviousMessageTable(before[0]);
-                if (!StringUtil.isNullOrEmpty(nexTable)) {
-                    loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages);
-                }
+        while (messages.size() < count && hasMore) {
+            hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages);
+        }
+
+        int month = 0;
+        while (messages.size() < count && !DBUtil.IsEmbedDB && month++ < 24) {
+            String nexTable = MessageShardingUtil.getPreviousMessageTable(before[0]);
+
+            int size = messages.size();
+            hasMore = true;
+            while (size == messages.size() && hasMore) {
+                hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages);
+            }
+
+            if (size < messages.size()) {
+                break;
             }
         }
 
