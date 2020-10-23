@@ -761,7 +761,7 @@ public class DatabaseStore {
 
         int month = 0;
         while (messages.size() < count && !DBUtil.IsEmbedDB && month++ < 24) {
-            String nexTable = MessageShardingUtil.getPreviousMessageTable(before[0]);
+            String nexTable = MessageShardingUtil.getMessageTable(beforeUid, -month);
 
             int size = messages.size();
             hasMore = true;

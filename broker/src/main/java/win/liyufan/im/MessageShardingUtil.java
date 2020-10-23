@@ -84,7 +84,7 @@ public class MessageShardingUtil {
         }
 
         Calendar calendar = Calendar.getInstance();
-        if (mid != Long.MAX_VALUE) {
+        if (mid != Long.MAX_VALUE && mid != 0) {
             mid >>= (nodeIdWidth + rotateIdWidth);
             Date date = new Date(mid + T201801010000);
             calendar.setTime(date);
@@ -99,6 +99,10 @@ public class MessageShardingUtil {
     }
 
     public static String getPreviousMessageTable(long mid) {
+        return getMessageTable(mid, -1);
+    }
+
+    public static String getMessageTable(long mid, int offset) {
         if (DBUtil.IsEmbedDB) {
             return null;
         }
@@ -110,11 +114,17 @@ public class MessageShardingUtil {
         int month = calendar.get(Calendar.MONTH);
         int year = calendar.get(Calendar.YEAR);
         year %= 3;
-        month = month - 1;
-        if (month == -1) {
-            month = 11;
+
+        month = month + offset;
+        while (month < 0) {
+            month += 12;
             year = (year + 3 - 1)%3;
         }
+        while (month >= 12) {
+            month -= 12;
+            year = (year + 1)%3;
+        }
+
         return "t_messages_" + (year * 12 + month);
     }
 }
