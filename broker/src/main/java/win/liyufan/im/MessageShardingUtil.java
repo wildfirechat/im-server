@@ -10,6 +10,7 @@ package win.liyufan.im;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageShardingUtil {
     private static SpinLock mLock = new SpinLock();
@@ -36,9 +37,8 @@ public class MessageShardingUtil {
      */
     public static long generateId() throws Exception {
         mLock.lock();
-        rotateId = (rotateId + 1)&rotateIdMask;
-        mLock.unLock();
 
+        rotateId = (rotateId + 1)&rotateIdMask;
         long id = System.currentTimeMillis() - T201801010000;
 
         if (id > timeId) {
@@ -75,6 +75,10 @@ public class MessageShardingUtil {
 
         id <<= rotateIdWidth;
         id += rotateId;
+
+        mLock.unLock();
+
+
         return id;
     }
 
@@ -126,5 +130,28 @@ public class MessageShardingUtil {
         }
 
         return "t_messages_" + (year * 12 + month);
+    }
+
+    public static void main(String[] args) throws Exception {
+        ConcurrentHashMap<Long, Integer> messageIds = new ConcurrentHashMap<>();
+
+        int threadCount = 1000;
+        int loop = 1000000;
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(()->{
+                for (int j = 0; j < loop; j++) {
+                    try {
+                        long mid = generateId();
+                        if(messageIds.put(mid, j) != null) {
+                            System.out.println("Duplicated message id !!!!!!" + mid);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+
+        Thread.sleep(1000 * 60 * 10);
     }
 }
