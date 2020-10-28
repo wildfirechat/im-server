@@ -244,11 +244,13 @@ public class MessagesPublisher {
                     }
                 }
 
-                boolean isSlient;
+                boolean isSilent;
+                boolean isConvSilent = false;
                 if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
-                    isSlient = true;
+                    isSilent = true;
+                    isConvSilent = true;
                 } else {
-                    isSlient = false;
+                    isSilent = false;
 
                     if (!user.equals(sender)) {
                         WFCMessage.Conversation conversation;
@@ -258,32 +260,30 @@ public class MessagesPublisher {
                             conversation = WFCMessage.Conversation.newBuilder().setType(conversationType).setLine(line).setTarget(target).build();
                         }
 
-
-                        if (m_messagesStore.getUserConversationSlient(user, conversation)) {
+                        if (m_messagesStore.getUserConversationSilent(user, conversation)) {
                             LOG.info("The conversation {}-{}-{} is slient", conversation.getType(), conversation.getTarget(), conversation.getLine());
-                            isSlient = true;
+                            isConvSilent = true;
                         }
 
-                        if (m_messagesStore.getUserGlobalSlient(user)) {
+                        if (m_messagesStore.getUserGlobalSilent(user)) {
                             LOG.info("The user {} is global sliented", user);
-                            isSlient = true;
+                            isSilent = true;
                         }
 
-                        if (isPcOnline && m_messagesStore.getSilentWhenPcOnline(user)) {
+                        if (!isSilent && isPcOnline && m_messagesStore.getSilentWhenPcOnline(user)) {
                             LOG.info("The user {} pc online and silent when pc online", user);
-                            isSlient = true;
+                            isSilent = true;
+                        }
+
+                        if (!isSilent && m_messagesStore.isUserNoDisturbing(user)) {
+                            LOG.info("The user {} is no disturbing", user);
+                            isSilent = true;
                         }
                     }
 
                     if (!StringUtil.isNullOrEmpty(pushContent) || messageContentType == 400) {
-                        if (!isSlient && (persistFlag & 0x02) > 0) {
+                        if (!isConvSilent && (persistFlag & 0x02) > 0) {
                             targetSession.setUnReceivedMsgs(targetSession.getUnReceivedMsgs() + 1);
-                        }
-                    }
-
-                    if (isSlient) {
-                        if (mentionType == 2 || (mentionType == 1 && mentionTargets.contains(user))) {
-                            isSlient = false;
                         }
                     }
                 }
@@ -316,11 +316,11 @@ public class MessagesPublisher {
                     int curMentionType = 0;
                     if (mentionType == 2) {
                         curMentionType = 2;
-                        isSlient = false;
+                        isConvSilent = false;
                     } else if (mentionType == 1){
                         if (mentionTargets != null && mentionTargets.contains(user)) {
                             curMentionType = 1;
-                            isSlient = false;
+                            isConvSilent = false;
                         }
                     }
 
@@ -334,8 +334,13 @@ public class MessagesPublisher {
                         continue;
                     }
 
-                    if (isSlient) {
-                        LOG.info("Slient of user or conversation");
+                    if (isConvSilent) {
+                        LOG.info("Silent of user or conversation");
+                        continue;
+                    }
+
+                    if (isSilent) {
+                        LOG.info("Silent of user");
                         continue;
                     }
 

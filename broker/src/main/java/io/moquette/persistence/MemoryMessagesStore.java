@@ -2914,7 +2914,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public boolean getUserGlobalSlient(String userId) {
+    public boolean getUserGlobalSilent(String userId) {
         Boolean slient = userGlobalSlientMap.get(userId);
         if (slient == null) {
             WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingGlobalSilent, null);
@@ -2944,7 +2944,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public boolean getUserConversationSlient(String userId, WFCMessage.Conversation conversation) {
+    public boolean getUserConversationSilent(String userId, WFCMessage.Conversation conversation) {
         String key = userId + "|" + conversation.getType() + "|" + conversation.getTarget() + "|" + conversation.getLine();
         Boolean slient = userConvSlientMap.get(key);
         if (slient == null) {
@@ -2968,6 +2968,42 @@ public class MemoryMessagesStore implements IMessagesStore {
         } else {
             return false;
         }
+    }
+    private Date getTodayDate() {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+        calendar.set(year, month, day, 0, 0, 0);
+        return calendar.getTime();
+    }
+
+    @Override
+    public boolean isUserNoDisturbing(String userId) {
+        WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingNoDisturbing, "");
+        if (entry != null && !StringUtil.isNullOrEmpty(entry.getValue())) {
+            String[] arr = entry.getValue().split("\\|");
+
+            if (arr.length == 2) {
+                int nowMins = (int)((System.currentTimeMillis() - getTodayDate().getTime())/1000/60);
+                try {
+                    int startMins = Integer.parseInt(arr[0]);
+                    int endMins = Integer.parseInt(arr[1]);
+                    if (endMins > startMins) {
+                        if (endMins > nowMins && nowMins > startMins) {
+                            return true;
+                        }
+                    } else {
+                        if (endMins > nowMins || nowMins > startMins) {
+                            return true;
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
     }
 
     @Override

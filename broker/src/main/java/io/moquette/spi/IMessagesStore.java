@@ -30,6 +30,7 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import cn.wildfirechat.common.ErrorCode;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -184,12 +185,12 @@ public interface IMessagesStore {
     List<WFCMessage.UserSettingEntry> getUserSetting(String userId, int scope);
     long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request);
     void clearUserSettings(String userId);
+    boolean getUserGlobalSilent(String userId);
 
-    boolean getUserGlobalSlient(String userId);
     boolean getUserPushHiddenDetail(String userId);
-    boolean getUserConversationSlient(String userId, WFCMessage.Conversation conversation);
+    boolean getUserConversationSilent(String userId, WFCMessage.Conversation conversation);
     boolean getSilentWhenPcOnline(String userId);
-
+    boolean isUserNoDisturbing(String userId);
     ErrorCode createChannel(String operator, WFCMessage.ChannelInfo channelInfo);
     void clearUserChannels(String userId);
     ErrorCode modifyChannelInfo(String operator, String channelId, int modifyType, String value);
