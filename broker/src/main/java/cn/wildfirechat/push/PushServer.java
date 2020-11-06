@@ -90,6 +90,7 @@ public class PushServer {
         pushMessage.pushContent = pushContent;
         pushMessage.deviceToken = session.getDeviceToken();
         pushMessage.unReceivedMsg = badge;
+        pushMessage.userId = session.getUsername();
         if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS || session.getPlatform() == ProtoConstants.Platform.Platform_Android) {
             String url = androidPushServerUrl;
             if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS) {

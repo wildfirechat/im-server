@@ -15,6 +15,7 @@ public class PushMessage {
     public int convType;
     public String target;
     public String targetName;
+    public String userId;
     public int line;
     public int cntType;
     public long serverTime;
