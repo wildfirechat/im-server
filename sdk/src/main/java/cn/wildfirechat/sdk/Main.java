@@ -540,7 +540,7 @@ public class Main {
         payload.setType(1);
         payload.setSearchableContent("hello world");
 
-        IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("user1", conversation, payload);
+        IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("user1", conversation, payload, null);
         if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("send message success");
         } else {
