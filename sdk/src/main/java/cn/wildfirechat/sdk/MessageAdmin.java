@@ -8,6 +8,9 @@ import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import java.util.List;
 
 public class MessageAdmin {
+    public static IMResult<SendMessageResult> sendMessage(String sender, Conversation conversation, MessagePayload payload) throws Exception {
+        return sendMessage(sender, conversation, payload, null);
+    }
     //toUsers为发送给会话中部分用户用的，正常为null，仅当需要指定群/频道/聊天室中部分接收用户时使用
     public static IMResult<SendMessageResult> sendMessage(String sender, Conversation conversation, MessagePayload payload, List<String> toUsers) throws Exception {
         String path = APIPath.Msg_Send;
@@ -15,6 +18,7 @@ public class MessageAdmin {
         messageData.setSender(sender);
         messageData.setConv(conversation);
         messageData.setPayload(payload);
+        messageData.setToUsers(toUsers);
         return AdminHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
