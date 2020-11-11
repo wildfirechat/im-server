@@ -124,6 +124,7 @@ public interface IMessagesStore {
     ErrorCode canSendMessageInGroup(String member, String groupId);
 
     ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin);
+    ErrorCode recallCastMessage(long messageUid, String operatorId);
 
     void clearUserMessages(String userId);
 

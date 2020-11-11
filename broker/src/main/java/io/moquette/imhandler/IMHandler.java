@@ -268,4 +268,13 @@ abstract public class IMHandler<T> {
         mServer.getImBusinessScheduler().execute(() -> publisher.publish2Receivers(updatedMessage, notifyReceivers, clientID, ProtoConstants.PullType.Pull_Normal));
         return notifyReceivers.size();
     }
+    protected long publishRecallMultiCastMsg(long messageUid, List<String> receivers) {
+        WFCMessage.Message updatedMessage = m_messagesStore.getMessage(messageUid);
+
+        Set<String> notifyReceivers = new HashSet<>(receivers);
+        LOG.info("Multicast recall receiver count: {}", notifyReceivers.size());
+        mServer.getImBusinessScheduler().execute(() -> publisher.publish2Receivers(updatedMessage, notifyReceivers, null, ProtoConstants.PullType.Pull_Normal, false));
+
+        return notifyReceivers.size();
+    }
 }

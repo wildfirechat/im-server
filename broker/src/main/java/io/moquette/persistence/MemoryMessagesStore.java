@@ -1754,6 +1754,26 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
     }
 
+    public ErrorCode recallCastMessage(long messageUid, String operatorId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
+
+        MessageBundle messageBundle = mIMap.get(messageUid);
+        if (messageBundle != null) {
+            WFCMessage.Message message = messageBundle.getMessage();
+
+            message = message.toBuilder().setContent(WFCMessage.MessageContent.newBuilder().setContent(operatorId).setType(80).setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes()))).build();
+            messageBundle.setMessage(message);
+            messageBundle.setFromClientId(null);
+
+            databaseStore.deleteMessage(messageUid);
+            mIMap.set(messageUid, messageBundle, 7, TimeUnit.DAYS);
+            return ErrorCode.ERROR_CODE_SUCCESS;
+        } else {
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
+        }
+    }
+
     @Override
     public void clearUserMessages(String userId) {
         mWriteLock.lock();
