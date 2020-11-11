@@ -34,10 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
@@ -273,7 +270,7 @@ abstract public class IMHandler<T> {
 
         Set<String> notifyReceivers = new HashSet<>(receivers);
         LOG.info("Multicast recall receiver count: {}", notifyReceivers.size());
-        mServer.getImBusinessScheduler().execute(() -> publisher.publish2Receivers(updatedMessage, notifyReceivers, null, ProtoConstants.PullType.Pull_Normal, false));
+        mServer.getImBusinessScheduler().execute(() -> publisher.publish2Receivers(updatedMessage, notifyReceivers, null, ProtoConstants.PullType.Pull_Normal));
 
         return notifyReceivers.size();
     }
