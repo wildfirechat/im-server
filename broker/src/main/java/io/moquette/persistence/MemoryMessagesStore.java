@@ -368,9 +368,9 @@ public class MemoryMessagesStore implements IMessagesStore {
                 pullType = ProtoConstants.PullType.Pull_ChatRoom;
             }
 
-            if (message.getContent().getPersistFlag() != Transparent) {
+//            if (message.getContent().getPersistFlag() != Transparent) {
                 notifyReceivers.add(fromUser);
-            }
+//            }
             return pullType;
         }
 
@@ -454,10 +454,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 LOG.error("Channel not exist");
             }
         }
-
-        if (message.getContent().getPersistFlag() == Transparent) {
-            notifyReceivers.remove(fromUser);
-        }
+//
+//        if (message.getContent().getPersistFlag() == Transparent) {
+//            notifyReceivers.remove(fromUser);
+//        }
 
         return pullType;
     }
