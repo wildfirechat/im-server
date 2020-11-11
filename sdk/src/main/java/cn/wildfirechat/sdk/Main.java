@@ -573,6 +573,13 @@ public class Main {
                 System.out.println("broad message failure");
                 System.exit(-1);
             }
+
+            voidIMResult = MessageAdmin.recallBroadCastMessage("user1", resultBroadcastMessage.result.getMessageUid());
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("Success");
+            } else {
+                System.out.println("failure");
+            }
         }
 
         List<String> multicastReceivers = Arrays.asList("user2", "user3", "user4");
@@ -582,6 +589,13 @@ public class Main {
         } else {
             System.out.println("multi message failure");
             System.exit(-1);
+        }
+
+        voidIMResult = MessageAdmin.recallMultiCastMessage("user1", resultMulticastMessage.result.getMessageUid(), multicastReceivers);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Success");
+        } else {
+            System.out.println("failure");
         }
     }
 

@@ -41,16 +41,26 @@ public class MessageAdmin {
 
     /**
      * 撤回群发或者广播的消息
-     * @param target 目标用户
+     * @param operator 操作者
      * @param messageUid 消息唯一ID
      * @return
      * @throws Exception
      */
-    public static IMResult<Void> recallBroadcastOrMulticastMessage(String target, long messageUid) throws Exception {
-        String path = APIPath.Msg_Recall;
+    public static IMResult<Void> recallBroadCastMessage(String operator, long messageUid) throws Exception {
+        String path = APIPath.Msg_RecallBroadCast;
         RecallMessageData messageData = new RecallMessageData();
-        messageData.setOperator(target);
+        messageData.setOperator(operator);
         messageData.setMessageUid(messageUid);
+        return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
+    }
+
+    public static IMResult<Void> recallMultiCastMessage(String operator, long messageUid, List<String> receivers) throws Exception {
+        String path = APIPath.Msg_RecallMultiCast;
+        RecallMultiCastMessageData messageData = new RecallMultiCastMessageData();
+        messageData.operator = operator;
+        messageData.messageUid = messageUid;
+        messageData.receivers = receivers;
+
         return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
     }
 

@@ -44,6 +44,8 @@ public interface APIPath {
     String Msg_Delete = "/admin/message/delete";
     String Msg_Broadcast = "/admin/message/broadcast";
     String Msg_Multicast = "/admin/message/multicast";
+    String Msg_RecallBroadCast = "/admin/message/recall_broadcast";
+    String Msg_RecallMultiCast = "/admin/message/recall_multicast";
 
     String Create_Group = "/admin/group/create";
     String Group_Dismiss = "/admin/group/del";
