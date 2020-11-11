@@ -11,8 +11,6 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
-
 import static io.netty.handler.codec.http.HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_RANGE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
@@ -22,7 +20,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpResponseHelper {
 
 private static final Logger logger = LoggerFactory.getLogger(HttpResponseHelper.class);
-private static final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap();
 
 /**
  * sendResponse
@@ -149,7 +146,7 @@ public static String getContentType(String fileName) {
     if (fileExtName.equals("png")) { // MimetypesFileTypeMap目前缺少png类型
     return "image/png";
     } else {
-    return mimetypesFileTypeMap.getContentType(fileName);
+    return "application/octet-stream";
     }
     }
 
