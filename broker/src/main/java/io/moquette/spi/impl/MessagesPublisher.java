@@ -161,7 +161,7 @@ public class MessagesPublisher {
 
     private void publish2Receivers(String sender, int conversationType, String target, int line, long messageHead, Collection<String> receivers, String pushContent, String pushData, String exceptClientId, int pullType, int messageContentType, long serverTime, int mentionType, List<String> mentionTargets, int persistFlag) {
         if (persistFlag == Transparent) {
-            publishTransparentMessage2Receivers(messageHead, receivers, pullType);
+            publishTransparentMessage2Receivers(messageHead, receivers, pullType, exceptClientId);
             return;
         }
 
@@ -366,7 +366,7 @@ public class MessagesPublisher {
         }
     }
 
-    private void publishTransparentMessage2Receivers(long messageHead, Collection<String> receivers, int pullType) {
+    private void publishTransparentMessage2Receivers(long messageHead, Collection<String> receivers, int pullType, String exceptClientId) {
         WFCMessage.Message message = m_messagesStore.getMessage(messageHead);
 
         if (message != null) {
@@ -379,6 +379,9 @@ public class MessagesPublisher {
                     }
 
                     if (targetSession.getClientID() == null) {
+                        continue;
+                    }
+                    if (targetSession.getClientID().equals(exceptClientId)) {
                         continue;
                     }
 
