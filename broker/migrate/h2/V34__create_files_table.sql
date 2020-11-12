@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS `t_file`;
-CREATE TABLE `t_file ` (
+CREATE TABLE `t_file` (
   `_mid` bigint(20) NOT NULL PRIMARY KEY,
   `_from` varchar(64) NOT NULL,
   `_type` tinyint NOT NULL DEFAULT 0,
