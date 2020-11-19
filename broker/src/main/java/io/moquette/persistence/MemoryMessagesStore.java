@@ -2662,7 +2662,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (friendData == null) {
-            return ErrorCode.ERROR_CODE_NOT_EXIST;
+            friendData = new FriendData();
+            friendData.setUserId(fromUser);
+            friendData.setFriendUid(targetUserId);
         }
 
         friendData.setAlias(alias);
