@@ -203,9 +203,8 @@ public class DatabaseStore {
             }
             
             if (page > 0) {
-                sql += "offset = '" + page * 20 + "'";
+                sql += " offset " + page * 20;
             }
-
 
             statement = connection.prepareStatement(sql);
             int index = 1;
@@ -3146,9 +3145,8 @@ public class DatabaseStore {
 
 
             if (page > 0) {
-                sql += "offset = '" + page * 20 + "'";
+                sql += " offset " + page * 20;
             }
-
 
             statement = connection.prepareStatement(sql);
             int index = 1;
