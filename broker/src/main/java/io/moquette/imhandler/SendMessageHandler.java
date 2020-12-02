@@ -58,9 +58,14 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             boolean ignoreMsg = false;
             if (!isAdmin) {  //admin do not check the right
                 // 不能在端上直接发送撤回和群通知
-                if (message.getContent().getType() == 80 || (message.getContent().getType() >= 100 && message.getContent().getType() < 200)) {
+                if (message.getContent().getType() == 80 || message.getContent().getType() == 81 || (message.getContent().getType() >= 100 && message.getContent().getType() < 200)) {
                     return ErrorCode.INVALID_PARAMETER;
                 }
+
+                if(m_messagesStore.getClientForbiddenSendTypes().contains(message.getContent().getType())) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+
                 int userStatus = m_messagesStore.getUserStatus(fromUser);
                 if (userStatus == ProtoConstants.UserStatus.Muted || userStatus == ProtoConstants.UserStatus.Forbidden) {
                     return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;

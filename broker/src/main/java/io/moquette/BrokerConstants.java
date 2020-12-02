@@ -153,6 +153,8 @@ public final class BrokerConstants {
 
     public static final String GROUP_Allow_Client_Custom_Operation_Notification = "group.allow_client_custom_operation_notification";
 
+    public static final String MESSAGES_FORBIDDEN_CLIENT_SEND_TYPES = "message.forbidden_client_send_types";
+
     public static final String MESSAGES_DISABLE_REMOTE_SEARCH = "message.disable_remote_search";
 
     public static final String MESSAGES_RECALL_TIME_LIMIT = "message.recall_time_limit";

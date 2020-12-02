@@ -141,6 +141,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
 
+    private List<Integer> mForbiddenClientSendTypes = new ArrayList<>();
+
     private long mRecallTimeLimit = 300;
 
     private String mGroupInfoUpdateCallback;
@@ -257,6 +259,23 @@ public class MemoryMessagesStore implements IMessagesStore {
             mRecallTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_RECALL_TIME_LIMIT));
         } catch (Exception e) {
         }
+
+        try {
+            String strTypes = m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_FORBIDDEN_CLIENT_SEND_TYPES);
+            if(!StringUtil.isNullOrEmpty(strTypes)) {
+                for (String strType:strTypes.split(",")) {
+                    try {
+                        int type = Integer.parseInt(strType);
+                        mForbiddenClientSendTypes.add(type);
+                    } catch (NumberFormatException e) {
+
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+
+
 
         try {
             mGroupInfoUpdateCallback = server.getConfig().getProperty(GROUP_INFO_UPDATE_CALLBACK);
@@ -3267,6 +3286,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean isAllowClientCustomGroupNotification() {
         return mGroupAllowClientCustomOperationNotification;
+    }
+
+    @Override
+    public List<Integer> getClientForbiddenSendTypes() {
+        return mForbiddenClientSendTypes;
     }
 
     @Override

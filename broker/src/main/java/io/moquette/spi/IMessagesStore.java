@@ -211,6 +211,7 @@ public interface IMessagesStore {
     WFCMessage.Message getMessage(long messageId);
 
     boolean isAllowClientCustomGroupNotification();
+    List<Integer> getClientForbiddenSendTypes();
 
     long getMessageHead(String user);
     long getFriendHead(String user);
