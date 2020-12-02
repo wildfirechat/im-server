@@ -20,9 +20,13 @@ import static win.liyufan.im.IMTopic.QuitGroupTopic;
 public class QuitGroupHandler extends GroupHandler<WFCMessage.QuitGroupRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.QuitGroupRequest request, Qos1PublishHandler.IMCallback callback) {
+        if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         ErrorCode errorCode = m_messagesStore.quitGroup(fromUser, request.getGroupId());
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-            if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
+            if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());
             } else {
                 WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getQuitGroupNotifyContent();

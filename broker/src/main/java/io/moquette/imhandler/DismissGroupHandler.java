@@ -29,8 +29,12 @@ public class DismissGroupHandler extends GroupHandler<WFCMessage.DismissGroupReq
             } else if (isAdmin || (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)
                 && groupInfo.getOwner() != null && groupInfo.getOwner().equals(fromUser)) {
 
+                if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+
                 //send notify message first, then dismiss group
-                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
+                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                     sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());
                 } else {
                     WFCMessage.MessageContent content = new GroupNotificationBinaryContent(groupInfo.getTargetId(), fromUser, null, "").getDismissGroupNotifyContent();

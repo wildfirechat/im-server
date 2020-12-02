@@ -27,9 +27,15 @@ public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupReque
                 return ErrorCode.ERROR_CODE_GROUP_ALREADY_EXIST;
             }
         }
+
+        if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         WFCMessage.GroupInfo groupInfo = m_messagesStore.createGroup(fromUser, request.getGroup().getGroupInfo(), request.getGroup().getMembersList(), isAdmin);
+
         if (groupInfo != null) {
-            if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
+            if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                 sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());
             } else {
                 WFCMessage.MessageContent content = new GroupNotificationBinaryContent(groupInfo.getTargetId(), fromUser, groupInfo.getName(), "").getCreateGroupNotifyContent();

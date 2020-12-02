@@ -150,6 +150,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private String mChannelInfoUpdateCallback;
     private String mChatroomInfoUpdateCallback;
     private String mChatroomMemberUpdateCallback;
+    private boolean mGroupAllowClientCustomOperationNotification;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -295,6 +296,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mChatroomMemberUpdateCallback = server.getConfig().getProperty(CHATROOM_MEMBER_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mGroupAllowClientCustomOperationNotification = Boolean.parseBoolean(server.getConfig().getProperty(GROUP_Allow_Client_Custom_Operation_Notification));
         } catch (Exception e) {
 
         }
@@ -3255,6 +3262,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             return bundle.getMessage();
         }
         return null;
+    }
+
+    @Override
+    public boolean isAllowClientCustomGroupNotification() {
+        return mGroupAllowClientCustomOperationNotification;
     }
 
     @Override

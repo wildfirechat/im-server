@@ -47,8 +47,12 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
             if (!isAllow && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)) {
                 errorCode = ErrorCode.ERROR_CODE_NOT_RIGHT;
             } else {
+                if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+
                 //send notify message first, then kickoff the member
-                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
+                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                     sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());
                 } else {
                     WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, request.getRemovedMemberList()).getKickokfMemberGroupNotifyContent();

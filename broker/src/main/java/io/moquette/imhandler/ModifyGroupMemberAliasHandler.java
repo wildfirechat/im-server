@@ -21,9 +21,13 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 public class ModifyGroupMemberAliasHandler extends GroupHandler<WFCMessage.ModifyGroupMemberAlias> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ModifyGroupMemberAlias request, Qos1PublishHandler.IMCallback callback) {
+        if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         ErrorCode errorCode = m_messagesStore.modifyGroupAlias(fromUser, request.getGroupId(), request.getAlias(), request.getMemberId(), isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS && request.hasNotifyContent()) {
-            if (request.hasNotifyContent()&& request.getNotifyContent().getType() > 0) {
+            if (request.hasNotifyContent()&& request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());
             } else {
                 WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getAlias(), request.getMemberId()).getModifyGroupMemberAliasNotifyContent();

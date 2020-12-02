@@ -151,6 +151,8 @@ public final class BrokerConstants {
     public static final String CHATROOM_Participant_Idle_Time = "chatroom.participant_idle_time";
     public static final String CHATROOM_Rejoin_When_Active = "chatroom.rejoin_when_active";
 
+    public static final String GROUP_Allow_Client_Custom_Operation_Notification = "group.allow_client_custom_operation_notification";
+
     public static final String MESSAGES_DISABLE_REMOTE_SEARCH = "message.disable_remote_search";
 
     public static final String MESSAGES_RECALL_TIME_LIMIT = "message.recall_time_limit";

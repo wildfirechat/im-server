@@ -209,6 +209,9 @@ public interface IMessagesStore {
     List<String> getAllSensitiveWords();
 
     WFCMessage.Message getMessage(long messageId);
+
+    boolean isAllowClientCustomGroupNotification();
+
     long getMessageHead(String user);
     long getFriendHead(String user);
     long getFriendRqHead(String user);
