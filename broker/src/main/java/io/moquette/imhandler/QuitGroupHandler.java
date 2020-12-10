@@ -14,6 +14,8 @@ import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 
+import java.util.Set;
+
 import static win.liyufan.im.IMTopic.QuitGroupTopic;
 
 @Handler(value = QuitGroupTopic)
@@ -31,6 +33,12 @@ public class QuitGroupHandler extends GroupHandler<WFCMessage.QuitGroupRequest> 
             } else {
                 WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getQuitGroupNotifyContent();
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content);
+            }
+
+            if((m_messagesStore.getVisibleQuitKickoffNotification() & 0x01) > 0) {
+                Set<String> toUsers = m_messagesStore.getGroupManagers(request.getGroupId(), true);
+                WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, "").getQuitVisibleGroupNotifyContent();
+                sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), content, toUsers);
             }
         }
         return errorCode;

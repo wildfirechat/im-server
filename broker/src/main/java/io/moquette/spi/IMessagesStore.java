@@ -122,6 +122,7 @@ public interface IMessagesStore {
     ErrorCode setGroupManager(String operator, String groupId, int type, List<String> userList, boolean isAdmin);
     boolean isMemberInGroup(String member, String groupId);
     ErrorCode canSendMessageInGroup(String member, String groupId);
+    Set<String> getGroupManagers(String groupId, boolean includeOwner);
 
     ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin);
     ErrorCode recallCastMessage(long messageUid, String operatorId);
@@ -211,6 +212,8 @@ public interface IMessagesStore {
     WFCMessage.Message getMessage(long messageId);
 
     boolean isAllowClientCustomGroupNotification();
+    int getVisibleQuitKickoffNotification();
+
     List<Integer> getClientForbiddenSendTypes();
 
     long getMessageHead(String user);

@@ -219,5 +219,7 @@ public class ProtoConstants {
     public static final int MESSAGE_CONTENT_TYPE_SET_MANAGER = 117;
     public static final int MESSAGE_CONTENT_TYPE_MUTE_MEMBER = 118;
     public static final int MESSAGE_CONTENT_TYPE_ALLOW_MEMBER = 119;
+    public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER_VISIBLE = 120;
+    public static final int MESSAGE_CONTENT_TYPE_QUIT_GROUP_VISIBLE = 121;
 }
 

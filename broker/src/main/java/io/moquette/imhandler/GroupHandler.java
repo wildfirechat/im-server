@@ -13,10 +13,15 @@ import cn.wildfirechat.proto.WFCMessage;
 import win.liyufan.im.MessageShardingUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 abstract public class GroupHandler<T> extends IMHandler<T> {
     protected void sendGroupNotification(String fromUser, String targetId, List<Integer> lines, WFCMessage.MessageContent content) {
+        sendGroupNotification(fromUser, targetId, lines, content, null);
+    }
+
+    protected void sendGroupNotification(String fromUser, String targetId, List<Integer> lines, WFCMessage.MessageContent content, Collection<String> toUsers) {
         if (lines == null) {
             lines = new ArrayList<>();
         } else {
@@ -32,6 +37,9 @@ abstract public class GroupHandler<T> extends IMHandler<T> {
             WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder().setContent(content).setServerTimestamp(timestamp);
             builder.setConversation(builder.getConversationBuilder().setType(ProtoConstants.ConversationType.ConversationType_Group).setTarget(targetId).setLine(line));
             builder.setFromUser(fromUser);
+            if(toUsers != null && !toUsers.isEmpty()) {
+                builder.addAllTo(toUsers);
+            }
             try {
                 long messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);

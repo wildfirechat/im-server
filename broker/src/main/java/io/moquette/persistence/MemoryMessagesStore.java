@@ -39,11 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.*;
 
-import java.security.MessageDigest;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -153,6 +148,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private String mChatroomInfoUpdateCallback;
     private String mChatroomMemberUpdateCallback;
     private boolean mGroupAllowClientCustomOperationNotification;
+    private int mGroupVisibleQuitKickoffNotification;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -324,6 +320,14 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
 
         }
+
+        try {
+            mGroupVisibleQuitKickoffNotification = Integer.parseInt(server.getConfig().getProperty(GROUP_Visible_Quit_Kickoff_Notification, "0"));
+        } catch (Exception e) {
+
+        }
+
+
     }
 
     private void printMissConfigLog(String config, String defaultValue) {
@@ -1689,6 +1693,25 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public Set<String> getGroupManagers(String groupId, boolean includeOwner) {
+        Set<String> ret = new HashSet<>();
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+        for (WFCMessage.GroupMember member : members) {
+            if(member.getType() == GroupMemberType_Manager || (member.getType() == GroupMemberType_Owner && includeOwner)) {
+                ret.add(member.getMemberId());
+            }
+        }
+
+        return ret;
     }
 
     @Override
@@ -3287,6 +3310,12 @@ public class MemoryMessagesStore implements IMessagesStore {
     public boolean isAllowClientCustomGroupNotification() {
         return mGroupAllowClientCustomOperationNotification;
     }
+
+    @Override
+    public int getVisibleQuitKickoffNotification() {
+        return mGroupVisibleQuitKickoffNotification;
+    }
+
 
     @Override
     public List<Integer> getClientForbiddenSendTypes() {

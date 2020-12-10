@@ -140,6 +140,18 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, quitGroup, Void.class);
     }
 
+    public static IMResult<Void> setGroupMemberAlias(String operator, String groupId, String memberId, String alias, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+        String path = APIPath.Group_Set_Member_Alias;
+        InputSetGroupMemberAlias input = new InputSetGroupMemberAlias();
+        input.setGroup_id(groupId);
+        input.setOperator(operator);
+        input.setMemberId(memberId);
+        input.setAlias(alias);
+        input.setTo_lines(to_lines);
+        input.setNotify_message(notify_message);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
     public static IMResult<OutputGroupIds> getUserGroups(String user) throws Exception {
         String path = APIPath.Get_User_Groups;
         InputUserId inputUserId = new InputUserId();

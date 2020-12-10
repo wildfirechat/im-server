@@ -60,7 +60,7 @@ public interface APIPath {
     String Group_Mute_Member = "/admin/group/manager/mute";
     String Group_Allow_Member = "/admin/group/manager/allow";
     String Get_User_Groups = "/admin/group/of_user";
-
+    String Group_Set_Member_Alias = "/admin/group/member/set_alias";
 
     String Create_Channel = "/admin/channel/create";
     String Get_System_Setting = "/admin/system/get_setting";

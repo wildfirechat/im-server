@@ -105,8 +105,16 @@ public class GroupNotificationBinaryContent {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER);
     }
 
+    public WFCMessage.MessageContent getKickokfMemberVisibleGroupNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER_VISIBLE);
+    }
+
     public WFCMessage.MessageContent getQuitGroupNotifyContent() {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_QUIT_GROUP);
+    }
+
+    public WFCMessage.MessageContent getQuitVisibleGroupNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_QUIT_GROUP_VISIBLE);
     }
 
     public WFCMessage.MessageContent getTransferGroupNotifyContent() {
