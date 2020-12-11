@@ -2477,6 +2477,8 @@ public class DatabaseStore {
                 builder.setDeleted(deleted);
 
                 long longValue = rs.getLong(index++);
+                if(longValue <= 0)
+                    longValue = 1;
                 builder.setUpdateDt(longValue);
 
                 return builder.build();
