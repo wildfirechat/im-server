@@ -22,13 +22,13 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Utility {
     private static Map<String, IMExceptionEvent> exceptionEventHashMap = new ConcurrentHashMap<>();
     static AtomicLong SendExceptionExpireTime = new AtomicLong(0);
-    static int SendExceptionDuration = 60000;
+    static int SendExceptionDuration = 180000;
     static long lastSendTime = System.currentTimeMillis();
     static {
         new Thread(()->{
             while (true) {
                 try {
-                    Thread.sleep(10 * 1000);
+                    Thread.sleep(60 * 1000);
                     sendExceptionEvent();
                 } catch (Exception e) {
                     e.printStackTrace();
