@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 
+import static cn.wildfirechat.common.IMExceptionEvent.EventType.EVENT_CALLBACK_Exception;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 
 public class MessagesPublisher {
@@ -176,7 +177,14 @@ public class MessagesPublisher {
                             message = m_messagesStore.getMessage(messageHead);
                         }
                         final WFCMessage.Message finalMsg = message;
-                        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class)));
+                        Server.getServer().getCallbackScheduler().execute(() -> {
+                            try {
+                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                            }
+                        });
                         continue;
                     }
                 }
@@ -540,7 +548,14 @@ public class MessagesPublisher {
         if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
             WFCMessage.ChannelInfo channelInfo = m_messagesStore.getChannelInfo(message.getConversation().getTarget());
             if (channelInfo != null && !StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
-                Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class)));
+                Server.getServer().getCallbackScheduler().execute(() -> {
+                    try {
+                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                    }
+                });
             }
         }
         long messageId = message.getMessageId();
@@ -580,7 +595,14 @@ public class MessagesPublisher {
     }
 
     public void forwardMessage(final WFCMessage.Message message, String forwardUrl) {
-        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class)));
+        Server.getServer().getCallbackScheduler().execute(() -> {
+            try {
+                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+            }
+        });
     }
 
     public void notifyChannelListenStatusChanged(WFCMessage.ChannelInfo channelInfo, String user, boolean listen) {
@@ -588,6 +610,13 @@ public class MessagesPublisher {
             return;
         }
 
-        Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class)));
+        Server.getServer().getCallbackScheduler().execute(() -> {
+            try {
+                HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+            }
+        });
     }
 }

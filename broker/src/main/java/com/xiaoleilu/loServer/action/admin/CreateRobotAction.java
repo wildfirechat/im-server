@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -63,7 +64,7 @@ public class CreateRobotAction extends AdminAction {
                     messagesStore.addUserInfo(newUser, inputCreateRobot.getPassword());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
                     response.setStatus(HttpResponseStatus.OK);
                     RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
                     response.setContent(new Gson().toJson(result));

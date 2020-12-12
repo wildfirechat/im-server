@@ -1,11 +1,7 @@
 package com.xiaoleilu.loServer.handler;
 
-import java.io.IOException;
-
-import com.hazelcast.core.HazelcastInstance;
+import cn.wildfirechat.common.IMExceptionEvent;
 import com.xiaoleilu.hutool.lang.Singleton;
-import com.xiaoleilu.hutool.log.Log;
-import com.xiaoleilu.hutool.log.StaticLog;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.UnknownErrorAction;
@@ -53,7 +49,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			}
 		} catch (Exception e) {
 		    e.printStackTrace();
-            Utility.printExecption(Logger, e);
+            Utility.printExecption(Logger, e, IMExceptionEvent.EventType.SHORT_LINK_Exception);
 			Action errorAction = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
 			request.putParam(UnknownErrorAction.ERROR_PARAM_NAME, e);
 			response.setContent(e.toString());

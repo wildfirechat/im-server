@@ -8,13 +8,13 @@
 
 package com.xiaoleilu.loServer.action.robot;
 
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.imhandler.IMHandler;
 import io.moquette.spi.impl.Utils;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -67,7 +67,7 @@ abstract public class RobotAction extends Action {
             ts = Long.parseLong(timestamp);
         } catch (Exception e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ROBOT_API_Exception);
             return ErrorCode.INVALID_PARAMETER;
         }
 
@@ -112,7 +112,7 @@ abstract public class RobotAction extends Action {
                 return t;
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ROBOT_API_Exception);
             }
         }
         return null;

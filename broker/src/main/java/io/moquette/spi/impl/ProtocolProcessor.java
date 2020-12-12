@@ -17,7 +17,6 @@
 package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.SendMessageData;
 import cn.wildfirechat.pojos.UserOnlineStatus;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -54,6 +53,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
+import static cn.wildfirechat.common.IMExceptionEvent.EventType.EVENT_CALLBACK_Exception;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
@@ -252,7 +252,14 @@ public class ProtocolProcessor {
 
     public void forwardOnlineStatusEvent(String userId, String clientId, int platform, int status, String packageName) {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
-            mServer.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName))));
+            mServer.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 

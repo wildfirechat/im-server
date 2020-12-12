@@ -253,6 +253,9 @@ public class Server {
 
         initMediaServerConfig(config);
 
+        String monitorEventAddress = config.getProperty(MONITOR_Exception_Event_Address);
+        Utility.setMonitorEventAddress(monitorEventAddress);
+
         final String persistencePath = config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME);
         LOG.info("Configuring Using persistent store file, path={}", persistencePath);
         m_store = initStore(config, this);

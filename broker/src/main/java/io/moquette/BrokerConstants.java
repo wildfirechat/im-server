@@ -92,6 +92,9 @@ public final class BrokerConstants {
     public static final String PUSH_ANDROID_SERVER_ADDRESS = "push.android.server.address";
     public static final String PUSH_IOS_SERVER_ADDRESS = "push.ios.server.address";
 
+    public static final String MONITOR_Exception_Event_Address = "monitor.exception_event_address";
+
+
     public static final String USER_ONLINE_STATUS_CALLBACK = "user.online_status_callback";
 
     public static final String GROUP_INFO_UPDATE_CALLBACK = "group.group_info_update_callback";

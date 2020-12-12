@@ -8,12 +8,11 @@
 
 package cn.wildfirechat.push;
 
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.ProtoConstants;
-import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.server.config.IConfig;
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.ISessionsStore;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ public class PushServer {
                     pushMessageInternel(pushMessage, deviceId, pushContent);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, IMExceptionEvent.EventType.PUSH_SERVER_Exception);
                 }
             });
     }

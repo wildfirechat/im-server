@@ -8,6 +8,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -32,6 +33,7 @@ import java.util.*;
 import java.util.function.Function;
 
 
+import static cn.wildfirechat.common.IMExceptionEvent.EventType.RDBS_Exception;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
@@ -72,7 +74,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -106,7 +108,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -146,7 +148,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -285,7 +287,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -309,7 +311,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -367,7 +369,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -423,7 +425,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -482,7 +484,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -555,7 +557,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -606,7 +608,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -667,10 +669,10 @@ public class DatabaseStore {
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, RDBS_Exception);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, RDBS_Exception);
                 } finally {
                     try {
                         if (resultSet!=null) {
@@ -678,14 +680,14 @@ public class DatabaseStore {
                         }
                     } catch (SQLException e) {
                         e.printStackTrace();
-                        Utility.printExecption(LOG, e);
+                        Utility.printExecption(LOG, e, RDBS_Exception);
                     }
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, null);
         }
@@ -723,7 +725,7 @@ public class DatabaseStore {
             }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
@@ -743,7 +745,7 @@ public class DatabaseStore {
             LOG.info("Update rows {}", count);
         } catch (SQLException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -850,7 +852,7 @@ public class DatabaseStore {
             }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
@@ -876,7 +878,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -904,12 +906,12 @@ public class DatabaseStore {
                     statement = null;
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, RDBS_Exception);
                 }
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -948,7 +950,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -985,7 +987,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1010,7 +1012,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1066,7 +1068,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -1103,7 +1105,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1176,7 +1178,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1219,7 +1221,7 @@ public class DatabaseStore {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
@@ -1241,7 +1243,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1281,7 +1283,7 @@ public class DatabaseStore {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, resultSet);
         }
@@ -1314,7 +1316,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1353,7 +1355,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1381,7 +1383,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1408,7 +1410,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1499,7 +1501,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1549,7 +1551,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1590,7 +1592,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1620,7 +1622,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -1654,7 +1656,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -1713,7 +1715,7 @@ public class DatabaseStore {
                     }
                 }
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1775,7 +1777,7 @@ public class DatabaseStore {
                 }
             }
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
             DBUtil.closeDB(connection, statement2);
@@ -1862,7 +1864,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -1914,7 +1916,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -1938,7 +1940,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2004,7 +2006,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2038,7 +2040,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2061,7 +2063,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2083,7 +2085,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2139,7 +2141,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2191,7 +2193,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2218,7 +2220,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2298,7 +2300,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
                 throw new Exception(e.getMessage());
             } finally {
                 DBUtil.closeDB(connection, statement);
@@ -2319,7 +2321,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2354,7 +2356,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2379,7 +2381,7 @@ public class DatabaseStore {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, RDBS_Exception);
                 }
 
                 statement = connection.prepareStatement(sql);
@@ -2394,7 +2396,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
             return -1;
         } finally {
             DBUtil.closeDB(connection, statement, rs);
@@ -2486,7 +2488,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2509,7 +2511,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2532,7 +2534,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2560,7 +2562,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2597,7 +2599,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2622,7 +2624,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -2644,7 +2646,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -2713,7 +2715,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -2743,7 +2745,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2782,7 +2784,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2821,7 +2823,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2842,7 +2844,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -2863,7 +2865,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
         }
@@ -2930,7 +2932,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -2953,7 +2955,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -3033,7 +3035,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -3081,7 +3083,7 @@ public class DatabaseStore {
                     }
                 }
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -3112,7 +3114,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -3198,7 +3200,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -3242,7 +3244,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -3269,7 +3271,7 @@ public class DatabaseStore {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
@@ -3293,7 +3295,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }
@@ -3316,7 +3318,7 @@ public class DatabaseStore {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                Utility.printExecption(LOG, e);
+                Utility.printExecption(LOG, e, RDBS_Exception);
             } finally {
                 DBUtil.closeDB(connection, statement);
             }

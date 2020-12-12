@@ -8,12 +8,35 @@
 
 package win.liyufan.im;
 
+import cn.wildfirechat.common.IMExceptionEvent;
+import com.google.gson.Gson;
+import com.hazelcast.util.StringUtil;
+import io.moquette.server.Server;
 import org.slf4j.Logger;
 
 import java.net.*;
-import java.util.Enumeration;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Utility {
+    private static Map<String, IMExceptionEvent> exceptionEventHashMap = new ConcurrentHashMap<>();
+    static AtomicLong SendExceptionExpireTime = new AtomicLong(0);
+    static int SendExceptionDuration = 60000;
+    static long lastSendTime = System.currentTimeMillis();
+    static {
+        new Thread(()->{
+            while (true) {
+                try {
+                    Thread.sleep(10 * 1000);
+                    sendExceptionEvent();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+    }
     public static InetAddress getLocalAddress(){
         try {
             Enumeration<NetworkInterface> b = NetworkInterface.getNetworkInterfaces();
@@ -29,6 +52,10 @@ public class Utility {
     }
 
     public static void printExecption(Logger LOG, Exception e) {
+        printExecption(LOG, e, 0);
+    }
+
+    public static void printExecption(Logger LOG, Exception e, int eventType) {
         String message = "";
 
         for(StackTraceElement stackTraceElement : e.getStackTrace()) {
@@ -36,6 +63,58 @@ public class Utility {
         }
         LOG.error("Exception: {}", e.getMessage());
         LOG.error(message);
+        if(eventType > 0) {
+            String key = eventType+(e.getMessage() != null ? e.getMessage().split("\n")[0] : "null");
+            IMExceptionEvent event = exceptionEventHashMap.get(key);
+            if(event == null) {
+                event = new IMExceptionEvent();
+                event.event_type = eventType;
+                event.msg = e.getMessage();
+                event.call_stack = message;
+                event.count = 0;
+
+                exceptionEventHashMap.put(key, event);
+            }
+            event.count++;
+
+            sendExceptionEvent();
+        }
+    }
+
+    private static String gMonitorEventAddress;
+
+    public static void setMonitorEventAddress(String gMonitorEventAddress) {
+        Utility.gMonitorEventAddress = gMonitorEventAddress;
+    }
+
+    private static void sendExceptionEvent() {
+        if(StringUtil.isNullOrEmpty(gMonitorEventAddress)) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        long t = SendExceptionExpireTime.getAndUpdate((long l) -> now - l >= SendExceptionDuration ? now : l);
+
+        if(now - t >= SendExceptionDuration) {
+            for (Map.Entry<String, IMExceptionEvent> entry : exceptionEventHashMap.entrySet()) {
+                if(entry.getValue().count > 0) {
+                    String jsonStr = new Gson().toJson(entry.getValue());
+                    Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(gMonitorEventAddress, jsonStr));
+                    entry.getValue().count = 0;
+                    lastSendTime = now;
+                }
+            }
+            if(now - lastSendTime > 24 * 3600 * 1000) {
+                lastSendTime = now;
+                IMExceptionEvent event = new IMExceptionEvent();
+                event.event_type = 0;
+                event.msg = "监控心跳通知";
+                event.call_stack = "别担心！这个是心跳消息，已经有24小时没有出现异常消息了！";
+                event.count = IMExceptionEvent.EventType.HEART_BEAT;
+                String jsonStr = new Gson().toJson(event);
+                Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(gMonitorEventAddress, jsonStr));
+            }
+        }
     }
 
     public static String getMacAddress() throws UnknownHostException,

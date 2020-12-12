@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
@@ -25,7 +26,6 @@ import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.DBUtil;
 import win.liyufan.im.UUIDGenerator;
 import win.liyufan.im.Utility;
 
@@ -88,7 +88,7 @@ public class CreateUserAction extends AdminAction {
                     messagesStore.addUserInfo(newUserBuilder.build(), inputCreateUser.getPassword());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Utility.printExecption(LOG, e);
+                    Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
                     response.setStatus(HttpResponseStatus.OK);
                     RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
                     response.setContent(new Gson().toJson(result));

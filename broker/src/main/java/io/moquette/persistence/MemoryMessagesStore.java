@@ -16,6 +16,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -47,6 +48,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
+import static cn.wildfirechat.common.IMExceptionEvent.EventType.EVENT_CALLBACK_Exception;
 import static cn.wildfirechat.proto.ProtoConstants.ChannelState.Channel_State_Mask_Deleted;
 import static cn.wildfirechat.proto.ProtoConstants.ChannelUpdateEventType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ChatroomMemberUpdateEventType.Chatroom_Member_Event_Join;
@@ -918,7 +920,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.operatorId = operatorId;
             event.groupId = groupId;
             event.type = type;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
@@ -930,7 +939,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.memberIds = memberIds;
             event.type = type;
             event.value = value;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mGroupMemberUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mGroupMemberUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
@@ -941,13 +957,27 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.targetId = targetId;
             event.type = type;
             event.value = value;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mRelationUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mRelationUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
     private void callbackUserInfoEvent(WFCMessage.User user) {
         if (!StringUtil.isNullOrEmpty(mUserInfoUpdateCallback)) {
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mUserInfoUpdateCallback, new Gson().toJson(InputOutputUserInfo.fromPbUser(user))));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mUserInfoUpdateCallback, new Gson().toJson(InputOutputUserInfo.fromPbUser(user)));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
@@ -957,7 +987,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.operatorId = operatorId;
             event.channelId = channelId;
             event.type = type;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChannelInfoUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mChannelInfoUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
@@ -966,7 +1003,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             ChatroomUpdateEvent event = new ChatroomUpdateEvent();
             event.chatroomId = chatroomId;
             event.type = type;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChatroomInfoUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mChatroomInfoUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 
@@ -977,7 +1021,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.chatroomId = chatroomId;
             event.memberIds = memberIds;
             event.type = type;
-            m_Server.getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(mChatroomMemberUpdateCallback, new Gson().toJson(event)));
+            m_Server.getCallbackScheduler().execute(() -> {
+                try {
+                    HttpUtils.httpJsonPost(mChatroomMemberUpdateCallback, new Gson().toJson(event));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                }
+            });
         }
     }
 

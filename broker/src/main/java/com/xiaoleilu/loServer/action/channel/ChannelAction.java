@@ -8,11 +8,11 @@
 
 package com.xiaoleilu.loServer.action.channel;
 
+import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
-import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.spi.impl.Utils;
@@ -63,7 +63,7 @@ abstract public class ChannelAction extends Action {
             ts = Long.parseLong(timestamp);
         } catch (Exception e) {
             e.printStackTrace();
-            Utility.printExecption(LOG, e);
+            Utility.printExecption(LOG, e, IMExceptionEvent.EventType.CHANNEL_API_Exception);
             return ErrorCode.INVALID_PARAMETER;
         }
 
