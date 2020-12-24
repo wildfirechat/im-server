@@ -226,7 +226,7 @@ public class Server {
             handlers = Collections.emptyList();
         }
         DBUtil.init(config);
-        String strKey = config.getProperty(BrokerConstants.CLIENT_PROTO_SECRET_KEY);
+        String strKey = "0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F";
         String[] strs = strKey.split(",");
         if(strs.length != 16) {
             LOG.error("Key error, it length should be 16");
