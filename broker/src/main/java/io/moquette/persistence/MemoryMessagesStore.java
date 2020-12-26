@@ -3020,9 +3020,20 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         userSettingMap.put(userId, settingEntry);
-        userGlobalSlientMap.remove(userId);
-        userConvSlientMap.remove(userId);
-        userPushHiddenDetail.remove(userId);
+
+        if(request.getScope() == UserSettingScope.kUserSettingConversationSilent) {
+            int firstSplit = request.getKey().indexOf("-");
+            int type = Integer.parseInt(request.getKey().substring(0, firstSplit));
+            int secondSplit = request.getKey().indexOf("-", firstSplit+1);
+            int line = Integer.parseInt(request.getKey().substring(firstSplit+1, secondSplit));
+            String target = request.getKey().substring(secondSplit+1);
+            String key = userId + "|" + type + "|" + target + "|" + line;
+            userConvSlientMap.remove(key);
+        } else if(request.getScope() == UserSettingScope.kUserSettingGlobalSilent) {
+            userGlobalSlientMap.remove(userId);
+        } else if(request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
+            userPushHiddenDetail.remove(userId);
+        }
         IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserSettingTopic, userId, updateDt);
         return updateDt;
     }
@@ -3077,7 +3088,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             } else {
                 slient = true;
             }
-            userConvSlientMap.put(userId, slient);
+            userConvSlientMap.put(key, slient);
         }
         return slient;
     }
