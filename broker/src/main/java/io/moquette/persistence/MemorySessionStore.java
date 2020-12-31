@@ -57,6 +57,8 @@ public class MemorySessionStore implements ISessionsStore {
 
         private int deleted;
 
+        private boolean pullHistoryMsg;
+
         public int getDeleted() {
             return deleted;
         }
@@ -137,6 +139,14 @@ public class MemorySessionStore implements ISessionsStore {
 
         public void setCarrierName(String carrierName) {
             this.carrierName = carrierName;
+        }
+
+        public boolean isPullHistoryMsg() {
+            return pullHistoryMsg;
+        }
+
+        public void setPullHistoryMsg(boolean pullHistoryMsg) {
+            this.pullHistoryMsg = pullHistoryMsg;
         }
 
         public long getUpdateDt() {

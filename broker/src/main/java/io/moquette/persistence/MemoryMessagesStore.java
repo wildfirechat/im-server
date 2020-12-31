@@ -560,9 +560,13 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             boolean noRoaming = false;
-            if (pullType == ProtoConstants.PullType.Pull_Normal && fromMessageId == 0 && !IS_MESSAGE_ROAMING) {
-                noRoaming = true;
+            if (pullType == ProtoConstants.PullType.Pull_Normal && fromMessageId == 0) {
+                if(!IS_MESSAGE_ROAMING) {
+                    noRoaming = true;
+                }
+                session.setPullHistoryMsg(true);
             }
+
             while (true) {
                 Map.Entry<Long, Long> entry = maps.higherEntry(current);
                 if (entry == null) {
@@ -574,7 +578,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 MessageBundle bundle = mIMap.get(targetMessageId);
 
                 if (bundle != null) {
-                    if (exceptClientId == null || !exceptClientId.equals(bundle.getFromClientId()) || !user.equals(bundle.getFromUser())) {
+                    if (exceptClientId == null || session.isPullHistoryMsg() || !exceptClientId.equals(bundle.getFromClientId()) || !user.equals(bundle.getFromUser())) {
 
                         if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
                             if (!bundle.getMessage().getConversation().getTarget().equals(chatroomId)) {
@@ -607,6 +611,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             Map.Entry<Long, Long> lastEntry = maps.lastEntry();
             if (lastEntry != null) {
                 head = lastEntry.getKey();
+            }
+            if (pullType == ProtoConstants.PullType.Pull_Normal && current == head) {
+                session.setPullHistoryMsg(false);
             }
         } finally {
             mReadLock.unlock();
