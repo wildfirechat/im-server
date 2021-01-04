@@ -349,18 +349,22 @@ public class MemorySessionStore implements ISessionsStore {
         Session session = sessions.get(clientID);
 
         if (session != null && !session.username.equals(username)) {
-            if (userSessions.get(username) != null) {
-                userSessions.get(username).remove(clientID);
+            if (userSessions.get(session.username) != null) {
+                userSessions.get(session.username).remove(clientID);
             }
+            session = null;
         }
         ClientSession clientSession = new ClientSession(clientID, this);
-        session = databaseStore.getSession(username, clientID, clientSession);
-
-        if (session == null) {
-            session = databaseStore.createSession(username, clientID, clientSession, platform);
+        if(session == null) {
+            session = databaseStore.getSession(username, clientID, clientSession);
+            if (session == null) {
+                session = databaseStore.createSession(username, clientID, clientSession, platform);
+            }
         }
-        sessions.put(clientID, session);
 
+        sessions.put(clientID, session);
+        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+        sessionSet.add(clientID);
 
         if (session.getDeleted() > 0) {
             session.setDeleted(0);
@@ -462,7 +466,6 @@ public class MemorySessionStore implements ISessionsStore {
 
         session.setUsername(username);
         sessions.put(clientID, session);
-
         ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
         sessionSet.add(clientID);
 
@@ -501,11 +504,15 @@ public class MemorySessionStore implements ISessionsStore {
     @Override
     public void loadUserSession(String username, String clientID) {
         if (sessions.containsKey(clientID)) {
+            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+            sessionSet.add(clientID);
             return;
         }
         Session session = databaseStore.getSession(username, clientID, new ClientSession(clientID, this));
         if (session != null) {
             sessions.put(clientID, session);
+            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+            sessionSet.add(clientID);
         }
     }
 
