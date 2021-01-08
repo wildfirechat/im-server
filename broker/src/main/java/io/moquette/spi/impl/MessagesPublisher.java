@@ -373,6 +373,25 @@ public class MessagesPublisher {
             }
         }
     }
+    
+    public boolean sendOfflineNotify(String clientId) {
+        boolean targetIsActive = this.connectionDescriptors.isConnected(clientId);
+        if (targetIsActive) {
+            ByteBuf payload = Unpooled.buffer();
+            payload.ensureWritable(1).writeBytes("1".getBytes());
+            MqttPublishMessage publishMsg;
+            publishMsg = notRetainedPublish(IMTopic.NotifyOffline, MqttQoS.AT_MOST_ONCE, payload);
+
+            boolean sent = this.messageSender.sendPublish(clientId, publishMsg);
+            if (sent) {
+                return true;
+            }
+        } else {
+            LOG.info("the target {} is not active", clientId);
+        }
+
+        return false;
+    }
 
     private void publishTransparentMessage2Receivers(long messageHead, Collection<String> receivers, int pullType, String exceptClientId) {
         WFCMessage.Message message = m_messagesStore.getMessage(messageHead);

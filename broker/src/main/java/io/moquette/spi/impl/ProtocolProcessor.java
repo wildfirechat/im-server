@@ -72,15 +72,30 @@ public class ProtocolProcessor {
 
     public void kickoffSession(final MemorySessionStore.Session session) {
         mServer.getImBusinessScheduler().execute(()->{
-            ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
-            try {
-                if (descriptor != null) {
-                    processDisconnect(descriptor.getChannel(), true, false);
+            new Thread(() -> {
+                messagesPublisher.sendOfflineNotify(session.getClientID());
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            }
+
+                mServer.getImBusinessScheduler().execute(()->{
+                    ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
+                    try {
+                        if (descriptor != null) {
+                            processDisconnect(descriptor.getChannel(), true, false);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Utility.printExecption(LOG, e);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Utility.printExecption(LOG, e);
+                    }
+                    m_messagesStore.updateUserOnlineSetting(session, false);
+                });
+            }).start();
         });
     }
 

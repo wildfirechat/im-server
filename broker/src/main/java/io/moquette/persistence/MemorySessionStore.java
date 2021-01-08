@@ -407,8 +407,8 @@ public class MemorySessionStore implements ISessionsStore {
 
                         if (remove) {
                             sessions.remove(c);
-                            mServer.getProcessor().kickoffSession(s);
                             it.remove();
+                            mServer.getProcessor().kickoffSession(s);
                         }
                     }
                 }

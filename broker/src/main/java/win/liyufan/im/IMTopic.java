@@ -16,6 +16,8 @@ public interface IMTopic {
 	String PullMessageTopic = "MP";
 	String NotifyMessageTopic = "MN";
     String NotifyRecallMessageTopic = "RMN";
+    String NotifyOffline = "ROFL";
+
     String BroadcastMessageTopic = "MBC";
 
     String GetUserSettingTopic = "UG";

@@ -54,6 +54,10 @@ class PersistentQueueMessageSender {
 
     boolean sendPublish(ClientSession clientsession, MqttPublishMessage pubMessage) {
         String clientId = clientsession.clientID;
+        return sendPublish(clientId, pubMessage);
+    }
+
+    boolean sendPublish(String clientId, MqttPublishMessage pubMessage) {
         final int messageId = pubMessage.variableHeader().packetId();
         final String topicName = pubMessage.variableHeader().topicName();
         if (LOG.isDebugEnabled()) {
