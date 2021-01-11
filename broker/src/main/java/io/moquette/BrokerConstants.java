@@ -148,6 +148,7 @@ public final class BrokerConstants {
     public static final String GROUP_Allow_Client_Custom_Operation_Notification = "group.allow_client_custom_operation_notification";
     public static final String GROUP_Visible_Quit_Kickoff_Notification = "group.visible_quit_or_kickoff_notification";
 
+    public static final String USER_HIDE_PROPERTIES = "user.hide_properties";
 
     public static final String MESSAGES_FORBIDDEN_CLIENT_SEND_TYPES = "message.forbidden_client_send_types";
 

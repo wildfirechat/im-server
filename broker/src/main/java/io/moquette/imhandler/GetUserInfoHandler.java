@@ -22,7 +22,7 @@ public class GetUserInfoHandler extends IMHandler<WFCMessage.PullUserRequest> {
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
         WFCMessage.PullUserResult.Builder resultBuilder = WFCMessage.PullUserResult.newBuilder();
 
-        ErrorCode errorCode = m_messagesStore.getUserInfo(request.getRequestList(), resultBuilder);
+        ErrorCode errorCode = m_messagesStore.getUserInfo(fromUser, request.getRequestList(), resultBuilder);
         if (errorCode == ERROR_CODE_SUCCESS) {
             byte[] data = resultBuilder.build().toByteArray();
             ackPayload.ensureWritable(data.length).writeBytes(data);

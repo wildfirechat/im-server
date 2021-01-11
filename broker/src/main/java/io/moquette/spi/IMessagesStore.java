@@ -131,7 +131,9 @@ public interface IMessagesStore {
 
     WFCMessage.Robot getRobot(String robotId);
     void addRobot(WFCMessage.Robot robot);
-    ErrorCode getUserInfo(List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder);
+
+    ErrorCode getUserInfo(String fromUser, List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder);
+
     ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request) throws Exception;
 
     void updateUserOnlineSetting(MemorySessionStore.Session session, boolean online);

@@ -152,6 +152,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mGroupAllowClientCustomOperationNotification;
     private int mGroupVisibleQuitKickoffNotification;
 
+    private Set<Integer> mUserHideProperties = new HashSet<>();
+
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
         this.databaseStore = databaseStore;
@@ -327,6 +329,22 @@ public class MemoryMessagesStore implements IMessagesStore {
             mGroupVisibleQuitKickoffNotification = Integer.parseInt(server.getConfig().getProperty(GROUP_Visible_Quit_Kickoff_Notification, "0"));
         } catch (Exception e) {
 
+        }
+
+
+        try {
+            String userHideStr = server.getConfig().getProperty(USER_HIDE_PROPERTIES);
+            if(!StringUtil.isNullOrEmpty(userHideStr)) {
+                String[] proStrs = userHideStr.split(",");
+                for (String proStr:proStrs) {
+                    int value = Integer.parseInt(proStr);
+                    if(value > 1 && value < 9) {
+                        mUserHideProperties.add(value);
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
 
 
@@ -1909,7 +1927,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
     @Override
-    public ErrorCode getUserInfo(List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder) {
+    public ErrorCode getUserInfo(String fromUser, List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
 
@@ -1931,6 +1949,27 @@ public class MemoryMessagesStore implements IMessagesStore {
             } else {
                 LOG.debug("Get user info, user {}  userDt {} : request {}",request.getUid(), user.getUpdateDt(), request.getUpdateDt());
                 if (user.getUpdateDt() > request.getUpdateDt()) {
+                    if(!mUserHideProperties.isEmpty() && !user.getUid().equals(fromUser)) {
+                        WFCMessage.User.Builder userBuilder = user.toBuilder();
+                        for (Integer i:mUserHideProperties) {
+                            if(i == Modify_Gender) {
+                                userBuilder.clearGender();
+                            } else if(i == Modify_Mobile) {
+                                userBuilder.clearMobile();
+                            } else if(i == Modify_Email) {
+                                userBuilder.clearEmail();
+                            } else if(i == Modify_Address) {
+                                userBuilder.clearAddress();
+                            } else if(i == Modify_Company) {
+                                userBuilder.clearCompany();
+                            } else if(i == Modify_Social) {
+                                userBuilder.clearSocial();
+                            } else if(i == Modify_Extra) {
+                                userBuilder.clearExtra();
+                            }
+                        }
+                        user = userBuilder.build();
+                    }
                     resultBuilder.setUser(user);
                     resultBuilder.setCode(ProtoConstants.UserResultCode.Success);
                 } else {
