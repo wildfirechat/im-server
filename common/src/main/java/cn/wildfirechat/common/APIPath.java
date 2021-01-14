@@ -28,7 +28,8 @@ public interface APIPath {
     String User_Get_Blocked_List = "/admin/user/get_blocked_list";
     String User_Check_Block_Status = "/admin/user/check_block_status";
     String User_Get_Online_Status = "/admin/user/onlinestatus";
-
+    String User_Put_Setting = "/admin/user/put_setting";
+    String User_Get_Setting = "/admin/user/get_setting";
 
     String Friend_Update_Status = "/admin/friend/status";
     String Friend_Get_List = "/admin/friend/list";
