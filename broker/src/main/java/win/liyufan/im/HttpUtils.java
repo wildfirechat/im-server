@@ -32,7 +32,9 @@ public class HttpUtils {
     static private OkHttpClient client = new OkHttpClient();
 
     public static void httpJsonPost(final String url, final String jsonStr){
-        LOG.info("POST to {} with data {}", url, jsonStr);
+        //消息推送内容为 {"sender":"uCGUxUaa","senderName":"杨","convType":0,"target":"usq7v7UU","targetName":"鞋子","userId":"usq7v7UU","line":0,"cntType":400,"serverTime":1610590766485,"pushMessageType":1,"pushType":2,"pushContent":"","pushData":"","unReceivedMsg":1,"mentionedType":0,"packageName":"cn.wildfirechat.chat","deviceToken":"AFoieP9P6u6CccIkRK23gRwUJWKqSkdiqnb-6gC1kL7Wv-9XNoEYBPU7VsINU_q8_WTKfafe35qWu7ya7Z-NmgOTX9XVW3A3zd6ilh--quj6ccINXRvVnh8QmI9QQ","isHiddenDetail":false,"language":"zh"}
+        //推送信息只打印前100个字符，防止敏感信息打印到日志中去。
+        LOG.info("POST to {} with data {}", url, jsonStr.substring(0, Math.min(jsonStr.length(), 100)));
         if (StringUtil.isNullOrEmpty(url)) {
             LOG.error("http post failure with empty url");
             return;
