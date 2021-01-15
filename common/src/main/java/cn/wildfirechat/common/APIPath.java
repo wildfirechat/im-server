@@ -76,4 +76,19 @@ public interface APIPath {
 
     String Robot_User_Info = "/robot/user_info";
     String Robot_Message_Send = "/robot/message/send";
+    String Robot_Verify_Application_User = "/robot/user/verify";
+    
+    String Robot_Group_Member_Add = "/robot/group/member/add";
+    String Robot_Group_Allow_Member = "/robot/group/manager/allow";
+    String Robot_Create_Group = "/robot/group/create";
+    String Robot_Group_Dismiss = "/robot/group/del";
+    String Robot_Group_Get_Info = "/robot/group/get_info";
+    String Robot_Group_Member_List = "/robot/group/member/list";
+    String Robot_Group_Member_Kickoff = "/robot/group/member/del";
+    String Robot_Group_Modify_Info = "/robot/group/modify";
+    String Robot_Group_Set_Member_Alias = "/robot/group/member/set_alias";
+    String Robot_Group_Mute_Member = "/robot/group/manager/mute";
+    String Robot_Group_Member_Quit = "/robot/group/member/quit";
+    String Robot_Group_Transfer = "/robot/group/transfer";
+    String Robot_Group_Set_Manager = "/robot/group/manager/set";
 }
