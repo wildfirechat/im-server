@@ -356,6 +356,7 @@ public class Main {
         groupInfo.setOwner("user1");
         groupInfo.setName("test_group");
         groupInfo.setExtra("hello extra");
+        groupInfo.setType(2);
         groupInfo.setPortrait("http://portrait");
         List<PojoGroupMember> members = new ArrayList<>();
         PojoGroupMember member1 = new PojoGroupMember();
@@ -840,6 +841,7 @@ public class Main {
         PojoGroupInfo groupInfo = new PojoGroupInfo();
         groupInfo.setTarget_id(groupId);
         groupInfo.setName("test_group");
+        groupInfo.setType(2);
         groupInfo.setExtra("hello extra");
         groupInfo.setPortrait("http://portrait");
         List<PojoGroupMember> members = new ArrayList<>();
