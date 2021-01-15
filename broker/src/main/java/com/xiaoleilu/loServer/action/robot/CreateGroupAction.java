@@ -50,16 +50,6 @@ public class CreateGroupAction extends RobotAction {
             if (inputCreateGroup.isValide()) {
                 PojoGroupInfo group_info = inputCreateGroup.getGroup().getGroup_info();
                 WFCMessage.CreateGroupRequest createGroupRequest = inputCreateGroup.toProtoGroupRequest();
-                if ((group_info.getHistory_message() > 0 && group_info.getHistory_message() < 128) || group_info.getMax_member_count() > 0) {
-                    WFCMessage.GroupInfo.Builder groupInfoBuilder = createGroupRequest.getGroup().getGroupInfo().toBuilder();
-                    if (group_info.getHistory_message() > 0 && group_info.getHistory_message() < 128) {
-                        groupInfoBuilder.setHistoryMessage(group_info.getHistory_message());
-                    }
-                    if (group_info.getMax_member_count() > 0) {
-                        groupInfoBuilder.setMaxMemberCount(group_info.getMax_member_count());
-                    }
-                    createGroupRequest = createGroupRequest.toBuilder().setGroup(createGroupRequest.getGroup().toBuilder().setGroupInfo(groupInfoBuilder)).build();
-                }
                 RPCCenter.getInstance().sendRequest(inputCreateGroup.getOperator(), null, IMTopic.CreateGroupTopic, createGroupRequest.toByteArray(), inputCreateGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
@@ -92,7 +82,7 @@ public class CreateGroupAction extends RobotAction {
                             ctx.executor().execute(command);
                         };
                     }
-                }, false, 1);
+                }, false);
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

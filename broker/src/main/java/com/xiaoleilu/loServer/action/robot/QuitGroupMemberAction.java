@@ -73,7 +73,7 @@ public class QuitGroupMemberAction extends RobotAction {
                             ctx.executor().execute(command);
                         };
                     }
-                }, false, 1);
+                }, false);
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);
