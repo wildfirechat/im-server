@@ -6,7 +6,7 @@
  * file that was distributed with this source code.
  */
 
-package win.liyufan.im;
+package cn.wildfirechat.pojos;
 
 public interface MyInfoType {
     int Modify_DisplayName = 0;

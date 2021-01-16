@@ -144,6 +144,7 @@ public interface IMessagesStore {
 
     void addUserInfo(WFCMessage.User user, String password) throws Exception;
     void destoryUser(String userId);
+    void updateUserInfo(WFCMessage.User user) throws Exception;
     WFCMessage.User getUserInfo(String userId);
     WFCMessage.User getUserInfoByName(String name);
     WFCMessage.User getUserInfoByMobile(String mobile);

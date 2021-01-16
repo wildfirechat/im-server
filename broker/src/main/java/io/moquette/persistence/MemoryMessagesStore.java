@@ -16,7 +16,6 @@
 
 package io.moquette.persistence;
 
-import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -63,7 +62,7 @@ import static cn.wildfirechat.proto.ProtoConstants.Platform.*;
 import static io.moquette.BrokerConstants.*;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
-import static win.liyufan.im.MyInfoType.*;
+import static cn.wildfirechat.pojos.MyInfoType.*;
 import static win.liyufan.im.UserSettingScope.kUserSettingPCOnline;
 
 public class MemoryMessagesStore implements IMessagesStore {
@@ -2186,6 +2185,15 @@ public class MemoryMessagesStore implements IMessagesStore {
             mUserMap.put(userId, us);
         }
 
+    }
+    @Override
+    public void updateUserInfo(WFCMessage.User user) throws Exception {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+        if(mUserMap.get(user.getUid()) != null) {
+            databaseStore.updateUser(user);
+            mUserMap.put(user.getUid(), user);
+        }
     }
 
     @Override

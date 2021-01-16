@@ -3,6 +3,7 @@ package cn.wildfirechat.sdk.utilities;
 import cn.wildfirechat.sdk.model.IMResult;
 import com.google.gson.Gson;
 import ikidou.reflect.TypeBuilder;
+import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -63,10 +64,12 @@ public class RobotHttpUtils {
             }
             LOG.info("http request content: {}", jsonStr);
 
-            StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));
-            entity.setContentEncoding("UTF-8");
-            entity.setContentType("application/json");
-            post.setEntity(entity);
+            if(!StringUtil.isNullOrEmpty(jsonStr)) {
+                StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));
+                entity.setContentEncoding("UTF-8");
+                entity.setContentType("application/json");
+                post.setEntity(entity);
+            }
             HttpResponse response = httpClient.execute(post);
 
             int statusCode = response.getStatusLine().getStatusCode();

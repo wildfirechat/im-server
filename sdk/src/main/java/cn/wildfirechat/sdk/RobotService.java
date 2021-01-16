@@ -44,8 +44,26 @@ public class RobotService {
     }
     
     public static IMResult<RobotCallbackPojo> getCallback() throws Exception {
-        String path = APIPath.Robot_Set_Callback;
+        String path = APIPath.Robot_Get_Callback;
         return RobotHttpUtils.httpJsonPost(path, null, RobotCallbackPojo.class);
+    }
+
+    public static IMResult<Void> deleteCallback() throws Exception {
+        String path = APIPath.Robot_Delete_Callback;
+        return RobotHttpUtils.httpJsonPost(path, null, Void.class);
+    }
+
+    public static IMResult<InputOutputUserInfo> getProfile(String robotId) throws Exception {
+        return getUserInfo(robotId);
+    }
+
+    /*
+    type可选范围为MyInfoType，注意不能修改电话号码，如果要修改电话号码请使用adminapi进行修改
+     */
+    public static IMResult<Void> updateProfile(int/*MyInfoType*/ type, String value) throws Exception {
+        String path = APIPath.Robot_Update_Profile;
+        IntStringPairPojo pojo = new IntStringPairPojo(type, value);
+        return RobotHttpUtils.httpJsonPost(path, pojo, Void.class);
     }
 
     public static IMResult<OutputCreateGroupResult> createGroup(PojoGroupInfo group_info, List<PojoGroupMember> members, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {

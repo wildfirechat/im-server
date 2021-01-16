@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static cn.wildfirechat.pojos.MyInfoType.Modify_DisplayName;
 import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_Member_Count;
 
 public class Main {
@@ -809,11 +810,67 @@ public class Main {
         String robotId = "robot1";
         RobotHttpUtils.init("http://localhost", robotId, "123456");
 
-        String userId1 = "IrIhIhss";
-        String userId2 = "IrIhIhss";
         //***********************************************
         //****  机器人API
         //***********************************************
+
+        IMResult<InputOutputUserInfo> userInfoIMResult = RobotService.getProfile(robotId);
+        if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get profile success");
+        } else {
+            System.out.println("get profile failure");
+            System.exit(-1);
+        }
+
+        String displayName = "testrobot"+System.currentTimeMillis();
+        IMResult<Void> voidIMResult1 = RobotService.updateProfile(Modify_DisplayName, displayName);
+        if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("modify profile success");
+        } else {
+            System.out.println("modify profile failure");
+            System.exit(-1);
+        }
+        userInfoIMResult = RobotService.getProfile(robotId);
+        if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && displayName.equals(userInfoIMResult.getResult().getDisplayName())) {
+            System.out.println("get profile success");
+        } else {
+            System.out.println("get profile failure");
+            System.exit(-1);
+        }
+
+        String robotCallback = "http://hellow123";
+        voidIMResult1 = RobotService.setCallback(robotCallback);
+        if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("set callback success");
+        } else {
+            System.out.println("set callback failure");
+            System.exit(-1);
+        }
+
+        IMResult<RobotCallbackPojo> callbackPojoIMResult = RobotService.getCallback();
+        if(callbackPojoIMResult != null && callbackPojoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && robotCallback.equals(callbackPojoIMResult.getResult().getUrl())) {
+            System.out.println("get callback success");
+        } else {
+            System.out.println("get callback failure");
+            System.exit(-1);
+        }
+
+        voidIMResult1 = RobotService.deleteCallback();
+        if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("delete callback success");
+        } else {
+            System.out.println("delete callback failure");
+            System.exit(-1);
+        }
+
+        callbackPojoIMResult = RobotService.getCallback();
+        if(callbackPojoIMResult != null && callbackPojoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && StringUtil.isNullOrEmpty(callbackPojoIMResult.getResult().getUrl())) {
+            System.out.println("get callback success");
+        } else {
+            System.out.println("get callback failure");
+            System.exit(-1);
+        }
+
         Conversation conversation = new Conversation();
         conversation.setTarget("user2");
         conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
