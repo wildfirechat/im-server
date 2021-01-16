@@ -76,6 +76,10 @@ public interface APIPath {
 
     String Robot_User_Info = "/robot/user_info";
     String Robot_Message_Send = "/robot/message/send";
+
+    String Robot_Set_Callback = "/robot/set_callback";
+    String Robot_Delete_Callback = "/robot/delete_callback";
+
     String Robot_Verify_Application_User = "/robot/user/verify";
 
     String Robot_Group_Member_Add = "/robot/group/member/add";

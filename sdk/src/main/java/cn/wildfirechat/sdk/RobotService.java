@@ -36,6 +36,18 @@ public class RobotService {
         return RobotHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
+    public static IMResult<Void> setCallback(String url) throws Exception {
+        String path = APIPath.Robot_Set_Callback;
+        RobotCallbackPojo pojo = new RobotCallbackPojo();
+        pojo.setUrl(url);
+        return RobotHttpUtils.httpJsonPost(path, pojo, Void.class);
+    }
+    
+    public static IMResult<RobotCallbackPojo> getCallback() throws Exception {
+        String path = APIPath.Robot_Set_Callback;
+        return RobotHttpUtils.httpJsonPost(path, null, RobotCallbackPojo.class);
+    }
+
     public static IMResult<OutputCreateGroupResult> createGroup(PojoGroupInfo group_info, List<PojoGroupMember> members, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Robot_Create_Group;
         PojoGroup pojoGroup = new PojoGroup();
