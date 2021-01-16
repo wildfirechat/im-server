@@ -908,15 +908,23 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
+        boolean hasOwnerMember = false;
         for (WFCMessage.GroupMember member : memberList) {
             if (member.getMemberId().equals(owner)) {
                 member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+                hasOwnerMember = true;
             } else {
                 member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
             }
             groupMembers.put(groupId, member);
             updatedMemberList.add(member);
             dt++;
+        }
+
+        if(!hasOwnerMember && !StringUtil.isNullOrEmpty(owner)) {
+            WFCMessage.GroupMember member = WFCMessage.GroupMember.newBuilder().setMemberId(owner).setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            groupMembers.put(groupId, member);
+            updatedMemberList.add(member);
         }
 
         groupInfo = groupInfo.toBuilder()
