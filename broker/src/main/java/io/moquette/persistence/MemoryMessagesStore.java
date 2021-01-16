@@ -2025,10 +2025,11 @@ public class MemoryMessagesStore implements IMessagesStore {
                     builder.setPortrait(entry.getValue());
                     modified = true;
                     break;
-                case Modify_Mobile:
-                    builder.setMobile(entry.getValue());
-                    modified = true;
-                    break;
+                //禁止客户端直接修改电话号码，只能通过admin api来修改
+//                case Modify_Mobile:
+//                    builder.setMobile(entry.getValue());
+//                    modified = true;
+//                    break;
                 case Modify_Email:
                     builder.setEmail(entry.getValue());
                     modified = true;
