@@ -51,6 +51,8 @@ public interface ISessionsStore {
     void updateSessionToken(Session session, boolean voip);
 
     void clearUserSession(String username);
+
+    void kickoffUserClient(String userId, String clientId);
     /**
      * @param clientID
      *            the client owning the session.

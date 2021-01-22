@@ -419,6 +419,34 @@ public class MemorySessionStore implements ISessionsStore {
         return session;
     }
 
+    @Override
+    public void kickoffUserClient(String username, String cid) {
+        List<String> clientIds = new ArrayList<>();
+        if(StringUtil.isNullOrEmpty(cid)) {
+            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(username);
+            clientIds.addAll(sessionSet);
+        } else {
+            clientIds.add(cid);
+        }
+
+        for (String clientID: clientIds) {
+            Session session = sessions.get(clientID);
+            if(session == null) {
+                ClientSession clientSession = new ClientSession(clientID, this);
+                session = databaseStore.getSession(username, clientID, clientSession);
+                if (session == null || session.getDeleted() > 0) {
+                    continue;
+                }
+                sessions.put(clientID, session);
+            }
+
+            if (session.getDeleted() == 0) {
+                session.setDeleted(1);
+                databaseStore.updateSessionDeleted(username, clientID, 1);
+                mServer.getProcessor().kickoffSession(session);
+            }
+        }
+    }
 
     @Override
     public ErrorCode loadActiveSession(String username, String clientID) {
