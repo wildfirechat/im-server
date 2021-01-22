@@ -16,12 +16,10 @@
 
 package io.moquette.spi.impl;
 
+import static cn.wildfirechat.common.ErrorCode.*;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
-import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_NOT_IMPLEMENT;
-import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
-import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -256,6 +254,13 @@ public class Qos1PublishHandler extends QosPublishHandler {
         String imtopic = topic.getTopic();
         ByteBuf payload = msg.payload();
         byte[] payloadContent = readBytesAndRewind(payload);
+        if(payloadContent.length == 0) {
+            ByteBuf ackPayload = Unpooled.buffer();
+            ackPayload.ensureWritable(1).writeByte(ERROR_CODE_INVALID_DATA.getCode());
+            sendPubAck(clientID, messageID, ackPayload, ERROR_CODE_INVALID_DATA);
+            return;
+        }
+        
         MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
         payloadContent = AES.AESDecrypt(payloadContent, session.getSecret(), true);
         imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), false);
