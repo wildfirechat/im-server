@@ -357,8 +357,8 @@ public class Response {
 		final DefaultHttpResponse defaultHttpResponse = new DefaultHttpResponse(httpVersion, status);
 
 		// headers
-		final HttpHeaders httpHeaders = defaultHttpResponse.headers().add(headers);
-
+		HttpHeaders httpHeaders = defaultHttpResponse.headers().add(headers);
+        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.toString(), contentType);
 		// Cookies
 		for (Cookie cookie : cookies) {
 			httpHeaders.add(HttpHeaderNames.SET_COOKIE.toString(), ServerCookieEncoder.LAX.encode(cookie));
