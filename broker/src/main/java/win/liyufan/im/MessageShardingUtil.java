@@ -101,6 +101,26 @@ public class MessageShardingUtil {
         year %= 3;
         return "t_messages_" + (year * 12 + month);
     }
+    static Calendar getCalendarFromMessageId(long mid) {
+        Calendar calendar = Calendar.getInstance();
+        if (mid != Long.MAX_VALUE && mid != 0) {
+            mid >>= (nodeIdWidth + rotateIdWidth);
+            Date date = new Date(mid + T201801010000);
+            calendar.setTime(date);
+        } else {
+            Date date = new Date(System.currentTimeMillis());
+            calendar.setTime(date);
+        }
+        return calendar;
+    }
+    public static long getMsgIdFromTimestamp(long timestamp) {
+        long id = timestamp - T201801010000;
+
+        id <<= rotateIdWidth;
+        id <<= nodeIdWidth;
+
+        return id;
+    }
 
     public static String getPreviousMessageTable(long mid) {
         return getMessageTable(mid, -1);

@@ -436,6 +436,7 @@ public class Server {
         System.out.println("Server will flush data to db before shutting down, please wait 5 seconds!");
         LOG.info("Unbinding server from the configured ports");
         m_shutdowning = true;
+        DBUtil.SystemExiting = true;
 
         m_acceptor.close();
         LOG.trace("Stopping MQTT protocol processor");
