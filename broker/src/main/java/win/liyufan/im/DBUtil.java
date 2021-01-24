@@ -166,133 +166,52 @@ public class DBUtil {
         return SystemExiting;
     }
 
-    private static void clearH2DB() {
-        boolean hasMore = true;
-        while (hasMore) {
-            hasMore = clearOneTable("t_user_messages");
-            if(sleep()) {
-                return;
-            }
-        }
-        hasMore = true;
-
-        while (hasMore) {
-            hasMore = clearOneTable("t_messages");
-            if(sleep()) {
-                return;
-            }
-        }
-    }
-    private static void clearMySQL() {
-        int i = 0;
-        do {
-            if(!clearOneTable("t_user_messages_" + i)) {
-                i++;
-            }
-
-            if(sleep()) {
-                return;
-            }
-        } while (i < 128);
-
-        boolean hasMore = true;
-        String msgTableName;
-        if(ClearDBDebugMode) {
-            msgTableName = MessageShardingUtil.getMessageTable(MessageShardingUtil.getMsgIdFromTimestamp(System.currentTimeMillis()));
-        } else {
-            msgTableName = MessageShardingUtil.getMessageTable(MessageShardingUtil.getMsgIdFromTimestamp(System.currentTimeMillis()), 1);
-        }
-        while (hasMore) {
-            hasMore = clearOneTable(msgTableName);
-            if(sleep()) {
-                return;
-            }
-        }
-
+    private static long getMaxMidNeedClean() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
-        if(cal.get(Calendar.DAY_OF_MONTH) > 25 && !ClearDBDebugMode) {
-            hasMore = true;
-            msgTableName = MessageShardingUtil.getMessageTable(MessageShardingUtil.getMsgIdFromTimestamp(System.currentTimeMillis()), 2);
-            while (hasMore) {
-                hasMore = clearOneTable(msgTableName);
-                if(sleep()) {
-                    return;
-                }
-            }
-        }
+        cal.add(Calendar.YEAR, -3);
+        cal.add(Calendar.DATE, 1);
+        return MessageShardingUtil.getMsgIdFromTimestamp(cal.getTimeInMillis());
     }
 
-    private static boolean clearOneTable(String tableName) {
+    private static void clearH2DB() {
+        clearOneTable("t_user_messages");
+        if(sleep()) {
+            return;
+        }
+        clearOneTable("t_messages");
+    }
+
+    private static void clearMySQL() {
+        for (int i = 0; i < 128; i++) {
+            clearOneTable("t_user_messages_" + i);
+            if(sleep()) {
+                return;
+            }
+        }
+
+        String msgTableName = MessageShardingUtil.getMessageTable(MessageShardingUtil.getMsgIdFromTimestamp(System.currentTimeMillis()));
+        clearOneTable(msgTableName);
+    }
+
+    private static void clearOneTable(String tableName) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
-        int clearCount = 999;
-        if(ClearDBDebugMode) {
-            clearCount = 19;
-        }
-        boolean hasMore = true;
+        long mid = getMaxMidNeedClean();
+
         try {
             connection = DBUtil.getConnection();
-            String sql = "select id, _mid from " + tableName + " order by id limit 1 offset " + clearCount;
+            String sql = "delete from " + tableName + " where _mid <= " + mid;
             statement = connection.prepareStatement(sql);
-
-            rs = statement.executeQuery();
-            int id = 0;
-            long mid = 0;
-            if (rs.next()) {
-                id = rs.getInt(1);
-                mid = rs.getLong(2);
-            }
-            if(id == 0) {
-                hasMore = false;
-                rs.close();
-                rs = null;
-                statement.close();
-
-                sql = "select id, _mid from " + tableName + " order by id desc limit 1";
-                statement = connection.prepareStatement(sql);
-
-                rs = statement.executeQuery();
-                if (rs.next()) {
-                    id = rs.getInt(1);
-                    mid = rs.getLong(2);
-                }
-            }
-
-            rs.close();
-            rs = null;
-            LOG.info("Check history message in table {}, id {}, mid {}, hasMore {}", tableName, id, mid, hasMore);
-            if(id != 0) {
-                Calendar tm = MessageShardingUtil.getCalendarFromMessageId(mid);
-                if(ClearDBDebugMode) {
-                    tm.add(Calendar.HOUR, 1);
-                } else {
-                    tm.add(Calendar.YEAR, 3);
-                    tm.add(Calendar.MONTH, -1);
-                    tm.add(Calendar.DATE, -4);
-                }
-                if(tm.getTimeInMillis() < System.currentTimeMillis()) {
-                    statement.close();
-                    sql = "delete from " + tableName + " where id <= " + id;
-                    statement = connection.prepareStatement(sql);
-                    int count = statement.executeUpdate();
-                    LOG.info("Clear {} rows", count);
-                } else {
-                    LOG.info("No history messages need clean");
-                    hasMore = false;
-                }
-            } else {
-                LOG.info("No messages");
-            }
+            int count = statement.executeUpdate();
+            LOG.info("Delete history message {} rows", count);
         } catch (Exception e) {
-            hasMore = false;
             e.printStackTrace();
             Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
         }
-        return hasMore;
     }
 
     private static List<String> getCreateSql() {
