@@ -80,9 +80,12 @@ public class LoFileServer {
 			
 			channel = b.bind(port).sync().channel();
 			Logger.info("***** Welcome To LoServer on port [{}], startting spend {}ms *****", port, DateUtil.spendMs(start));
-		} finally {
-
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("端口 {} 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep {}", port, port);
+            System.out.println("端口 " + port + " 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep " + port);
+            System.exit(-1);
+        }
 	}
     public void shutdown() {
         if (this.channel != null) {

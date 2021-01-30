@@ -149,12 +149,10 @@ public class NettyAcceptor implements ServerAcceptor {
         } catch (InterruptedException ex) {
             LOG.error("An interruptedException was caught while initializing server. Protocol={}", protocol, ex);
         } catch (Exception e) {
-            if(e instanceof BindException) {
-                e.printStackTrace();
-                LOG.error("端口 {} 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep {}", port, port);
-                System.out.println("端口 " + port + " 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep " + port);
-            }
-            throw e;
+            e.printStackTrace();
+            LOG.error("端口 {} 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep {}", port, port);
+            System.out.println("端口 " + port + " 已经被占用。请检查该端口被那个程序占用，找到程序停掉。\n查找端口被那个程序占用的命令是: netstat -tunlp | grep " + port);
+            System.exit(-1);
         }
     }
 
