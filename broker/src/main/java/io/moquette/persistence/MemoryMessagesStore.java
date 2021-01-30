@@ -406,23 +406,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
     @Override
-    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers, boolean ignoreMsg) {
+    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers) {
         WFCMessage.Message message = messageBuilder.build();
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         int type = message.getConversation().getType();
         int pullType = ProtoConstants.PullType.Pull_Normal;
-
-        if (ignoreMsg) {
-            if (type == ProtoConstants.ConversationType.ConversationType_ChatRoom) {
-                pullType = ProtoConstants.PullType.Pull_ChatRoom;
-            }
-
-//            if (message.getContent().getPersistFlag() != Transparent) {
-                notifyReceivers.add(fromUser);
-//            }
-            return pullType;
-        }
-
 
         if (type == ProtoConstants.ConversationType.ConversationType_Private) {
             notifyReceivers.add(fromUser);

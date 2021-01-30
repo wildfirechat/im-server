@@ -118,7 +118,6 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 publisher.forwardMessage(message, mForwardUrl);
             }
 
-
             if (!isAdmin) {
                 Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
                 if (matched != null && !matched.isEmpty()) {
@@ -132,7 +131,6 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                         for (String word : matched) {
                             text = text.replace(word, "***");
                         }
-
                         message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
                     } else if(mSensitiveType == 3) {
 
@@ -141,7 +139,9 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
 
             if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                saveAndPublish(fromUser, clientID, message, ignoreMsg);
+                if(!ignoreMsg) {
+                    saveAndPublish(fromUser, clientID, message);
+                }
                 ackPayload = ackPayload.capacity(20);
                 ackPayload.writeLong(messageId);
                 ackPayload.writeLong(timestamp);

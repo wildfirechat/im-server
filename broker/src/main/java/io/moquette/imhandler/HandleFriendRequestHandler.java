@@ -37,7 +37,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         long timestamp = System.currentTimeMillis();
                         builder.setMessageId(messageId);
                         builder.setServerTimestamp(timestamp);
-                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+                        saveAndPublish(request.getTargetUid(), null, builder.build());
 
                         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
                         String language = "zh_CN";
@@ -60,7 +60,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
                         messageId = MessageShardingUtil.generateId();
                         builder.setMessageId(messageId);
-                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+                        saveAndPublish(request.getTargetUid(), null, builder.build());
 
                         if (m_messagesStore.isNewFriendWelcomeMessage()) {
                             contentBuilder.setType(93);
@@ -73,7 +73,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         builder.setMessageId(messageId);
                         timestamp = System.currentTimeMillis();
                         builder.setServerTimestamp(timestamp);
-                        saveAndPublish(request.getTargetUid(), null, builder.build(), false);
+                        saveAndPublish(request.getTargetUid(), null, builder.build());
 
                     } catch (Exception e) {
                         e.printStackTrace();

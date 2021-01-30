@@ -236,17 +236,17 @@ abstract public class IMHandler<T> {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, false);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
         mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 
-    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message, boolean ignoreMsg) {
+    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message) {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         message = m_messagesStore.storeMessage(username, clientID, message);
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, ignoreMsg);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
         mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }

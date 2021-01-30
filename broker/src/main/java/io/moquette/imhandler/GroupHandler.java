@@ -43,7 +43,7 @@ abstract public class GroupHandler<T> extends IMHandler<T> {
             try {
                 long messageId = MessageShardingUtil.generateId();
                 builder.setMessageId(messageId);
-                saveAndPublish(fromUser, null, builder.build(), false);
+                saveAndPublish(fromUser, null, builder.build());
             } catch (Exception e) {
                 e.printStackTrace();
             }
