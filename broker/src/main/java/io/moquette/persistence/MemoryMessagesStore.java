@@ -922,7 +922,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setExtra(groupInfo.getExtra())
             .setUpdateDt(dt)
             .setMemberUpdateDt(dt)
-            .setMemberCount(memberList.size())
+            .setMemberCount(updatedMemberList.size())
             .setOwner(owner)
             .build();
 
