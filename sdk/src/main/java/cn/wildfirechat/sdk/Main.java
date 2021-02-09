@@ -331,17 +331,25 @@ public class Main {
         String alias = "hello" + System.currentTimeMillis();
         IMResult<Void> updateFriendAlias = RelationAdmin.updateFriendAlias("ff1", "ff2", alias);
         if (updateFriendAlias != null && updateFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("update friend status success");
+            System.out.println("update friend alias success");
         } else {
-            System.out.println("update friend status failure");
+            System.out.println("update friend alias failure");
             System.exit(-1);
         }
 
         IMResult<OutputGetAlias> getFriendAlias = RelationAdmin.getFriendAlias("ff1", "ff2");
         if (getFriendAlias != null && getFriendAlias.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getFriendAlias.getResult().getAlias().equals(alias)) {
-            System.out.println("update friend status success");
+            System.out.println("get friend alias success");
         } else {
-            System.out.println("update friend status failure");
+            System.out.println("get friend alias failure");
+            System.exit(-1);
+        }
+
+        IMResult<RelationPojo> getRelation = RelationAdmin.getRelation("ff1", "ff2");
+        if (getRelation != null && getRelation.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get friend relation success");
+        } else {
+            System.out.println("get friend relation failure");
             System.exit(-1);
         }
     }

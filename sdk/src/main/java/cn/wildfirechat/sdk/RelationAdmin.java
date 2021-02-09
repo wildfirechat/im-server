@@ -65,4 +65,10 @@ public class RelationAdmin {
         input.setForce(force);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
+
+    public static IMResult<RelationPojo> getRelation(String userId, String targetId) throws Exception {
+        String path = APIPath.Relation_Get;
+        StringPairPojo input = new StringPairPojo(userId, targetId);
+        return AdminHttpUtils.httpJsonPost(path, input, RelationPojo.class);
+    }
 }
