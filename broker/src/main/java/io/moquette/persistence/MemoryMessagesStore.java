@@ -1146,26 +1146,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        for (WFCMessage.GroupMember member : members) {
-            if (newInviteUsers.contains(member.getMemberId())) {
-                groupMembers.remove(groupId, member);
-            }
-        }
-
-        for (WFCMessage.GroupMember member : memberList) {
-            groupMembers.put(groupId, member);
-        }
-
-        int count = 0;
-        for (WFCMessage.GroupMember member : groupMembers.get(groupId)) {
-            if (member.getType() != GroupMemberType_Removed) {
-                count++;
-            }
-        }
-
-        mIMap.put(groupId, groupInfo.toBuilder().setMemberUpdateDt(updateDt).setUpdateDt(updateDt).setMemberCount(count).build());
         databaseStore.persistGroupMember(groupId, memberList);
-        databaseStore.updateGroupMemberCountDt(groupId, count, updateDt);
+        databaseStore.updateGroupMemberCountDt(groupId);
+
+        groupMembers.remove(groupId);
+        mIMap.evict(groupId);
 
         List<String> memberIds = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
@@ -1191,12 +1176,12 @@ public class MemoryMessagesStore implements IMessagesStore {
     void removeGroupMember(String groupId, List<String> memberIds) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         databaseStore.removeGroupMember(groupId, memberIds);
+        databaseStore.updateGroupMemberCountDt(groupId);
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         groupMembers.remove(groupId);
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
         mIMap.evict(groupId);
-
     }
 
     void removeFavGroup(String groupId, List<String> memberIds) {
@@ -1384,8 +1369,6 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-
-
         WFCMessage.GroupInfo.Builder newInfoBuilder = oldInfo.toBuilder();
 
         if (modifyType == Modify_Group_Name)
@@ -1407,7 +1390,8 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
-        mIMap.put(groupId, newInfoBuilder.build());
+        databaseStore.persistGroupInfo(newInfoBuilder.build());
+        mIMap.evict(groupId);
 
         if (modifyType == Modify_Group_Mute) {
             if (newInfoBuilder.getMute() > 0) {
@@ -1488,7 +1472,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setAlias(alias).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
-                databaseStore.updateGroupMemberCountDt(groupId, -1, updateDt);
+                databaseStore.updateGroupMemberDt(groupId, updateDt);
                 groupMembers.put(groupId, member);
 
                 mIMap.set(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
@@ -1692,11 +1676,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 member = member.toBuilder().setType(type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member));
                 groupMembers.put(groupId, member);
-//                userList.remove(member.getMemberId());
             }
         }
-
-        mIMap.put(groupId, groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+        databaseStore.persistGroupInfo(groupInfo.toBuilder().setUpdateDt(updateDt).setMemberUpdateDt(updateDt).build());
+        mIMap.evict(groupId);
 
         callbackGroupMemberEvent(operator, groupId, userList, ProtoConstants.GroupMemberUpdateEventType.Group_Member_Event_Type_Update, (type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager) + "");
         return ErrorCode.ERROR_CODE_SUCCESS;

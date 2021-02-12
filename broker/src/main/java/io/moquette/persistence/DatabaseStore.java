@@ -1136,7 +1136,6 @@ public class DatabaseStore {
                 "`_type` = ?," +
                 "`_extra` = ?," +
                 "`_dt` = ?," +
-                "`_member_count` = ?," +
                 "`_mute` = ?" +
                 ", `_join_type` = ?" +
                 ", `_private_chat` = ?" +
@@ -1167,7 +1166,6 @@ public class DatabaseStore {
             statement.setInt(index++, groupInfo.getType());
             statement.setString(index++, groupInfo.getExtra());
             statement.setLong(index++, groupInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : groupInfo.getUpdateDt());
-            statement.setInt(index++, groupInfo.getMemberCount());
             statement.setInt(index++, groupInfo.getMute());
             statement.setInt(index++, groupInfo.getJoinType());
             statement.setInt(index++, groupInfo.getPrivateChat());
@@ -1605,12 +1603,10 @@ public class DatabaseStore {
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_gid` from t_group_member where `_mid` = ? and `_type` <> ?";
+            String sql = "select `_gid` from t_group_member where `_mid` = ? and `_type` <> 4";
             statement = connection.prepareStatement(sql);
 
             statement.setString(1, userId);
-            statement.setInt(2, ProtoConstants.GroupMemberType.GroupMemberType_Removed);
-
 
             rs = statement.executeQuery();
             Set<String> out = new HashSet<>();
@@ -1628,28 +1624,43 @@ public class DatabaseStore {
         }
         return null;
     }
-    void updateGroupMemberCountDt(final String groupId, final int count, final long dt) {
+
+    void updateGroupMemberDt(final String groupId, final long dt) {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = DBUtil.getConnection();
 
-            String sql ;
-
-            if (count >= 0) {
-                sql = "update t_group set `_member_count` = ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
-            } else {
-                sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
-            }
+            String sql = "update t_group set `_member_dt` = ?, `_dt` = ? where `_gid` = ?";
             statement = connection.prepareStatement(sql);
 
             int index = 1;
-            if (count >=0) {
-                statement.setInt(index++, count);
-            }
             statement.setLong(index++, dt);
             statement.setLong(index++, dt);
             statement.setString(index++, groupId);
+
+            int c = statement.executeUpdate();
+            LOG.info("Update rows {}", c);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    void updateGroupMemberCountDt(final String groupId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            String sql = "update t_group set `_member_count` = (select count(*) from t_group_member where `_gid` = ? and `_type` <> 4 limit 1), `_dt` = ?, `_member_dt` = `_member_dt` + 1 where `_gid` = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, groupId);
+            statement.setLong(2, System.currentTimeMillis());
+            statement.setString(3, groupId);
 
             int c = statement.executeUpdate();
             LOG.info("Update rows {}", c);
@@ -1724,11 +1735,8 @@ public class DatabaseStore {
     int removeGroupMember(String groupId, List<String> groupMembers) {
         Connection connection = null;
         PreparedStatement statement = null;
-        PreparedStatement statement2 = null;
         try {
             connection = DBUtil.getConnection();
-            connection.setAutoCommit(false);
-
             StringBuilder sqlBuilder = new StringBuilder("update t_group_member set `_type` = ?, `_dt` = ? where `_mid` in (");
             for (int i = 0; i < groupMembers.size(); i++) {
                 sqlBuilder.append("?");
@@ -1737,9 +1745,7 @@ public class DatabaseStore {
                 }
             }
             sqlBuilder.append(")");
-
             sqlBuilder.append(" and _gid = ?");
-
             statement = connection.prepareStatement(sqlBuilder.toString());
 
             int index = 1;
@@ -1751,36 +1757,14 @@ public class DatabaseStore {
                 statement.setString(index++, memberId);
             }
             statement.setString(index++, groupId);
-
             int count = statement.executeUpdate();
             LOG.info("Update rows {}", count);
-
-            String sql = "update t_group set `_member_count` = `_member_count` - ?, `_member_dt` = ? , `_dt` = ? where `_gid` = ?";
-
-            statement2 = connection.prepareStatement(sql);
-            index = 1;
-            statement2.setInt(index++, count);
-            statement2.setLong(index++, current);
-            statement2.setLong(index++, current);
-            statement2.setString(index++, groupId);
-            statement2.executeUpdate();
-            connection.commit();
-            connection.setAutoCommit(true);
         } catch (SQLException e) {
             // TODO Auto-generated catch block
-            if (connection != null) {
-                try {
-                    connection.commit();
-                    connection.setAutoCommit(true);
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-            }
             e.printStackTrace();
             Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement);
-            DBUtil.closeDB(connection, statement2);
         }
         return 0;
     }
