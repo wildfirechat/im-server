@@ -1549,9 +1549,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         WFCMessage.GroupInfo groupInfo = mIMap.get(groupId);
         if (groupInfo == null) {
-            WFCMessage.GroupMember deletedMember = WFCMessage.GroupMember.newBuilder().setMemberId(fromUser).setType(GroupMemberType_Removed).setUpdateDt(System.currentTimeMillis()).build();
-            members.add(deletedMember);
-            return ErrorCode.ERROR_CODE_SUCCESS;
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
         } else if (groupInfo.getMemberUpdateDt() <= maxDt) {
             return ErrorCode.ERROR_CODE_NOT_MODIFIED;
         }
@@ -1583,10 +1581,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (fromUser != null && notInGroup) {
             members.clear();
             if (self != null) {
-                members.add(self);
-            } else {
-                WFCMessage.GroupMember deletedMember = WFCMessage.GroupMember.newBuilder().setMemberId(fromUser).setType(GroupMemberType_Removed).setUpdateDt(System.currentTimeMillis()).build();
-                members.add(deletedMember);
+                members.add(self.toBuilder().setUpdateDt(0).setType(GroupMemberType_Removed).build());
             }
         }
 
