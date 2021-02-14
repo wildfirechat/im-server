@@ -32,6 +32,7 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private int mSensitiveType = 0;  //命中敏感词时，0 失败，1 吞掉， 2 敏感词替换成*。
     private String mForwardUrl = null;
+    private Set<Integer> mForwardMessageTypes = new HashSet<>();
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
 
     private String mRemoteSensitiveServerUrl = null;
@@ -44,6 +45,14 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
         String forwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Url);
         if (!StringUtil.isNullOrEmpty(forwardUrl)) {
             mForwardUrl = forwardUrl;
+
+            String forwardTypes = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Types);
+            if (!StringUtil.isNullOrEmpty(forwardTypes)) {
+                String[] tss = forwardTypes.split(",");
+                for (String ts:tss) {
+                    mForwardMessageTypes.add(Integer.parseInt(ts.trim()));
+                }
+            }
         }
 
         try {
@@ -142,7 +151,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
             message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
 
-            if (mForwardUrl != null) {
+            if (mForwardUrl != null && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType()))) {
                 publisher.forwardMessage(message, mForwardUrl);
             }
 
