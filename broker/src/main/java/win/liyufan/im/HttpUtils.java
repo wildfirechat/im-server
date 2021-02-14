@@ -30,8 +30,16 @@ public class HttpUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     static private OkHttpClient client = new OkHttpClient();
+    public interface HttpCallback {
+        void onSuccess(String content);
+        void onFailure(int statusCode, String errorMessage);
+    }
 
-    public static void httpJsonPost(final String url, final String jsonStr){
+    public static void httpJsonPost(final String url, final String jsonStr) {
+        httpJsonPost(url, jsonStr, null);
+    }
+
+    public static void httpJsonPost(final String url, final String jsonStr, final  HttpCallback httpCallback) {
         //消息推送内容为 {"sender":"uCGUxUaa","senderName":"杨","convType":0,"target":"usq7v7UU","targetName":"鞋子","userId":"usq7v7UU","line":0,"cntType":400,"serverTime":1610590766485,"pushMessageType":1,"pushType":2,"pushContent":"","pushData":"","unReceivedMsg":1,"mentionedType":0,"packageName":"cn.wildfirechat.chat","deviceToken":"AFoieP9P6u6CccIkRK23gRwUJWKqSkdiqnb-6gC1kL7Wv-9XNoEYBPU7VsINU_q8_WTKfafe35qWu7ya7Z-NmgOTX9XVW3A3zd6ilh--quj6ccINXRvVnh8QmI9QQ","isHiddenDetail":false,"language":"zh"}
         //推送信息只打印前100个字符，防止敏感信息打印到日志中去。
         LOG.info("POST to {} with data {}...", url, jsonStr.substring(0, Math.min(jsonStr.length(), 100)));
@@ -50,12 +58,27 @@ public class HttpUtils {
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
                 LOG.info("POST to {} with data {} failure", url, jsonStr);
+                if(httpCallback != null) {
+                    httpCallback.onFailure(-1, e.getMessage());
+                }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 LOG.info("POST to {} success with response: {}", url, response.body());
                 try {
+                    if(httpCallback != null) {
+                        int code = response.code();
+                        if(code == 200) {
+                            if(response.body() != null && response.body().contentLength() > 0) {
+                                httpCallback.onSuccess(response.body().string());
+                            } else {
+                                httpCallback.onSuccess(null);
+                            }
+                        } else {
+                            httpCallback.onFailure(code, response.message());
+                        }
+                    }
                     if (response.body() != null) {
                         response.body().close();
                     }

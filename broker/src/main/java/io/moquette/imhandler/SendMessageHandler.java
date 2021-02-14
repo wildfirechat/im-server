@@ -8,26 +8,36 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.pojos.MessagePayload;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import com.google.gson.Gson;
 import com.hazelcast.util.StringUtil;
 import io.moquette.BrokerConstants;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
+import io.netty.buffer.Unpooled;
+import win.liyufan.im.HttpUtils;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.MessageShardingUtil;
 import win.liyufan.im.Utility;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import static cn.wildfirechat.proto.ProtoConstants.ContentType.Text;
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(value = IMTopic.SendMessageTopic)
 public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private int mSensitiveType = 0;  //命中敏感词时，0 失败，1 吞掉， 2 敏感词替换成*。
     private String mForwardUrl = null;
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
+
+    private String mRemoteSensitiveServerUrl = null;
+    private Set<Integer> mRemoteSensitiveMessageTypes;
+    private boolean mWaitRemoteSensitiveServerResponse = false;
+
     public SendMessageHandler() {
         super();
 
@@ -49,6 +59,24 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
         }
+        try {
+            mRemoteSensitiveServerUrl = mServer.getConfig().getProperty(BrokerConstants.SENSITIVE_Remote_Server_URL);
+            if(!StringUtil.isNullOrEmpty(mRemoteSensitiveServerUrl)) {
+                mWaitRemoteSensitiveServerResponse = Boolean.parseBoolean(mServer.getConfig().getProperty(BrokerConstants.SENSITIVE_Remote_Fail_When_Matched, "false"));
+                String types = mServer.getConfig().getProperty(BrokerConstants.SENSITIVE_Remote_Message_Type, "");
+                mRemoteSensitiveMessageTypes = new HashSet<>();
+                if(!StringUtil.isNullOrEmpty(types)) {
+                    String[] ts = types.split(",");
+                    for (String t:ts) {
+                        mRemoteSensitiveMessageTypes.add(Integer.parseInt(t.trim()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        }
+
     }
 
     @Override
@@ -105,7 +133,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
 
             long timestamp = System.currentTimeMillis();
-            long messageId = 0;
+            final long messageId;
             try {
                 messageId = MessageShardingUtil.generateId();
             } catch (Exception e) {
@@ -119,21 +147,88 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
 
             if (!isAdmin) {
-                Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
-                if (matched != null && !matched.isEmpty()) {
-                    m_messagesStore.storeSensitiveMessage(message);
-                    if (mSensitiveType == 0) {
-                        errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
-                    } else if(mSensitiveType == 1) {
-                        ignoreMsg = true;
-                    } else if(mSensitiveType == 2) {
-                        String text = message.getContent().getSearchableContent();
-                        for (String word : matched) {
-                            text = text.replace(word, "***");
+                if(StringUtil.isNullOrEmpty(mRemoteSensitiveServerUrl)) {
+                    Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
+                    if (matched != null && !matched.isEmpty()) {
+                        m_messagesStore.storeSensitiveMessage(message);
+                        if (mSensitiveType == 0) {
+                            errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
+                        } else if (mSensitiveType == 1) {
+                            ignoreMsg = true;
+                        } else if (mSensitiveType == 2) {
+                            String text = message.getContent().getSearchableContent();
+                            for (String word : matched) {
+                                text = text.replace(word, "***");
+                            }
+                            message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
                         }
-                        message = message.toBuilder().setContent(message.getContent().toBuilder().setSearchableContent(text).build()).build();
-                    } else if(mSensitiveType == 3) {
+                    }
+                } else {
+                    if(mRemoteSensitiveMessageTypes.contains(message.getContent().getType())) {
+                        final WFCMessage.Message finalMsg = message;
+                        publisher.forwardMessageWithCallback(message, mRemoteSensitiveServerUrl, new HttpUtils.HttpCallback() {
+                            @Override
+                            public void onSuccess(String content) {
+                                if(StringUtil.isNullOrEmpty(content)) {
+                                    saveAndPublish(fromUser, clientID, finalMsg);
+                                } else {
+                                    MessagePayload payload = new Gson().fromJson(content, MessagePayload.class);
+                                    if (payload != null && payload.getType() > 0) {
+                                        WFCMessage.Message newMsg = finalMsg.toBuilder().setContent(payload.toProtoMessageContent()).build();
+                                        saveAndPublish(fromUser, clientID, newMsg);
+                                    } else {
+                                        LOG.error("Response content {} from censor is invalid payload, ignore response and send original message", content);
+                                        saveAndPublish(fromUser, clientID, finalMsg);
+                                    }
+                                }
+                                if(mWaitRemoteSensitiveServerResponse) {
+                                    ByteBuf ackPayload = Unpooled.buffer(21);
+                                    ErrorCode errorCode = ERROR_CODE_SUCCESS;
+                                    ackPayload.writeByte(errorCode.getCode());
+                                    ackPayload.writeLong(messageId);
+                                    ackPayload.writeLong(timestamp);
+                                    callback.onIMHandled(ErrorCode.ERROR_CODE_SUCCESS, ackPayload);
+                                }
+                            }
 
+                            @Override
+                            public void onFailure(int statusCode, String errorMessage) {
+                                ByteBuf ackPayload = null;
+                                ErrorCode errorCode = ERROR_CODE_SUCCESS;
+                                if(statusCode == 403) {
+                                    if(mWaitRemoteSensitiveServerResponse) {
+                                        errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
+                                        ackPayload = Unpooled.buffer(1);
+                                        ackPayload.writeByte(errorCode.getCode());
+                                    }
+                                } else {
+                                    LOG.warn("Failed to censor message with status {}, errorMessage {}. Send the original message", statusCode, errorMessage);
+                                    saveAndPublish(fromUser, clientID, finalMsg);
+
+                                    if(mWaitRemoteSensitiveServerResponse) {
+                                        errorCode = ERROR_CODE_SUCCESS;
+                                        ackPayload = Unpooled.buffer(21);
+                                        ackPayload.writeByte(errorCode.getCode());
+                                        ackPayload.writeLong(messageId);
+                                        ackPayload.writeLong(timestamp);
+                                    }
+                                }
+
+                                if(mWaitRemoteSensitiveServerResponse) {
+                                    callback.onIMHandled(errorCode, ackPayload);
+                                }
+                            }
+                        });
+
+                        if(mWaitRemoteSensitiveServerResponse) {
+                            ackPayload.clear();
+                            return ErrorCode.INVALID_ASYNC_HANDLING;
+                        } else {
+                            ackPayload = ackPayload.capacity(20);
+                            ackPayload.writeLong(messageId);
+                            ackPayload.writeLong(timestamp);
+                            return ErrorCode.ERROR_CODE_SUCCESS;
+                        }
                     }
                 }
             }

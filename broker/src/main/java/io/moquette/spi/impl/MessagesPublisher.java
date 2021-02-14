@@ -624,6 +624,29 @@ public class MessagesPublisher {
         });
     }
 
+    public void forwardMessageWithCallback(final WFCMessage.Message message, String forwardUrl, HttpUtils.HttpCallback callback) {
+        try {
+            HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), new HttpUtils.HttpCallback() {
+                @Override
+                public void onSuccess(String content) {
+                    Server.getServer().getImBusinessScheduler().execute(()->{
+                        callback.onSuccess(content);
+                    });
+                }
+
+                @Override
+                public void onFailure(int statusCode, String errorMessage) {
+                    Server.getServer().getImBusinessScheduler().execute(()->{
+                        callback.onFailure(statusCode, errorMessage);
+                    });
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+        }
+    }
+
     public void notifyChannelListenStatusChanged(WFCMessage.ChannelInfo channelInfo, String user, boolean listen) {
         if (channelInfo == null || StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
             return;

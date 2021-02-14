@@ -54,6 +54,7 @@ public enum ErrorCode {
     ERROR_CODE_TIMEOUT(249, "timeout"),
     ERROR_CODE_OVER_FREQUENCY(250, "over frequency"),
     INVALID_PARAMETER(251, "Invalid parameter"),
+    INVALID_ASYNC_HANDLING(252, "Async handling"),
     ERROR_CODE_NOT_EXIST(253, "not exist"),
     ERROR_CODE_NOT_IMPLEMENT(254, "not implement"),
 
