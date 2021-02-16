@@ -27,7 +27,7 @@ public enum MqttVersion {
     MQTT_3_1_1("MQTT", (byte) 4),
     Wildfire_1("MQTT", (byte) 5),
     Wildfire_2("MQTT", (byte) 6),
-    Wildfire_Max("MQTT", (byte) 7);
+    Wildfire_Future("MQTT", (byte) 7);
 
     private final String name;
     private final byte level;
@@ -59,6 +59,9 @@ public enum MqttVersion {
                 }
             }
         }
+        if(protocolLevel > Wildfire_Future.level) {
+            return Wildfire_Future;
+        }
         throw new MqttUnacceptableProtocolVersionException(protocolName + "is unknown protocol name");
     }
 
@@ -67,6 +70,9 @@ public enum MqttVersion {
             if (mv.level == (byte )protocolLevel) {
                 return mv;
             }
+        }
+        if(protocolLevel > Wildfire_Future.level) {
+            return Wildfire_Future;
         }
         throw new MqttUnacceptableProtocolVersionException(protocolLevel + "is unknown protocol level");
     }
