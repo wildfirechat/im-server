@@ -134,6 +134,43 @@ public class Main {
             System.exit(-1);
         }
 
+        InputOutputUserInfo updateUserInfo = new InputOutputUserInfo();
+        updateUserInfo.setUserId(System.currentTimeMillis()+"");
+        updateUserInfo.setDisplayName("updatedUserName");
+        updateUserInfo.setPortrait("updatedUserPortrait");
+        int updateUserFlag = ProtoConstants.UpdateUserInfoMask.Update_User_DisplayName | ProtoConstants.UpdateUserInfoMask.Update_User_Portrait;
+        IMResult<Void> result = UserAdmin.updateUserInfo(updateUserInfo, updateUserFlag);
+        if(result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_NOT_EXIST) {
+            System.out.println("updateUserInfo success");
+        } else {
+            System.out.println("updateUserInfo failure");
+            System.exit(-1);
+        }
+
+        updateUserInfo.setUserId(userInfo.getUserId());
+        result = UserAdmin.updateUserInfo(updateUserInfo, updateUserFlag);
+        if(result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("updateUserInfo success");
+        } else {
+            System.out.println("updateUserInfo failure");
+            System.exit(-1);
+        }
+
+        IMResult<InputOutputUserInfo> resultGetUserInfo4 = UserAdmin.getUserByUserId(userInfo.getUserId());
+        if (resultGetUserInfo4 != null && resultGetUserInfo4.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            if (userInfo.getUserId().equals(resultGetUserInfo4.getResult().getUserId())
+                && updateUserInfo.getDisplayName().equals(resultGetUserInfo4.getResult().getDisplayName())
+                && updateUserInfo.getPortrait().equals(resultGetUserInfo4.getResult().getPortrait())) {
+                System.out.println("get user info success");
+            } else {
+                System.out.println("get user info by userId failure");
+                System.exit(-1);
+            }
+        } else {
+            System.out.println("get user info by userId failure");
+            System.exit(-1);
+        }
+
         IMResult<OutputGetIMTokenData> resultGetToken = UserAdmin.getUserToken(userInfo.getUserId(), "client111", ProtoConstants.Platform.Platform_Android);
         if (resultGetToken != null && resultGetToken.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get token success: " + resultGetToken.getResult().getToken());

@@ -201,6 +201,19 @@ public class ProtoConstants {
         int Chatroom_Member_Event_Unmute = 4;
     }
 
+    public interface UpdateUserInfoMask {
+        int Update_User_DisplayName = 0x01;
+        int Update_User_Portrait = 0x02;
+        int Update_User_Gender = 0x04;
+        int Update_User_Mobile = 0x08;
+        int Update_User_Email = 0x10;
+        int Update_User_Address = 0x20;
+        int Update_User_Company = 0x40;
+        int Update_User_Social = 0x80;
+        int Update_User_Extra = 0x100;
+    }
+
+
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
     public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
     public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER = 106;

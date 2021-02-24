@@ -29,6 +29,14 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, user, OutputCreateUser.class);
     }
 
+    public static IMResult<Void> updateUserInfo(InputOutputUserInfo user, int/*UpdateUserInfoMask*/ flag) throws Exception {
+        String path = APIPath.Update_User;
+        InputUpdateUserInfo updateUserInfo = new InputUpdateUserInfo();
+        updateUserInfo.flag = flag;
+        updateUserInfo.userInfo = user;
+        return AdminHttpUtils.httpJsonPost(path, updateUserInfo, Void.class);
+    }
+
     public static IMResult<OutputCreateRobot> createRobot(InputCreateRobot robot) throws Exception {
         String path = APIPath.Create_Robot;
         return AdminHttpUtils.httpJsonPost(path, robot, OutputCreateRobot.class);

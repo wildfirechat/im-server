@@ -59,6 +59,7 @@ import static cn.wildfirechat.proto.ProtoConstants.ModifyChannelInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ModifyGroupInfoType.*;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static cn.wildfirechat.proto.ProtoConstants.Platform.*;
+import static cn.wildfirechat.proto.ProtoConstants.UpdateUserInfoMask.*;
 import static io.moquette.BrokerConstants.*;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
@@ -2125,6 +2126,56 @@ public class MemoryMessagesStore implements IMessagesStore {
             out.add(new InputOutputUserBlockStatus(entry.getKey(), entry.getValue()));
         }
         return out;
+    }
+
+    @Override
+    public ErrorCode updateUserInfo(InputOutputUserInfo userInfo, int flag) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+        WFCMessage.User user = mUserMap.get(userInfo.getUserId());
+        if(user == null) {
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
+        }
+        WFCMessage.User.Builder builder = user.toBuilder();
+        if((flag & Update_User_DisplayName) > 0) {
+            builder.setDisplayName(userInfo.getDisplayName());
+        }
+        if((flag & Update_User_Portrait) > 0) {
+            builder.setPortrait(userInfo.getPortrait());
+        }
+        if((flag & Update_User_Gender) > 0) {
+            builder.setGender(userInfo.getGender());
+        }
+        if((flag & Update_User_Mobile) > 0) {
+            builder.setMobile(userInfo.getMobile());
+        }
+        if((flag & Update_User_Email) > 0) {
+            builder.setEmail(userInfo.getEmail());
+        }
+        if((flag & Update_User_Address) > 0) {
+            builder.setAddress(userInfo.getAddress());
+        }
+        if((flag & Update_User_Company) > 0) {
+            builder.setCompany(userInfo.getCompany());
+        }
+        if((flag & Update_User_Social) > 0) {
+            builder.setSocial(userInfo.getSocial());
+        }
+        if((flag & Update_User_Extra) > 0) {
+            builder.setExtra(userInfo.getExtra());
+        }
+        builder.setUpdateDt(System.currentTimeMillis());
+        user = builder.build();
+        try {
+            databaseStore.updateUser(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ErrorCode.ERROR_CODE_SERVER_ERROR;
+        }
+
+        mUserMap.put(user.getUid(), user);
+        callbackUserInfoEvent(user);
+        return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+import cn.wildfirechat.pojos.InputOutputUserInfo;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
@@ -142,6 +143,7 @@ public interface IMessagesStore {
     int getUserStatus(String userId);
     List<InputOutputUserBlockStatus> getUserStatusList();
 
+    ErrorCode updateUserInfo(InputOutputUserInfo userInfo, int flag);
     void addUserInfo(WFCMessage.User user, String password) throws Exception;
     void destoryUser(String userId);
     void updateUserInfo(WFCMessage.User user) throws Exception;
