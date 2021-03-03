@@ -11,11 +11,14 @@ while [ -h "$PRG" ]; do
   if expr "$link" : '/.*' > /dev/null; then
     PRG="$link"
   else
-    PRG=`dirname "$PRG"`/"$link"
+    PRGDIR=`dirname "$PRG"`
+    cd $PRGDIR
+    PRG="`pwd`"/"$link"
   fi
 done
 
 PRGDIR=`dirname "$PRG"`
+cd $PRGDIR
 cd ..
 WILDFIRECHAT_HOME=`pwd`
 

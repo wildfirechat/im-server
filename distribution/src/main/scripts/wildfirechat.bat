@@ -1,12 +1,11 @@
 @ECHO OFF
 
 set "CURRENT_DIR=%cd%"
-if not "%WILDFIRECHAT_HOME%" == "" goto gotHome
 set "WILDFIRECHAT_HOME=%CURRENT_DIR%"
 if exist "%WILDFIRECHAT_HOME%\bin\wildfirechat.bat" goto okHome
 cd ..
 set "WILDFIRECHAT_HOME=%cd%"
-cd "%CURRENT_DIR%"
+set "CURRENT_DIR=%cd%"
 :gotHome
 if exist "%WILDFIRECHAT_HOME%\bin\wildfirechat.bat" goto okHome
     echo The WILDFIRECHAT_HOME environment variable is not defined correctly
