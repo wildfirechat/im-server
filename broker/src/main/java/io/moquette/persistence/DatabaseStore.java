@@ -1555,6 +1555,35 @@ public class DatabaseStore {
         }
     }
 
+    void clearMultiUser(String uid, String clientId) {
+        long start = System.currentTimeMillis();
+        LOG.info("clearMultiUser {}, {}", uid, clientId);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "update t_user_session set _deleted = ?, _token = ?, _voip_token = ?, _dt = ?  where _cid = ? and _uid <> ? and _deleted = 0";
+
+            statement = connection.prepareStatement(sql);
+            int index = 1;
+            statement.setInt(index++, 1);
+            statement.setString(index++, "");
+            statement.setString(index++, "");
+            statement.setLong(index++, System.currentTimeMillis());
+
+            statement.setString(index++, clientId);
+            statement.setString(index++, uid);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     MemorySessionStore.Session createSession(String uid, String clientId, ClientSession clientSession, int platform) {
         Connection connection = null;
         PreparedStatement statement = null;

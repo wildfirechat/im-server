@@ -375,7 +375,7 @@ public class MemorySessionStore implements ISessionsStore {
             session.setPlatform(platform);
             databaseStore.updateSessionPlatform(username, clientID, platform);
         }
-
+        databaseStore.clearMultiUser(username, clientID);
 
         if (!supportMultiEndpoint && platform > 0) {
             databaseStore.clearMultiEndpoint(username, clientID, platform);
