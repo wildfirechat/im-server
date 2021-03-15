@@ -56,7 +56,7 @@ public class RelationAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputGetAlias.class);
     }
 
-    public static IMResult<Void> sendFrienRequest(String userId, String targetId, String reason, boolean force) throws Exception {
+    public static IMResult<Void> sendFriendRequest(String userId, String targetId, String reason, boolean force) throws Exception {
         String path = APIPath.Friend_Send_Request;
         InputAddFriendRequest input = new InputAddFriendRequest();
         input.setUserId(userId);

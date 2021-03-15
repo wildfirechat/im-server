@@ -292,7 +292,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<Void> result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello", true);
+        IMResult<Void> result = RelationAdmin.sendFriendRequest("ff1", "ff2", "hello", true);
         if (result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("send friend request success");
         } else {
@@ -300,7 +300,7 @@ public class Main {
             System.exit(-1);
         }
 
-        result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello2", false);
+        result = RelationAdmin.sendFriendRequest("ff1", "ff2", "hello2", false);
         if (result != null && result.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
         } else {
@@ -308,7 +308,7 @@ public class Main {
             System.exit(-1);
         }
 
-        result = RelationAdmin.sendFrienRequest("ff1", "ff2", "hello3", true);
+        result = RelationAdmin.sendFriendRequest("ff1", "ff2", "hello3", true);
         if (result != null && result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
         } else {
