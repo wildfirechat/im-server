@@ -1535,8 +1535,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         WFCMessage.GroupInfo groupInfo = mIMap.get(groupId);
         if (groupInfo == null) {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
-        } else if (groupInfo.getMemberUpdateDt() <= maxDt) {
-            return ErrorCode.ERROR_CODE_NOT_MODIFIED;
         }
 
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
