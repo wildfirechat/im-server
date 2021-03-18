@@ -332,7 +332,7 @@ public class MessagesPublisher {
                         }
                     }
 
-                    if ((StringUtil.isNullOrEmpty(pushContent) && messageContentType != 402 && messageContentType != 400 && messageContentType != 401)) {
+                    if ((StringUtil.isNullOrEmpty(pushContent) && messageContentType != 402 && messageContentType != 400 && messageContentType != 401 && messageContentType != 406)) {
                         LOG.info("push content is empty and contenttype is {}", messageContentType);
                         continue;
                     }

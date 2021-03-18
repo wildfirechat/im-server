@@ -43,7 +43,7 @@ public class PushMessage {
         this.cntType = messageContentType;
         this.serverTime = serverTime;
         this.unReceivedMsg = unReceivedMsg;
-        if (cntType == 400) {
+        if (cntType == 400 || cntType == 406) {
             this.pushMessageType = PushServer.PushMessageType.PUSH_MESSAGE_TYPE_VOIP_INVITE;
         } else if(cntType == 402) {
             this.pushMessageType = PushServer.PushMessageType.PUSH_MESSAGE_TYPE_VOIP_BYE;
