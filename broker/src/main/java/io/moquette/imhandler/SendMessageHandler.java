@@ -105,17 +105,21 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
 
                 int userStatus = m_messagesStore.getUserStatus(fromUser);
                 if (userStatus == ProtoConstants.UserStatus.Muted || userStatus == ProtoConstants.UserStatus.Forbidden) {
-                    return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
+                    if(!m_messagesStore.getGlobalMuteExceptionTypes().contains(message.getContent().getType())) {
+                        return ErrorCode.ERROR_CODE_FORBIDDEN_SEND_MSG;
+                    }
                 }
 
                 if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Private) {
-                    errorCode = m_messagesStore.isAllowUserMessage(message.getConversation().getTarget(), fromUser);
-                    if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
-                        if (errorCode == ErrorCode.ERROR_CODE_IN_BLACK_LIST && mBlacklistStrategy != ProtoConstants.BlacklistStrategy.Message_Reject) {
-                            ignoreMsg = true;
-                            errorCode = ErrorCode.ERROR_CODE_SUCCESS;
-                        } else {
-                            return errorCode;
+                    if(!m_messagesStore.getBlackListExceptionTypes().contains(message.getContent().getType())) {
+                        errorCode = m_messagesStore.isAllowUserMessage(message.getConversation().getTarget(), fromUser);
+                        if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                            if (errorCode == ErrorCode.ERROR_CODE_IN_BLACK_LIST && mBlacklistStrategy != ProtoConstants.BlacklistStrategy.Message_Reject) {
+                                ignoreMsg = true;
+                                errorCode = ErrorCode.ERROR_CODE_SUCCESS;
+                            } else {
+                                return errorCode;
+                            }
                         }
                     }
 
@@ -126,17 +130,23 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 }
 
                 if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group ) {
-                    errorCode = m_messagesStore.canSendMessageInGroup(fromUser, message.getConversation().getTarget());
-                    if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
-                        return errorCode;
+                    if(!m_messagesStore.getGroupMuteExceptionTypes().contains(message.getContent().getType())) {
+                        errorCode = m_messagesStore.canSendMessageInGroup(fromUser, message.getConversation().getTarget());
+                        if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
+                            return errorCode;
+                        }
                     }
                 } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_ChatRoom) {
-                    if(!m_messagesStore.checkUserClientInChatroom(fromUser, clientID, message.getConversation().getTarget())) {
-                        return ErrorCode.ERROR_CODE_NOT_IN_CHATROOM;
+                    if(!m_messagesStore.getGroupMuteExceptionTypes().contains(message.getContent().getType())) {
+                        if (!m_messagesStore.checkUserClientInChatroom(fromUser, clientID, message.getConversation().getTarget())) {
+                            return ErrorCode.ERROR_CODE_NOT_IN_CHATROOM;
+                        }
                     }
                 } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
-                    if(!m_messagesStore.checkUserInChannel(fromUser, message.getConversation().getTarget())) {
-                        return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
+                    if(!m_messagesStore.getGroupMuteExceptionTypes().contains(message.getContent().getType())) {
+                        if (!m_messagesStore.checkUserInChannel(fromUser, message.getConversation().getTarget())) {
+                            return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
+                        }
                     }
                 }
             }

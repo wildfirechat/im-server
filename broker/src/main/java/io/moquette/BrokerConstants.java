@@ -157,6 +157,9 @@ public final class BrokerConstants {
     public static final String USER_HIDE_PROPERTIES = "user.hide_properties";
 
     public static final String MESSAGES_FORBIDDEN_CLIENT_SEND_TYPES = "message.forbidden_client_send_types";
+    public static final String MESSAGES_BLACKLIST_EXCEPTION_TYPES = "message.blacklist_exception_types";
+    public static final String MESSAGES_GROUP_MUTE_EXCEPTION_TYPES = "message.group_mute_exception_types";
+    public static final String MESSAGES_GLOBAL_MUTE_EXCEPTION_TYPES = "message.global_mute_exception_types";
 
     public static final String MESSAGES_DISABLE_REMOTE_SEARCH = "message.disable_remote_search";
 

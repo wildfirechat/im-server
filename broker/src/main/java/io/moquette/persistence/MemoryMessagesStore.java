@@ -139,6 +139,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mChatroomRejoinWhenActive = true;
 
     private List<Integer> mForbiddenClientSendTypes = new ArrayList<>();
+    private List<Integer> mBlackListExceptionTypes = new ArrayList<>();
+    private List<Integer> mGroupMuteExceptionTypes = new ArrayList<>();
+    private List<Integer> mGlobalMuteExceptionTypes = new ArrayList<>();
 
     private long mRecallTimeLimit = 300;
 
@@ -275,7 +278,48 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
         }
 
+        try {
+            String strTypes = m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_BLACKLIST_EXCEPTION_TYPES);
+            if(!StringUtil.isNullOrEmpty(strTypes)) {
+                for (String strType:strTypes.split(",")) {
+                    try {
+                        int type = Integer.parseInt(strType);
+                        mBlackListExceptionTypes.add(type);
+                    } catch (NumberFormatException e) {
 
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        try {
+            String strTypes = m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_GROUP_MUTE_EXCEPTION_TYPES);
+            if(!StringUtil.isNullOrEmpty(strTypes)) {
+                for (String strType:strTypes.split(",")) {
+                    try {
+                        int type = Integer.parseInt(strType);
+                        mGroupMuteExceptionTypes.add(type);
+                    } catch (NumberFormatException e) {
+
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        try {
+            String strTypes = m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_GLOBAL_MUTE_EXCEPTION_TYPES);
+            if(!StringUtil.isNullOrEmpty(strTypes)) {
+                for (String strType:strTypes.split(",")) {
+                    try {
+                        int type = Integer.parseInt(strType);
+                        mGlobalMuteExceptionTypes.add(type);
+                    } catch (NumberFormatException e) {
+
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
 
         try {
             mGroupInfoUpdateCallback = server.getConfig().getProperty(GROUP_INFO_UPDATE_CALLBACK);
@@ -3465,6 +3509,21 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public List<Integer> getClientForbiddenSendTypes() {
         return mForbiddenClientSendTypes;
+    }
+
+    @Override
+    public List<Integer> getBlackListExceptionTypes() {
+        return mBlackListExceptionTypes;
+    }
+
+    @Override
+    public List<Integer> getGroupMuteExceptionTypes() {
+        return mGroupMuteExceptionTypes;
+    }
+
+    @Override
+    public List<Integer> getGlobalMuteExceptionTypes() {
+        return mGlobalMuteExceptionTypes;
     }
 
     @Override

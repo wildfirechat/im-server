@@ -220,6 +220,9 @@ public interface IMessagesStore {
     int getVisibleQuitKickoffNotification();
 
     List<Integer> getClientForbiddenSendTypes();
+    List<Integer> getBlackListExceptionTypes();
+    List<Integer> getGroupMuteExceptionTypes();
+    List<Integer> getGlobalMuteExceptionTypes();
 
     long getMessageHead(String user);
     long getFriendHead(String user);
