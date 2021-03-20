@@ -1184,8 +1184,6 @@ public class Main {
         ChannelServiceApi channelServiceApi = new ChannelServiceApi("http://localhost", resultCreateChannel.getResult().getTargetId(), secret);
 
 
-
-        if (commercialServer) {
             //3. 测试channel api功能
             IMResult<Void> resultVoid = channelServiceApi.subscribe("userId2");
             if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -1234,7 +1232,7 @@ public class Main {
                 System.out.println("get user info failure");
                 System.exit(-1);
             }
-        }
+
 
 
         MessagePayload payload = new MessagePayload();
