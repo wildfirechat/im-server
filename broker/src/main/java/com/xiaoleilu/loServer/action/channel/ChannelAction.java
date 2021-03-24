@@ -51,7 +51,7 @@ abstract public class ChannelAction extends Action {
         }
 
         if (StringUtil.isNullOrEmpty(nonce) || StringUtil.isNullOrEmpty(timestamp) || StringUtil.isNullOrEmpty(sign) || StringUtil.isNullOrEmpty(cid)) {
-            return ErrorCode.INVALID_PARAMETER;
+            return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
         if (!mLimitCounter.isGranted(cid)) {
@@ -64,7 +64,7 @@ abstract public class ChannelAction extends Action {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e, IMExceptionEvent.EventType.CHANNEL_API_Exception);
-            return ErrorCode.INVALID_PARAMETER;
+            return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
         if (System.currentTimeMillis() - ts > 2 * 60 * 60 * 1000) {

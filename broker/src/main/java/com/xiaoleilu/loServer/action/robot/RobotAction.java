@@ -55,7 +55,7 @@ abstract public class RobotAction extends Action {
         }
 
         if (StringUtil.isNullOrEmpty(nonce) || StringUtil.isNullOrEmpty(timestamp) || StringUtil.isNullOrEmpty(sign) || StringUtil.isNullOrEmpty(rid)) {
-            return ErrorCode.INVALID_PARAMETER;
+            return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
         if (!mLimitCounter.isGranted(rid)) {
@@ -68,7 +68,7 @@ abstract public class RobotAction extends Action {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ROBOT_API_Exception);
-            return ErrorCode.INVALID_PARAMETER;
+            return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
         if (System.currentTimeMillis() - ts > 2 * 60 * 60 * 1000) {
