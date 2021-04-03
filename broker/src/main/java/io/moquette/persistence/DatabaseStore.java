@@ -1741,11 +1741,11 @@ public class DatabaseStore {
                     int count = statement.executeUpdate();
                     LOG.info("Update rows {}", count);
                 }
-
-                connection.commit();
-                connection.setAutoCommit(true);
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e, RDBS_Exception);
+            } finally {
                 if (connection != null) {
                     try {
                         connection.commit();
@@ -1754,9 +1754,6 @@ public class DatabaseStore {
                         e1.printStackTrace();
                     }
                 }
-                e.printStackTrace();
-                Utility.printExecption(LOG, e, RDBS_Exception);
-            } finally {
                 DBUtil.closeDB(connection, statement);
             }
     }
@@ -3082,11 +3079,11 @@ public class DatabaseStore {
                     int count = statement.executeUpdate();
                     LOG.info("Update rows {}", count);
                 }
-
-                connection.commit();
-                connection.setAutoCommit(true);
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
+                Utility.printExecption(LOG, e, RDBS_Exception);
+            } finally {
                 if (connection != null) {
                     try {
                         connection.commit();
@@ -3095,9 +3092,6 @@ public class DatabaseStore {
                         e1.printStackTrace();
                     }
                 }
-                e.printStackTrace();
-                Utility.printExecption(LOG, e, RDBS_Exception);
-            } finally {
                 DBUtil.closeDB(connection, statement);
             }
         });
