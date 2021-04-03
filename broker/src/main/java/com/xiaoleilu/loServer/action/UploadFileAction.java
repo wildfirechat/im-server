@@ -201,7 +201,7 @@ public class UploadFileAction extends Action {
                     return false;
                 }
 
-                if (remoteFileSize > 50 * 1024 * 1024) {
+                if (remoteFileSize > 200 * 1024 * 1024) {
                     logger.warn("file over limite!(" + remoteFileSize + ")");
                     response.setStatus(HttpResponseStatus.BAD_REQUEST);
                     response.setContent("file over limite!");

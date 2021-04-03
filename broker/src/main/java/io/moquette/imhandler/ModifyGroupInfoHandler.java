@@ -44,6 +44,8 @@ public class ModifyGroupInfoHandler extends GroupHandler<WFCMessage.ModifyGroupI
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupPrivatechatNotifyContent();
                 } else if(request.getType() == Modify_Group_Searchable) {
                     content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupSearchableNotifyContent();
+                } else if(request.getType() == Modify_Group_Extra) {
+                    content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, request.getValue(), "").getChangeGroupExtraNotifyContent();
                 }
 
                 if (content != null) {

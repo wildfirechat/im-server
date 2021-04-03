@@ -49,11 +49,21 @@ public class InputModifyGroupInfo extends InputGroupBase {
     }
 
     public WFCMessage.ModifyGroupInfoRequest toProtoGroupRequest() {
-        return WFCMessage.ModifyGroupInfoRequest.newBuilder()
-            .setGroupId(group_id)
-            .setType(type)
-            .setValue(value)
-            .addAllToLine(to_lines == null || to_lines.isEmpty() ? Arrays.asList(0) : to_lines)
-            .build();
+        if(notify_message != null && notify_message.getType() > 0) {
+            return WFCMessage.ModifyGroupInfoRequest.newBuilder()
+                .setGroupId(group_id)
+                .setType(type)
+                .setValue(value)
+                .addAllToLine(to_lines == null || to_lines.isEmpty() ? Arrays.asList(0) : to_lines)
+                .build();
+        } else {
+            return WFCMessage.ModifyGroupInfoRequest.newBuilder()
+                .setGroupId(group_id)
+                .setType(type)
+                .setValue(value)
+                .addAllToLine(to_lines == null || to_lines.isEmpty() ? Arrays.asList(0) : to_lines)
+                .setNotifyContent(notify_message.toProtoMessageContent())
+                .build();
+        }
     }
 }

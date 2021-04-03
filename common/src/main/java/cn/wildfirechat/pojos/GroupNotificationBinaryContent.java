@@ -160,4 +160,9 @@ public class GroupNotificationBinaryContent {
     public WFCMessage.MessageContent getAllowGroupMemberNotifyContent() {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_ALLOW_MEMBER);
     }
+
+    public WFCMessage.MessageContent getChangeGroupExtraNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_MODIFY_GROUP_EXTRA);
+    }
+
 }
