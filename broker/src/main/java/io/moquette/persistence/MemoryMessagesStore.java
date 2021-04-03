@@ -2207,6 +2207,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             builder.setExtra(userInfo.getExtra());
         }
         if((flag & Update_User_Name) > 0) {
+            if(StringUtil.isNullOrEmpty(userInfo.getName())) {
+                LOG.error("Modify user info failure, name not exist!");
+                return ErrorCode.INVALID_PARAMETER;
+            }
             builder.setName(userInfo.getName());
         }
         builder.setUpdateDt(System.currentTimeMillis());
