@@ -2206,6 +2206,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         if((flag & Update_User_Extra) > 0) {
             builder.setExtra(userInfo.getExtra());
         }
+        if((flag & Update_User_Name) > 0) {
+            builder.setName(userInfo.getName());
+        }
         builder.setUpdateDt(System.currentTimeMillis());
         user = builder.build();
         try {

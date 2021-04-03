@@ -211,6 +211,7 @@ public class ProtoConstants {
         int Update_User_Company = 0x40;
         int Update_User_Social = 0x80;
         int Update_User_Extra = 0x100;
+        int Update_User_Name = 0x200;
     }
 
 
