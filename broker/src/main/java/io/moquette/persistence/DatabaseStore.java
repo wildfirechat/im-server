@@ -1702,7 +1702,7 @@ public class DatabaseStore {
         }
     }
 
-    void persistGroupMember(final String groupId, final List<WFCMessage.GroupMember> memberList) {
+    void persistGroupMember(final String groupId, final List<WFCMessage.GroupMember> memberList, boolean updateCreateTime) {
             Connection connection = null;
             PreparedStatement statement = null;
             try {
@@ -1718,6 +1718,9 @@ public class DatabaseStore {
                     "`_alias` = ?," +
                     "`_type` = ?," +
                     "`_dt` = ?";
+                if(updateCreateTime) {
+                    sql += ", `_create_dt` = ?";
+                }
 
                 statement = connection.prepareStatement(sql);
 
@@ -1738,6 +1741,9 @@ public class DatabaseStore {
                     statement.setString(index++, member.getAlias());
                     statement.setInt(index++, member.getType());
                     statement.setLong(index++, dt);
+                    if(updateCreateTime) {
+                        statement.setLong(index++, dt);
+                    }
                     int count = statement.executeUpdate();
                     LOG.info("Update rows {}", count);
                 }

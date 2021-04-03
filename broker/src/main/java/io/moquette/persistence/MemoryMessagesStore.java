@@ -972,7 +972,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .build();
 
         mIMap.set(groupId, groupInfo);
-        databaseStore.persistGroupMember(groupId, updatedMemberList);
+        databaseStore.persistGroupMember(groupId, updatedMemberList, false);
 
         callbackGroupEvent(fromUser, groupInfo.getTargetId(), ProtoConstants.GroupUpdateEventType.Group_Event_Create);
         return groupInfo;
@@ -1191,7 +1191,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        databaseStore.persistGroupMember(groupId, memberList);
+        databaseStore.persistGroupMember(groupId, memberList, true);
         databaseStore.updateGroupMemberCountDt(groupId);
 
         groupMembers.remove(groupId);
@@ -1516,7 +1516,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (member.getMemberId().equals(memberId)) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setAlias(alias).setUpdateDt(updateDt).build();
-                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
                 databaseStore.updateGroupMemberDt(groupId, updateDt);
                 groupMembers.put(groupId, member);
 
@@ -1673,13 +1673,13 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (newOwner.equals(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).build();
-                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
                 groupMembers.put(groupId, member);
                 modifyMemeberCount++;
             } else if(member.getType() == GroupMemberType_Owner) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).build();
-                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
                 groupMembers.put(groupId, member);
                 modifyMemeberCount++;
             }
@@ -1717,7 +1717,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (userList.contains(member.getMemberId())) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
-                databaseStore.persistGroupMember(groupId, Arrays.asList(member));
+                databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
                 groupMembers.put(groupId, member);
             }
         }
