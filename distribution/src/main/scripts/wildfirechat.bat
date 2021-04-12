@@ -72,4 +72,8 @@ rem set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
 rem set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 rem set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=10M"
 
+echo 请设置JVM参数Xmx和Xms！！！
+rem set JAVA_OPTS=%JAVA_OPTS% -Xmx2G
+rem set JAVA_OPTS=%JAVA_OPTS% -Xms2G
+
 %JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configuration=file:%LOG_FILE% -Dcom.mchange.v2.c3p0.cfg.xml=%C3P0_CONF_FILE% -Dhazelcast.configuration=file:%HZ_CONF_FILE% -Dwildfirechat.path=%WILDFIRECHAT_PATH% -cp %WILDFIRECHAT_HOME%\lib\* cn.wildfirechat.server.Server
