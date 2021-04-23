@@ -1200,7 +1200,6 @@ public class Main {
                 System.out.println("subscribe failure");
                 System.exit(-1);
             }
-
             IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
             if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3")) {
                 System.out.println("get subscriber done");

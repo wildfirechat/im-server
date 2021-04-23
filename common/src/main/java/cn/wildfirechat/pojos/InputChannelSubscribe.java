@@ -8,22 +8,16 @@
 
 package cn.wildfirechat.pojos;
 
-import cn.wildfirechat.proto.ProtoConstants;
-import cn.wildfirechat.proto.WFCMessage;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class InputChannelSubscribe {
-    private String target;
+    private String userId;
     private int subscribe; //1，订阅；0，取消订阅
 
-    public String getTarget() {
-        return target;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public int getSubscribe() {

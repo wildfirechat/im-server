@@ -2,11 +2,8 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
-import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
-import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.ChannelHttpUtils;
-import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
 import java.util.List;
 
@@ -61,15 +58,15 @@ public class ChannelServiceApi {
     public IMResult<Void> subscribe(String target) throws Exception {
         String path = APIPath.Channel_Subscribe;
         InputChannelSubscribe input = new InputChannelSubscribe();
-        input.setTarget(target);
+        input.setUserId(target);
         input.setSubscribe(1);
         return httpUtils.httpJsonPost(path, input, Void.class);
     }
 
-    public IMResult<Void> unsubscribe(String target) throws Exception {
+    public IMResult<Void> unsubscribe(String userId) throws Exception {
         String path = APIPath.Channel_Subscribe;
         InputChannelSubscribe input = new InputChannelSubscribe();
-        input.setTarget(target);
+        input.setUserId(userId);
         input.setSubscribe(0);
         return httpUtils.httpJsonPost(path, input, Void.class);
     }

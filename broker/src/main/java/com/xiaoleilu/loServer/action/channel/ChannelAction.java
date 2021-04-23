@@ -116,7 +116,10 @@ abstract public class ChannelAction extends Action {
     }
 
     protected void sendApiMessage(String topic, byte[] message, Callback callback) {
-        ServerAPIHelper.sendRequest(channelInfo.getOwner(), null, topic, message, new ServerAPIHelper.Callback() {
+        sendApiMessage(channelInfo.getOwner(), topic, message, callback);
+    }
+    protected void sendApiMessage(String user, String topic, byte[] message, Callback callback) {
+        ServerAPIHelper.sendRequest(user, null, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] response) {
                 callback.onSuccess(response);

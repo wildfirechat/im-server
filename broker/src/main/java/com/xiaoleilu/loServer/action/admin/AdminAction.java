@@ -92,9 +92,16 @@ abstract public class AdminAction extends Action {
         response.setContent(new Gson().toJson(result));
         response.send();
     }
-
     protected void sendApiMessage(String fromUser, String topic, byte[] message, ApiCallback callback) {
-        ServerAPIHelper.sendRequest(fromUser, null, topic, message, new ServerAPIHelper.Callback() {
+        sendApiMessage(fromUser, null, topic, message, callback, false);
+    }
+
+    protected void sendApiMessage(String fromUser, String topic, byte[] message, ApiCallback callback, boolean noAdmin) {
+        sendApiMessage(fromUser, null, topic, message, callback, noAdmin);
+    }
+
+    protected void sendApiMessage(String fromUser, String clientId, String topic, byte[] message, ApiCallback callback, boolean noAdmin) {
+        ServerAPIHelper.sendRequest(fromUser, clientId, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] result) {
                 if(callback != null) {
@@ -119,6 +126,6 @@ abstract public class AdminAction extends Action {
                     ctx.executor().execute(command);
                 };
             }
-        }, true);
+        }, !noAdmin);
     }
 }

@@ -38,7 +38,7 @@ public class GetIMTokenAction extends AdminAction {
 
 
             WFCMessage.GetTokenRequest getTokenRequest = WFCMessage.GetTokenRequest.newBuilder().setUserId(userId).setClientId(input.getClientId()).setPlatform(input.getPlatform() == null ? 0 : input.getPlatform()).build();
-            sendApiMessage(userId, IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), result -> {
+            sendApiMessage(userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), result -> {
                 ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
                 if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
                     //ba errorcode qudiao
@@ -52,7 +52,7 @@ public class GetIMTokenAction extends AdminAction {
                 } else {
                     return new Result(errorCode1);
                 }
-            });
+            }, false);
             return false;
         }
         return true;
