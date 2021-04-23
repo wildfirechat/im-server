@@ -9,15 +9,15 @@
 package cn.wildfirechat.pojos;
 
 public class InputChannelSubscribe {
-    private String userId;
+    private String target;
     private int subscribe; //1，订阅；0，取消订阅
 
-    public String getUserId() {
-        return userId;
+    public String getTarget() {
+        return target;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     public int getSubscribe() {

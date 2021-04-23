@@ -55,10 +55,10 @@ public class ChannelServiceApi {
         return httpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
-    public IMResult<Void> subscribe(String target) throws Exception {
+    public IMResult<Void> subscribe(String userId) throws Exception {
         String path = APIPath.Channel_Subscribe;
         InputChannelSubscribe input = new InputChannelSubscribe();
-        input.setUserId(target);
+        input.setTarget(userId);
         input.setSubscribe(1);
         return httpUtils.httpJsonPost(path, input, Void.class);
     }
@@ -66,7 +66,7 @@ public class ChannelServiceApi {
     public IMResult<Void> unsubscribe(String userId) throws Exception {
         String path = APIPath.Channel_Subscribe;
         InputChannelSubscribe input = new InputChannelSubscribe();
-        input.setUserId(userId);
+        input.setTarget(userId);
         input.setSubscribe(0);
         return httpUtils.httpJsonPost(path, input, Void.class);
     }
