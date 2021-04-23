@@ -45,32 +45,12 @@ public class RecallMessageAction extends AdminAction {
             if (recallMessageData != null && !StringUtil.isNullOrEmpty(recallMessageData.getOperator())) {
 
                 WFCMessage.INT64Buf idBuf = WFCMessage.INT64Buf.newBuilder().setId(recallMessageData.getMessageUid()).build();
-                ServerAPIHelper.sendRequest(recallMessageData.getOperator(), null, IMTopic.RecallMessageTopic, idBuf.toByteArray(), recallMessageData.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                sendApiMessage(recallMessageData.getOperator(), IMTopic.RecallMessageTopic, idBuf.toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    sendResponse(response, errorCode, null);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

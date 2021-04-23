@@ -50,34 +50,16 @@ public class FriendRelationAction extends AdminAction {
                 if (!StringUtil.isNullOrEmpty(friendAdd.getExtra())) {
                     friendRequestBuilder = friendRequestBuilder.setExtra(friendAdd.getExtra());
                 }
-                ServerAPIHelper.sendRequest(friendAdd.getUserId(), null, IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), friendAdd.getFriendUid(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, null);
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
+                sendApiMessage(friendAdd.getUserId(), IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        sendResponse(response, null, null);
+                    } else {
                         sendResponse(response, errorCode, null);
                     }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> ctx.executor().execute(command);
-                    }
-                }, true);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

@@ -42,41 +42,21 @@ public class GetIMTokenAction extends AdminAction {
 
 
             WFCMessage.GetTokenRequest getTokenRequest = WFCMessage.GetTokenRequest.newBuilder().setUserId(userId).setClientId(input.getClientId()).setPlatform(input.getPlatform() == null ? 0 : input.getPlatform()).build();
-            ServerAPIHelper.sendRequest(userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), userId, TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                @Override
-                public void onSuccess(byte[] result) {
-                    ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
-                    if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
-                        //ba errorcode qudiao
-                        byte[] data = new byte[result.length -1];
-                        for (int i = 0; i < data.length; i++) {
-                            data[i] = result[i+1];
-                        }
-                        String token = Base64.getEncoder().encodeToString(data);
-
-                        sendResponse(response, null, new OutputGetIMTokenData(userId, token));
-                    } else {
-                        sendResponse(response, errorCode1, null);
+            sendApiMessage(userId, IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), result -> {
+                ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
+                if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
+                    //ba errorcode qudiao
+                    byte[] data = new byte[result.length -1];
+                    for (int i = 0; i < data.length; i++) {
+                        data[i] = result[i+1];
                     }
-                }
+                    String token = Base64.getEncoder().encodeToString(data);
 
-                @Override
-                public void onError(ErrorCode errorCode) {
-                    sendResponse(response, errorCode, null);
+                    sendResponse(response, null, new OutputGetIMTokenData(userId, token));
+                } else {
+                    sendResponse(response, errorCode1, null);
                 }
-
-                @Override
-                public void onTimeout() {
-                    sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                }
-
-                @Override
-                public Executor getResponseExecutor() {
-                    return command -> {
-                        ctx.executor().execute(command);
-                    };
-                }
-            }, true);
+            });
             return false;
         }
         return true;

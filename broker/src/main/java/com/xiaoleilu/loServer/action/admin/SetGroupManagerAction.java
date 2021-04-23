@@ -42,36 +42,16 @@ public class SetGroupManagerAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputSetGroupManager inputAddGroupMember = getRequestBody(request.getNettyRequest(), InputSetGroupManager.class);
             if (inputAddGroupMember.isValide()) {
-                ServerAPIHelper.sendRequest(inputAddGroupMember.getOperator(), null, IMTopic.SetGroupManagerTopic, inputAddGroupMember.toProtoGroupRequest().toByteArray(), inputAddGroupMember.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, null);
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
+                sendApiMessage(inputAddGroupMember.getOperator(), IMTopic.SetGroupManagerTopic, inputAddGroupMember.toProtoGroupRequest().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        sendResponse(response, null, null);
+                    } else {
                         sendResponse(response, errorCode, null);
                     }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

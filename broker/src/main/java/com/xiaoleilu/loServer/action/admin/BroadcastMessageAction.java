@@ -44,38 +44,18 @@ public class BroadcastMessageAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             BroadMessageData sendMessageData = getRequestBody(request.getNettyRequest(), BroadMessageData.class);
             if (BroadMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {
-                ServerAPIHelper.sendRequest(sendMessageData.getSender(), null, IMTopic.BroadcastMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            long messageId = byteBuf.readLong();
-                            long count = byteBuf.readLong();
-                            sendResponse(response, null, new BroadMessageResult(messageId, count));
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
+                sendApiMessage(sendMessageData.getSender(), IMTopic.BroadcastMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        long messageId = byteBuf.readLong();
+                        long count = byteBuf.readLong();
+                        sendResponse(response, null, new BroadMessageResult(messageId, count));
+                    } else {
                         sendResponse(response, errorCode, null);
                     }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

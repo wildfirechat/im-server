@@ -45,41 +45,21 @@ public class DestroyUserAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
 
                 WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
-                ServerAPIHelper.sendRequest(inputDestroyUser.getUserId(), null, IMTopic.DestroyUserTopic, idBuf.toByteArray(), inputDestroyUser.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
-                        if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
-                            //ba errorcode qudiao
-                            byte[] data = new byte[result.length -1];
-                            for (int i = 0; i < data.length; i++) {
-                                data[i] = result[i+1];
-                            }
-                            String token = Base64.getEncoder().encodeToString(data);
-
-                            sendResponse(response, null, null);
-                        } else {
-                            sendResponse(response, errorCode1, null);
+                sendApiMessage(inputDestroyUser.getUserId(), IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
+                    ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
+                    if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
+                        //ba errorcode qudiao
+                        byte[] data = new byte[result.length -1];
+                        for (int i = 0; i < data.length; i++) {
+                            data[i] = result[i+1];
                         }
-                    }
+                        String token = Base64.getEncoder().encodeToString(data);
 
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
+                        sendResponse(response, null, null);
+                    } else {
+                        sendResponse(response, errorCode1, null);
                     }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

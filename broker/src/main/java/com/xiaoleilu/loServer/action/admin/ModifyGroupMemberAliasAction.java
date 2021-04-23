@@ -42,36 +42,16 @@ public class ModifyGroupMemberAliasAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputSetGroupMemberAlias inputSetGroupMemberAlias = getRequestBody(request.getNettyRequest(), InputSetGroupMemberAlias.class);
             if (inputSetGroupMemberAlias.isValide()) {
-                ServerAPIHelper.sendRequest(inputSetGroupMemberAlias.getOperator(), null, IMTopic.ModifyGroupMemberAliasTopic, inputSetGroupMemberAlias.toProtoGroupRequest().toByteArray(), inputSetGroupMemberAlias.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, null);
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
+                sendApiMessage(inputSetGroupMemberAlias.getOperator(), IMTopic.ModifyGroupMemberAliasTopic, inputSetGroupMemberAlias.toProtoGroupRequest().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        sendResponse(response, null, null);
+                    } else {
                         sendResponse(response, errorCode, null);
                     }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

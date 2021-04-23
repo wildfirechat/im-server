@@ -45,32 +45,12 @@ public class RecallMultiCastMessageAction extends AdminAction {
             if (recallMessageData != null && !StringUtil.isNullOrEmpty(recallMessageData.operator)) {
 
                 WFCMessage.RecallMultiCastMessageRequest recallRequest = WFCMessage.RecallMultiCastMessageRequest.newBuilder().setMessageId(recallMessageData.messageUid).addAllReceiver(recallMessageData.receivers).build();
-                ServerAPIHelper.sendRequest(recallMessageData.operator, null, IMTopic.RecallMultiCastMessageTopic, recallRequest.toByteArray(), recallMessageData.operator, TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                sendApiMessage(recallMessageData.operator, IMTopic.RecallMultiCastMessageTopic, recallRequest.toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    sendResponse(response, errorCode, null);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

@@ -38,30 +38,10 @@ public class CheckUserOnlineAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId == null || !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
-                ServerAPIHelper.sendRequest(null, null, ServerAPIHelper.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), inputUserId.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
-                    @Override
-                    public void onSuccess(byte[] res) {
-                        OutputCheckUserOnline out = new Gson().fromJson(new String(res), OutputCheckUserOnline.class);
-                        sendResponse(response, null, out);
-                    }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, true);
+                sendApiMessage(inputUserId.getUserId(), ServerAPIHelper.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), res -> {
+                    OutputCheckUserOnline out = new Gson().fromJson(new String(res), OutputCheckUserOnline.class);
+                    sendResponse(response, null, out);
+                });
                 return false;
             } else {
                 sendResponse(response, ErrorCode.INVALID_PARAMETER, null);

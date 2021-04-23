@@ -12,15 +12,23 @@ import com.google.gson.Gson;
 import com.xiaoleilu.loServer.LoServer;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
+import com.xiaoleilu.loServer.action.channel.ChannelAction;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
+import io.moquette.persistence.ServerAPIHelper;
+import io.moquette.persistence.TargetEntry;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.wildfirechat.common.ErrorCode;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.IMTopic;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
+
+import java.util.concurrent.Executor;
 
 abstract public class AdminAction extends Action {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AdminAction.class);
@@ -29,6 +37,10 @@ abstract public class AdminAction extends Action {
     private final RateLimiter mLimitCounter = new RateLimiter(10, 500);
     public static void setSecretKey(String secretKey) {
         SECRET_KEY = secretKey;
+    }
+
+    protected interface Callback {
+        void onSuccess(byte[] response);
     }
 
     public static void setNoCheckTime(String noCheckTime) {
@@ -89,5 +101,31 @@ abstract public class AdminAction extends Action {
         RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), data);
         response.setContent(new Gson().toJson(result));
         response.send();
+    }
+
+    protected void sendApiMessage(String fromUser, String topic, byte[] message, Callback callback) {
+        ServerAPIHelper.sendRequest(fromUser, null, topic, message, fromUser, TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
+            @Override
+            public void onSuccess(byte[] result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(ErrorCode errorCode) {
+                sendResponse(response, errorCode, null);
+            }
+
+            @Override
+            public void onTimeout() {
+                sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
+            }
+
+            @Override
+            public Executor getResponseExecutor() {
+                return command -> {
+                    ctx.executor().execute(command);
+                };
+            }
+        }, true);
     }
 }
