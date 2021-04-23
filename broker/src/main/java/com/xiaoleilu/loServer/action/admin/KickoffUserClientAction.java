@@ -38,9 +38,7 @@ public class KickoffUserClientAction extends AdminAction {
                 sessionsStore.kickoffUserClient(pojo.getFirst(), pojo.getSecond());
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, null);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

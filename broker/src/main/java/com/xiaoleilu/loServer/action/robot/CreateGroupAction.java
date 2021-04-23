@@ -60,9 +60,7 @@ public class CreateGroupAction extends RobotAction {
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
         }
         return true;

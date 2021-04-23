@@ -76,7 +76,6 @@ public class UpdateProfileAction extends RobotAction {
                     break;
             }
 
-            response.setStatus(HttpResponseStatus.OK);
             RestResult result = RestResult.ok();
             if(modified) {
                 try {
@@ -86,8 +85,7 @@ public class UpdateProfileAction extends RobotAction {
                     result.setErrorCode(ErrorCode.ERROR_CODE_SERVER_ERROR);
                 }
             }
-
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(result);
         }
         return true;
     }

@@ -89,19 +89,13 @@ public class CreateUserAction extends AdminAction {
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
-                    response.setStatus(HttpResponseStatus.OK);
-                    RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
-                    response.setContent(new Gson().toJson(result));
+                    setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage()));
                     return true;
                 }
 
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok(new OutputCreateUser(inputCreateUser.getUserId(), inputCreateUser.getName()));
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.ok(new OutputCreateUser(inputCreateUser.getUserId(), inputCreateUser.getName())));
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

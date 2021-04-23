@@ -40,7 +40,6 @@ public class GetSystemSettingAction extends AdminAction {
             if (inputUserId != null) {
                 SystemSettingPojo output = messagesStore.getSystemSetting(inputUserId.id);
 
-                response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
                 if (output == null) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
@@ -48,11 +47,9 @@ public class GetSystemSettingAction extends AdminAction {
                     result = RestResult.ok(output);
                 }
 
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

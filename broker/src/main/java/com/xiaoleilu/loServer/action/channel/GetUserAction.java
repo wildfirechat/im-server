@@ -46,7 +46,6 @@ public class GetUserAction extends ChannelAction {
                     user = messagesStore.getUserInfoByMobile(inputUserId.getMobile());
                 }
 
-                response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
 
                 if (user == null || StringUtil.isNullOrEmpty(user.getName())) {
@@ -70,11 +69,9 @@ public class GetUserAction extends ChannelAction {
                     }
                 }
 
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

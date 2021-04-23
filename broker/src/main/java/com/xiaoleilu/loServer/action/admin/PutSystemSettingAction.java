@@ -40,22 +40,16 @@ public class PutSystemSettingAction extends AdminAction {
             if (inputUserId != null
                 && (!StringUtil.isNullOrEmpty(inputUserId.value) || !StringUtil.isNullOrEmpty(inputUserId.desc))) {
 
-
                 boolean success = messagesStore.updateSystemSetting(inputUserId.id, inputUserId.value, inputUserId.desc);
-
-                response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
                 if (!success) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR);
                 } else {
                     result = RestResult.ok();
                 }
-
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

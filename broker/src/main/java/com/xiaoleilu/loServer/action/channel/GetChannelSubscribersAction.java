@@ -36,10 +36,7 @@ public class GetChannelSubscribersAction extends ChannelAction {
             OutputStringList outputStringList = new OutputStringList();
             outputStringList.setList(new ArrayList<>());
             outputStringList.getList().addAll(messagesStore.getChannelSubscriber(channelInfo.getTargetId()));
-
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(outputStringList);
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok(outputStringList));
         }
         return true;
     }

@@ -36,7 +36,7 @@ public class CheckUserOnlineAction extends AdminAction {
             if (inputUserId == null || !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
                 sendApiMessage(inputUserId.getUserId(), ServerAPIHelper.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), res -> {
                     OutputCheckUserOnline out = new Gson().fromJson(new String(res), OutputCheckUserOnline.class);
-                    sendResponse(response, null, out);
+                    return new Result(ErrorCode.ERROR_CODE_SUCCESS, out);
                 });
                 return false;
             } else {

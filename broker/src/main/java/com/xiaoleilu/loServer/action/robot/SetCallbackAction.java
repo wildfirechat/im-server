@@ -35,14 +35,9 @@ public class SetCallbackAction extends RobotAction {
                     robot = robot.toBuilder().setCallback(input.getUrl()).setState(1).build();
                     messagesStore.addRobot(robot);
                 }
-
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok();
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.ok());
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

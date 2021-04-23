@@ -58,14 +58,9 @@ public class GetChatroomMembersAction extends AdminAction {
                 } else {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 }
-                response.setStatus(HttpResponseStatus.OK);
-
-                response.setContent(new Gson().toJson(result));
-
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

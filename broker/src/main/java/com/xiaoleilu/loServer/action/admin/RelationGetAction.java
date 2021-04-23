@@ -51,10 +51,7 @@ public class RelationGetAction extends AdminAction {
                 out.alias = data.getAlias();
                 out.extra = data.getExtra();
             }
-
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(out);
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok(out));
         }
         return true;
     }

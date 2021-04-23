@@ -41,17 +41,11 @@ public class SetGroupManagerAction extends AdminAction {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                        sendResponse(response, null, null);
-                    } else {
-                        sendResponse(response, errorCode, null);
-                    }
+                    return new Result(errorCode);
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
         }
         return true;

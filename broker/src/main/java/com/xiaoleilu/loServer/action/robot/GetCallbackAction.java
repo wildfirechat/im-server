@@ -33,9 +33,7 @@ public class GetCallbackAction extends RobotAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             RobotCallbackPojo out = new RobotCallbackPojo();
             out.setUrl(robot.getCallback());
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(out);
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok(out));
         }
         return true;
     }

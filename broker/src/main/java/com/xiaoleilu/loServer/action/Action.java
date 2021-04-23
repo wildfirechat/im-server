@@ -40,6 +40,32 @@ abstract public class Action {
     public ChannelHandlerContext ctx;
     public Response response;
 
+    protected class Result {
+        Object data;
+        ErrorCode errorCode;
+
+        public Result(ErrorCode errorCode) {
+            this.errorCode = errorCode;
+        }
+
+        public Result(ErrorCode errorCode, Object data) {
+            this.data = data;
+            this.errorCode = errorCode;
+        }
+
+        public Object getData() {
+            return data;
+        }
+
+        public ErrorCode getErrorCode() {
+            return errorCode;
+        }
+    }
+
+    protected interface ApiCallback {
+        Result onResult(byte[] response);
+    }
+
     public ErrorCode preAction(Request request, Response response) {
         if (getClass().getAnnotation(RequireAuthentication.class) != null) {
             //do authentication
@@ -93,5 +119,10 @@ abstract public class Action {
             return t;
         }
         return null;
+    }
+
+    protected void setResponseContent(RestResult result) {
+        response.setStatus(HttpResponseStatus.OK);
+        response.setContent(new Gson().toJson(result));
     }
 }

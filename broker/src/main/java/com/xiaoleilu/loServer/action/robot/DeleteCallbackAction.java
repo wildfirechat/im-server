@@ -32,9 +32,7 @@ public class DeleteCallbackAction extends RobotAction {
                 robot = robot.toBuilder().clearCallback().setState(0).build();
                 messagesStore.addRobot(robot);
             }
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok();
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok());
         }
         return true;
     }

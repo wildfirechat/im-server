@@ -31,10 +31,7 @@ public class GetChannelAction extends ChannelAction {
     @Override
     public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(OutputGetChannelInfo.fromPbInfo(channelInfo));
-
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok(OutputGetChannelInfo.fromPbInfo(channelInfo)));
         }
         return true;
     }

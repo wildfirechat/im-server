@@ -48,8 +48,6 @@ public class GetGroupMembersAction extends AdminAction {
                 List<WFCMessage.GroupMember> members = new ArrayList<>();
                 ErrorCode errorCode = messagesStore.getGroupMembers(null, inputGetGroup.getGroupId(), 0, members);
 
-
-                response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
                 if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
                     result = RestResult.resultOf(errorCode);
@@ -69,11 +67,9 @@ public class GetGroupMembersAction extends AdminAction {
                     result = RestResult.ok(out);
                 }
 
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

@@ -50,13 +50,9 @@ public class UpdateUserAction extends AdminAction {
                 && inputCreateUser.flag > 0) {
 
                 ErrorCode errorCode = messagesStore.updateUserInfo(inputCreateUser.userInfo, inputCreateUser.flag);
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(errorCode);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(errorCode));
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

@@ -41,17 +41,10 @@ public class DestoryChatroomAction extends AdminAction {
             InputDestoryChatroom inputDestoryChatroom = gson.fromJson(content, InputDestoryChatroom.class);
             if (inputDestoryChatroom != null
                 && !StringUtil.isNullOrEmpty(inputDestoryChatroom.getChatroomId())) {
-
                 messagesStore.destoryChatroom(inputDestoryChatroom.getChatroomId());
-
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok();
-                response.setContent(new Gson().toJson(result));
-
+                setResponseContent(RestResult.ok());
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

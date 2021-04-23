@@ -45,11 +45,7 @@ public class AddFriendRequestAction extends AdminAction {
                 ByteBuf byteBuf = Unpooled.buffer();
                 byteBuf.writeBytes(result);
                 ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                    sendResponse(response, null, null);
-                } else {
-                    sendResponse(response, errorCode, null);
-                }
+                return new Result(errorCode);
             });
             return false;
         }

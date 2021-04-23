@@ -33,10 +33,6 @@ abstract public class AdminAction extends Action {
         SECRET_KEY = secretKey;
     }
 
-    protected interface Callback {
-        void onSuccess(byte[] response);
-    }
-
     public static void setNoCheckTime(String noCheckTime) {
         try {
             NO_CHECK_TIME = Boolean.parseBoolean(noCheckTime);
@@ -97,12 +93,13 @@ abstract public class AdminAction extends Action {
         response.send();
     }
 
-    protected void sendApiMessage(String fromUser, String topic, byte[] message, Callback callback) {
+    protected void sendApiMessage(String fromUser, String topic, byte[] message, ApiCallback callback) {
         ServerAPIHelper.sendRequest(fromUser, null, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] result) {
                 if(callback != null) {
-                    callback.onSuccess(result);
+                    Result r = callback.onResult(result);
+                    sendResponse(response, r.getErrorCode(), r.getData());
                 }
             }
 

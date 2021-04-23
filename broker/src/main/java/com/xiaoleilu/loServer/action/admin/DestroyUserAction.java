@@ -43,24 +43,11 @@ public class DestroyUserAction extends AdminAction {
                 WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
                 sendApiMessage(inputDestroyUser.getUserId(), IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
                     ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
-                    if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
-                        //ba errorcode qudiao
-                        byte[] data = new byte[result.length -1];
-                        for (int i = 0; i < data.length; i++) {
-                            data[i] = result[i+1];
-                        }
-                        String token = Base64.getEncoder().encodeToString(data);
-
-                        sendResponse(response, null, null);
-                    } else {
-                        sendResponse(response, errorCode1, null);
-                    }
+                    return new Result(errorCode1);
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

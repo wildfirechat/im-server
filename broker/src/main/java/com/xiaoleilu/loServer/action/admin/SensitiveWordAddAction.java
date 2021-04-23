@@ -38,9 +38,7 @@ public class SensitiveWordAddAction extends AdminAction {
                 response.setStatus(HttpResponseStatus.OK);
                 sendResponse(response, errorCode, null);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

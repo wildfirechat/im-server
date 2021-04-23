@@ -48,9 +48,9 @@ public class GetIMTokenAction extends AdminAction {
                     }
                     String token = Base64.getEncoder().encodeToString(data);
 
-                    sendResponse(response, null, new OutputGetIMTokenData(userId, token));
+                    return new Result(errorCode1, new OutputGetIMTokenData(userId, token));
                 } else {
-                    sendResponse(response, errorCode1, null);
+                    return new Result(errorCode1);
                 }
             });
             return false;

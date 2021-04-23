@@ -45,9 +45,7 @@ public class BlacklistGetAction extends AdminAction {
                     list.add(data.getFriendUid());
                 }
             }
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(new OutputStringList(list));
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.ok(new OutputStringList(list)));
         }
         return true;
     }

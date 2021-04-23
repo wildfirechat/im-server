@@ -46,16 +46,14 @@ public class CreateGroupAction extends AdminAction {
                         byte[] data = new byte[byteBuf.readableBytes()];
                         byteBuf.readBytes(data);
                         String groupId = new String(data);
-                        sendResponse(response, null, new OutputCreateGroupResult(groupId));
+                        return new Result(ErrorCode.ERROR_CODE_SUCCESS, new OutputCreateGroupResult(groupId));
                     } else {
-                        sendResponse(response, errorCode, null);
+                        return new Result(errorCode);
                     }
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
         }
         return true;

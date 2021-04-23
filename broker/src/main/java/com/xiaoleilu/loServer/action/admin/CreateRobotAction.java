@@ -78,16 +78,10 @@ public class CreateRobotAction extends AdminAction {
                 if (StringUtil.isNullOrEmpty(inputCreateRobot.getSecret())) {
                     inputCreateRobot.setSecret(UUIDGenerator.getUUID());
                 }
-
                 messagesStore.addRobot(inputCreateRobot.toRobot());
-
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok(new OutputCreateRobot(inputCreateRobot.getUserId(), inputCreateRobot.getSecret()));
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.ok(new OutputCreateRobot(inputCreateRobot.getUserId(), inputCreateRobot.getSecret())));
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

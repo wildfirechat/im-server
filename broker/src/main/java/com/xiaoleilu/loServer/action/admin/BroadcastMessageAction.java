@@ -46,16 +46,14 @@ public class BroadcastMessageAction extends AdminAction {
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                         long messageId = byteBuf.readLong();
                         long count = byteBuf.readLong();
-                        sendResponse(response, null, new BroadMessageResult(messageId, count));
+                        return new Result(errorCode, new BroadMessageResult(messageId, count));
                     } else {
-                        sendResponse(response, errorCode, null);
+                        return new Result(errorCode);
                     }
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
         }
         return true;

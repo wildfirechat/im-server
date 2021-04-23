@@ -53,17 +53,10 @@ public class CreateChatroomAction extends AdminAction {
                 }
 
                 WFCMessage.ChatroomInfo info = inputCreateChatroom.toChatroomInfo();
-
                 messagesStore.createChatroom(inputCreateChatroom.getChatroomId(), info);
-
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok(new OutputCreateChatroom(inputCreateChatroom.getChatroomId()));
-                response.setContent(new Gson().toJson(result));
-
+                setResponseContent(RestResult.ok(new OutputCreateChatroom(inputCreateChatroom.getChatroomId())));
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

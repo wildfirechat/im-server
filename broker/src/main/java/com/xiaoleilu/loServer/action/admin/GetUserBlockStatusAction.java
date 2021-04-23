@@ -39,13 +39,9 @@ public class GetUserBlockStatusAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
 
                 int status = messagesStore.getUserStatus(inputUserId.getUserId());
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.ok(new OutputUserStatus(status));
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.ok(new OutputUserStatus(status)));
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

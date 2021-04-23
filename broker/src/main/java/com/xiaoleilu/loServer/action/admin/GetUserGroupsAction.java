@@ -45,16 +45,12 @@ public class GetUserGroupsAction extends AdminAction {
                 && (!StringUtil.isNullOrEmpty(inputUserId.getUserId()))) {
 
                 Set<String> groupIds = messagesStore.getUserGroupIds(inputUserId.getUserId());
-                response.setStatus(HttpResponseStatus.OK);
                 OutputGroupIds outputGroupIds = new OutputGroupIds();
                 outputGroupIds.setGroupIds(new ArrayList<>(groupIds));
                 RestResult result = RestResult.ok(outputGroupIds);
-
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

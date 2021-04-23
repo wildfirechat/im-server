@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.InputGetAlias;
 import cn.wildfirechat.pojos.InputGetFriendList;
 import cn.wildfirechat.pojos.OutputGetAlias;
@@ -49,9 +50,8 @@ public class AliasGetAction extends AdminAction {
                     break;
                 }
             }
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.ok(out);
-            response.setContent(new Gson().toJson(result));
+
+            setResponseContent(RestResult.ok(out));
         }
         return true;
     }

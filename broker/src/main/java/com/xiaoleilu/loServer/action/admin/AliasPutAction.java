@@ -40,9 +40,7 @@ public class AliasPutAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateAlias input = getRequestBody(request.getNettyRequest(), InputUpdateAlias.class);
             ErrorCode errorCode = messagesStore.setFriendAliasRequest(input.getOperator(), input.getTargetId(), input.getAlias(), new long[1]);
-            response.setStatus(HttpResponseStatus.OK);
-            RestResult result = RestResult.resultOf(errorCode);
-            response.setContent(new Gson().toJson(result));
+            setResponseContent(RestResult.resultOf(errorCode));
         }
         return true;
     }

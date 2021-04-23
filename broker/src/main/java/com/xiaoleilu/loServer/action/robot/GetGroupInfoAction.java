@@ -41,8 +41,6 @@ public class GetGroupInfoAction extends RobotAction {
                 && (!StringUtil.isNullOrEmpty(inputGetGroup.getGroupId()))) {
 
                 WFCMessage.GroupInfo groupInfo = messagesStore.getGroupInfo(inputGetGroup.getGroupId());
-
-                response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
                 if (groupInfo == null) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
@@ -56,12 +54,9 @@ public class GetGroupInfoAction extends RobotAction {
                     pojoGroupInfo.setType(groupInfo.getType());
                     result = RestResult.ok(pojoGroupInfo);
                 }
-
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(result);
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }

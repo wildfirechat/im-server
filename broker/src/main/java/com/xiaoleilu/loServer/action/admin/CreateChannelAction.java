@@ -53,16 +53,14 @@ public class CreateChannelAction extends AdminAction {
                         byte[] data = new byte[byteBuf.readableBytes()];
                         byteBuf.readBytes(data);
                         String channelId = new String(data);
-                        sendResponse(response, null, new OutputCreateChannel(channelId));
+                        return new Result(ErrorCode.ERROR_CODE_SUCCESS, new OutputCreateChannel(channelId));
                     } else {
-                        sendResponse(response, errorCode, null);
+                        return new Result(errorCode);
                     }
                 });
                 return false;
             } else {
-                response.setStatus(HttpResponseStatus.OK);
-                RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
             }
 
         }
