@@ -148,7 +148,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
 
 	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
         LOG.info("imHandler fromUser={}, topic={}", fromUser, topic);
-        if(!mLimitCounter.isGranted(clientID + fromUser + topic)) {
+        if(!isAdmin && !isRobotOrChannel && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
             ByteBuf ackPayload = Unpooled.buffer();
             ackPayload.ensureWritable(1).writeByte(ERROR_CODE_OVER_FREQUENCY.getCode());
             try {
