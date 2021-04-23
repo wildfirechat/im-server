@@ -35,7 +35,7 @@ public class GetGroupInfoAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
             if (inputGetGroup != null

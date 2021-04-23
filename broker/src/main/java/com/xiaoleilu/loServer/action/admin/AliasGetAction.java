@@ -36,7 +36,7 @@ public class AliasGetAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetAlias input = getRequestBody(request.getNettyRequest(), InputGetAlias.class);
             List<FriendData> dataList = messagesStore.getFriendList(input.getOperator(), null, 0);

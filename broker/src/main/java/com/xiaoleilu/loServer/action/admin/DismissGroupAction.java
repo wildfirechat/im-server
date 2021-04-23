@@ -38,7 +38,7 @@ public class DismissGroupAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             if (inputDismissGroup.isValide()) {

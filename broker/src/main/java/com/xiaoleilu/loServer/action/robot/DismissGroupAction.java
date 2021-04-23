@@ -34,7 +34,7 @@ public class DismissGroupAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             inputDismissGroup.setOperator(robot.getUid());

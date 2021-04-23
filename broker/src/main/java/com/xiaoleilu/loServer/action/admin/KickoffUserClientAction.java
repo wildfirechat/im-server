@@ -31,7 +31,7 @@ public class KickoffUserClientAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             StringPairPojo pojo = getRequestBody(request.getNettyRequest(), StringPairPojo.class);
             if (pojo != null && !StringUtil.isNullOrEmpty(pojo.getFirst())) {

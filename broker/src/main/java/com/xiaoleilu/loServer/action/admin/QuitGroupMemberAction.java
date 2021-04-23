@@ -38,7 +38,7 @@ public class QuitGroupMemberAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputQuitGroup inputQuitGroup = getRequestBody(request.getNettyRequest(), InputQuitGroup.class);
             if (inputQuitGroup.isValide()) {

@@ -37,7 +37,7 @@ public class RouteAction extends Action {
     private static final Logger LOG = LoggerFactory.getLogger(RouteAction.class);
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
 
             response.setContentType("application/octet-stream");

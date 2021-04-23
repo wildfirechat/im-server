@@ -34,7 +34,7 @@ public class FileAction extends Action {
     private static final org.slf4j.Logger Logger = LoggerFactory.getLogger(FileAction.class);
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         response.setHeader("Access-Control-Allow-Origin", "*");
         if (false == Request.METHOD_GET.equalsIgnoreCase(request.getMethod())) {
             response.sendError(HttpResponseStatus.METHOD_NOT_ALLOWED, "Please use GET method to request file!");

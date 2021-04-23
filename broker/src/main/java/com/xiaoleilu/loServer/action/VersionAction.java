@@ -28,7 +28,7 @@ public class VersionAction extends Action {
 
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             response.setStatus(HttpResponseStatus.OK);
 

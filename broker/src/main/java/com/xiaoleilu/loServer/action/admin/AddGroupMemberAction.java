@@ -38,7 +38,7 @@ public class AddGroupMemberAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputAddGroupMember inputAddGroupMember = getRequestBody(request.getNettyRequest(), InputAddGroupMember.class);
             if (inputAddGroupMember.isValide()) {

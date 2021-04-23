@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class GetChannelSubscribersAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             OutputStringList outputStringList = new OutputStringList();
             outputStringList.setList(new ArrayList<>());

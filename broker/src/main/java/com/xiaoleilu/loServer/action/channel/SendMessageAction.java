@@ -39,7 +39,7 @@ public class SendMessageAction extends ChannelAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendChannelMessageData sendChannelMessageData = getRequestBody(request.getNettyRequest(), SendChannelMessageData.class);
             SendMessageData sendMessageData = new SendMessageData();

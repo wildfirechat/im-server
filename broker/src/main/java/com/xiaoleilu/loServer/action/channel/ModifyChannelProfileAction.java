@@ -28,7 +28,7 @@ import win.liyufan.im.IMTopic;
 @HttpMethod("POST")
 public class ModifyChannelProfileAction extends ChannelAction {
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputModifyChannelInfo input = getRequestBody(request.getNettyRequest(), InputModifyChannelInfo.class);
             if (input != null) {

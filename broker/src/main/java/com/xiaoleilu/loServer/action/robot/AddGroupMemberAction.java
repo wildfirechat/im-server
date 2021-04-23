@@ -34,7 +34,7 @@ public class AddGroupMemberAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputAddGroupMember inputAddGroupMember = getRequestBody(request.getNettyRequest(), InputAddGroupMember.class);
             inputAddGroupMember.setOperator(robot.getUid());

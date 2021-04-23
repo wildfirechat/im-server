@@ -41,7 +41,7 @@ public class UpdateUserAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateUserInfo inputCreateUser = getRequestBody(request.getNettyRequest(), InputUpdateUserInfo.class);
             if (inputCreateUser != null

@@ -38,7 +38,7 @@ public class TransferGroupAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputTransferGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputTransferGroup.class);
             if (inputDismissGroup.isValide()) {

@@ -36,7 +36,7 @@ public class AliasPutAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateAlias input = getRequestBody(request.getNettyRequest(), InputUpdateAlias.class);
             ErrorCode errorCode = messagesStore.setFriendAliasRequest(input.getOperator(), input.getTargetId(), input.getAlias(), new long[1]);

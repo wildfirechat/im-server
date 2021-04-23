@@ -40,7 +40,7 @@ public class BroadcastMessageAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             BroadMessageData sendMessageData = getRequestBody(request.getNettyRequest(), BroadMessageData.class);
             if (BroadMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {

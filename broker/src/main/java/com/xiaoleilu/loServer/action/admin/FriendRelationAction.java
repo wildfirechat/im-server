@@ -39,7 +39,7 @@ public class FriendRelationAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateFriendStatusRequest friendAdd = getRequestBody(request.getNettyRequest(), InputUpdateFriendStatusRequest.class);
             if (friendAdd != null

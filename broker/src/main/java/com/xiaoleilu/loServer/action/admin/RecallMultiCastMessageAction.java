@@ -39,7 +39,7 @@ public class RecallMultiCastMessageAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             RecallMultiCastMessageData recallMessageData = getRequestBody(request.getNettyRequest(), RecallMultiCastMessageData.class);
             if (recallMessageData != null && !StringUtil.isNullOrEmpty(recallMessageData.operator)) {

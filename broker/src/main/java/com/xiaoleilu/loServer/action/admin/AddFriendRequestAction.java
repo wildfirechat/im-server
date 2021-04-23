@@ -36,7 +36,7 @@ public class AddFriendRequestAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputAddFriendRequest input = getRequestBody(request.getNettyRequest(), InputAddFriendRequest.class);
 

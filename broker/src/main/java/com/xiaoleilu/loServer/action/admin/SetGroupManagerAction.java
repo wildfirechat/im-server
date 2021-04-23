@@ -38,7 +38,7 @@ public class SetGroupManagerAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputSetGroupManager inputAddGroupMember = getRequestBody(request.getNettyRequest(), InputSetGroupManager.class);
             if (inputAddGroupMember.isValide()) {

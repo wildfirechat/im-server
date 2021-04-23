@@ -38,7 +38,7 @@ public class GetUserGroupsAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUserId inputUserId = getRequestBody(request.getNettyRequest(), InputUserId.class);
             if (inputUserId != null

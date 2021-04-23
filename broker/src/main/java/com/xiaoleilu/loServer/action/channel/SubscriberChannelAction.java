@@ -31,7 +31,7 @@ import win.liyufan.im.IMTopic;
 public class SubscriberChannelAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputChannelSubscribe input = getRequestBody(request.getNettyRequest(), InputChannelSubscribe.class);
             if (input != null && !StringUtil.isNullOrEmpty(input.getTarget())) {

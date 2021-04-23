@@ -39,7 +39,7 @@ public class BlacklistAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputBlacklistRequest inputData = getRequestBody(request.getNettyRequest(), InputBlacklistRequest.class);
             if (inputData != null

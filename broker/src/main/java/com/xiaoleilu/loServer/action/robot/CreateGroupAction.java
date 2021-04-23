@@ -37,7 +37,7 @@ public class CreateGroupAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateGroup inputCreateGroup = getRequestBody(request.getNettyRequest(), InputCreateGroup.class);
             inputCreateGroup.setOperator(robot.getUid());

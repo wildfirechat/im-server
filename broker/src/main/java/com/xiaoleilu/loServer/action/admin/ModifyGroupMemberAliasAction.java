@@ -38,7 +38,7 @@ public class ModifyGroupMemberAliasAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputSetGroupMemberAlias inputSetGroupMemberAlias = getRequestBody(request.getNettyRequest(), InputSetGroupMemberAlias.class);
             if (inputSetGroupMemberAlias.isValide()) {

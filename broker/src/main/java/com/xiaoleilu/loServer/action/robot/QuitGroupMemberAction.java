@@ -34,7 +34,7 @@ public class QuitGroupMemberAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputQuitGroup inputQuitGroup = getRequestBody(request.getNettyRequest(), InputQuitGroup.class);
             inputQuitGroup.setOperator(robot.getUid());

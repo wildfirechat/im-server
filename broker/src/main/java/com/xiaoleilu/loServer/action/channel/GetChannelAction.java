@@ -29,7 +29,7 @@ import io.netty.util.internal.StringUtil;
 public class GetChannelAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             response.setStatus(HttpResponseStatus.OK);
             RestResult result = RestResult.ok(OutputGetChannelInfo.fromPbInfo(channelInfo));

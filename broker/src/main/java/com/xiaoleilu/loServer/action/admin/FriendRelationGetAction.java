@@ -36,7 +36,7 @@ public class FriendRelationGetAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUserId inputGetFriendList = getRequestBody(request.getNettyRequest(), InputUserId.class);
             List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), null, 0);

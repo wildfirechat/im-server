@@ -47,7 +47,7 @@ abstract public class Action {
 
         return ERROR_CODE_SUCCESS;
     }
-	public boolean doAction(Request request, Response response) {
+	public boolean doAction(Request request) {
         ErrorCode errorCode = preAction(request, response);
         boolean isSync = true;
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -63,7 +63,7 @@ abstract public class Action {
 //                    throw e;
 //                }
 //            } else {
-            isSync = action(request, response);
+            isSync = action(request);
 //            }
         } else {
             response.setStatus(HttpResponseStatus.OK);
@@ -81,7 +81,7 @@ abstract public class Action {
     public boolean isTransactionAction() {
         return false;
     }
-    abstract public boolean action(Request request, Response response);
+    abstract public boolean action(Request request);
 
     protected <T> T getRequestBody(HttpRequest request, Class<T> cls) {
         if (request instanceof FullHttpRequest) {

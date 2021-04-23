@@ -37,7 +37,7 @@ public class RelationGetAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request, Response response) {
+    public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             StringPairPojo input = getRequestBody(request.getNettyRequest(), StringPairPojo.class);
             FriendData data = messagesStore.getFriendData(input.getFirst(), input.getSecond());
