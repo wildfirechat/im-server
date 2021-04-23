@@ -13,8 +13,6 @@ import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.BroadMessageData;
 import cn.wildfirechat.pojos.BroadMessageResult;
-import cn.wildfirechat.pojos.SendMessageData;
-import cn.wildfirechat.pojos.SendMessageResult;
 import com.google.gson.Gson;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.RestResult;
@@ -22,7 +20,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -46,7 +44,7 @@ public class BroadcastMessageAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             BroadMessageData sendMessageData = getRequestBody(request.getNettyRequest(), BroadMessageData.class);
             if (BroadMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {
-                RPCCenter.getInstance().sendRequest(sendMessageData.getSender(), null, IMTopic.BroadcastMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(sendMessageData.getSender(), null, IMTopic.BroadcastMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

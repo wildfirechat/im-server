@@ -16,7 +16,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -46,7 +46,7 @@ public class BlockUserAction extends AdminAction {
                 response.setContent(new Gson().toJson(result));
 
                 if (inputUserBlock.getStatus() == 2) {
-                    RPCCenter.getInstance().sendRequest(null, null, RPCCenter.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), inputUserBlock.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
+                    ServerAPIHelper.sendRequest(null, null, ServerAPIHelper.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), inputUserBlock.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, null, true);
                 }
 
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, null);

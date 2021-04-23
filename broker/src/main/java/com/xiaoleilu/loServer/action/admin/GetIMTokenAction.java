@@ -16,7 +16,7 @@ import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputGetToken;
 import cn.wildfirechat.pojos.OutputGetIMTokenData;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import cn.wildfirechat.common.ErrorCode;
@@ -42,7 +42,7 @@ public class GetIMTokenAction extends AdminAction {
 
 
             WFCMessage.GetTokenRequest getTokenRequest = WFCMessage.GetTokenRequest.newBuilder().setUserId(userId).setClientId(input.getClientId()).setPlatform(input.getPlatform() == null ? 0 : input.getPlatform()).build();
-            RPCCenter.getInstance().sendRequest(userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), userId, TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+            ServerAPIHelper.sendRequest(userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), userId, TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                 @Override
                 public void onSuccess(byte[] result) {
                     ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);

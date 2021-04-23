@@ -18,7 +18,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -47,7 +47,7 @@ public class BlacklistAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputData.getTargetUid())
             ) {
                 WFCMessage.BlackUserRequest friendRequest = WFCMessage.BlackUserRequest.newBuilder().setUid(inputData.getTargetUid()).setStatus(inputData.getStatus()).build();
-                RPCCenter.getInstance().sendRequest(inputData.getUserId(), null, IMTopic.BlackListUserTopic, friendRequest.toByteArray(), inputData.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(inputData.getUserId(), null, IMTopic.BlackListUserTopic, friendRequest.toByteArray(), inputData.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

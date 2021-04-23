@@ -21,10 +21,9 @@ import cn.wildfirechat.pojos.UserOnlineStatus;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
-import com.hazelcast.core.Member;
 import com.hazelcast.util.StringUtil;
 import io.moquette.BrokerConstants;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.persistence.MemorySessionStore;
@@ -702,13 +701,13 @@ public class ProtocolProcessor {
         return m_sessionsStore;
     }
 
-    public void onRpcMsg(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin) {
-        if(request.equals(RPCCenter.KICKOFF_USER_REQUEST)) {
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+        if(request.equals(ServerAPIHelper.KICKOFF_USER_REQUEST)) {
             String userId = new String(message);
             mServer.getImBusinessScheduler().execute(()->handleTargetRemovedFromCurrentNode(new TargetEntry(TargetEntry.Type.TARGET_TYPE_USER, userId)));
             return;
         }
-        qos1PublishHandler.onRpcMsg(fromUser, clientId, message, messageId, from, request, isAdmin);
+        qos1PublishHandler.onApiMessage(fromUser, clientId, message, messageId, from, request, isAdmin, isRobotOrChannel);
     }
     public void shutdown() {
         messagesPublisher.stopChatroomScheduler();

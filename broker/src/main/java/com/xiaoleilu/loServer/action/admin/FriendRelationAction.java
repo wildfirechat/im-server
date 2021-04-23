@@ -17,7 +17,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputUpdateFriendStatusRequest;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -50,7 +50,7 @@ public class FriendRelationAction extends AdminAction {
                 if (!StringUtil.isNullOrEmpty(friendAdd.getExtra())) {
                     friendRequestBuilder = friendRequestBuilder.setExtra(friendAdd.getExtra());
                 }
-                RPCCenter.getInstance().sendRequest(friendAdd.getUserId(), null, IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), friendAdd.getFriendUid(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(friendAdd.getUserId(), null, IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), friendAdd.getFriendUid(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

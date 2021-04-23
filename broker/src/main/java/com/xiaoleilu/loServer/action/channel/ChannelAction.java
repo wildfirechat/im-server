@@ -15,6 +15,8 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
+import io.moquette.persistence.ServerAPIHelper;
+import io.moquette.persistence.TargetEntry;
 import io.moquette.spi.impl.Utils;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -26,10 +28,16 @@ import org.slf4j.LoggerFactory;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
+import java.util.concurrent.Executor;
+
 abstract public class ChannelAction extends Action {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChannelAction.class);
     private final RateLimiter mLimitCounter = new RateLimiter(10, 200);
     protected WFCMessage.ChannelInfo channelInfo;
+
+    protected interface Callback {
+        void onSuccess(byte[] response);
+    }
 
     @Override
     public ErrorCode preAction(Request request, Response response) {
@@ -85,7 +93,7 @@ abstract public class ChannelAction extends Action {
         return localSign.equals(sign) ? ErrorCode.ERROR_CODE_SUCCESS : ErrorCode.ERROR_CODE_AUTH_FAILURE;
     }
 
-    protected void sendResponse(Response response, ErrorCode errorCode, Object data) {
+    protected void sendResponse(ErrorCode errorCode, Object data) {
         response.setStatus(HttpResponseStatus.OK);
         if (errorCode == null) {
             errorCode = ErrorCode.ERROR_CODE_SUCCESS;
@@ -106,5 +114,30 @@ abstract public class ChannelAction extends Action {
             return t;
         }
         return null;
+    }
+
+    protected void sendApiMessage(String topic, byte[] message, Callback callback) {
+        ServerAPIHelper.sendRequest(channelInfo.getOwner(), null, topic, message, channelInfo.getOwner(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
+            @Override
+            public void onSuccess(byte[] response) {
+                callback.onSuccess(response);
+            }
+            @Override
+            public void onError(ErrorCode errorCode) {
+                sendResponse(errorCode, null);
+            }
+
+            @Override
+            public void onTimeout() {
+                sendResponse(ErrorCode.ERROR_CODE_TIMEOUT, null);
+            }
+
+            @Override
+            public Executor getResponseExecutor() {
+                return command -> {
+                    ctx.executor().execute(command);
+                };
+            }
+        }, false, true);
     }
 }

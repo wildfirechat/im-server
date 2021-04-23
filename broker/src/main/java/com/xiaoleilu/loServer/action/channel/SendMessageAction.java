@@ -20,16 +20,12 @@ import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.Conversation;
 import cn.wildfirechat.pojos.SendMessageData;
 import cn.wildfirechat.pojos.SendMessageResult;
-import io.moquette.persistence.RPCCenter;
-import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
-
-import java.util.concurrent.Executor;
 
 import static cn.wildfirechat.proto.ProtoConstants.ConversationType.ConversationType_Channel;
 
@@ -55,38 +51,18 @@ public class SendMessageAction extends ChannelAction {
             sendMessageData.setPayload(sendChannelMessageData.getPayload());
             sendMessageData.setToUsers(sendChannelMessageData.getTargets());
             if (SendMessageData.isValide(sendMessageData)) {
-                RPCCenter.getInstance().sendRequest(sendMessageData.getSender(), null, IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), sendMessageData.getSender(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            long messageId = byteBuf.readLong();
-                            long timestamp = byteBuf.readLong();
-                            sendResponse(response, null, new SendMessageResult(messageId, timestamp));
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
+                sendApiMessage(IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        long messageId = byteBuf.readLong();
+                        long timestamp = byteBuf.readLong();
+                        sendResponse(null, new SendMessageResult(messageId, timestamp));
+                    } else {
+                        sendResponse(errorCode, null);
                     }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, false);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

@@ -18,7 +18,7 @@ import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputCreateGroup;
 import cn.wildfirechat.pojos.OutputCreateGroupResult;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -43,7 +43,7 @@ public class CreateGroupAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateGroup inputCreateGroup = getRequestBody(request.getNettyRequest(), InputCreateGroup.class);
             if (inputCreateGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputCreateGroup.getOperator(), null, IMTopic.CreateGroupTopic, inputCreateGroup.toProtoGroupRequest().toByteArray(), inputCreateGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(inputCreateGroup.getOperator(), null, IMTopic.CreateGroupTopic, inputCreateGroup.toProtoGroupRequest().toByteArray(), inputCreateGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

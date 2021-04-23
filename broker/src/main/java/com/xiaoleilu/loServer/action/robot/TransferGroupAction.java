@@ -14,20 +14,15 @@ import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.InputTransferGroup;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
-import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.persistence.RPCCenter;
-import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import win.liyufan.im.IMTopic;
-
-import java.util.concurrent.Executor;
 
 @Route(APIPath.Robot_Group_Transfer)
 @HttpMethod("POST")
@@ -44,36 +39,16 @@ public class TransferGroupAction extends RobotAction {
             InputTransferGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputTransferGroup.class);
             inputDismissGroup.setOperator(robot.getUid());
             if (inputDismissGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.TransferGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(result);
-                        ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                        if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                            sendResponse(response, null, null);
-                        } else {
-                            sendResponse(response, errorCode, null);
-                        }
+                sendApiRequest(IMTopic.TransferGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), result -> {
+                    ByteBuf byteBuf = Unpooled.buffer();
+                    byteBuf.writeBytes(result);
+                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
+                    if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
+                        sendResponse(null, null);
+                    } else {
+                        sendResponse(errorCode, null);
                     }
-
-                    @Override
-                    public void onError(ErrorCode errorCode) {
-                        sendResponse(response, errorCode, null);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
-                    }
-
-                    @Override
-                    public Executor getResponseExecutor() {
-                        return command -> {
-                            ctx.executor().execute(command);
-                        };
-                    }
-                }, false);
+                });
                 return false;
             } else {
                 response.setStatus(HttpResponseStatus.OK);

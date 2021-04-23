@@ -11,9 +11,6 @@ package com.xiaoleilu.loServer.action.admin;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.InputDestroyUser;
-import cn.wildfirechat.pojos.InputOutputUserInfo;
-import cn.wildfirechat.pojos.OutputCreateUser;
-import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -21,13 +18,12 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import win.liyufan.im.IMTopic;
-import win.liyufan.im.UUIDGenerator;
 
 import java.util.Base64;
 import java.util.concurrent.Executor;
@@ -49,7 +45,7 @@ public class DestroyUserAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
 
                 WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
-                RPCCenter.getInstance().sendRequest(inputDestroyUser.getUserId(), null, IMTopic.DestroyUserTopic, idBuf.toByteArray(), inputDestroyUser.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(inputDestroyUser.getUserId(), null, IMTopic.DestroyUserTopic, idBuf.toByteArray(), inputDestroyUser.getUserId(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);

@@ -35,7 +35,6 @@ import io.moquette.spi.IStore;
 import io.moquette.spi.impl.ProtocolProcessor;
 import io.moquette.spi.impl.ProtocolProcessorBootstrapper;
 import io.moquette.spi.impl.security.AES;
-import io.moquette.spi.impl.subscriptions.Token;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
@@ -410,7 +409,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
-        RPCCenter.getInstance().init(this);
+        ServerAPIHelper.init(this);
         return true;
     }
 
@@ -418,14 +417,9 @@ public class Server {
         return hazelcastInstance;
     }
 
-    public void internalRpcMsg(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin) {
-
-        if (!m_initialized) {
-            LOG.error("Moquette is not started, internal message cannot be notify");
-            return;
-        }
-        LOG.debug("internalNotifyMsg");
-        m_processor.onRpcMsg(fromUser, clientId, message, messageId, from, request, isAdmin);
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+        LOG.debug("onApiMessage");
+        m_processor.onApiMessage(fromUser, clientId, message, messageId, from, request, isAdmin, isRobotOrChannel);
     }
 
     public boolean isShutdowning() {

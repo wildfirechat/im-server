@@ -8,7 +8,7 @@
 
 package io.moquette.persistence.remote;
 
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RequestInfo {
     private static final Logger LOG = LoggerFactory.getLogger(RequestInfo.class);
-    public final RPCCenter.Callback callback;
+    public final ServerAPIHelper.Callback callback;
     final byte[] message;
     final int requestId;
     final String fromUser;
@@ -25,15 +25,15 @@ public class RequestInfo {
     final String clientId;
     public final ScheduledFuture future;
 
-    public RequestInfo(String fromUser, String clientId, RPCCenter.Callback callback, byte[] message, int requestId, String request) {
+    public RequestInfo(String fromUser, String clientId, ServerAPIHelper.Callback callback, byte[] message, int requestId, String request) {
         this.callback = callback;
         this.message = message;
         this.requestId = requestId;
         this.fromUser = fromUser;
         this.clientId = clientId;
         this.request = request;
-        this.future = RPCCenter.getInstance().scheduledExecutorService.schedule(() -> {
-            RequestInfo info = RPCCenter.getInstance().requestMap.remove(requestId);
+        this.future = ServerAPIHelper.scheduledExecutorService.schedule(() -> {
+            RequestInfo info = ServerAPIHelper.requestMap.remove(requestId);
             if (info != null) {
                 LOG.error("Request timeout. fromUser {}, cliendId {}, requestId {}, request {}", fromUser, clientId, requestId, request);
                 info.callback.getResponseExecutor().execute(() -> {

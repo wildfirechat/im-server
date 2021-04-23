@@ -28,16 +28,14 @@ import java.util.zip.GZIPOutputStream;
 
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
-import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.ClassUtil;
 import cn.wildfirechat.pojos.OutputCheckUserOnline;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.imhandler.Handler;
 import io.moquette.imhandler.IMHandler;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.Server;
-import io.moquette.spi.ClientSession;
 import io.moquette.spi.impl.security.AES;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.netty.util.ReferenceCountUtil;
@@ -106,18 +104,18 @@ public class Qos1PublishHandler extends QosPublishHandler {
         }
     }
 
-    public void onRpcMsg(String fromUser, String clientId, byte[] message, int requestId, String from, String request, boolean isAdmin) {
-        if (request.equals(RPCCenter.CHECK_USER_ONLINE_REQUEST)) {
-            checkUserOnlineHandler(message, ackPayload -> RPCCenter.getInstance().sendResponse(ERROR_CODE_SUCCESS.getCode(), ackPayload, from, requestId));
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int requestId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+        if (request.equals(ServerAPIHelper.CHECK_USER_ONLINE_REQUEST)) {
+            checkUserOnlineHandler(message, ackPayload -> ServerAPIHelper.sendResponse(ERROR_CODE_SUCCESS.getCode(), ackPayload, from, requestId));
         } else {
             imHandler(clientId, fromUser, request, message, (errorCode, ackPayload) -> {
                 if (requestId > 0) {
                     byte[] response = new byte[ackPayload.readableBytes()];
                     ackPayload.readBytes(response);
                     ReferenceCountUtil.release(ackPayload);
-                    RPCCenter.getInstance().sendResponse(errorCode.getCode(), response, from, requestId);
+                    ServerAPIHelper.sendResponse(errorCode.getCode(), response, from, requestId);
                 }
-            }, isAdmin);
+            }, isAdmin, isRobotOrChannel);
         }
     }
 
@@ -148,7 +146,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         });
     }
 
-	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin) {
+	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
         LOG.info("imHandler fromUser={}, topic={}", fromUser, topic);
         if(!mLimitCounter.isGranted(clientID + fromUser + topic)) {
             ByteBuf ackPayload = Unpooled.buffer();
@@ -263,7 +261,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         
         MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
         payloadContent = AES.AESDecrypt(payloadContent, session.getSecret(), true);
-        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), false);
+        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), false, false);
     }
 
     private void sendPubAck(String clientId, int messageID, ByteBuf payload, ErrorCode errorCode) {

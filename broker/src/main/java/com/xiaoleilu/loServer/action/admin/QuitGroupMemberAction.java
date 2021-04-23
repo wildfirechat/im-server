@@ -11,7 +11,6 @@ package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.InputKickoffGroupMember;
 import cn.wildfirechat.pojos.InputQuitGroup;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -19,7 +18,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -43,7 +42,7 @@ public class QuitGroupMemberAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputQuitGroup inputQuitGroup = getRequestBody(request.getNettyRequest(), InputQuitGroup.class);
             if (inputQuitGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputQuitGroup.getOperator(), null, IMTopic.QuitGroupTopic, inputQuitGroup.toProtoGroupRequest().toByteArray(), inputQuitGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(inputQuitGroup.getOperator(), null, IMTopic.QuitGroupTopic, inputQuitGroup.toProtoGroupRequest().toByteArray(), inputQuitGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

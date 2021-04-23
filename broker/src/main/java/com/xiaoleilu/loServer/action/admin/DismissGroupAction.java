@@ -17,7 +17,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputDismissGroup;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -42,7 +42,7 @@ public class DismissGroupAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             if (inputDismissGroup.isValide()) {
-                RPCCenter.getInstance().sendRequest(inputDismissGroup.getOperator(), null, IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(inputDismissGroup.getOperator(), null, IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), inputDismissGroup.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

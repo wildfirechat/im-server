@@ -38,6 +38,7 @@ abstract public class Action {
     public static ISessionsStore sessionsStore = null;
 
     public ChannelHandlerContext ctx;
+    public Response response;
 
     public ErrorCode preAction(Request request, Response response) {
         if (getClass().getAnnotation(RequireAuthentication.class) != null) {

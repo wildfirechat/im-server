@@ -16,18 +16,18 @@ import cn.wildfirechat.common.ErrorCode;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RPCCenter {
-    private static final Logger LOG = LoggerFactory.getLogger(RPCCenter.class);
+public class ServerAPIHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(ServerAPIHelper.class);
     public static final String CHECK_USER_ONLINE_REQUEST = "check_user_online";
     public static final String KICKOFF_USER_REQUEST = "kickoff_user";
 
-    private Server server;
-    public ConcurrentHashMap<Integer, RequestInfo> requestMap = new ConcurrentHashMap<>();
-    private AtomicInteger aiRequestId = new AtomicInteger(1);
-    public ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+    private static Server server;
+    public static ConcurrentHashMap<Integer, RequestInfo> requestMap = new ConcurrentHashMap<>();
+    private static AtomicInteger aiRequestId = new AtomicInteger(1);
+    public static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
 
-    public void init(Server server) {
-        this.server = server;
+    public static void init(Server s) {
+        server = s;
     }
 
     public interface Callback {
@@ -37,18 +37,11 @@ public class RPCCenter {
         Executor getResponseExecutor();
     }
 
-    private static RPCCenter instance;
-
-    public static RPCCenter getInstance() {
-        if (instance == null) {
-            instance = new RPCCenter();
-        }
-        return instance;
+    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin) {
+        sendRequest(fromUser, clientId, request, message, target, type, callback, isAdmin, false);
     }
 
-    protected RPCCenter() {}
-
-    public void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin) {
+    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin, boolean isRobotOrChannel) {
         int requestId = 0;
 
         if (callback != null) {
@@ -61,10 +54,10 @@ public class RPCCenter {
             requestMap.put(requestId, new RequestInfo(fromUser, clientId, callback, message, requestId, request));
         }
 
-        server.internalRpcMsg(fromUser, clientId, message, requestId, "", request, isAdmin);
+        server.onApiMessage(fromUser, clientId, message, requestId, "", request, isAdmin, isRobotOrChannel);
     }
 
-    public void sendResponse(int errorCode, byte[] message, String toUuid, int requestId) {
+    public static void sendResponse(int errorCode, byte[] message, String toUuid, int requestId) {
         LOG.debug("send async reponse to {} with requestId {}", toUuid, requestId);
         if (requestId > 0) {
             RequestInfo info = requestMap.remove(requestId);

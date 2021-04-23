@@ -17,7 +17,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.RecallMessageData;
-import io.moquette.persistence.RPCCenter;
+import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.persistence.TargetEntry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -45,7 +45,7 @@ public class RecallMessageAction extends AdminAction {
             if (recallMessageData != null && !StringUtil.isNullOrEmpty(recallMessageData.getOperator())) {
 
                 WFCMessage.INT64Buf idBuf = WFCMessage.INT64Buf.newBuilder().setId(recallMessageData.getMessageUid()).build();
-                RPCCenter.getInstance().sendRequest(recallMessageData.getOperator(), null, IMTopic.RecallMessageTopic, idBuf.toByteArray(), recallMessageData.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new RPCCenter.Callback() {
+                ServerAPIHelper.sendRequest(recallMessageData.getOperator(), null, IMTopic.RecallMessageTopic, idBuf.toByteArray(), recallMessageData.getOperator(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
                     @Override
                     public void onSuccess(byte[] result) {
                         ByteBuf byteBuf = Unpooled.buffer();

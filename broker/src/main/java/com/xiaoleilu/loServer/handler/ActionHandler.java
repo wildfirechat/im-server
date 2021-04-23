@@ -134,6 +134,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			}
 		}
         action.ctx = ctx;
+		action.response = response;
 
 		boolean isSync = action.doAction(request, response);
 
