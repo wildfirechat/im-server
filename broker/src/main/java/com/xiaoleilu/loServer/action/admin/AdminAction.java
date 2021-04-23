@@ -9,22 +9,16 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import com.google.gson.Gson;
-import com.xiaoleilu.loServer.LoServer;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
-import com.xiaoleilu.loServer.action.channel.ChannelAction;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.persistence.ServerAPIHelper;
-import io.moquette.persistence.TargetEntry;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.wildfirechat.common.ErrorCode;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.IMTopic;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
@@ -104,10 +98,12 @@ abstract public class AdminAction extends Action {
     }
 
     protected void sendApiMessage(String fromUser, String topic, byte[] message, Callback callback) {
-        ServerAPIHelper.sendRequest(fromUser, null, topic, message, fromUser, TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
+        ServerAPIHelper.sendRequest(fromUser, null, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] result) {
-                callback.onSuccess(result);
+                if(callback != null) {
+                    callback.onSuccess(result);
+                }
             }
 
             @Override

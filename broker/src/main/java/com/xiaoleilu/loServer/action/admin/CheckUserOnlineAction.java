@@ -14,15 +14,11 @@ import com.google.gson.Gson;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
-import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputGetUserInfo;
 import io.moquette.persistence.ServerAPIHelper;
-import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
-
-import java.util.concurrent.Executor;
 
 @Route(APIPath.User_Get_Online_Status)
 @HttpMethod("POST")

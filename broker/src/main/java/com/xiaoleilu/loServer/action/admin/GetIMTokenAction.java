@@ -13,17 +13,13 @@ import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
-import com.xiaoleilu.loServer.handler.Response;
 import cn.wildfirechat.pojos.InputGetToken;
 import cn.wildfirechat.pojos.OutputGetIMTokenData;
-import io.moquette.persistence.ServerAPIHelper;
-import io.moquette.persistence.TargetEntry;
 import io.netty.handler.codec.http.FullHttpRequest;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
 import java.util.Base64;
-import java.util.concurrent.Executor;
 
 @Route(APIPath.User_Get_Token)
 @HttpMethod("POST")

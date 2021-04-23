@@ -16,7 +16,6 @@ import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.persistence.ServerAPIHelper;
-import io.moquette.persistence.TargetEntry;
 import io.moquette.spi.impl.Utils;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -117,7 +116,7 @@ abstract public class ChannelAction extends Action {
     }
 
     protected void sendApiMessage(String topic, byte[] message, Callback callback) {
-        ServerAPIHelper.sendRequest(channelInfo.getOwner(), null, topic, message, channelInfo.getOwner(), TargetEntry.Type.TARGET_TYPE_USER, new ServerAPIHelper.Callback() {
+        ServerAPIHelper.sendRequest(channelInfo.getOwner(), null, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] response) {
                 callback.onSuccess(response);

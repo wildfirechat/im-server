@@ -37,11 +37,11 @@ public class ServerAPIHelper {
         Executor getResponseExecutor();
     }
 
-    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin) {
-        sendRequest(fromUser, clientId, request, message, target, type, callback, isAdmin, false);
+    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, Callback callback, boolean isAdmin) {
+        sendRequest(fromUser, clientId, request, message, callback, isAdmin, false);
     }
 
-    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, String target, TargetEntry.Type type, Callback callback, boolean isAdmin, boolean isRobotOrChannel) {
+    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, Callback callback, boolean isAdmin, boolean isRobotOrChannel) {
         int requestId = 0;
 
         if (callback != null) {

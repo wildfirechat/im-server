@@ -27,7 +27,6 @@ import io.moquette.persistence.ServerAPIHelper;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.persistence.MemorySessionStore;
-import io.moquette.persistence.TargetEntry;
 import io.moquette.server.ConnectionDescriptor;
 import io.moquette.server.ConnectionDescriptorStore;
 import io.moquette.server.Server;
@@ -98,10 +97,9 @@ public class ProtocolProcessor {
         });
     }
 
-    private void handleTargetRemovedFromCurrentNode(TargetEntry target) {
-        System.out.println("kickof user " + target);
-        if (target.type == TargetEntry.Type.TARGET_TYPE_USER) {
-            Collection<MemorySessionStore.Session> sessions = m_sessionsStore.sessionForUser(target.target);
+    private void kickoffUserOffline(String userId) {
+        System.out.println("kickoff user " + userId);
+            Collection<MemorySessionStore.Session> sessions = m_sessionsStore.sessionForUser(userId);
             for (MemorySessionStore.Session session : sessions) {
                 ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
                 try {
@@ -113,9 +111,6 @@ public class ProtocolProcessor {
                     Utility.printExecption(LOG, e);
                 }
             }
-        } else if(target.type == TargetEntry.Type.TARGET_TYPE_CHATROOM) {
-
-        }
     }
 
 
@@ -704,7 +699,7 @@ public class ProtocolProcessor {
     public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
         if(request.equals(ServerAPIHelper.KICKOFF_USER_REQUEST)) {
             String userId = new String(message);
-            mServer.getImBusinessScheduler().execute(()->handleTargetRemovedFromCurrentNode(new TargetEntry(TargetEntry.Type.TARGET_TYPE_USER, userId)));
+            mServer.getImBusinessScheduler().execute(()-> kickoffUserOffline(userId));
             return;
         }
         qos1PublishHandler.onApiMessage(fromUser, clientId, message, messageId, from, request, isAdmin, isRobotOrChannel);
