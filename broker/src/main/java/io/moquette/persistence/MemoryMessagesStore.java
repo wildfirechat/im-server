@@ -144,7 +144,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private List<Integer> mGlobalMuteExceptionTypes = new ArrayList<>();
 
     private long mRecallTimeLimit = 300;
-
+    private boolean mDisableGroupManagerRecall = false;
     private String mGroupInfoUpdateCallback;
     private String mGroupMemberUpdateCallback;
     private String mRelationUpdateCallback;
@@ -261,6 +261,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         try {
             mRecallTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_RECALL_TIME_LIMIT));
         } catch (Exception e) {
+        }
+
+        try {
+            mDisableGroupManagerRecall = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_DISABLE_GROUP_MANAGER_RECALL, "false"));
+        } catch (Exception e) {
+
         }
 
         try {
@@ -1832,7 +1838,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
 
-            if (!canRecall && message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group) {
+            if (!canRecall && !mDisableGroupManagerRecall && message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group) {
                 IMap<String, WFCMessage.GroupInfo> groupMap = hzInstance.getMap(GROUPS_MAP);
 
                 WFCMessage.GroupInfo groupInfo = groupMap.get(message.getConversation().getTarget());

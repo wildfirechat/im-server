@@ -164,6 +164,8 @@ public final class BrokerConstants {
     public static final String MESSAGES_DISABLE_REMOTE_SEARCH = "message.disable_remote_search";
 
     public static final String MESSAGES_RECALL_TIME_LIMIT = "message.recall_time_limit";
+    public static final String MESSAGES_DISABLE_GROUP_MANAGER_RECALL = "message.disable_group_manager_recall";
+
 
     private BrokerConstants() {
     }
