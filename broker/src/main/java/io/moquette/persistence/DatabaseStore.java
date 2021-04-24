@@ -696,7 +696,7 @@ public class DatabaseStore {
     }
 
     MessageBundle getMessage(long messageId) {
-        String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + MessageShardingUtil.getMessageTable(messageId) +" where _mid = ? limit 1";
+        String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + MessageShardingUtil.getMessageTable(messageId) +" where _mid = ? order by `_dt` DESC limit 1";
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
