@@ -11,6 +11,7 @@ package com.xiaoleilu.loServer.action.channel;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.SendChannelMessageData;
+import cn.wildfirechat.proto.ProtoConstants;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -42,6 +43,17 @@ public class SendMessageAction extends ChannelAction {
     public boolean action(Request request) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendChannelMessageData sendChannelMessageData = getRequestBody(request.getNettyRequest(), SendChannelMessageData.class);
+            if(sendChannelMessageData.getTargets() != null && !sendChannelMessageData.getTargets().isEmpty()) {
+                if((channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Message_Unsubscribed) == 0 && (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Global) == 0) {
+                    for (String target:sendChannelMessageData.getTargets()) {
+                        if(!messagesStore.checkUserInChannel(target, channelInfo.getTargetId())) {
+                            setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_RIGHT, "User " + target + " not in channel"));
+                            return true;
+                        }
+                    }
+                }
+            }
+
             SendMessageData sendMessageData = new SendMessageData();
             sendMessageData.setConv(new Conversation());
             sendMessageData.getConv().setType(ConversationType_Channel);

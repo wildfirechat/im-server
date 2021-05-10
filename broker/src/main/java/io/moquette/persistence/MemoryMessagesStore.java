@@ -178,7 +178,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
-            printMissConfigLog(SERVER_MULTI_PLATFROM_NOTIFICATION, mDisableStrangerChat + "");
+            printMissConfigLog(SERVER_MULTI_PLATFROM_NOTIFICATION, mMultiPlatformNotification + "");
         }
 
         try {
@@ -519,19 +519,27 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (channelInfo != null) {
                 notifyReceivers.add(fromUser);
                 if (channelInfo.getOwner().equals(fromUser)) {
-                    Collection<String> listeners = getChannelListener(message.getConversation().getTarget());
-                    if (!StringUtil.isNullOrEmpty(message.getToUser())) {
-                        if (listeners.contains(message.getToUser())) {
-                            notifyReceivers.add(message.getToUser());
-                        }
-                    } else if(message.getToList() != null && !message.getToList().isEmpty()) {
-                        for (String to:message.getToList()) {
-                            if (listeners.contains(to)) {
-                                notifyReceivers.add(to);
-                            }
+                    if((channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Global) > 0) {
+                        if((message.getToList() != null && !message.getToList().isEmpty())) {
+                            notifyReceivers.addAll(message.getToList());
+                        } else {
+                            notifyReceivers.addAll(getAllEnds());
                         }
                     } else {
-                        notifyReceivers.addAll(listeners);
+                        Collection<String> listeners = getChannelListener(message.getConversation().getTarget());
+                        if (!StringUtil.isNullOrEmpty(message.getToUser())) {
+                            if (listeners.contains(message.getToUser()) || (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Message_Unsubscribed) > 0) {
+                                notifyReceivers.add(message.getToUser());
+                            }
+                        } else if (message.getToList() != null && !message.getToList().isEmpty()) {
+                            for (String to : message.getToList()) {
+                                if (listeners.contains(to) || (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Message_Unsubscribed) > 0) {
+                                    notifyReceivers.add(to);
+                                }
+                            }
+                        } else {
+                            notifyReceivers.addAll(listeners);
+                        }
                     }
                 } else {
                     if (StringUtil.isNullOrEmpty(channelInfo.getCallback()) || channelInfo.getAutomatic() == 0) {
@@ -2458,6 +2466,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
+
         if (mDisableStrangerChat) {
             //在禁止私聊时，允许机器人，物联网设备及管理员进行私聊。
             IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
@@ -3406,6 +3415,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode listenChannel(String operator, String channelId, boolean listen) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
+        IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
+        WFCMessage.ChannelInfo channelInfo = mIMap.get(channelId);
+        if(channelInfo != null && (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Private) > 0) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
 
         getChannelListener(channelId);
 
@@ -3441,12 +3455,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public boolean checkUserInChannel(String user, String channelId) {
-        Collection<String> chatroomMembers = getChannelListener(channelId);
-        if (chatroomMembers == null) {
+        Collection<String> channelMembers = getChannelListener(channelId);
+        if (channelMembers == null) {
             return false;
         }
 
-        if(!chatroomMembers.contains(user)) {
+        if(!channelMembers.contains(user)) {
             IMap<String, WFCMessage.ChannelInfo> mIMap = m_Server.getHazelcastInstance().getMap(CHANNELS);
             WFCMessage.ChannelInfo info = mIMap.get(channelId);
             if (info == null || !info.getOwner().equals(user)) {

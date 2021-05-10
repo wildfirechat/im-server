@@ -121,8 +121,9 @@ public class ProtoConstants {
     //第1位表示是否允许查看非订阅用户信息
     //第2位表示是否允许主动添加用户订阅关系
     //第3位表示是否允许给非订阅用户发送消息
-    //第4位表示是否私有
+    //第4位表示是否私有，不可以被用户搜索和主动订阅
     //第6位表示是否删除
+    //第8位表示是否是全局频道，全局频道没有订阅关系，会发送给系统内所有成员。
     public interface ChannelState {
         int Channel_State_Mask_FullInfo = 0x01;
         int Channel_State_Mask_Unsubscribed_User_Access = 0x02;
@@ -130,6 +131,7 @@ public class ProtoConstants {
         int Channel_State_Mask_Message_Unsubscribed = 0x08;
         int Channel_State_Mask_Private = 0x10;
         int Channel_State_Mask_Deleted = 0x40;
+        int Channel_State_Mask_Global = 0x80;
     }
 
 
