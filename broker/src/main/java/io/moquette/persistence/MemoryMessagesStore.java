@@ -130,7 +130,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
-    private boolean mFriendNewWelcomeMessage = false;
+    private boolean mFriendNewWelcomeMessage = true;
 
     private boolean mMultiPlatformNotification = false;
     private boolean mDisableStrangerChat = false;
