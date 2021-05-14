@@ -190,7 +190,7 @@ public interface IMessagesStore {
     ErrorCode getUserSettings(String userId, long version, WFCMessage.GetUserSettingResult.Builder builder);
     WFCMessage.UserSettingEntry getUserSetting(String userId, int scope, String key);
     List<WFCMessage.UserSettingEntry> getUserSetting(String userId, int scope);
-    long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request);
+    long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request, String clientId);
     void clearUserSettings(String userId);
     boolean getUserGlobalSilent(String userId);
 

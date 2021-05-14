@@ -2112,7 +2112,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (session.getPlatform() == Platform_LINUX || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
-            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build());
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build(), session.clientID);
         } else {
             String value = null;
             for (MemorySessionStore.Session s : m_Server.getStore().sessionsStore().sessionForUser(session.username)) {
@@ -2138,11 +2138,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
             if (value != null) {
                 if (pcentry == null || StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(value).build());
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(value).build(), session.clientID);
                 }
             } else {
                 if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build());
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build(), session.clientID);
                 }
             }
         }
@@ -3143,7 +3143,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request) {
+    public long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request, String clientId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
@@ -3183,7 +3183,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         } else if(request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
             userPushHiddenDetail.remove(userId);
         }
-        IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserSettingTopic, userId, updateDt);
+        IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserSettingTopic, userId, updateDt, clientId);
         return updateDt;
     }
 

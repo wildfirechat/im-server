@@ -465,14 +465,21 @@ public class MessagesPublisher {
         publishNotification(topic, receiver, head, null, null);
     }
 
-    public void publishNotification(String topic, String receiver, long head, String fromUser, String pushContent) {
-        publishNotificationLocal(topic, receiver, head, fromUser, pushContent);
+    public void publishNotification(String topic, String receiver, long head, String exceptClientId) {
+        publishNotification(topic, receiver, head, null, null, exceptClientId);
     }
 
-    void publishNotificationLocal(String topic, String receiver, long head, String fromUser, String pushContent) {
+    public void publishNotification(String topic, String receiver, long head, String fromUser, String pushContent) {
+        publishNotification(topic, receiver, head, fromUser, pushContent, null);
+    }
+    public void publishNotification(String topic, String receiver, long head, String fromUser, String pushContent, String exceptClientId) {
         Collection<Session> sessions = m_sessionsStore.sessionForUser(receiver);
         String fromUserName = null;
         for (Session targetSession : sessions) {
+            if(targetSession.getClientID().equals(exceptClientId)) {
+                continue;
+            }
+
             boolean needPush = !StringUtil.isNullOrEmpty(pushContent);
             boolean targetIsActive = this.connectionDescriptors.isConnected(targetSession.getClientSession().clientID);
             if (targetIsActive) {
