@@ -332,7 +332,7 @@ public class DatabaseStore {
             String sql = "select `_mid`" +
                 ", `_alias`" +
                 ", `_type`" +
-                ", `_dt`, `_create_dt` from t_group_member where _gid = ?";
+                ", `_dt`, `_create_dt`, `_extra` from t_group_member where _gid = ?";
             statement = connection.prepareStatement(sql);
 
             statement.setString(1, groupId);
@@ -361,6 +361,10 @@ public class DatabaseStore {
 
                 longValue = rs.getLong(index++);
                 builder.setCreateDt(longValue);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setExtra(value);
 
                 WFCMessage.GroupMember member = builder.build();
                 groupMembers.put(groupId, member);
@@ -442,7 +446,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select `_uid`, `_friend_uid`, `_reason`, `_status`, `_dt`, `_from_read_status`, `_to_read_status` from t_friend_request";
+            String sql = "select `_uid`, `_friend_uid`, `_reason`, `_status`, `_dt`, `_from_read_status`, `_to_read_status`, `_extra` from t_friend_request";
             statement = connection.prepareStatement(sql);
 
             int index;
@@ -476,6 +480,9 @@ public class DatabaseStore {
                 intvalue = rs.getInt(index++);
                 builder.setToReadStatus(intvalue > 0);
 
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setExtra(value);
 
                 WFCMessage.FriendRequest request = builder.build();
                 requestMap.put(request.getFromUid(), request);
@@ -1713,11 +1720,12 @@ public class DatabaseStore {
                     ", `_mid`" +
                     ", `_alias`" +
                     ", `_type`" +
-                    ", `_dt`, `_create_dt`) values(?, ?, ?, ?, ?, ?)" +
+                    ", `_dt`, `_create_dt`, `_extra`) values(?, ?, ?, ?, ?, ?,?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_alias` = ?," +
                     "`_type` = ?," +
-                    "`_dt` = ?";
+                    "`_dt` = ?," +
+                    "`_extra` = ?";
                 if(updateCreateTime) {
                     sql += ", `_create_dt` = ?";
                 }
@@ -1738,9 +1746,11 @@ public class DatabaseStore {
                     statement.setInt(index++, member.getType());
                     statement.setLong(index++, dt);
                     statement.setLong(index++, member.getCreateDt());
+                    statement.setString(index++, member.getExtra());
                     statement.setString(index++, member.getAlias());
                     statement.setInt(index++, member.getType());
                     statement.setLong(index++, dt);
+                    statement.setString(index++, member.getExtra());
                     if(updateCreateTime) {
                         statement.setLong(index++, dt);
                     }
@@ -2680,14 +2690,14 @@ public class DatabaseStore {
                 ", `_status`" +
                 ", `_dt`" +
                 ", `_from_read_status`" +
-                ", `_to_read_status` from t_friend_request where `_uid` = ? UNION ALL " +
+                ", `_to_read_status`, `_extra` from t_friend_request where `_uid` = ? UNION ALL " +
                 "select   `_uid`" +
                 ", `_friend_uid`" +
                 ", `_reason`" +
                 ", `_status`" +
                 ", `_dt`" +
                 ", `_from_read_status`" +
-                ", `_to_read_status` from t_friend_request where `_friend_uid` = ?";
+                ", `_to_read_status`, `_extra` from t_friend_request where `_friend_uid` = ?";
             statement = connection.prepareStatement(sql);
 
             int index = 1;
@@ -2724,6 +2734,10 @@ public class DatabaseStore {
 
                 b = rs.getBoolean(index++);
                 builder.setToReadStatus(b);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setExtra(value);
 
                 out.add(builder.build());
             }
@@ -2772,13 +2786,14 @@ public class DatabaseStore {
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
-                String sql = "insert into t_friend_request (`_uid`, `_friend_uid`, `_reason`, `_status`, `_dt`, `_from_read_status`, `_to_read_status`) values(?, ?, ?, ?, ?, ?, ?)" +
+                String sql = "insert into t_friend_request (`_uid`, `_friend_uid`, `_reason`, `_status`, `_dt`, `_from_read_status`, `_to_read_status`, `_extra`) values(?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "`_reason` = ?," +
                     "`_status` = ?," +
                     "`_dt` = ?," +
                     "`_from_read_status` = ?," +
-                    "`_to_read_status` = ?";
+                    "`_to_read_status` = ?," +
+                    "`_extra` = ?";
 
                 statement = connection.prepareStatement(sql);
                 int index = 1;
@@ -2789,12 +2804,14 @@ public class DatabaseStore {
                 statement.setLong(index++, request.getUpdateDt());
                 statement.setInt(index++, request.getFromReadStatus() ? 1 : 0);
                 statement.setInt(index++, request.getToReadStatus() ? 1 : 0);
+                statement.setString(index++, request.getExtra());
 
                 statement.setString(index++, request.getReason());
                 statement.setInt(index++, request.getStatus());
                 statement.setLong(index++, request.getUpdateDt());
                 statement.setInt(index++, request.getFromReadStatus() ? 1 : 0);
                 statement.setInt(index++, request.getToReadStatus() ? 1 : 0);
+                statement.setString(index++, request.getExtra());
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
             } catch (SQLException e) {

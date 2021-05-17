@@ -12,6 +12,7 @@ public class PojoGroupMember {
     String member_id;
     String alias;
     int type;
+    String extra;
 
     public String getMember_id() {
         return member_id;
@@ -35,5 +36,13 @@ public class PojoGroupMember {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }

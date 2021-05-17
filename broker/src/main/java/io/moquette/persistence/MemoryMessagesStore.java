@@ -934,7 +934,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public WFCMessage.GroupInfo createGroup(String fromUser, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList, boolean isAdmin) {
+    public WFCMessage.GroupInfo createGroup(String fromUser, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList, String memberExtra, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -956,19 +956,39 @@ public class MemoryMessagesStore implements IMessagesStore {
         List<WFCMessage.GroupMember> updatedMemberList = new ArrayList<>();
         boolean hasOwnerMember = false;
         for (WFCMessage.GroupMember member : memberList) {
+            WFCMessage.GroupMember.Builder builder = member.toBuilder();
+            builder.setUpdateDt(dt).setCreateDt(dt);
             if (member.getMemberId().equals(owner)) {
-                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+                builder.setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner);
                 hasOwnerMember = true;
             } else {
-                member = member.toBuilder().setUpdateDt(dt).setCreateDt(dt).build();
+                if (isAdmin) {
+                    if (member.getType() == GroupMemberType_Owner) {
+                        builder.setType(GroupMemberType_Normal);
+                        LOG.error("group member conflicted, group info owner is {}, and group member {} type is owner, set the member to normal member", owner, member.getMemberId());
+                    }
+                } else {
+                    builder.setType(GroupMemberType_Normal);
+                }
             }
+
+            if(!StringUtil.isNullOrEmpty(memberExtra)) {
+                builder.setExtra(memberExtra);
+            }
+
+            member = builder.build();
             groupMembers.put(groupId, member);
             updatedMemberList.add(member);
             dt++;
         }
 
         if(!hasOwnerMember && !StringUtil.isNullOrEmpty(owner)) {
-            WFCMessage.GroupMember member = WFCMessage.GroupMember.newBuilder().setMemberId(owner).setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            WFCMessage.GroupMember member;
+            if(!StringUtil.isNullOrEmpty(memberExtra)) {
+                member = WFCMessage.GroupMember.newBuilder().setMemberId(owner).setExtra(memberExtra).setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            } else {
+                member = WFCMessage.GroupMember.newBuilder().setMemberId(owner).setUpdateDt(dt).setCreateDt(dt).setType(ProtoConstants.GroupMemberType.GroupMemberType_Owner).build();
+            }
             groupMembers.put(groupId, member);
             updatedMemberList.add(member);
         }
@@ -1112,7 +1132,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList) {
+    public ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList, String extra) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -1169,18 +1189,24 @@ public class MemoryMessagesStore implements IMessagesStore {
         List<WFCMessage.GroupMember> tmp = new ArrayList<>();
         ArrayList<String> newInviteUsers = new ArrayList<>();
         for (WFCMessage.GroupMember member : memberList) {
+            WFCMessage.GroupMember.Builder builder = member.toBuilder();
+            builder.setUpdateDt(updateDt).setCreateDt(updateDt);
             if (member.getMemberId().equals(groupInfo.getOwner())) {
-                member = member.toBuilder().setType(GroupMemberType_Owner).setUpdateDt(updateDt).setCreateDt(updateDt).build();
+                builder.setType(GroupMemberType_Owner).build();
             } else {
                 if (isAdmin) {
-                    if (member.getType() != GroupMemberType_Owner)
-                        member = member.toBuilder().setUpdateDt(updateDt).setCreateDt(updateDt).build();
-                    else
-                        return ErrorCode.INVALID_PARAMETER;
+                    if (member.getType() == GroupMemberType_Owner) {
+                        builder.setType(GroupMemberType_Normal);
+                        LOG.error("group member conflicted, group info owner is {}, and group member {} type is owner, set the member to normal member", groupInfo.getOwner(), member.getMemberId());
+                    }
                 } else {
-                    member = member.toBuilder().setType(GroupMemberType_Normal).setUpdateDt(updateDt).setCreateDt(updateDt).build();
+                    builder.setType(GroupMemberType_Normal);
                 }
             }
+            if(!StringUtil.isNullOrEmpty(extra)) {
+                builder.setExtra(extra);
+            }
+            member = builder.build();
             tmp.add(member);
             newInviteUsers.add(member.getMemberId());
             updateDt++;
@@ -2650,6 +2676,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setFromUid(userId)
             .setToUid(request.getTargetUid())
             .setReason(request.getReason())
+            .setExtra(request.getExtra())
             .setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Sent)
             .setToReadStatus(false)
             .setUpdateDt(System.currentTimeMillis())

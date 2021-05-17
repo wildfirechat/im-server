@@ -40,7 +40,8 @@ public enum ErrorCode {
 
     ERROR_CODE_ALREADY_FRIENDS(23, "already friends"),
 
-    ERROR_CODE_RECALL_TIME_EXPIRED(24, "recall time expired"),
+    ERROR_CODE_RECALL_TIME_EXPIRED(24, "time expired"),
+    ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
 
     ERROR_CODE_API_NOT_SIGNED(239, "api not signed or sign parameter not completion"),
     ERROR_CODE_GROUP_EXCEED_MAX_MEMBER_COUNT(240, "group exceed max member count"),

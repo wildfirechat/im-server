@@ -47,6 +47,9 @@ public class InputAddGroupMember extends InputGroupBase {
                 groupMemberBuilder.setAlias(pojoGroupMember.getAlias());
             }
             groupMemberBuilder.setType(pojoGroupMember.getType());
+            if(!StringUtil.isNullOrEmpty(pojoGroupMember.getExtra())) {
+                groupMemberBuilder.setExtra(pojoGroupMember.getExtra());
+            }
             addGroupBuilder.addAddedMember(groupMemberBuilder);
         }
 

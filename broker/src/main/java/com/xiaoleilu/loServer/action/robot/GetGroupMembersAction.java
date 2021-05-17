@@ -66,6 +66,7 @@ public class GetGroupMembersAction extends RobotAction {
                         pm.setMember_id(member.getMemberId());
                         pm.setAlias(member.getAlias());
                         pm.setType(member.getType());
+                        pm.setExtra(member.getExtra());
                         out.getMembers().add(pm);
                     }
                     if(!isInGroup) {
