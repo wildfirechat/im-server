@@ -346,6 +346,7 @@ public class Server {
             file.mkdirs();
         }
         ServerSetting.setRoot(file);
+        MediaServerConfig.FILE_STROAGE_REMOTE_SERVER_URL = config.getProperty(FILE_STORAGE_REMOTE_SERVER_URL);
 
         MediaServerConfig.USER_QINIU = Integer.parseInt(config.getProperty(BrokerConstants.USER_QINIU)) > 0;
     }

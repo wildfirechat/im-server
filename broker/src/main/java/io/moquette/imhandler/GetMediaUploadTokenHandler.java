@@ -10,11 +10,14 @@ package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.proto.WFCMessage;
+import com.hazelcast.util.StringUtil;
 import com.qiniu.util.Auth;
 import com.xiaoleilu.loServer.action.UploadFileAction;
 import io.moquette.server.config.MediaServerConfig;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
+
+import static io.moquette.server.config.MediaServerConfig.FILE_STROAGE_REMOTE_SERVER_URL;
 
 @Handler("GMUT")
 public class GetMediaUploadTokenHandler extends IMHandler<WFCMessage.GetUploadTokenRequest> {
@@ -80,8 +83,12 @@ public class GetMediaUploadTokenHandler extends IMHandler<WFCMessage.GetUploadTo
             resultBuilder.setPort(80);
         } else {
             token = UploadFileAction.getToken(type);
-            resultBuilder.setDomain("http://" + MediaServerConfig.SERVER_IP + ":" + MediaServerConfig.HTTP_SERVER_PORT)
-                .setServer(MediaServerConfig.SERVER_IP);
+            if(StringUtil.isNullOrEmpty(MediaServerConfig.FILE_STROAGE_REMOTE_SERVER_URL)) {
+                resultBuilder.setDomain("http://" + MediaServerConfig.SERVER_IP + ":" + MediaServerConfig.HTTP_SERVER_PORT);
+            } else {
+                resultBuilder.setDomain(MediaServerConfig.FILE_STROAGE_REMOTE_SERVER_URL);
+            }
+            resultBuilder.setServer(MediaServerConfig.SERVER_IP);
             resultBuilder.setPort(MediaServerConfig.HTTP_SERVER_PORT);
         }
 

@@ -85,6 +85,8 @@ public final class BrokerConstants {
     public static final String QINIU_BUCKET_FAVORITE_DOMAIN = "qiniu.bucket_favorite_domain";
 
     public static final String FILE_STORAGE_ROOT = "local.media.storage.root";
+    public static final String FILE_STORAGE_REMOTE_SERVER_URL = "local.media.storage.remote_server_url";
+
     public static final String USER_QINIU = "media.server.use_qiniu";
 
     public static final String PUSH_ANDROID_SERVER_ADDRESS = "push.android.server.address";
