@@ -53,6 +53,10 @@ public class GetGroupInfoAction extends AdminAction {
                     pojoGroupInfo.setPortrait(groupInfo.getPortrait());
                     pojoGroupInfo.setTarget_id(groupInfo.getTargetId());
                     pojoGroupInfo.setType(groupInfo.getType());
+                    pojoGroupInfo.setMute(groupInfo.getMute());
+                    pojoGroupInfo.setJoin_type(groupInfo.getJoinType());
+                    pojoGroupInfo.setPrivate_chat(groupInfo.getPrivateChat());
+                    pojoGroupInfo.setSearchable(groupInfo.getSearchable());
                     result = RestResult.ok(pojoGroupInfo);
                 }
                 setResponseContent(result);
