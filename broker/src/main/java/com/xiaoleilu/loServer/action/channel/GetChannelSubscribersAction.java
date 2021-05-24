@@ -31,12 +31,12 @@ import java.util.ArrayList;
 public class GetChannelSubscribersAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             OutputStringList outputStringList = new OutputStringList();
             outputStringList.setList(new ArrayList<>());
             outputStringList.getList().addAll(messagesStore.getChannelSubscriber(channelInfo.getTargetId()));
-            setResponseContent(RestResult.ok(outputStringList));
+            setResponseContent(RestResult.ok(outputStringList), response);
         }
         return true;
     }

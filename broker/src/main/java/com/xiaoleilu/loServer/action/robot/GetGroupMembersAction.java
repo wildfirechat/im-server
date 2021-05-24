@@ -39,7 +39,7 @@ public class GetGroupMembersAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
             String robotId = robot.getUid();
@@ -75,9 +75,9 @@ public class GetGroupMembersAction extends RobotAction {
                     result = RestResult.ok(out);
                 }
 
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

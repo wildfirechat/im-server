@@ -16,6 +16,7 @@ import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -31,7 +32,7 @@ public class AddFriendRequestAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputAddFriendRequest input = getRequestBody(request.getNettyRequest(), InputAddFriendRequest.class);
 
@@ -41,7 +42,7 @@ public class AddFriendRequestAction extends AdminAction {
             }
 
             WFCMessage.AddFriendRequest addFriendRequest = WFCMessage.AddFriendRequest.newBuilder().setReason(input.getReason()).setTargetUid(input.getFriendUid()).build();
-            sendApiMessage(input.getUserId(), IMTopic.AddFriendRequestTopic, addFriendRequest.toByteArray(), result -> {
+            sendApiMessage(response, input.getUserId(), IMTopic.AddFriendRequestTopic, addFriendRequest.toByteArray(), result -> {
                 ByteBuf byteBuf = Unpooled.buffer();
                 byteBuf.writeBytes(result);
                 ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());

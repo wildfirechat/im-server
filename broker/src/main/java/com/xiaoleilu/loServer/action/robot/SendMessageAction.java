@@ -35,26 +35,26 @@ public class SendMessageAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
             sendMessageData.setSender(robot.getUid());
             if (SendMessageData.isValide(sendMessageData)) {
-                sendApiRequest(IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
+                sendApiRequest(response, IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                         long messageId = byteBuf.readLong();
                         long timestamp = byteBuf.readLong();
-                        sendResponse(null, new SendMessageResult(messageId, timestamp));
+                        sendResponse(response, null, new SendMessageResult(messageId, timestamp));
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

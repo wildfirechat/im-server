@@ -31,14 +31,14 @@ public class KickoffUserClientAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             StringPairPojo pojo = getRequestBody(request.getNettyRequest(), StringPairPojo.class);
             if (pojo != null && !StringUtil.isNullOrEmpty(pojo.getFirst())) {
                 sessionsStore.kickoffUserClient(pojo.getFirst(), pojo.getSecond());
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, null);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

@@ -38,7 +38,7 @@ public class GetUserGroupsAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUserId inputUserId = getRequestBody(request.getNettyRequest(), InputUserId.class);
             if (inputUserId != null
@@ -48,9 +48,9 @@ public class GetUserGroupsAction extends AdminAction {
                 OutputGroupIds outputGroupIds = new OutputGroupIds();
                 outputGroupIds.setGroupIds(new ArrayList<>(groupIds));
                 RestResult result = RestResult.ok(outputGroupIds);
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

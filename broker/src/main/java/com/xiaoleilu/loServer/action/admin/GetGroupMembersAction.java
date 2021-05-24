@@ -39,7 +39,7 @@ public class GetGroupMembersAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
             if (inputGetGroup != null
@@ -68,9 +68,9 @@ public class GetGroupMembersAction extends AdminAction {
                     result = RestResult.ok(out);
                 }
 
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

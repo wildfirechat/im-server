@@ -34,7 +34,7 @@ public class CreateChatroomAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
@@ -54,9 +54,9 @@ public class CreateChatroomAction extends AdminAction {
 
                 WFCMessage.ChatroomInfo info = inputCreateChatroom.toChatroomInfo();
                 messagesStore.createChatroom(inputCreateChatroom.getChatroomId(), info);
-                setResponseContent(RestResult.ok(new OutputCreateChatroom(inputCreateChatroom.getChatroomId())));
+                setResponseContent(RestResult.ok(new OutputCreateChatroom(inputCreateChatroom.getChatroomId())), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

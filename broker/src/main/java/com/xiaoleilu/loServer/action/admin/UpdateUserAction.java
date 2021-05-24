@@ -41,7 +41,7 @@ public class UpdateUserAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateUserInfo inputCreateUser = getRequestBody(request.getNettyRequest(), InputUpdateUserInfo.class);
             if (inputCreateUser != null
@@ -50,9 +50,9 @@ public class UpdateUserAction extends AdminAction {
                 && inputCreateUser.flag > 0) {
 
                 ErrorCode errorCode = messagesStore.updateUserInfo(inputCreateUser.userInfo, inputCreateUser.flag);
-                setResponseContent(RestResult.resultOf(errorCode));
+                setResponseContent(RestResult.resultOf(errorCode), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

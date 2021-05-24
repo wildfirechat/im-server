@@ -95,7 +95,7 @@ abstract public class RobotAction extends Action {
         return localSign.equals(sign) ? ErrorCode.ERROR_CODE_SUCCESS : ErrorCode.ERROR_CODE_AUTH_FAILURE;
     }
 
-    protected void sendResponse(ErrorCode errorCode, Object data) {
+    protected void sendResponse(Response response, ErrorCode errorCode, Object data) {
         response.setStatus(HttpResponseStatus.OK);
         if (errorCode == null) {
             errorCode = ErrorCode.ERROR_CODE_SUCCESS;
@@ -124,7 +124,7 @@ abstract public class RobotAction extends Action {
         return null;
     }
 
-    protected void sendApiRequest(String topic, byte[] message, Callback callback) {
+    protected void sendApiRequest(Response response, String topic, byte[] message, Callback callback) {
         ServerAPIHelper.sendRequest(robot.getUid(), null, topic, message, new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] response) {
@@ -133,12 +133,12 @@ abstract public class RobotAction extends Action {
 
             @Override
             public void onError(ErrorCode errorCode) {
-                sendResponse(errorCode, null);
+                sendResponse(response, errorCode, null);
             }
 
             @Override
             public void onTimeout() {
-                sendResponse(ErrorCode.ERROR_CODE_TIMEOUT, null);
+                sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
             }
 
             @Override

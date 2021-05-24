@@ -17,6 +17,7 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -34,7 +35,7 @@ public class BlacklistAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputBlacklistRequest inputData = getRequestBody(request.getNettyRequest(), InputBlacklistRequest.class);
             if (inputData != null
@@ -42,7 +43,7 @@ public class BlacklistAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputData.getTargetUid())
             ) {
                 WFCMessage.BlackUserRequest friendRequest = WFCMessage.BlackUserRequest.newBuilder().setUid(inputData.getTargetUid()).setStatus(inputData.getStatus()).build();
-                sendApiMessage(inputData.getUserId(), IMTopic.BlackListUserTopic, friendRequest.toByteArray(), result -> {
+                sendApiMessage(response, inputData.getUserId(), IMTopic.BlackListUserTopic, friendRequest.toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -50,7 +51,7 @@ public class BlacklistAction extends AdminAction {
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

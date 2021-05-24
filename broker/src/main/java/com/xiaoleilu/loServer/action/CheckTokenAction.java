@@ -29,7 +29,7 @@ import java.io.IOException;
 public class CheckTokenAction extends Action {
     private final RateLimiter mLimitCounter = new RateLimiter(10, 1);
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             response.setStatus(HttpResponseStatus.OK);
             String userId = request.getParam("userId");

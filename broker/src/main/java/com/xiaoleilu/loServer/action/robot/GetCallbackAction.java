@@ -29,11 +29,11 @@ import io.netty.util.internal.StringUtil;
 public class GetCallbackAction extends RobotAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             RobotCallbackPojo out = new RobotCallbackPojo();
             out.setUrl(robot.getCallback());
-            setResponseContent(RestResult.ok(out));
+            setResponseContent(RestResult.ok(out), response);
         }
         return true;
     }

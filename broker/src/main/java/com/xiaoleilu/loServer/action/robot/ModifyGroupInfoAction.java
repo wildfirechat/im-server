@@ -34,24 +34,24 @@ public class ModifyGroupInfoAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputModifyGroupInfo inputAddGroupMember = getRequestBody(request.getNettyRequest(), InputModifyGroupInfo.class);
             inputAddGroupMember.setOperator(robot.getUid());
             if (inputAddGroupMember.isValide()) {
-                sendApiRequest(IMTopic.ModifyGroupInfoTopic, inputAddGroupMember.toProtoGroupRequest().toByteArray(), result -> {
+                sendApiRequest(response, IMTopic.ModifyGroupInfoTopic, inputAddGroupMember.toProtoGroupRequest().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                        sendResponse(null, null);
+                        sendResponse(response, null, null);
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

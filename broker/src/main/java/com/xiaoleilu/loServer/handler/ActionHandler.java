@@ -53,7 +53,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			Action errorAction = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
 			request.putParam(UnknownErrorAction.ERROR_PARAM_NAME, e);
 			response.setContent(e.toString());
-			errorAction.doAction(request);
+			errorAction.doAction(request, response);
 
             //如果发送请求未被触发，则触发之，否则跳过。
             if(!response.isSent()){
@@ -134,9 +134,8 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			}
 		}
         action.ctx = ctx;
-		action.response = response;
 
-		boolean isSync = action.doAction(request);
+		boolean isSync = action.doAction(request, response);
 
 		if(isSync) {
             //如果发送请求未被触发，则触发之，否则跳过。

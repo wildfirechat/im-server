@@ -33,7 +33,7 @@ public class GetUserAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId != null
@@ -55,9 +55,9 @@ public class GetUserAction extends AdminAction {
                     result = RestResult.ok(InputOutputUserInfo.fromPbUser(user));
                 }
 
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

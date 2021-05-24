@@ -28,7 +28,7 @@ import cn.wildfirechat.common.ErrorCode;
 public class GetUserAction extends RobotAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId != null
@@ -49,9 +49,9 @@ public class GetUserAction extends RobotAction {
                 } else {
                     result = RestResult.ok(InputOutputUserInfo.fromPbUser(user));
                 }
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

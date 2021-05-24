@@ -29,9 +29,9 @@ import io.netty.util.internal.StringUtil;
 public class GetChannelAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            setResponseContent(RestResult.ok(OutputGetChannelInfo.fromPbInfo(channelInfo)));
+            setResponseContent(RestResult.ok(OutputGetChannelInfo.fromPbInfo(channelInfo)), response);
         }
         return true;
     }

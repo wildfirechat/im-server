@@ -15,6 +15,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import cn.wildfirechat.pojos.InputGetUserInfo;
+import com.xiaoleilu.loServer.handler.Response;
 import io.moquette.persistence.ServerAPIHelper;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.internal.StringUtil;
@@ -30,11 +31,11 @@ public class CheckUserOnlineAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId == null || !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
-                sendApiMessage(inputUserId.getUserId(), ServerAPIHelper.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), res -> {
+                sendApiMessage(response, inputUserId.getUserId(), ServerAPIHelper.CHECK_USER_ONLINE_REQUEST, inputUserId.getUserId().getBytes(), res -> {
                     OutputCheckUserOnline out = new Gson().fromJson(new String(res), OutputCheckUserOnline.class);
                     return new Result(ErrorCode.ERROR_CODE_SUCCESS, out);
                 });

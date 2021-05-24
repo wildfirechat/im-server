@@ -15,6 +15,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import cn.wildfirechat.pojos.InputGetToken;
 import cn.wildfirechat.pojos.OutputGetIMTokenData;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.handler.codec.http.FullHttpRequest;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
@@ -31,14 +32,14 @@ public class GetIMTokenAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetToken input = getRequestBody(request.getNettyRequest(), InputGetToken.class);
             String userId = input.getUserId();
 
 
             WFCMessage.GetTokenRequest getTokenRequest = WFCMessage.GetTokenRequest.newBuilder().setUserId(userId).setClientId(input.getClientId()).setPlatform(input.getPlatform() == null ? 0 : input.getPlatform()).build();
-            sendApiMessage(userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), result -> {
+            sendApiMessage(response, userId, input.getClientId(), IMTopic.GetTokenTopic, getTokenRequest.toByteArray(), result -> {
                 ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
                 if (errorCode1 == ErrorCode.ERROR_CODE_SUCCESS) {
                     //ba errorcode qudiao

@@ -40,7 +40,7 @@ public class CreateUserAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputOutputUserInfo inputCreateUser = getRequestBody(request.getNettyRequest(), InputOutputUserInfo.class);
             if (inputCreateUser != null
@@ -89,13 +89,13 @@ public class CreateUserAction extends AdminAction {
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
-                    setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage()));
+                    setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage()), response);
                     return true;
                 }
 
-                setResponseContent(RestResult.ok(new OutputCreateUser(inputCreateUser.getUserId(), inputCreateUser.getName())));
+                setResponseContent(RestResult.ok(new OutputCreateUser(inputCreateUser.getUserId(), inputCreateUser.getName())), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

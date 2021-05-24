@@ -32,16 +32,16 @@ public class GetUserBlockStatusAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetUserInfo inputUserId = getRequestBody(request.getNettyRequest(), InputGetUserInfo.class);
             if (inputUserId != null
                 && !StringUtil.isNullOrEmpty(inputUserId.getUserId())) {
 
                 int status = messagesStore.getUserStatus(inputUserId.getUserId());
-                setResponseContent(RestResult.ok(new OutputUserStatus(status)));
+                setResponseContent(RestResult.ok(new OutputUserStatus(status)), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

@@ -16,6 +16,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import cn.wildfirechat.pojos.InputDismissGroup;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -33,11 +34,11 @@ public class DismissGroupAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             if (inputDismissGroup.isValide()) {
-                sendApiMessage(inputDismissGroup.getOperator(), IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), result -> {
+                sendApiMessage(response, inputDismissGroup.getOperator(), IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -45,7 +46,7 @@ public class DismissGroupAction extends AdminAction {
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

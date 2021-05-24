@@ -28,24 +28,24 @@ import win.liyufan.im.IMTopic;
 @HttpMethod("POST")
 public class ModifyChannelProfileAction extends ChannelAction {
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputModifyChannelInfo input = getRequestBody(request.getNettyRequest(), InputModifyChannelInfo.class);
             if (input != null) {
                 WFCMessage.ModifyChannelInfo modifyChannelInfo = WFCMessage.ModifyChannelInfo.newBuilder().setChannelId(channelInfo.getTargetId()).setType(input.getType()).setValue(input.getValue()).build();
-                sendApiMessage(IMTopic.ModifyChannelInfoTopic, modifyChannelInfo.toByteArray(), result -> {
+                sendApiMessage(response, IMTopic.ModifyChannelInfoTopic, modifyChannelInfo.toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                        sendResponse(null, null);
+                        sendResponse(response, null, null);
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

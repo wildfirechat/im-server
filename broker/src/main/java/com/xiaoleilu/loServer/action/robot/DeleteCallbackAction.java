@@ -26,13 +26,13 @@ import io.netty.util.internal.StringUtil;
 public class DeleteCallbackAction extends RobotAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             if(!StringUtil.isNullOrEmpty(robot.getCallback())) {
                 robot = robot.toBuilder().clearCallback().setState(0).build();
                 messagesStore.addRobot(robot);
             }
-            setResponseContent(RestResult.ok());
+            setResponseContent(RestResult.ok(), response);
         }
         return true;
     }

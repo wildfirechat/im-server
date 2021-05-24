@@ -28,7 +28,7 @@ import static cn.wildfirechat.pojos.MyInfoType.*;
 public class UpdateProfileAction extends RobotAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             IntStringPairPojo input = getRequestBody(request.getNettyRequest(), IntStringPairPojo.class);
 
@@ -85,7 +85,7 @@ public class UpdateProfileAction extends RobotAction {
                     result.setErrorCode(ErrorCode.ERROR_CODE_SERVER_ERROR);
                 }
             }
-            setResponseContent(result);
+            setResponseContent(result, response);
         }
         return true;
     }

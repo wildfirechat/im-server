@@ -19,6 +19,7 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -30,7 +31,7 @@ import win.liyufan.im.IMTopic;
 public class SubscriberChannelAction extends ChannelAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputChannelSubscribe input = getRequestBody(request.getNettyRequest(), InputChannelSubscribe.class);
             if (input != null && !StringUtil.isNullOrEmpty(input.getTarget())) {
@@ -41,19 +42,19 @@ public class SubscriberChannelAction extends ChannelAction {
                     return true;
                 }
                 WFCMessage.ListenChannel listenChannel = WFCMessage.ListenChannel.newBuilder().setChannelId(channelInfo.getTargetId()).setListen(input.getSubscribe()).build();
-                sendApiMessage(input.getTarget(), IMTopic.ChannelListenTopic, listenChannel.toByteArray(), result -> {
+                sendApiMessage(response, input.getTarget(), IMTopic.ChannelListenTopic, listenChannel.toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                        sendResponse(null, null);
+                        sendResponse(response, null, null);
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

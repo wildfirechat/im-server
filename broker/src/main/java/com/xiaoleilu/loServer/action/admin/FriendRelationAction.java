@@ -16,6 +16,7 @@ import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import cn.wildfirechat.pojos.InputUpdateFriendStatusRequest;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -34,7 +35,7 @@ public class FriendRelationAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUpdateFriendStatusRequest friendAdd = getRequestBody(request.getNettyRequest(), InputUpdateFriendStatusRequest.class);
             if (friendAdd != null
@@ -45,7 +46,7 @@ public class FriendRelationAction extends AdminAction {
                 if (!StringUtil.isNullOrEmpty(friendAdd.getExtra())) {
                     friendRequestBuilder = friendRequestBuilder.setExtra(friendAdd.getExtra());
                 }
-                sendApiMessage(friendAdd.getUserId(), IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), result -> {
+                sendApiMessage(response, friendAdd.getUserId(), IMTopic.HandleFriendRequestTopic, friendRequestBuilder.build().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -53,7 +54,7 @@ public class FriendRelationAction extends AdminAction {
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

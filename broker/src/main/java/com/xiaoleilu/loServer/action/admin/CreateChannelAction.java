@@ -16,6 +16,7 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -33,7 +34,7 @@ public class CreateChannelAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateChannel inputCreateChannel = getRequestBody(request.getNettyRequest(), InputCreateChannel.class);
             if (inputCreateChannel != null
@@ -45,7 +46,7 @@ public class CreateChannelAction extends AdminAction {
                     inputCreateChannel.setTargetId(messagesStore.getShortUUID());
                 }
 
-                sendApiMessage(inputCreateChannel.getOwner(), IMTopic.CreateChannelTopic, inputCreateChannel.toProtoChannelInfo().toByteArray(), result -> {
+                sendApiMessage(response, inputCreateChannel.getOwner(), IMTopic.CreateChannelTopic, inputCreateChannel.toProtoChannelInfo().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -60,7 +61,7 @@ public class CreateChannelAction extends AdminAction {
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

@@ -34,7 +34,7 @@ public class PutSystemSettingAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SystemSettingPojo inputUserId = getRequestBody(request.getNettyRequest(), SystemSettingPojo.class);
             if (inputUserId != null
@@ -47,9 +47,9 @@ public class PutSystemSettingAction extends AdminAction {
                 } else {
                     result = RestResult.ok();
                 }
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

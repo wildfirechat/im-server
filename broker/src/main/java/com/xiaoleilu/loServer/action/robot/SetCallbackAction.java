@@ -27,7 +27,7 @@ import io.netty.util.internal.StringUtil;
 public class SetCallbackAction extends RobotAction {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             RobotCallbackPojo input = getRequestBody(request.getNettyRequest(), RobotCallbackPojo.class);
             if(!StringUtil.isNullOrEmpty(input.getUrl())) {
@@ -35,9 +35,9 @@ public class SetCallbackAction extends RobotAction {
                     robot = robot.toBuilder().setCallback(input.getUrl()).setState(1).build();
                     messagesStore.addRobot(robot);
                 }
-                setResponseContent(RestResult.ok());
+                setResponseContent(RestResult.ok(), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

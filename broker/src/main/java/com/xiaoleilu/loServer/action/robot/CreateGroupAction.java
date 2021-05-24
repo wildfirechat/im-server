@@ -37,7 +37,7 @@ public class CreateGroupAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateGroup inputCreateGroup = getRequestBody(request.getNettyRequest(), InputCreateGroup.class);
             inputCreateGroup.setOperator(robot.getUid());
@@ -45,7 +45,7 @@ public class CreateGroupAction extends RobotAction {
             if (inputCreateGroup.isValide()) {
                 PojoGroupInfo group_info = inputCreateGroup.getGroup().getGroup_info();
                 WFCMessage.CreateGroupRequest createGroupRequest = inputCreateGroup.toProtoGroupRequest();
-                sendApiRequest(IMTopic.CreateGroupTopic, createGroupRequest.toByteArray(), result -> {
+                sendApiRequest(response, IMTopic.CreateGroupTopic, createGroupRequest.toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -53,14 +53,14 @@ public class CreateGroupAction extends RobotAction {
                         byte[] data = new byte[byteBuf.readableBytes()];
                         byteBuf.readBytes(data);
                         String groupId = new String(data);
-                        sendResponse(null, new OutputCreateGroupResult(groupId));
+                        sendResponse(response, null, new OutputCreateGroupResult(groupId));
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

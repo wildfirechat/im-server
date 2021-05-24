@@ -38,8 +38,6 @@ abstract public class Action {
     public static ISessionsStore sessionsStore = null;
 
     public ChannelHandlerContext ctx;
-    public Response response;
-
     protected class Result {
         Object data;
         ErrorCode errorCode;
@@ -73,7 +71,7 @@ abstract public class Action {
 
         return ERROR_CODE_SUCCESS;
     }
-	public boolean doAction(Request request) {
+	public boolean doAction(Request request, Response response) {
         ErrorCode errorCode = preAction(request, response);
         boolean isSync = true;
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -89,7 +87,7 @@ abstract public class Action {
 //                    throw e;
 //                }
 //            } else {
-            isSync = action(request);
+            isSync = action(request, response);
 //            }
         } else {
             response.setStatus(HttpResponseStatus.OK);
@@ -107,7 +105,7 @@ abstract public class Action {
     public boolean isTransactionAction() {
         return false;
     }
-    abstract public boolean action(Request request);
+    abstract public boolean action(Request request, Response response);
 
     protected <T> T getRequestBody(HttpRequest request, Class<T> cls) {
         if (request instanceof FullHttpRequest) {
@@ -121,7 +119,7 @@ abstract public class Action {
         return null;
     }
 
-    protected void setResponseContent(RestResult result) {
+    protected void setResponseContent(RestResult result, Response response) {
         response.setStatus(HttpResponseStatus.OK);
         response.setContent(new Gson().toJson(result));
     }

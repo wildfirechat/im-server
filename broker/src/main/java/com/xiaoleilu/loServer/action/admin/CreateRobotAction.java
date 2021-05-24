@@ -39,7 +39,7 @@ public class CreateRobotAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputCreateRobot inputCreateRobot = getRequestBody(request.getNettyRequest(), InputCreateRobot.class);
             if (inputCreateRobot != null
@@ -79,9 +79,9 @@ public class CreateRobotAction extends AdminAction {
                     inputCreateRobot.setSecret(UUIDGenerator.getUUID());
                 }
                 messagesStore.addRobot(inputCreateRobot.toRobot());
-                setResponseContent(RestResult.ok(new OutputCreateRobot(inputCreateRobot.getUserId(), inputCreateRobot.getSecret())));
+                setResponseContent(RestResult.ok(new OutputCreateRobot(inputCreateRobot.getUserId(), inputCreateRobot.getSecret())), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

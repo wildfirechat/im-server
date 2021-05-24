@@ -18,6 +18,7 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import cn.wildfirechat.pojos.SendMessageData;
 import cn.wildfirechat.pojos.SendMessageResult;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -35,11 +36,11 @@ public class SendMessageAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendMessageData sendMessageData = getRequestBody(request.getNettyRequest(), SendMessageData.class);
             if (SendMessageData.isValide(sendMessageData) && !StringUtil.isNullOrEmpty(sendMessageData.getSender())) {
-                sendApiMessage(sendMessageData.getSender(), IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
+                sendApiMessage(response, sendMessageData.getSender(), IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
@@ -53,7 +54,7 @@ public class SendMessageAction extends AdminAction {
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

@@ -73,7 +73,7 @@ public class UploadFileAction extends Action {
     }
 
     @Override
-    public boolean action(Request r) {
+    public boolean action(Request r, Response response) {
         if (r.getNettyRequest() instanceof FullHttpRequest) {
 
             FullHttpRequest request = (FullHttpRequest) r.getNettyRequest();

@@ -40,14 +40,14 @@ public class SendMessageAction extends ChannelAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             SendChannelMessageData sendChannelMessageData = getRequestBody(request.getNettyRequest(), SendChannelMessageData.class);
             if(sendChannelMessageData.getTargets() != null && !sendChannelMessageData.getTargets().isEmpty()) {
                 if((channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Message_Unsubscribed) == 0 && (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Global) == 0) {
                     for (String target:sendChannelMessageData.getTargets()) {
                         if(!messagesStore.checkUserInChannel(target, channelInfo.getTargetId())) {
-                            setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_RIGHT, "User " + target + " not in channel"));
+                            setResponseContent(RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_RIGHT, "User " + target + " not in channel"), response);
                             return true;
                         }
                     }
@@ -63,21 +63,21 @@ public class SendMessageAction extends ChannelAction {
             sendMessageData.setPayload(sendChannelMessageData.getPayload());
             sendMessageData.setToUsers(sendChannelMessageData.getTargets());
             if (SendMessageData.isValide(sendMessageData)) {
-                sendApiMessage(IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
+                sendApiMessage(response, IMTopic.SendMessageTopic, sendMessageData.toProtoMessage().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                         long messageId = byteBuf.readLong();
                         long timestamp = byteBuf.readLong();
-                        sendResponse(null, new SendMessageResult(messageId, timestamp));
+                        sendResponse(response, null, new SendMessageResult(messageId, timestamp));
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

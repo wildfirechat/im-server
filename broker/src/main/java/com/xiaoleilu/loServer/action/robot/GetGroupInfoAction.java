@@ -34,7 +34,7 @@ public class GetGroupInfoAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetGroup inputGetGroup = getRequestBody(request.getNettyRequest(), InputGetGroup.class);
             if (inputGetGroup != null
@@ -58,9 +58,9 @@ public class GetGroupInfoAction extends RobotAction {
                     pojoGroupInfo.setSearchable(groupInfo.getSearchable());
                     result = RestResult.ok(pojoGroupInfo);
                 }
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

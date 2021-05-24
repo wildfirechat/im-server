@@ -37,7 +37,7 @@ public class RelationGetAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             StringPairPojo input = getRequestBody(request.getNettyRequest(), StringPairPojo.class);
             FriendData data = messagesStore.getFriendData(input.getFirst(), input.getSecond());
@@ -51,7 +51,7 @@ public class RelationGetAction extends AdminAction {
                 out.alias = data.getAlias();
                 out.extra = data.getExtra();
             }
-            setResponseContent(RestResult.ok(out));
+            setResponseContent(RestResult.ok(out), response);
         }
         return true;
     }

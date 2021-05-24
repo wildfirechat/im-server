@@ -32,7 +32,7 @@ public class GetChatroomInfoAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputGetChatroomInfo getChatroomInfo = getRequestBody(request.getNettyRequest(), InputGetChatroomInfo.class);
             String chatroomid = getChatroomInfo.getChatroomId();
@@ -46,9 +46,9 @@ public class GetChatroomInfoAction extends AdminAction {
                 } else {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 }
-                setResponseContent(result);
+                setResponseContent(result, response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

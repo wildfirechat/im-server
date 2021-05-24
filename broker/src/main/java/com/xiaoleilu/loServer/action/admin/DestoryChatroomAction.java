@@ -32,7 +32,7 @@ public class DestoryChatroomAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
@@ -42,9 +42,9 @@ public class DestoryChatroomAction extends AdminAction {
             if (inputDestoryChatroom != null
                 && !StringUtil.isNullOrEmpty(inputDestoryChatroom.getChatroomId())) {
                 messagesStore.destoryChatroom(inputDestoryChatroom.getChatroomId());
-                setResponseContent(RestResult.ok());
+                setResponseContent(RestResult.ok(), response);
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

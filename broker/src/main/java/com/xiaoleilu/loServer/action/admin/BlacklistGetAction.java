@@ -35,7 +35,7 @@ public class BlacklistGetAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputUserId inputGetFriendList = getRequestBody(request.getNettyRequest(), InputUserId.class);
             List<FriendData> dataList = messagesStore.getFriendList(inputGetFriendList.getUserId(), null, 0);
@@ -45,7 +45,7 @@ public class BlacklistGetAction extends AdminAction {
                     list.add(data.getFriendUid());
                 }
             }
-            setResponseContent(RestResult.ok(new OutputStringList(list)));
+            setResponseContent(RestResult.ok(new OutputStringList(list)), response);
         }
         return true;
     }

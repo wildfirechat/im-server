@@ -34,24 +34,24 @@ public class DismissGroupAction extends RobotAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDismissGroup inputDismissGroup = getRequestBody(request.getNettyRequest(), InputDismissGroup.class);
             inputDismissGroup.setOperator(robot.getUid());
             if (inputDismissGroup.isValide()) {
-                sendApiRequest(IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), result -> {
+                sendApiRequest(response, IMTopic.DismissGroupTopic, inputDismissGroup.toProtoGroupRequest().toByteArray(), result -> {
                     ByteBuf byteBuf = Unpooled.buffer();
                     byteBuf.writeBytes(result);
                     ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                     if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
-                        sendResponse(null, null);
+                        sendResponse(response, null, null);
                     } else {
-                        sendResponse(errorCode, null);
+                        sendResponse(response, errorCode, null);
                     }
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
         }
         return true;

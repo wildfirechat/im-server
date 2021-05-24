@@ -34,7 +34,7 @@ import java.util.concurrent.Executor;
 public class IMAction extends Action {
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
 
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();

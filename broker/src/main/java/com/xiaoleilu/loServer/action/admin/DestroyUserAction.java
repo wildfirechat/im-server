@@ -17,6 +17,7 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
+import com.xiaoleilu.loServer.handler.Response;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
@@ -34,20 +35,20 @@ public class DestroyUserAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputDestroyUser inputDestroyUser = getRequestBody(request.getNettyRequest(), InputDestroyUser.class);
             if (inputDestroyUser != null
                 && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
 
                 WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
-                sendApiMessage(inputDestroyUser.getUserId(), IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
+                sendApiMessage(response, inputDestroyUser.getUserId(), IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
                     ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
                     return new Result(errorCode1);
                 });
                 return false;
             } else {
-                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER));
+                setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
             }
 
         }

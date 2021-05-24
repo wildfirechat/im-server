@@ -29,7 +29,7 @@ public class SensitiveWordQueryAction extends AdminAction {
     }
 
     @Override
-    public boolean action(Request request) {
+    public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
                 List<String> words = messagesStore.getAllSensitiveWords();
                 InputOutputSensitiveWords out = new InputOutputSensitiveWords();
