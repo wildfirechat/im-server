@@ -10,6 +10,7 @@ package cn.wildfirechat.pojos;
 
 
 import cn.wildfirechat.proto.WFCMessage;
+import io.netty.util.internal.StringUtil;
 
 import java.util.List;
 
@@ -25,6 +26,8 @@ public class InputQuitGroup extends InputGroupBase {
     }
 
     public boolean isValide() {
+        if (StringUtil.isNullOrEmpty(group_id) || StringUtil.isNullOrEmpty(operator))
+            return false;
         return true;
     }
 

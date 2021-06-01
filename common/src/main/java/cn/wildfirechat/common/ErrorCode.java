@@ -38,6 +38,7 @@ public enum ErrorCode {
 
     ERROR_CODE_NOT_IN_CHANNEL(21, "not in channel"),
 
+    ERROR_CODE_NOT_LICENSED(22, "not licensed"),
     ERROR_CODE_ALREADY_FRIENDS(23, "already friends"),
 
     ERROR_CODE_RECALL_TIME_EXPIRED(24, "time expired"),
@@ -50,7 +51,7 @@ public enum ErrorCode {
     ERROR_CODE_SIGN_EXPIRED(243, "sign expired"),
     ERROR_CODE_AUTH_FAILURE(244, "auth failure"),
     ERROR_CODE_CLIENT_COUNT_OUT_OF_LIMIT(245, "client count out of limit"),
-    ERROR_CODE_IN_BLACK_LIST(246, "user in balck list"),
+    ERROR_CODE_IN_BLACK_LIST(246, "user in black list"),
     ERROR_CODE_FORBIDDEN_SEND_MSG(247, "forbidden send msg globally"),
     ERROR_CODE_NOT_RIGHT(248, "no right to operate"),
     ERROR_CODE_TIMEOUT(249, "timeout"),

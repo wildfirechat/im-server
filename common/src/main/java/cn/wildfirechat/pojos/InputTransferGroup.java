@@ -18,6 +18,8 @@ public class InputTransferGroup extends InputGroupBase {
 
 
     public boolean isValide() {
+        if (StringUtil.isNullOrEmpty(group_id) || StringUtil.isNullOrEmpty(operator) || StringUtil.isNullOrEmpty(new_owner))
+            return false;
         return true;
     }
 

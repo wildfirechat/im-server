@@ -22,7 +22,9 @@ public class InputModifyGroupInfo extends InputGroupBase {
     private String value;
 
     public boolean isValide() {
-        return !StringUtil.isNullOrEmpty(group_id);
+        if (StringUtil.isNullOrEmpty(group_id) || StringUtil.isNullOrEmpty(operator))
+            return false;
+        return true;
     }
     public String getGroup_id() {
         return group_id;

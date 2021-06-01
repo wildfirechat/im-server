@@ -43,8 +43,8 @@ public class Main {
         testSensitiveApi();
         if (commercialServer) {
             testDevice();
+            testConference();
         }
-
 
         System.out.println("Congratulation, all admin test case passed!!!!!!!");
     }
@@ -133,7 +133,6 @@ public class Main {
             System.out.println("get user info by userId failure");
             System.exit(-1);
         }
-
         InputOutputUserInfo updateUserInfo = new InputOutputUserInfo();
         updateUserInfo.setUserId(System.currentTimeMillis()+"");
         updateUserInfo.setDisplayName("updatedUserName");
@@ -1184,6 +1183,8 @@ public class Main {
         ChannelServiceApi channelServiceApi = new ChannelServiceApi("http://localhost", resultCreateChannel.getResult().getTargetId(), secret);
 
 
+
+        if (commercialServer) {
             //3. 测试channel api功能
             IMResult<Void> resultVoid = channelServiceApi.subscribe("userId2");
             if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -1200,6 +1201,7 @@ public class Main {
                 System.out.println("subscribe failure");
                 System.exit(-1);
             }
+
             IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
             if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3")) {
                 System.out.println("get subscriber done");
@@ -1231,7 +1233,7 @@ public class Main {
                 System.out.println("get user info failure");
                 System.exit(-1);
             }
-
+        }
 
 
         MessagePayload payload = new MessagePayload();
@@ -1350,6 +1352,63 @@ public class Main {
         } else {
             System.out.println("Get device failure");
             System.exit(-1);
+        }
+    }
+
+    /*
+    会议相关接口，仅音视频高级版服务支持
+     */
+    public static void testConference() throws Exception {
+        IMResult<PojoConferenceInfoList> listResult = ConferenceAdmin.listConferences();
+        if(listResult == null || listResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get conference list failure");
+            System.exit(-1);
+        } else {
+            System.out.println("conference list " + listResult.getResult().conferenceInfoList);
+        }
+
+        for (PojoConferenceInfo conferenceInfo:listResult.getResult().conferenceInfoList) {
+            IMResult<Void> destroyResult = ConferenceAdmin.destroy(conferenceInfo.roomId);
+            if(destroyResult == null || destroyResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("destroy room failure");
+                System.exit(-1);
+            } else {
+                System.out.println("destroy room success");
+            }
+        }
+
+        listResult = ConferenceAdmin.listConferences();
+        if(listResult == null || listResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get conference list failure");
+            System.exit(-1);
+        } else {
+            System.out.println("conference list " + listResult.getResult().conferenceInfoList);
+        }
+
+        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 20, false, 0, false);
+        if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("create conference list failure");
+            System.exit(-1);
+        } else {
+            System.out.println("create conference");
+        }
+
+        listResult = ConferenceAdmin.listConferences();
+        if(listResult == null || listResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get conference list failure");
+            System.exit(-1);
+        } else {
+            System.out.println("conference list " + listResult.getResult().conferenceInfoList);
+        }
+
+        for (PojoConferenceInfo conferenceInfo:listResult.getResult().conferenceInfoList) {
+            IMResult<PojoConferenceParticipantList> listParticipantsResult = ConferenceAdmin.listParticipants(conferenceInfo.roomId);
+            if(listParticipantsResult == null || listParticipantsResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("destroy room failure");
+                System.exit(-1);
+            } else {
+                System.out.println("destroy room success");
+            }
         }
     }
 }

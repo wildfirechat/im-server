@@ -70,6 +70,11 @@ public interface APIPath {
     String Get_System_Setting = "/admin/system/get_setting";
     String Put_System_Setting = "/admin/system/put_setting";
 
+    String Conference_List = "/admin/conference/list";
+    String Conference_List_Participant = "/admin/conference/list_participant";
+    String Conference_Create = "/admin/conference/create";
+    String Conference_Destroy = "/admin/conference/destroy";
+
     String Channel_User_Info = "/channel/user_info";
     String Channel_Update_Profile = "/channel/update_profile";
     String Channel_Get_Profile = "/channel/get_profile";

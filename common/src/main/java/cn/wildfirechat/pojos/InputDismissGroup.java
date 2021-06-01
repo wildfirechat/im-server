@@ -27,6 +27,8 @@ public class InputDismissGroup extends InputGroupBase {
     }
 
     public boolean isValide() {
+        if (StringUtil.isNullOrEmpty(group_id) || StringUtil.isNullOrEmpty(operator))
+            return false;
         return true;
     }
 

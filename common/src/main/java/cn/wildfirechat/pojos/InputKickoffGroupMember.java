@@ -35,6 +35,8 @@ public class InputKickoffGroupMember extends InputGroupBase {
     }
 
     public boolean isValide() {
+        if (StringUtil.isNullOrEmpty(group_id) || StringUtil.isNullOrEmpty(operator) || members == null || members.isEmpty())
+            return false;
         return true;
     }
 
