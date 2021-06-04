@@ -2639,7 +2639,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head, boolean isAdmin) {
-        if (mDisableFriendRequest) {
+        if (!isAdmin && mDisableFriendRequest) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 

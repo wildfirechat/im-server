@@ -47,7 +47,7 @@ public class AddFriendRequestAction extends AdminAction {
                 byteBuf.writeBytes(result);
                 ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
                 return new Result(errorCode);
-            }, !input.isForce());
+            }, input.isForce());
             return false;
         }
         return true;
