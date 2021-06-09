@@ -23,23 +23,24 @@ import java.nio.charset.Charset;
 public class RobotHttpUtils {
     private static final Logger LOG = LoggerFactory.getLogger(RobotHttpUtils.class);
 
-    private static String url;
-    private static String robotId;
-    private static String robotSecret;
+    private final String url;
+    private final String robotId;
+    private final String robotSecret;
 
-    public static void init(String url, String robotId, String secret) {
-        RobotHttpUtils.url = url;
-        RobotHttpUtils.robotId = robotId;
-        RobotHttpUtils.robotSecret = secret;
+    public RobotHttpUtils(String url, String robotId, String robotSecret) {
+        this.url = url;
+        this.robotId = robotId;
+        this.robotSecret = robotSecret;
     }
 
-    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
+
+    public <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
         if (isNullOrEmpty(url) || isNullOrEmpty(path)) {
             LOG.error("Not init IM SDK correctly. Do you forget init it?");
             throw new Exception("SDK url or secret lack!");
         }
 
-        String url = RobotHttpUtils.url + path;
+        String url = this.url + path;
         HttpPost post = null;
         try {
             HttpClient httpClient = HttpClientBuilder.create().build();

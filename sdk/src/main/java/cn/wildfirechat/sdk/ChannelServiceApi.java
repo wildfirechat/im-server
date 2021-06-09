@@ -9,7 +9,7 @@ import java.util.List;
 
 //仅专业版支持，社区版不支持
 public class ChannelServiceApi {
-    private ChannelHttpUtils httpUtils;
+    private final ChannelHttpUtils httpUtils;
 
     public ChannelServiceApi(String imurl, String channelId, String secret) {
         httpUtils = new ChannelHttpUtils(imurl, channelId, secret);

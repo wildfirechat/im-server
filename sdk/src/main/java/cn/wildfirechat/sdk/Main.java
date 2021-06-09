@@ -852,13 +852,14 @@ public class Main {
     static void testRobot() throws Exception {
         //初始化机器人API，注意端口是80，不是18080
         String robotId = "robot1";
-        RobotHttpUtils.init("http://localhost", robotId, "123456");
+
+        RobotService robotService = new RobotService("http://localhost", robotId, "123456");
 
         //***********************************************
         //****  机器人API
         //***********************************************
 
-        IMResult<InputOutputUserInfo> userInfoIMResult = RobotService.getProfile(robotId);
+        IMResult<InputOutputUserInfo> userInfoIMResult = robotService.getProfile(robotId);
         if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get profile success");
         } else {
@@ -867,14 +868,14 @@ public class Main {
         }
 
         String displayName = "testrobot"+System.currentTimeMillis();
-        IMResult<Void> voidIMResult1 = RobotService.updateProfile(Modify_DisplayName, displayName);
+        IMResult<Void> voidIMResult1 = robotService.updateProfile(Modify_DisplayName, displayName);
         if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("modify profile success");
         } else {
             System.out.println("modify profile failure");
             System.exit(-1);
         }
-        userInfoIMResult = RobotService.getProfile(robotId);
+        userInfoIMResult = robotService.getProfile(robotId);
         if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && displayName.equals(userInfoIMResult.getResult().getDisplayName())) {
             System.out.println("get profile success");
         } else {
@@ -883,7 +884,7 @@ public class Main {
         }
 
         String robotCallback = "http://hellow123";
-        voidIMResult1 = RobotService.setCallback(robotCallback);
+        voidIMResult1 = robotService.setCallback(robotCallback);
         if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("set callback success");
         } else {
@@ -891,7 +892,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<RobotCallbackPojo> callbackPojoIMResult = RobotService.getCallback();
+        IMResult<RobotCallbackPojo> callbackPojoIMResult = robotService.getCallback();
         if(callbackPojoIMResult != null && callbackPojoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && robotCallback.equals(callbackPojoIMResult.getResult().getUrl())) {
             System.out.println("get callback success");
         } else {
@@ -899,7 +900,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult1 = RobotService.deleteCallback();
+        voidIMResult1 = robotService.deleteCallback();
         if(voidIMResult1 != null && voidIMResult1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("delete callback success");
         } else {
@@ -907,7 +908,7 @@ public class Main {
             System.exit(-1);
         }
 
-        callbackPojoIMResult = RobotService.getCallback();
+        callbackPojoIMResult = robotService.getCallback();
         if(callbackPojoIMResult != null && callbackPojoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && StringUtil.isNullOrEmpty(callbackPojoIMResult.getResult().getUrl())) {
             System.out.println("get callback success");
         } else {
@@ -922,7 +923,7 @@ public class Main {
         payload.setType(1);
         payload.setSearchableContent("hello world");
 
-        IMResult<SendMessageResult> resultRobotSendMessage = RobotService.sendMessage("robot1", conversation, payload);
+        IMResult<SendMessageResult> resultRobotSendMessage = robotService.sendMessage("robot1", conversation, payload);
         if (resultRobotSendMessage != null && resultRobotSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("robot send message success");
         } else {
@@ -930,7 +931,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<InputOutputUserInfo> resultRobotGetUserInfo = RobotService.getUserInfo("userId1");
+        IMResult<InputOutputUserInfo> resultRobotGetUserInfo = robotService.getUserInfo("userId1");
         if (resultRobotGetUserInfo != null && resultRobotGetUserInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("robot get user info success");
         } else {
@@ -959,7 +960,7 @@ public class Main {
         member3.setMember_id("user3");
         members.add(member3);
 
-        IMResult<OutputCreateGroupResult> resultCreateGroup = RobotService.createGroup(groupInfo, members, null, null);
+        IMResult<OutputCreateGroupResult> resultCreateGroup = robotService.createGroup(groupInfo, members, null, null);
         if (resultCreateGroup != null && resultCreateGroup.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create group success");
         } else {
@@ -967,7 +968,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<PojoGroupInfo> resultGetGroupInfo = RobotService.getGroupInfo(groupInfo.getTarget_id());
+        IMResult<PojoGroupInfo> resultGetGroupInfo = robotService.getGroupInfo(groupInfo.getTarget_id());
         if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             if (groupInfo.getExtra().equals(resultGetGroupInfo.getResult().getExtra())
                 && groupInfo.getName().equals(resultGetGroupInfo.getResult().getName())
@@ -982,7 +983,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<Void> voidIMResult = RobotService.modifyGroupInfo(groupInfo.getTarget_id(), ProtoConstants.ModifyGroupInfoType.Modify_Group_Name,"HelloWorld", null, null);
+        IMResult<Void> voidIMResult = robotService.modifyGroupInfo(groupInfo.getTarget_id(), ProtoConstants.ModifyGroupInfoType.Modify_Group_Name,"HelloWorld", null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("modify group success");
         } else {
@@ -991,7 +992,7 @@ public class Main {
         }
 
 
-        IMResult<OutputGroupMemberList> resultGetMembers = RobotService.getGroupMembers(groupInfo.getTarget_id());
+        IMResult<OutputGroupMemberList> resultGetMembers = robotService.getGroupMembers(groupInfo.getTarget_id());
         if (resultGetMembers != null && resultGetMembers.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get group member success");
         } else {
@@ -1003,7 +1004,7 @@ public class Main {
         m.setMember_id("user1");
         m.setAlias("hello user1");
 
-        voidIMResult = RobotService.addGroupMembers(groupInfo.getTarget_id(), Arrays.asList(m), null, null);
+        voidIMResult = robotService.addGroupMembers(groupInfo.getTarget_id(), Arrays.asList(m), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("add group member success");
         } else {
@@ -1011,7 +1012,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = RobotService.kickoffGroupMembers(groupInfo.getTarget_id(), Arrays.asList("user3"), null, null);
+        voidIMResult = robotService.kickoffGroupMembers(groupInfo.getTarget_id(), Arrays.asList("user3"), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("kickoff group member success");
         } else {
@@ -1019,7 +1020,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = RobotService.setGroupMemberAlias(groupInfo.getTarget_id(), "user3", "test user3", null, null);
+        voidIMResult = robotService.setGroupMemberAlias(groupInfo.getTarget_id(), "user3", "test user3", null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("set group member alias success");
         } else {
@@ -1028,7 +1029,7 @@ public class Main {
         }
 
         if(commercialServer) {
-            voidIMResult = RobotService.setGroupManager(groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), true, null, null);
+            voidIMResult = robotService.setGroupManager(groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), true, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("set group manager success");
             } else {
@@ -1036,7 +1037,7 @@ public class Main {
                 System.exit(-1);
             }
 
-            voidIMResult = RobotService.setGroupManager(groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), false, null, null);
+            voidIMResult = robotService.setGroupManager(groupInfo.getTarget_id(), Arrays.asList("user4", "user5"), false, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("cancel group manager success");
             } else {
@@ -1050,7 +1051,7 @@ public class Main {
         //仅专业版支持
         if (commercialServer) {
             //开启群成员禁言
-            voidIMResult = RobotService.muteGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
+            voidIMResult = robotService.muteGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("mute group member success");
             } else {
@@ -1058,7 +1059,7 @@ public class Main {
                 System.exit(-1);
             }
             //关闭群成员禁言
-            voidIMResult = RobotService.muteGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
+            voidIMResult = robotService.muteGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("unmute group member success");
             } else {
@@ -1067,7 +1068,7 @@ public class Main {
             }
 
             //开启群成员白名单，当群全局禁言时，白名单用户可以发言
-            voidIMResult = RobotService.allowGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
+            voidIMResult = robotService.allowGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), true, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("allow group member success");
             } else {
@@ -1076,7 +1077,7 @@ public class Main {
             }
 
             //关闭群成员白名单
-            voidIMResult = RobotService.allowGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
+            voidIMResult = robotService.allowGroupMember(groupInfo.getTarget_id(), Arrays.asList("user5"), false, null, null);
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("unallow group member success");
             } else {
@@ -1084,7 +1085,7 @@ public class Main {
                 System.exit(-1);
             }
         }
-        voidIMResult = RobotService.transferGroup(groupInfo.getTarget_id(), "user2", null, null);
+        voidIMResult = robotService.transferGroup(groupInfo.getTarget_id(), "user2", null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("transfer success");
         } else {
@@ -1092,7 +1093,7 @@ public class Main {
             System.exit(-1);
         }
 
-        resultGetGroupInfo = RobotService.getGroupInfo(groupInfo.getTarget_id());
+        resultGetGroupInfo = robotService.getGroupInfo(groupInfo.getTarget_id());
         if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             if ("user2".equals(resultGetGroupInfo.getResult().getOwner())) {
                 groupInfo.setOwner("user2");
@@ -1105,7 +1106,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = RobotService.quitGroup(groupInfo.getTarget_id(), null, null);
+        voidIMResult = robotService.quitGroup(groupInfo.getTarget_id(), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("quit group success");
         } else {
