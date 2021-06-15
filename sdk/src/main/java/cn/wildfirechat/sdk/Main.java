@@ -32,7 +32,7 @@ public class Main {
 
     static void testAdmin() throws Exception {
         //初始化服务API
-        AdminHttpUtils.init("http://localhost:18080", "123456");
+        AdminConfig.initAdmin("http://localhost:18080", "123456");
 
         testUser();
         testUserRelation();
@@ -1119,7 +1119,7 @@ public class Main {
     //***测试频道API功能，仅专业版支持***
     static void testChannel() throws Exception {
         //初始化服务API
-        AdminHttpUtils.init("http://localhost:18080", "123456");
+        AdminConfig.initAdmin("http://localhost:18080", "123456");
 
         //先创建3个用户
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
