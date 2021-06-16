@@ -12,6 +12,7 @@ package win.liyufan.im;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -105,6 +106,10 @@ public class DBUtil {
 
             }
             Flyway flyway = Flyway.configure().dataSource(comboPooledDataSource).locations(migrateLocation).baselineOnMigrate(true).load();
+            BigInteger majorVersion = flyway.info().current().getVersion().getMajor();
+            if((IsEmbedDB && majorVersion.intValue() < 38) || (!IsEmbedDB && majorVersion.intValue() < 43)) {
+                System.out.println("数据库升级需要较长时间，可能长达数分钟或更长，请耐心等待，不要中断。。。");
+            }
             flyway.migrate();
 
             if(autoCleanMsgs) {
