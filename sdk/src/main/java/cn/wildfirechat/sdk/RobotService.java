@@ -203,4 +203,15 @@ public class RobotService {
         input.setNotify_message(notify_message);
         return robotHttpUtils.httpJsonPost(path, input, Void.class);
     }
+
+    public IMResult<Void> setGroupMemberExtra(String groupId, String memberId, String extra, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+        String path = APIPath.Robot_Group_Set_Member_Extra;
+        InputSetGroupMemberExtra input = new InputSetGroupMemberExtra();
+        input.setGroup_id(groupId);
+        input.setMemberId(memberId);
+        input.setExtra(extra);
+        input.setTo_lines(to_lines);
+        input.setNotify_message(notify_message);
+        return robotHttpUtils.httpJsonPost(path, input, Void.class);
+    }
 }

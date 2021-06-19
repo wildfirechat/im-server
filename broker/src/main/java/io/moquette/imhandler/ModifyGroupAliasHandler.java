@@ -25,7 +25,7 @@ public class ModifyGroupAliasHandler extends GroupHandler<WFCMessage.ModifyGroup
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
-        ErrorCode errorCode = m_messagesStore.modifyGroupAlias(fromUser, request.getGroupId(), request.getAlias(), null, isAdmin);
+        ErrorCode errorCode = m_messagesStore.modifyGroupMemberAlias(fromUser, request.getGroupId(), request.getAlias(), null, isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent()&& request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());

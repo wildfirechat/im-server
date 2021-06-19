@@ -32,6 +32,7 @@ public interface IMTopic {
 	String ModifyGroupInfoTopic = "GMI";
     String ModifyGroupAliasTopic = "GMA";
     String ModifyGroupMemberAliasTopic = "GMMA";
+    String ModifyGroupMemberExtraTopic = "GMME";
     String GetGroupInfoTopic = "GPGI";
     String GetGroupMemberTopic = "GPGM";
     String TransferGroupTopic = "GTG";

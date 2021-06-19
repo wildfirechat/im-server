@@ -185,6 +185,7 @@ public class ProtoConstants {
         int Group_Member_Event_Kickoff = 2;
         int Group_Member_Event_Type_Update = 3;
         int Group_Member_Event_Alias = 4;
+        int Group_Member_Event_Extra = 5;
     }
 
     public interface ChannelUpdateEventType {
@@ -220,7 +221,6 @@ public class ProtoConstants {
         int Update_User_Name = 0x200;
     }
 
-
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
     public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
     public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER = 106;
@@ -241,7 +241,8 @@ public class ProtoConstants {
     public static final int MESSAGE_CONTENT_TYPE_ALLOW_MEMBER = 119;
     public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER_VISIBLE = 120;
     public static final int MESSAGE_CONTENT_TYPE_QUIT_GROUP_VISIBLE = 121;
-
+    
     public static final int MESSAGE_CONTENT_TYPE_MODIFY_GROUP_EXTRA = 122;
+    public static final int MESSAGE_CONTENT_TYPE_MODIFY_GROUP_MEMBER_EXTRA = 123;
 }
 

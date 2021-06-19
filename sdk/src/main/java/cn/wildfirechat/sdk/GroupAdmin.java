@@ -5,7 +5,6 @@ import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GroupAdmin {
@@ -147,6 +146,18 @@ public class GroupAdmin {
         input.setOperator(operator);
         input.setMemberId(memberId);
         input.setAlias(alias);
+        input.setTo_lines(to_lines);
+        input.setNotify_message(notify_message);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    public static IMResult<Void> setGroupMemberExtra(String operator, String groupId, String memberId, String extra, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
+        String path = APIPath.Group_Set_Member_Extra;
+        InputSetGroupMemberExtra input = new InputSetGroupMemberExtra();
+        input.setGroup_id(groupId);
+        input.setOperator(operator);
+        input.setMemberId(memberId);
+        input.setExtra(extra);
         input.setTo_lines(to_lines);
         input.setNotify_message(notify_message);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);

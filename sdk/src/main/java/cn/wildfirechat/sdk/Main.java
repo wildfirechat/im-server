@@ -455,6 +455,13 @@ public class Main {
             System.exit(-1);
         }
 
+        voidIMResult = GroupAdmin.modifyGroupInfo(groupInfo.getOwner(), groupInfo.getTarget_id(), ProtoConstants.ModifyGroupInfoType.Modify_Group_Extra,"HelloWorld2", null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("modify group extra success");
+        } else {
+            System.out.println("modify group extra failure");
+            System.exit(-1);
+        }
 
         resultGetGroupInfo = GroupAdmin.getGroupInfo(groupInfo.getTarget_id());
         if (resultGetGroupInfo != null && resultGetGroupInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -502,6 +509,14 @@ public class Main {
             System.out.println("set group member alias success");
         } else {
             System.out.println("set group member alias failure");
+            System.exit(-1);
+        }
+
+        voidIMResult = GroupAdmin.setGroupMemberExtra(groupInfo.getOwner(), groupInfo.getTarget_id(), groupInfo.getOwner(), "hello member extra2", null, null);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("set group member extra success");
+        } else {
+            System.out.println("set group member extra failure");
             System.exit(-1);
         }
 

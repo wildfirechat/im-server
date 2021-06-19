@@ -133,6 +133,10 @@ public class GroupNotificationBinaryContent {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_MODIFY_GROUP_ALIAS);
     }
 
+    public WFCMessage.MessageContent getModifyGroupMemberExtraNotifyContent() {
+        return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_MODIFY_GROUP_MEMBER_EXTRA);
+    }
+
     public WFCMessage.MessageContent getChangeGroupMuteNotifyContent() {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_CHANGE_MUTE);
     }
@@ -164,5 +168,4 @@ public class GroupNotificationBinaryContent {
     public WFCMessage.MessageContent getChangeGroupExtraNotifyContent() {
         return getGroupNotifyContent(ProtoConstants.MESSAGE_CONTENT_TYPE_MODIFY_GROUP_EXTRA);
     }
-
 }
