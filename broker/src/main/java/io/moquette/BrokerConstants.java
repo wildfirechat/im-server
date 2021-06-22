@@ -152,6 +152,8 @@ public final class BrokerConstants {
 
     public static final String CHATROOM_Participant_Idle_Time = "chatroom.participant_idle_time";
     public static final String CHATROOM_Rejoin_When_Active = "chatroom.rejoin_when_active";
+    public static final String CHATROOM_Create_When_Not_Exist = "chatroom.create_when_not_exist";
+
 
     public static final String GROUP_Allow_Client_Custom_Operation_Notification = "group.allow_client_custom_operation_notification";
     public static final String GROUP_Visible_Quit_Kickoff_Notification = "group.visible_quit_or_kickoff_notification";

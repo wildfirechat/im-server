@@ -137,6 +137,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
+    private boolean mChatroomCreateWhenNotExist = true;
 
     private List<Integer> mForbiddenClientSendTypes = new ArrayList<>();
     private List<Integer> mBlackListExceptionTypes = new ArrayList<>();
@@ -243,6 +244,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
             printMissConfigLog(CHATROOM_Rejoin_When_Active, mChatroomRejoinWhenActive + "");
+        }
+
+        try {
+            mChatroomCreateWhenNotExist = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CHATROOM_Create_When_Not_Exist));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+            printMissConfigLog(CHATROOM_Create_When_Not_Exist, mChatroomCreateWhenNotExist + "");
         }
 
         try {
@@ -3061,7 +3070,12 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId) {
         IMap<String, WFCMessage.ChatroomInfo> chatroomInfoMap = m_Server.getHazelcastInstance().getMap(CHATROOMS);
         if (chatroomInfoMap == null || chatroomInfoMap.get(chatroomId) == null) {
-            return ErrorCode.ERROR_CODE_NOT_EXIST;
+            if(mChatroomCreateWhenNotExist) {
+                WFCMessage.ChatroomInfo.Builder builder = WFCMessage.ChatroomInfo.newBuilder().setTitle(chatroomId);
+                createChatroom(chatroomId, builder.build());
+            } else {
+                return ErrorCode.ERROR_CODE_NOT_EXIST;
+            }
         }
 
         m_Server.getStore().sessionsStore().getSession(clientId).refreshLastChatroomActiveTime();
