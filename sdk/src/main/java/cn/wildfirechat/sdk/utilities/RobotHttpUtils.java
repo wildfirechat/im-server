@@ -10,7 +10,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +28,13 @@ public class RobotHttpUtils {
     private final String url;
     private final String robotId;
     private final String robotSecret;
+    private final CloseableHttpClient httpClient;
 
     public RobotHttpUtils(String url, String robotId, String robotSecret) {
         this.url = url;
         this.robotId = robotId;
         this.robotSecret = robotSecret;
+        this.httpClient = HttpClients.createDefault();
     }
 
 
@@ -43,8 +47,6 @@ public class RobotHttpUtils {
         String url = this.url + path;
         HttpPost post = null;
         try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
-
             int nonce = (int)(Math.random() * 100000 + 3);
             long timestamp = System.currentTimeMillis();
             String str = nonce + "|" + robotSecret + "|" + timestamp;

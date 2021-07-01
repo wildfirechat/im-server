@@ -9,7 +9,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +26,12 @@ public class AdminHttpUtils {
 
     private static String adminUrl;
     private static String adminSecret;
+    private static CloseableHttpClient httpClient;
 
     public static void init(String url, String secret) {
         adminUrl = url;
         adminSecret = secret;
+        httpClient = HttpClients.createDefault();
     }
 
     public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
@@ -42,14 +46,12 @@ public class AdminHttpUtils {
 
         String url = adminUrl + path;
         HttpPost post = null;
-        try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
 
+        try {
             int nonce = (int)(Math.random() * 100000 + 3);
             long timestamp = System.currentTimeMillis();
             String str = nonce + "|" + adminSecret + "|" + timestamp;
             String sign = DigestUtils.sha1Hex(str);
-
 
             post = new HttpPost(url);
             post.setHeader("Content-type", "application/json; charset=utf-8");

@@ -9,7 +9,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +27,13 @@ public class ChannelHttpUtils {
     private String imurl;
     private String channelId;
     private String channelSecret;
+    private final CloseableHttpClient httpClient;
 
     public ChannelHttpUtils(String imurl, String channelId, String secret) {
         this.imurl = imurl;
         this.channelId = channelId;
         this.channelSecret = secret;
+        this.httpClient = HttpClients.createDefault();
     }
 
     public <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
@@ -41,8 +45,6 @@ public class ChannelHttpUtils {
         String url = imurl + path;
         HttpPost post = null;
         try {
-            HttpClient httpClient = HttpClientBuilder.create().build();
-
             int nonce = (int)(Math.random() * 100000 + 3);
             long timestamp = System.currentTimeMillis();
             String str = nonce + "|" + channelSecret + "|" + timestamp;
