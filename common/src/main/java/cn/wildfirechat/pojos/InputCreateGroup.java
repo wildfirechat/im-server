@@ -56,8 +56,14 @@ public class InputCreateGroup extends InputGroupBase {
         if (group_info.private_chat > 0 && group_info.private_chat < 128) {
             groupInfoBuilder.setPrivateChat(group_info.private_chat);
         }
-        if (group_info.searchable > 0) {
+        if (group_info.searchable > 0 && group_info.searchable < 128) {
             groupInfoBuilder.setSearchable(group_info.searchable);
+        }
+        if(group_info.history_message > 0&& group_info.history_message < 128) {
+            groupInfoBuilder.setHistoryMessage(group_info.history_message);
+        }
+        if(group_info.max_member_count > 0) {
+            groupInfoBuilder.setMaxMemberCount(group_info.max_member_count);
         }
 
         groupBuilder.setGroupInfo(groupInfoBuilder);
