@@ -72,18 +72,20 @@ JAVA_OPTS="$JAVA_OPTS -XX:MaxGCPauseMillis=500"
 
 ### GC logging options -- uncomment to enable
 
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
 #JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDateStamps"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintHeapAtGC"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintTenuringDistribution"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
-JAVA_OPTS="$JAVA_OPTS -XX:+PrintPromotionFailure"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintHeapAtGC"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintTenuringDistribution"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
+#JAVA_OPTS="$JAVA_OPTS -XX:+PrintPromotionFailure"
 #JAVA_OPTS="$JAVA_OPTS -XX:PrintFLSStatistics=1"
-JAVA_OPTS="$JAVA_OPTS -XX:+UseGCLogFileRotation"
-JAVA_OPTS="$JAVA_OPTS -XX:NumberOfGCLogFiles=10"
-JAVA_OPTS="$JAVA_OPTS -XX:GCLogFileSize=10M"
+#JAVA_OPTS="$JAVA_OPTS -XX:+UseGCLogFileRotation"
+#JAVA_OPTS="$JAVA_OPTS -XX:NumberOfGCLogFiles=10"
+#JAVA_OPTS="$JAVA_OPTS -XX:GCLogFileSize=10M"
 
+echo ""
 echo "请设置JVM参数Xmx和Xms！！！"
+echo ""
 #JAVA_OPTS="$JAVA_OPTS -Xmx2G"
 #JAVA_OPTS="$JAVA_OPTS -Xms2G"
 
