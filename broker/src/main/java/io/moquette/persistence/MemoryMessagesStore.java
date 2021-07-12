@@ -269,6 +269,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         try {
+            boolean encryptMessage = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_ENCRYPT_MESSAGE_CONTENT, "false"));
+            databaseStore.setEncryptMessage(encryptMessage);
+        } catch (Exception e) {
+        }
+
+        try {
             mRecallTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGES_RECALL_TIME_LIMIT));
         } catch (Exception e) {
         }

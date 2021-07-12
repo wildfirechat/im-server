@@ -167,6 +167,8 @@ public final class BrokerConstants {
     public static final String MESSAGES_GLOBAL_MUTE_EXCEPTION_TYPES = "message.global_mute_exception_types";
 
     public static final String MESSAGES_DISABLE_REMOTE_SEARCH = "message.disable_remote_search";
+    public static final String MESSAGES_ENCRYPT_MESSAGE_CONTENT = "message.encrypt_message_content";
+
 
     public static final String MESSAGES_RECALL_TIME_LIMIT = "message.recall_time_limit";
     public static final String MESSAGES_DISABLE_GROUP_MANAGER_RECALL = "message.disable_group_manager_recall";

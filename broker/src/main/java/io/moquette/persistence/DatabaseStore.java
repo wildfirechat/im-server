@@ -8,11 +8,11 @@
 
 package io.moquette.persistence;
 
-import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
@@ -26,7 +26,9 @@ import win.liyufan.im.MessageBundle;
 import win.liyufan.im.MessageShardingUtil;
 import win.liyufan.im.Utility;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.sql.*;
 import java.util.*;
@@ -42,8 +44,13 @@ public class DatabaseStore {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseStore.class);
     private final ThreadPoolExecutorWrapper mScheduler;
     private boolean disableRemoteMessageSearch = false;
+    private boolean encryptMessage = false;
     public void setDisableRemoteMessageSearch(boolean disableRemoteMessageSearch) {
         this.disableRemoteMessageSearch = disableRemoteMessageSearch;
+    }
+
+    public void setEncryptMessage(boolean encryptMessage) {
+        this.encryptMessage = encryptMessage;
     }
 
     public DatabaseStore(ThreadPoolExecutorWrapper scheduler) {
@@ -537,7 +544,7 @@ public class DatabaseStore {
                 statement.setString(index++, message.getConversation().getTarget());
                 statement.setInt(index++, message.getConversation().getLine());
                 Blob blob = connection.createBlob();
-                blob.setBytes(1, message.getContent().toByteArray());
+                blob.setBytes(1, encryptMessageContent(message.getContent().toByteArray(), false));
                 statement.setBlob(index++, blob);
                 if (!disableRemoteMessageSearch) {
                     statement.setString(index++, searchableContent);
@@ -571,6 +578,15 @@ public class DatabaseStore {
         });
     }
 
+    byte[] encryptMessageContent(byte[] in, boolean force) {
+        if(in != null && (encryptMessage || force)) {
+            for (int i = 0; i < in.length; i++) {
+                in[i] ^= 0xBD;
+            }
+        }
+        return in;
+    }
+
     void persistSensitiveMessage(final WFCMessage.Message message) {
         if(message.getContent().getPersistFlag() == Transparent) {
             return;
@@ -599,7 +615,7 @@ public class DatabaseStore {
                 statement.setString(index++, message.getConversation().getTarget());
                 statement.setInt(index++, message.getConversation().getLine());
                 Blob blob = connection.createBlob();
-                blob.setBytes(1, message.getContent().toByteArray());
+                blob.setBytes(1, encryptMessageContent(message.getContent().toByteArray(), false));
                 statement.setBlob(index++, blob);
                 statement.setString(index++, searchableContent);
                 statement.setTimestamp(index++, new Timestamp(message.getServerTimestamp()));
@@ -668,7 +684,16 @@ public class DatabaseStore {
                         builder.setConversation(cb.build());
                         Blob blob = resultSet.getBlob(index++);
 
-                        WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                        WFCMessage.MessageContent messageContent;
+                        try {
+                            messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
+                        } catch (InvalidProtocolBufferException e) {
+                            if(encryptMessage) {
+                                messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                            } else {
+                                messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), true));
+                            }
+                        }
                         builder.setContent(messageContent);
                         builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
                         WFCMessage.Message message = builder.build();
@@ -702,6 +727,16 @@ public class DatabaseStore {
         return out;
     }
 
+    public byte[] toByteArray(InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int n = 0;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+        }
+        return output.toByteArray();
+    }
+
     MessageBundle getMessage(long messageId) {
         String sql = "select  `_from`, `_type`, `_target`, `_line`, `_data`, `_dt` from " + MessageShardingUtil.getMessageTable(messageId) +" where _mid = ? order by `_dt` DESC limit 1";
         Connection connection = null;
@@ -724,7 +759,16 @@ public class DatabaseStore {
                 builder.setConversation(cb.build());
                 Blob blob = resultSet.getBlob(index++);
 
-                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                WFCMessage.MessageContent messageContent;
+                try {
+                    messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
+                } catch (InvalidProtocolBufferException e) {
+                    if(encryptMessage) {
+                        messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                    } else {
+                        messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), true));
+                    }
+                }
                 builder.setContent(messageContent);
                 builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
                 WFCMessage.Message message = builder.build();
@@ -829,7 +873,7 @@ public class DatabaseStore {
                 builder.setConversation(cb.build());
                 Blob blob = resultSet.getBlob(index++);
 
-                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
                 builder.setContent(messageContent);
 
                 builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
