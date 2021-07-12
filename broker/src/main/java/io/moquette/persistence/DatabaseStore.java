@@ -684,16 +684,7 @@ public class DatabaseStore {
                         builder.setConversation(cb.build());
                         Blob blob = resultSet.getBlob(index++);
 
-                        WFCMessage.MessageContent messageContent;
-                        try {
-                            messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
-                        } catch (InvalidProtocolBufferException e) {
-                            if(encryptMessage) {
-                                messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
-                            } else {
-                                messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), true));
-                            }
-                        }
+                        WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
                         builder.setContent(messageContent);
                         builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
                         WFCMessage.Message message = builder.build();
@@ -759,16 +750,7 @@ public class DatabaseStore {
                 builder.setConversation(cb.build());
                 Blob blob = resultSet.getBlob(index++);
 
-                WFCMessage.MessageContent messageContent;
-                try {
-                    messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
-                } catch (InvalidProtocolBufferException e) {
-                    if(encryptMessage) {
-                        messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
-                    } else {
-                        messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), true));
-                    }
-                }
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
                 builder.setContent(messageContent);
                 builder.setServerTimestamp(resultSet.getTimestamp(index++).getTime());
                 WFCMessage.Message message = builder.build();
@@ -873,16 +855,7 @@ public class DatabaseStore {
                 builder.setConversation(cb.build());
                 Blob blob = resultSet.getBlob(index++);
 
-                WFCMessage.MessageContent messageContent;
-                try {
-                    messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
-                } catch (InvalidProtocolBufferException e) {
-                    if(encryptMessage) {
-                        messageContent = WFCMessage.MessageContent.parseFrom(blob.getBinaryStream());
-                    } else {
-                        messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), true));
-                    }
-                }
+                WFCMessage.MessageContent messageContent = WFCMessage.MessageContent.parseFrom(encryptMessageContent(toByteArray(blob.getBinaryStream()), false));
 
                 builder.setContent(messageContent);
 
