@@ -43,9 +43,8 @@ public class GeneralAdmin {
         out.result = result.result != null && "1".equals(result.result.getValue());
         return out;
     }
-
-
-    private static IMResult<UserSettingPojo> getUserSetting(String userId, int scope, String key) throws Exception {
+    
+    public static IMResult<UserSettingPojo> getUserSetting(String userId, int scope, String key) throws Exception {
         String path = APIPath.User_Get_Setting;
         UserSettingPojo pojo = new UserSettingPojo();
         pojo.setUserId(userId);
@@ -54,7 +53,7 @@ public class GeneralAdmin {
         return AdminHttpUtils.httpJsonPost(path, pojo, UserSettingPojo.class);
     }
 
-    private static IMResult<Void> setUserSetting(String userId, int scope, String key, String value) throws Exception {
+    public static IMResult<Void> setUserSetting(String userId, int scope, String key, String value) throws Exception {
         String path = APIPath.User_Put_Setting;
         UserSettingPojo pojo = new UserSettingPojo();
         pojo.setUserId(userId);
