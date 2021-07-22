@@ -37,7 +37,9 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         long timestamp = System.currentTimeMillis();
                         builder.setMessageId(messageId);
                         builder.setServerTimestamp(timestamp);
-                        saveAndPublish(request.getTargetUid(), null, builder.build());
+                        if(!StringUtil.isNullOrEmpty(builder.getContent().getSearchableContent())) {
+                            saveAndPublish(request.getTargetUid(), null, builder.build());
+                        }
 
                         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
                         String language = "zh_CN";
