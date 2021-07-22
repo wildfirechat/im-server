@@ -132,6 +132,7 @@ public final class BrokerConstants {
 
     public static final String SERVER_MULTI_ENDPOINT = "server.multi_endpoint";
     public static final String SERVER_MULTI_PLATFROM_NOTIFICATION = "server.multi_platform_notification";
+    public static final String SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE = "server.mobile_default_silent_when_pc_online";
 
     public static final String MESSAGE_ROAMING = "message.roaming";
     public static final String MESSAGE_Remote_History_Message = "message.remote_history_message";

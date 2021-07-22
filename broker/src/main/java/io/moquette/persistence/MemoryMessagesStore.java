@@ -133,6 +133,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mFriendNewWelcomeMessage = true;
 
     private boolean mMultiPlatformNotification = false;
+    private boolean mMobileDefaultSilentWhenPCOnline = false;
     private boolean mDisableStrangerChat = false;
 
     private long mChatroomParticipantIdleTime = 900000;
@@ -181,6 +182,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
             printMissConfigLog(SERVER_MULTI_PLATFROM_NOTIFICATION, mMultiPlatformNotification + "");
+        }
+
+        try {
+            mMobileDefaultSilentWhenPCOnline = Boolean.parseBoolean(m_Server.getConfig().getProperty(SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE, "false"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
@@ -3400,9 +3407,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     public boolean getSilentWhenPcOnline(String userId) {
         WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingMuteWhenPCOnline, null);
         if (entry != null && "1".equals(entry.getValue())) {
-            return true;
+            return !mMobileDefaultSilentWhenPCOnline;
         } else {
-            return false;
+            return mMobileDefaultSilentWhenPCOnline;
         }
     }
     private Date getTodayDate() {
