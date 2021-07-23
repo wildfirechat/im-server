@@ -133,7 +133,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mFriendNewWelcomeMessage = true;
 
     private boolean mMultiPlatformNotification = false;
-    private boolean mMobileDefaultSilentWhenPCOnline = false;
+    private boolean mMobileDefaultSilentWhenPCOnline = true;
     private boolean mDisableStrangerChat = false;
 
     private long mChatroomParticipantIdleTime = 900000;
@@ -185,7 +185,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         try {
-            mMobileDefaultSilentWhenPCOnline = Boolean.parseBoolean(m_Server.getConfig().getProperty(SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE, "false"));
+            mMobileDefaultSilentWhenPCOnline = Boolean.parseBoolean(m_Server.getConfig().getProperty(SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE, "true"));
         } catch (Exception e) {
             e.printStackTrace();
         }
