@@ -11,6 +11,7 @@ public class IMExceptionEvent {
         int ROBOT_API_Exception = 7;
         int SHORT_LINK_Exception = 8;
         int EVENT_CALLBACK_Exception = 9;
+        int CONFERENCE_Exception = 10;
         int HEART_BEAT = 100;
     }
 

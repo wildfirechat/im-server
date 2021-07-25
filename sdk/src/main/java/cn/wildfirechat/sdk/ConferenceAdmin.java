@@ -11,9 +11,10 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, null, PojoConferenceInfoList.class);
     }
 
-    public static IMResult<PojoConferenceParticipantList> listParticipants(String roomId) throws Exception {
+    public static IMResult<PojoConferenceParticipantList> listParticipants(String roomId, boolean advance) throws Exception {
         String path = APIPath.Conference_List_Participant;
-        return AdminHttpUtils.httpJsonPost(path, roomId, PojoConferenceParticipantList.class);
+        PojoConferenceRoomId data = new PojoConferenceRoomId(roomId, advance);
+        return AdminHttpUtils.httpJsonPost(path, data, PojoConferenceParticipantList.class);
     }
 
     public static IMResult<Void> createRoom(String roomId, String description, String pin, int maxPublisher, boolean advance, int bitrate, boolean recording) throws Exception {
@@ -29,8 +30,9 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, create, Void.class);
     }
 
-    public static IMResult<Void> destroy(String roomId) throws Exception {
+    public static IMResult<Void> destroy(String roomId, boolean advance) throws Exception {
         String path = APIPath.Conference_Destroy;
-        return AdminHttpUtils.httpJsonPost(path, roomId, Void.class);
+        PojoConferenceRoomId conferenceRoomId = new PojoConferenceRoomId(roomId, advance);
+        return AdminHttpUtils.httpJsonPost(path, conferenceRoomId, Void.class);
     }
 }

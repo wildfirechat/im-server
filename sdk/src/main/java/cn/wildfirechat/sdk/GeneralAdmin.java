@@ -43,7 +43,8 @@ public class GeneralAdmin {
         out.result = result.result != null && "1".equals(result.result.getValue());
         return out;
     }
-    
+
+
     public static IMResult<UserSettingPojo> getUserSetting(String userId, int scope, String key) throws Exception {
         String path = APIPath.User_Get_Setting;
         UserSettingPojo pojo = new UserSettingPojo();

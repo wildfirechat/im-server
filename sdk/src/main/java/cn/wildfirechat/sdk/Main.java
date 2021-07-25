@@ -1302,6 +1302,8 @@ public class Main {
             System.exit(-1);
         }
 
+        Thread.sleep(100);
+
         IMResult<InputOutputSensitiveWords> swResult = SensitiveAdmin.getSensitives();
         if (swResult != null && swResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && swResult.getResult().getWords().containsAll(words)) {
             System.out.println("Sensitive word added");
@@ -1318,6 +1320,7 @@ public class Main {
             System.exit(-1);
         }
 
+        Thread.sleep(100);
         swResult = SensitiveAdmin.getSensitives();
         if (swResult != null && swResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && !swResult.getResult().getWords().containsAll(words)) {
             System.out.println("Sensitive word removed");
@@ -1384,7 +1387,7 @@ public class Main {
         }
 
         for (PojoConferenceInfo conferenceInfo:listResult.getResult().conferenceInfoList) {
-            IMResult<Void> destroyResult = ConferenceAdmin.destroy(conferenceInfo.roomId);
+            IMResult<Void> destroyResult = ConferenceAdmin.destroy(conferenceInfo.roomId, conferenceInfo.advance);
             if(destroyResult == null || destroyResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("destroy room failure");
                 System.exit(-1);
@@ -1401,9 +1404,17 @@ public class Main {
             System.out.println("conference list " + listResult.getResult().conferenceInfoList);
         }
 
-        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 20, false, 0, false);
+        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 9, false, 0, false);
         if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("create conference list failure");
+            System.out.println("create conference failure");
+            System.exit(-1);
+        } else {
+            System.out.println("create conference");
+        }
+
+        createResult = ConferenceAdmin.createRoom("helloroomid2", "hello room description advanced", "123456", 20, true, 0, false);
+        if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("create conference failure");
             System.exit(-1);
         } else {
             System.out.println("create conference");
@@ -1418,12 +1429,12 @@ public class Main {
         }
 
         for (PojoConferenceInfo conferenceInfo:listResult.getResult().conferenceInfoList) {
-            IMResult<PojoConferenceParticipantList> listParticipantsResult = ConferenceAdmin.listParticipants(conferenceInfo.roomId);
+            IMResult<PojoConferenceParticipantList> listParticipantsResult = ConferenceAdmin.listParticipants(conferenceInfo.roomId, conferenceInfo.advance);
             if(listParticipantsResult == null || listParticipantsResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("destroy room failure");
+                System.out.println("list participants failure");
                 System.exit(-1);
             } else {
-                System.out.println("destroy room success");
+                System.out.println("list participants success");
             }
         }
     }
