@@ -362,7 +362,7 @@ public class Server {
         LOG.info("Configuring embedded Hazelcast instance");
         String serverIp = getServerIp(config);
 
-        String hzConfigPath = config.getProperty(BrokerConstants.HAZELCAST_CONFIGURATION);
+        String hzConfigPath = "config/hazelcast.xml";
         String hzClientIp = config.getProperty(BrokerConstants.HAZELCAST_CLIENT_IP, "localhost");
         String hzClientPort = config.getProperty(BrokerConstants.HAZELCAST_CLIENT_PORT, "5703");
 

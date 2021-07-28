@@ -49,7 +49,6 @@ public final class BrokerConstants {
     public static final String DISABLED_PORT_BIND = "disabled";
     public static final String HOST = "0.0.0.0";
     public static final String NEED_CLIENT_AUTH = "need_client_auth";
-    public static final String HAZELCAST_CONFIGURATION = "hazelcast.configuration";
     public static final String HAZELCAST_CLIENT_IP = "hazelcast.client.ip";
     public static final String HAZELCAST_CLIENT_PORT = "hazelcast.client.port";
     public static final String NETTY_SO_BACKLOG_PROPERTY_NAME = "netty.so_backlog";
