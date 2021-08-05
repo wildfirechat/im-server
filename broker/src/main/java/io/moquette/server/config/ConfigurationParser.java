@@ -84,34 +84,37 @@ class ConfigurationParser {
         String line;
         try {
             while ((line = br.readLine()) != null) {
+                line = line.trim();
                 int commentMarker = line.indexOf('#');
                 if (commentMarker != -1) {
                     if (commentMarker == 0) {
                         // skip its a comment
                         continue;
                     } else {
-                        // it's a malformed comment
-                        throw new ParseException(line, commentMarker);
+                        String[] ss = line.split(" ");
+                        if(ss.length != 2) {
+                            throw new ParseException(line, commentMarker);
+                        }
                     }
                 } else {
                     if (line.isEmpty() || line.matches("^\\s*$")) {
                         // skip it's a black line
                         continue;
                     }
-
-                    // split till the first space
-                    int delimiterIdx = line.indexOf(' ');
-                    String key;
-                    String value = "";
-                    if (delimiterIdx > 0) {
-                        key = line.substring(0, delimiterIdx).trim();
-                        value = line.substring(delimiterIdx).trim();
-                    } else {
-                        key = line.trim();
-                    }
-
-                    m_properties.put(key, value);
                 }
+
+                // split till the first space
+                int delimiterIdx = line.indexOf(' ');
+                String key;
+                String value = "";
+                if (delimiterIdx > 0) {
+                    key = line.substring(0, delimiterIdx).trim();
+                    value = line.substring(delimiterIdx).trim();
+                } else {
+                    key = line.trim();
+                }
+
+                m_properties.put(key, value);
             }
         } catch (IOException ex) {
             throw new ParseException("Failed to read", 1);
