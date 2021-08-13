@@ -8,6 +8,7 @@
 
 package com.xiaoleilu.loServer.action.admin;
 
+import cn.wildfirechat.common.APIPath;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
@@ -46,7 +47,11 @@ abstract public class AdminAction extends Action {
         if (!mLimitCounter.isGranted("admin")) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
-        
+
+        if(APIPath.Health.equals(request.getUri())) {
+            return ErrorCode.ERROR_CODE_SUCCESS;
+        }
+
         String nonce = request.getHeader("nonce");
         if (StringUtil.isNullOrEmpty(nonce)) {
             nonce = request.getHeader("Nonce");
