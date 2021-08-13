@@ -36,12 +36,15 @@ public class HealthAction extends AdminAction {
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             JSONObject jsonObject = new JSONObject();
+
             JSONObject cpuObject = new JSONObject();
             jsonObject.put("cpu", cpuObject);
 
             JSONObject memoryObject = new JSONObject();
             jsonObject.put("memory", memoryObject);
 
+            JSONObject fileObject = new JSONObject();
+            jsonObject.put("disk", fileObject);
 
             if (getOperatingSystemMXBean() instanceof OperatingSystemMXBean) {
                 double load = getOperatingSystemMXBean().getSystemLoadAverage();
@@ -53,16 +56,11 @@ public class HealthAction extends AdminAction {
             memoryObject.put("max", Runtime.getRuntime().maxMemory());
             memoryObject.put("avail", Runtime.getRuntime().totalMemory());
 
-
-            JSONArray jsonArray = new JSONArray();
-            jsonObject.put("file", jsonArray);
-            for (File root : File.listRoots()) {
-                JSONObject fObj = new JSONObject();
-                fObj.put("path", root.getPath());
-                fObj.put("space", root.getTotalSpace());
-                fObj.put("free", root.getFreeSpace());
-                fObj.put("usable", root.getUsableSpace());
-            }
+            File root = new File("/");
+            fileObject.put("space", root.getTotalSpace());
+            fileObject.put("free", root.getFreeSpace());
+            fileObject.put("usable", root.getUsableSpace());
+            
             JSONObject out = new JSONObject();
             out.put("node1", jsonObject);
             RestResult result = RestResult.ok(out);
