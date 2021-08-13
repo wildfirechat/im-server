@@ -707,6 +707,14 @@ public class Main {
             System.out.println("create channel failure");
             System.exit(-1);
         }
+
+        IMResult<HealthCheckResult> health = GeneralAdmin.healthCheck();
+        if(health != null && health.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println(health.result);
+        } else {
+            System.out.println("health check failure");
+            System.exit(-1);
+        }
     }
 
     static void testChatroom() throws Exception {

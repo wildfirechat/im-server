@@ -7,6 +7,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -34,7 +35,54 @@ public class AdminHttpUtils {
         httpClient = HttpClients.createDefault();
     }
 
-    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception{
+    public static <T> IMResult<T> httpGet(String path, Class<T> clazz) throws Exception {
+        if (isNullOrEmpty(adminUrl) || isNullOrEmpty(adminSecret)) {
+            LOG.error("野火IM Server SDK必须先初始化才能使用，是不是忘记初始化了！！！！");
+            throw new Exception("SDK没有初始化");
+        }
+
+        if (isNullOrEmpty(path)) {
+            throw new Exception("路径缺失");
+        }
+        HttpGet get = null;
+        try {
+            get = new HttpGet(adminUrl + path);
+            HttpResponse response = httpClient.execute(get);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            String content = null;
+            if (response.getEntity().getContentLength() > 0) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "utf-8"));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                String NL = System.getProperty("line.separator");
+                while ((line = in.readLine()) != null) {
+                    sb.append(line).append(NL);
+                }
+
+                in.close();
+
+                content = sb.toString();
+                LOG.info("http request response content: {}", content);
+            }
+
+            if(statusCode != HttpStatus.SC_OK){
+                LOG.info("Request error: " + statusCode + " error msg:" + content);
+                throw new Exception("Http request error with code:" + statusCode);
+            } else {
+                return fromJsonObject(content, clazz);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if(get != null) {
+                get.releaseConnection();
+            }
+        }
+    }
+
+    public static <T> IMResult<T> httpJsonPost(String path, Object object, Class<T> clazz) throws Exception {
         if (isNullOrEmpty(adminUrl) || isNullOrEmpty(adminSecret)) {
             LOG.error("野火IM Server SDK必须先初始化才能使用，是不是忘记初始化了！！！！");
             throw new Exception("SDK没有初始化");

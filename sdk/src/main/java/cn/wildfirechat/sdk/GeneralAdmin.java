@@ -63,4 +63,8 @@ public class GeneralAdmin {
         pojo.setValue(value);
         return AdminHttpUtils.httpJsonPost(path, pojo, Void.class);
     }
+
+    public static IMResult<HealthCheckResult> healthCheck() throws Exception {
+        return AdminHttpUtils.httpGet(APIPath.Health, HealthCheckResult.class);
+    }
 }

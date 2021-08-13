@@ -37,6 +37,8 @@ public class HealthAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             JSONObject jsonObject = new JSONObject();
 
+            jsonObject.put("node", "1");
+
             JSONObject cpuObject = new JSONObject();
             jsonObject.put("cpu", cpuObject);
 
@@ -60,9 +62,9 @@ public class HealthAction extends AdminAction {
             fileObject.put("space", root.getTotalSpace());
             fileObject.put("free", root.getFreeSpace());
             fileObject.put("usable", root.getUsableSpace());
-            
-            JSONObject out = new JSONObject();
-            out.put("node1", jsonObject);
+
+            JSONArray out = new JSONArray();
+            out.add(jsonObject);
             RestResult result = RestResult.ok(out);
             setResponseContent(result, response);
         }
