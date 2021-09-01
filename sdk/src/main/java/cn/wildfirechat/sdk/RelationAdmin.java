@@ -58,7 +58,7 @@ public class RelationAdmin {
 
     public static IMResult<Void> updateFriendExtra(String operator, String targetId, String extra) throws Exception {
         String path = APIPath.Friend_Set_Extra;
-        InputUpdateExtra input = new InputUpdateExtra();
+        InputUpdateFriendExtra input = new InputUpdateFriendExtra();
         input.setOperator(operator);
         input.setTargetId(targetId);
         input.setExtra(extra);

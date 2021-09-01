@@ -10,8 +10,7 @@ package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.InputUpdateAlias;
-import cn.wildfirechat.pojos.InputUpdateExtra;
+import cn.wildfirechat.pojos.InputUpdateFriendExtra;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -31,7 +30,7 @@ public class FriendExtraPutAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputUpdateExtra input = getRequestBody(request.getNettyRequest(), InputUpdateExtra.class);
+            InputUpdateFriendExtra input = getRequestBody(request.getNettyRequest(), InputUpdateFriendExtra.class);
             ErrorCode errorCode = messagesStore.setFriendExtraRequest(input.getOperator(), input.getTargetId(), input.getExtra(), new long[1]);
             setResponseContent(RestResult.resultOf(errorCode), response);
         }

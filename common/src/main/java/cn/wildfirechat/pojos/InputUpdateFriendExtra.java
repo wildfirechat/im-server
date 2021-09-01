@@ -9,7 +9,7 @@
 package cn.wildfirechat.pojos;
 
 
-public class InputUpdateExtra {
+public class InputUpdateFriendExtra {
     private String operator;
     private String targetId;
     private String extra;
