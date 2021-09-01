@@ -31,11 +31,12 @@ public class SensitiveFilter {
             return sensitiveWords;
         }
 
+        String orignalText = text;
         text = text.toLowerCase();
         for(int i=0;i<text.length();i++){
             int sensitiveWordLength = getSensitiveWordLength(text, i, matchType);
             if(sensitiveWordLength>0){
-                String sensitiveWord = text.substring(i, i + sensitiveWordLength);
+                String sensitiveWord = orignalText.substring(i, i + sensitiveWordLength);
                 sensitiveWords.add(sensitiveWord);
                 if(matchType==MatchType.MIN_MATCH){
                     break;
