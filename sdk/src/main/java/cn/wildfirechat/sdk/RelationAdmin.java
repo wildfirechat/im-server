@@ -56,6 +56,14 @@ public class RelationAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputGetAlias.class);
     }
 
+    public static IMResult<Void> updateFriendExtra(String operator, String targetId, String extra) throws Exception {
+        String path = APIPath.Friend_Set_Extra;
+        InputUpdateExtra input = new InputUpdateExtra();
+        input.setOperator(operator);
+        input.setTargetId(targetId);
+        input.setExtra(extra);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
     public static IMResult<Void> sendFriendRequest(String userId, String targetId, String reason, boolean force) throws Exception {
         String path = APIPath.Friend_Send_Request;
         InputAddFriendRequest input = new InputAddFriendRequest();

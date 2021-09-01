@@ -3080,6 +3080,43 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public ErrorCode setFriendExtraRequest(String fromUser, String targetUserId, String extra, long[] heads){
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+
+        FriendData friendData = null;
+        Collection<FriendData> friends = friendsMap.get(fromUser);
+        if (friends == null || friends.size() == 0) {
+            friends = loadFriend(friendsMap, fromUser);
+        }
+
+        for (FriendData fd:friends) {
+            if (fd.getFriendUid().equals(targetUserId)) {
+                friendData = fd;
+                break;
+            }
+        }
+
+        if (friendData == null) {
+            friendData = new FriendData();
+            friendData.setUserId(fromUser);
+            friendData.setFriendUid(targetUserId);
+        }
+
+        friendData.setExtra(extra);
+        friendData.setTimestamp(System.currentTimeMillis());
+
+        databaseStore.persistOrUpdateFriendData(friendData);
+
+        heads[0] = friendData.getTimestamp();
+
+        friendsMap.remove(fromUser);
+
+        callbackRelationEvent(fromUser, targetUserId, 3, extra);
+        return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
     public ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId) {
         IMap<String, WFCMessage.ChatroomInfo> chatroomInfoMap = m_Server.getHazelcastInstance().getMap(CHATROOMS);
         if (chatroomInfoMap == null || chatroomInfoMap.get(chatroomId) == null) {

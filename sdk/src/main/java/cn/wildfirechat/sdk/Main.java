@@ -381,11 +381,25 @@ public class Main {
             System.exit(-1);
         }
 
+        String friendExtra = "hello friend extra";
+        IMResult<Void> setExtraResult = RelationAdmin.updateFriendExtra("ff1", "ff2", friendExtra);
+        if (setExtraResult != null && setExtraResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("set friend extra success");
+        } else {
+            System.out.println("set friend extra failure");
+            System.exit(-1);
+        }
+
         IMResult<RelationPojo> getRelation = RelationAdmin.getRelation("ff1", "ff2");
         if (getRelation != null && getRelation.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get friend relation success");
         } else {
             System.out.println("get friend relation failure");
+            System.exit(-1);
+        }
+
+        if(!friendExtra.equals(getRelation.getResult().extra)) {
+            System.out.println("set friend extra failure");
             System.exit(-1);
         }
     }

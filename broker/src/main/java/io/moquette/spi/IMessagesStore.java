@@ -182,6 +182,7 @@ public interface IMessagesStore {
     ErrorCode SyncFriendRequestUnread(String userId, long unreadDt, long[] head);
     ErrorCode isAllowUserMessage(String fromUser, String userId);
     ErrorCode setFriendAliasRequest(String fromUser, String targetUserId, String alias, long[] head);
+    ErrorCode setFriendExtraRequest(String fromUser, String targetUserId, String extra, long[] head);
 
     ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId);
     ErrorCode handleQuitChatroom(String userId, String clientId, String chatroomId);
