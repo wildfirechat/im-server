@@ -94,7 +94,7 @@ public class SensitiveFilter {
         Iterator<String> iterator = sensitiveWords.iterator();
         while (iterator.hasNext()){
             currentWord=iterator.next();
-            if(currentWord==null||currentWord.trim().length()<2){  //敏感词长度必须大于等于2
+            if(currentWord==null||currentWord.trim().length()<1){  //敏感词长度必须大于等于1
                 continue;
             }
             currentMap=sensitiveWordsMap;
