@@ -20,6 +20,7 @@ public enum ErrorCode {
 
     //Auth error
     ERROR_CODE_TOKEN_ERROR(6, "token error"),
+    ERROR_CODE_KICKED_OFF(7, "kicked off"),
     ERROR_CODE_USER_FORBIDDEN(8, "user forbidden"),
 
     //Message error
