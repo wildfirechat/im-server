@@ -39,6 +39,7 @@ public class MemorySessionStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
     private boolean supportMultiEndpoint = false;
+    private boolean clientSupportKickoff = false;
 
     public static class Session implements Comparable<Session>{
         final String clientID;
@@ -280,7 +281,14 @@ public class MemorySessionStore implements ISessionsStore {
         this.databaseStore = databaseStore;
 
         try {
-            supportMultiEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_ENDPOINT));
+            supportMultiEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_ENDPOINT, "false"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        }
+
+        try {
+            clientSupportKickoff = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_CLIENT_SUPPORT_KICKOFF_EVENT, "false"));
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
@@ -456,18 +464,30 @@ public class MemorySessionStore implements ISessionsStore {
 
         if (session != null && session.getDeleted() == 0) {
             LOG.error("already exists a session for client <{}>, bad condition", clientID);
-            throw new IllegalArgumentException("Can't create a session with the ID of an already existing" + clientID);
+            return ErrorCode.ERROR_CODE_SUCCESS;
         }
 
         if (session != null && session.getDeleted() > 0) {
-            return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+            if(clientSupportKickoff) {
+                return ErrorCode.ERROR_CODE_KICKED_OFF;
+            } else {
+                return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+            }
         }
 
         ClientSession clientSession = new ClientSession(clientID, this);
         session = databaseStore.getSession(username, clientID, clientSession);
 
-        if (session == null || session.getDeleted() > 0) {
+        if (session == null) {
             return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+        }
+
+        if(session.getDeleted() > 0) {
+            if(clientSupportKickoff) {
+                return ErrorCode.ERROR_CODE_KICKED_OFF;
+            } else {
+                return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+            }
         }
 
         sessions.put(clientID, session);

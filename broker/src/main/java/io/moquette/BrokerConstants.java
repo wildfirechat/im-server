@@ -132,6 +132,7 @@ public final class BrokerConstants {
     public static final String SERVER_MULTI_ENDPOINT = "server.multi_endpoint";
     public static final String SERVER_MULTI_PLATFROM_NOTIFICATION = "server.multi_platform_notification";
     public static final String SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE = "server.mobile_default_silent_when_pc_online";
+    public static final String SERVER_CLIENT_SUPPORT_KICKOFF_EVENT = "server.client_support_kickoff_event";
 
     public static final String MESSAGE_ROAMING = "message.roaming";
     public static final String MESSAGE_Remote_History_Message = "message.remote_history_message";
@@ -141,6 +142,8 @@ public final class BrokerConstants {
     public static final String MESSAGE_Disable_Stranger_Chat = "message.disable_stranger_chat";
 
     public static final String MESSAGE_Blacklist_Strategy = "message.blacklist.strategy";
+
+    public static final String MESSAGE_NO_Forward_Admin_Message = "message.no_forward_admin_message";
 
     public static final String FRIEND_Disable_Search = "friend.disable_search";
     public static final String FRIEND_Disable_NickName_Search = "friend.disable_nick_name_search";

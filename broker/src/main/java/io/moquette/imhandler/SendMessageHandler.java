@@ -34,6 +34,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private String mForwardUrl = null;
     private Set<Integer> mForwardMessageTypes = new HashSet<>();
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
+    private boolean mNoForwardAdminMessage = false;
 
     private String mRemoteSensitiveServerUrl = null;
     private Set<Integer> mRemoteSensitiveMessageTypes;
@@ -81,6 +82,13 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e);
+        }
+
+        try {
+            mNoForwardAdminMessage = Boolean.parseBoolean(mServer.getConfig().getProperty(BrokerConstants.MESSAGE_NO_Forward_Admin_Message, "false"));
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
@@ -161,7 +169,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
             message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
 
-            if (mForwardUrl != null && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType()))) {
+            if (mForwardUrl != null && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage)) {
                 publisher.forwardMessage(message, mForwardUrl);
             }
 
