@@ -35,6 +35,10 @@ public class GitRepositoryState {
     public final String buildHost;
     public final String buildVersion;
 
+    public final long runTime;
+
+    private final static long startTime = System.currentTimeMillis();
+
     private GitRepositoryState(Properties properties) {
         this.tags = String.valueOf(properties.get("git.tags"));
         this.branch = String.valueOf(properties.get("git.branch"));
@@ -58,6 +62,7 @@ public class GitRepositoryState {
         this.buildTime = String.valueOf(properties.get("git.build.time"));
         this.buildHost = String.valueOf(properties.get("git.build.host"));
         this.buildVersion = String.valueOf(properties.get("git.build.version"));
+        this.runTime = (System.currentTimeMillis() - startTime)/1000;
     }
 
     public static GitRepositoryState getGitRepositoryState() throws IOException {
