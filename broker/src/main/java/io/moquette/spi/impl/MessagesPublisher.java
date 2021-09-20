@@ -344,7 +344,7 @@ public class MessagesPublisher {
                     }
                     boolean isVoip = messageContentType == 402 || messageContentType == 400 || messageContentType == 401 || messageContentType == 406;
 
-                    if (StringUtil.isNullOrEmpty(pushContent) && !isVoip) {
+                    if (StringUtil.isNullOrEmpty(pushContent) && StringUtil.isNullOrEmpty(pushData) && !isVoip) {
                         LOG.info("push content is empty and contenttype is {}", messageContentType);
                         continue;
                     }
