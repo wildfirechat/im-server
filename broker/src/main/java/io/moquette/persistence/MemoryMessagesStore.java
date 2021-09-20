@@ -2042,7 +2042,20 @@ public class MemoryMessagesStore implements IMessagesStore {
 
             String recalledContent = json.toJSONString();
 
-            message = message.toBuilder().setContent(WFCMessage.MessageContent.newBuilder().setContent(operatorId).setType(80).setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes())).setExtra(recalledContent)).build();
+            JSONObject pushData = new JSONObject();
+            pushData.put("messageUid", messageUid);
+
+            message = message.toBuilder().setContent(WFCMessage.MessageContent.newBuilder()
+                .setContent(operatorId)
+                .clearSearchableContent()
+                .clearPushContent()
+                .setPersistFlag(1)
+                .setExpireDuration(0)
+                .setMentionedType(0)
+                .setType(80)
+                .setData(ByteString.copyFrom(String.valueOf(messageUid).getBytes()))
+                .setPushData(pushData.toJSONString())
+                .setExtra(recalledContent)).build();
             messageBundle.setMessage(message);
             messageBundle.setFromClientId(clientId);
 

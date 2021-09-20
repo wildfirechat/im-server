@@ -37,11 +37,12 @@ class PersistentQueueMessageSender {
         this.connectionDescriptorStore = connectionDescriptorStore;
     }
 
-    void sendPush(String sender, int conversationType, String target, int line, long messageHead, String deviceId, String pushContent, String pushData, int messageContentType, long serverTime, String senderName, String targetName, int unReceivedMsg, int mentionType, boolean isHiddenDetail, String language) {
+    void sendPush(String sender, int conversationType, String target, int line, long messageId, String deviceId, String pushContent, String pushData, int messageContentType, long serverTime, String senderName, String targetName, int unReceivedMsg, int mentionType, boolean isHiddenDetail, String language) {
         LOG.info("Send push to {}, message from {}", deviceId, sender);
         PushMessage pushMessage = new PushMessage(sender, conversationType, target, line, messageContentType, serverTime, senderName, targetName, unReceivedMsg, mentionType, isHiddenDetail, language);
         pushMessage.pushContent = pushContent;
         pushMessage.pushData = pushData;
+        pushMessage.messageId = messageId;
         PushServer.getServer().pushMessage(pushMessage, deviceId, pushContent);
     }
 

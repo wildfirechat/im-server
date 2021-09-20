@@ -160,9 +160,9 @@ public class MessagesPublisher {
         }
     }
 
-    private void publish2Receivers(String sender, int conversationType, String target, int line, long messageHead, Collection<String> receivers, String pushContent, String pushData, String exceptClientId, int pullType, int messageContentType, long serverTime, int mentionType, List<String> mentionTargets, int persistFlag) {
+    private void publish2Receivers(String sender, int conversationType, String target, int line, long messageId, Collection<String> receivers, String pushContent, String pushData, String exceptClientId, int pullType, int messageContentType, long serverTime, int mentionType, List<String> mentionTargets, int persistFlag) {
         if (persistFlag == Transparent) {
-            publishTransparentMessage2Receivers(messageHead, receivers, pullType, exceptClientId);
+            publishTransparentMessage2Receivers(messageId, receivers, pullType, exceptClientId);
             return;
         }
 
@@ -174,7 +174,7 @@ public class MessagesPublisher {
                     WFCMessage.Robot robot = m_messagesStore.getRobot(user);
                     if (robot != null && !StringUtil.isNullOrEmpty(robot.getCallback())) {
                         if (message == null) {
-                            message = m_messagesStore.getMessage(messageHead);
+                            message = m_messagesStore.getMessage(messageId);
                         }
                         final WFCMessage.Message finalMsg = message;
                         Server.getServer().getCallbackScheduler().execute(() -> {
@@ -191,9 +191,9 @@ public class MessagesPublisher {
             }
             long messageSeq;
             if (pullType != ProtoConstants.PullType.Pull_ChatRoom) {
-                messageSeq = m_messagesStore.insertUserMessages(sender, conversationType, target, line, messageContentType, user, messageHead);
+                messageSeq = m_messagesStore.insertUserMessages(sender, conversationType, target, line, messageContentType, user, messageId);
             } else {
-                messageSeq = m_messagesStore.insertChatroomMessages(user, line, messageHead);
+                messageSeq = m_messagesStore.insertChatroomMessages(user, line, messageId);
             }
 
             Collection<Session> sessions = m_sessionsStore.sessionForUser(user);
@@ -389,7 +389,7 @@ public class MessagesPublisher {
                             name = fd.getAlias();
                         }
                     }
-                    this.messageSender.sendPush(sender, conversationType, target, line, messageHead, targetSession.getClientID(), pushContent, pushData, messageContentType, serverTime, name, targetName, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
+                    this.messageSender.sendPush(sender, conversationType, target, line, messageId, targetSession.getClientID(), pushContent, pushData, messageContentType, serverTime, name, targetName, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
                 }
 
             }
