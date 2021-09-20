@@ -80,6 +80,7 @@ public class Server {
     }
 
     private ServerAcceptor m_acceptor;
+    private long startTime;
 
     private boolean m_shutdowning = false;
 
@@ -100,6 +101,10 @@ public class Server {
     private IStore m_store;
     static {
         System.out.println(BANNER);
+    }
+
+    public Server() {
+        startTime = System.currentTimeMillis();
     }
 
     public static void start(String[] args) throws IOException {
@@ -512,5 +517,8 @@ public class Server {
 
     public ThreadPoolExecutorWrapper getCallbackScheduler() {
         return callbackScheduler;
+    }
+    public long getRunTime() {
+        return (System.currentTimeMillis() - startTime)/1000;
     }
 }
