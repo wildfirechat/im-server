@@ -10,4 +10,9 @@ public interface UserSettingScope {
     int kUserSettingPCOnline = 10;
     int kUserSettingMuteWhenPCOnline = 15;
     int kUserSettingNoDisturbing = 17;
+    int kUserSettingConversationClearMessage = 18;
+    int kUserSettingConversationDraft = 19;
+    int kUserSettingDisableSyncDraft = 20;
+    int kUserSettingVoipSilent = 21;
+
 }

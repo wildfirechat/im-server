@@ -195,6 +195,7 @@ public interface IMessagesStore {
     long updateUserSettings(String userId, WFCMessage.ModifyUserSettingReq request, String clientId);
     void clearUserSettings(String userId);
     boolean getUserGlobalSilent(String userId);
+    boolean getUserVoipSilent(String userId);
 
     boolean getUserPushHiddenDetail(String userId);
     boolean getUserConversationSilent(String userId, WFCMessage.Conversation conversation);

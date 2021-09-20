@@ -253,12 +253,18 @@ public class MessagesPublisher {
                 }
 
                 boolean isSilent;
+                boolean isVoipSilent;
+                boolean isNoDisturb;
                 boolean isConvSilent = false;
                 if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
                     isSilent = true;
                     isConvSilent = true;
+                    isVoipSilent = true;
+                    isNoDisturb = true;
                 } else {
                     isSilent = false;
+                    isVoipSilent = false;
+                    isNoDisturb = false;
 
                     if (!user.equals(sender)) {
                         WFCMessage.Conversation conversation;
@@ -278,14 +284,19 @@ public class MessagesPublisher {
                             isSilent = true;
                         }
 
+                        if (m_messagesStore.getUserVoipSilent(user)) {
+                            LOG.info("The user {} is voip sliented", user);
+                            isVoipSilent = true;
+                        }
+
                         if (!isSilent && isPcOnline && m_messagesStore.getSilentWhenPcOnline(user)) {
                             LOG.info("The user {} pc online and silent when pc online", user);
                             isSilent = true;
                         }
 
-                        if (!isSilent && m_messagesStore.isUserNoDisturbing(user)) {
+                        if (m_messagesStore.isUserNoDisturbing(user)) {
                             LOG.info("The user {} is no disturbing", user);
-                            isSilent = true;
+                            isNoDisturb = true;
                         }
                     }
 
@@ -331,8 +342,9 @@ public class MessagesPublisher {
                             isConvSilent = false;
                         }
                     }
+                    boolean isVoip = messageContentType == 402 || messageContentType == 400 || messageContentType == 401 || messageContentType == 406;
 
-                    if ((StringUtil.isNullOrEmpty(pushContent) && messageContentType != 402 && messageContentType != 400 && messageContentType != 401 && messageContentType != 406)) {
+                    if (StringUtil.isNullOrEmpty(pushContent) && !isVoip) {
                         LOG.info("push content is empty and contenttype is {}", messageContentType);
                         continue;
                     }
@@ -342,13 +354,23 @@ public class MessagesPublisher {
                         continue;
                     }
 
-                    if (isConvSilent) {
+                    if (isConvSilent && !isVoip) {
                         LOG.info("Silent of user or conversation");
                         continue;
                     }
 
-                    if (isSilent) {
+                    if (isSilent && !isVoip) {
                         LOG.info("Silent of user");
+                        continue;
+                    }
+
+                    if(isVoip && isVoipSilent) {
+                        LOG.info("voip silent of user");
+                        continue;
+                    }
+
+                    if(isNoDisturb) {
+                        LOG.info("no disturb of user");
                         continue;
                     }
 

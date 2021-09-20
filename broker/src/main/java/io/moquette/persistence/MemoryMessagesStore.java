@@ -121,6 +121,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private volatile long lastUpdateSensitiveTime = 0;
 
     private ConcurrentHashMap<String, Boolean> userGlobalSlientMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> userVoipSlientMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
@@ -3378,6 +3379,8 @@ public class MemoryMessagesStore implements IMessagesStore {
             userConvSlientMap.remove(key);
         } else if(request.getScope() == UserSettingScope.kUserSettingGlobalSilent) {
             userGlobalSlientMap.remove(userId);
+        } else if(request.getScope() == UserSettingScope.kUserSettingVoipSilent) {
+            userVoipSlientMap.remove(userId);
         } else if(request.getScope() == UserSettingScope.kUserSettingHiddenNotificationDetail) {
             userPushHiddenDetail.remove(userId);
         }
@@ -3404,6 +3407,21 @@ public class MemoryMessagesStore implements IMessagesStore {
                 slient = true;
             }
             userGlobalSlientMap.put(userId, slient);
+        }
+        return slient;
+    }
+
+    @Override
+    public boolean getUserVoipSilent(String userId) {
+        Boolean slient = userVoipSlientMap.get(userId);
+        if (slient == null) {
+            WFCMessage.UserSettingEntry entry = getUserSetting(userId, UserSettingScope.kUserSettingVoipSilent, null);
+            if (entry == null || !entry.getValue().equals("1")) {
+                slient = false;
+            } else {
+                slient = true;
+            }
+            userVoipSlientMap.put(userId, slient);
         }
         return slient;
     }
