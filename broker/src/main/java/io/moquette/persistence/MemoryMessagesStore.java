@@ -640,6 +640,17 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
+        if(fromMessageId == 1) { //lite mode
+            if(maps == null || maps.isEmpty()) {
+                head = 0;
+            } else {
+                head = maps.lastKey();
+            }
+            builder.setCurrent(head);
+            builder.setHead(head);
+            return builder.build();
+        }
+
         mReadLock.lock();
         int size = 0;
         try {
