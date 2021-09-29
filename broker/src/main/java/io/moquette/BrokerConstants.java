@@ -128,6 +128,8 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_Forward_Url = "message.forward.url";
     public static final String MESSAGE_Forward_Types = "message.forward.types";
+    public static final String MESSAGE_MentionMsg_Forward_Url = "message.mentionmsg.forward.url";
+
 
     public static final String SERVER_MULTI_ENDPOINT = "server.multi_endpoint";
     public static final String SERVER_MULTI_PLATFROM_NOTIFICATION = "server.multi_platform_notification";

@@ -33,6 +33,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private int mSensitiveType = 0;  //命中敏感词时，0 失败，1 吞掉， 2 敏感词替换成*。
     private String mForwardUrl = null;
     private Set<Integer> mForwardMessageTypes = new HashSet<>();
+    private String mMentionForwardUrl = null;
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
     private boolean mNoForwardAdminMessage = false;
 
@@ -43,10 +44,8 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     public SendMessageHandler() {
         super();
 
-        String forwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Url);
-        if (!StringUtil.isNullOrEmpty(forwardUrl)) {
-            mForwardUrl = forwardUrl;
-
+        mForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Url);
+        if (!StringUtil.isNullOrEmpty(mForwardUrl)) {
             String forwardTypes = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Types);
             if (!StringUtil.isNullOrEmpty(forwardTypes)) {
                 String[] tss = forwardTypes.split(",");
@@ -55,6 +54,8 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 }
             }
         }
+
+        mMentionForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_MentionMsg_Forward_Url);
 
         try {
             mSensitiveType = Integer.parseInt(mServer.getConfig().getProperty(BrokerConstants.SENSITIVE_Filter_Type));
@@ -169,8 +170,12 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
             message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
 
-            if (mForwardUrl != null && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage)) {
+            if (!StringUtil.isNullOrEmpty(mForwardUrl) && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage)) {
                 publisher.forwardMessage(message, mForwardUrl);
+            }
+
+            if(!StringUtil.isNullOrEmpty(mMentionForwardUrl) && message.hasContent() && message.getContent().getMentionedType() != 0) {
+                publisher.forwardMessage(message, mMentionForwardUrl);
             }
 
             if (!isAdmin) {
