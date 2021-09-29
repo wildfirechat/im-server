@@ -174,7 +174,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 publisher.forwardMessage(message, mForwardUrl);
             }
 
-            if(!StringUtil.isNullOrEmpty(mMentionForwardUrl) && message.hasContent() && message.getContent().getMentionedType() != 0) {
+            if(!StringUtil.isNullOrEmpty(mMentionForwardUrl) && message.hasContent() && message.getContent().getMentionedType() != 0 && !(isAdmin && mNoForwardAdminMessage)) {
                 publisher.forwardMessage(message, mMentionForwardUrl);
             }
 
