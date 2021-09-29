@@ -18,6 +18,8 @@ import cn.wildfirechat.pojos.OutputGetIMTokenData;
 import com.xiaoleilu.loServer.handler.Response;
 import io.netty.handler.codec.http.FullHttpRequest;
 import cn.wildfirechat.common.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import win.liyufan.im.IMTopic;
 
 import java.util.Base64;
@@ -25,7 +27,7 @@ import java.util.Base64;
 @Route(APIPath.User_Get_Token)
 @HttpMethod("POST")
 public class GetIMTokenAction extends AdminAction {
-
+    private static final Logger LOG = LoggerFactory.getLogger(GetIMTokenAction.class);
     @Override
     public boolean isTransactionAction() {
         return false;
@@ -49,6 +51,8 @@ public class GetIMTokenAction extends AdminAction {
                     }
                     String token = Base64.getEncoder().encodeToString(data);
 
+                    LOG.info("get im token success {},{},{}", userId, input.getClientId(), token.substring(0, Math.min(10, token.length())));
+                    
                     return new Result(errorCode1, new OutputGetIMTokenData(userId, token));
                 } else {
                     return new Result(errorCode1);
