@@ -150,8 +150,8 @@ public interface ISessionsStore {
      */
     int getSecondPhaseAckPendingMessages(String clientID);
 
-    void disableSession(String clientId);
-    void cleanSession(String clientID);
+    void disableSession(String userId, String clientId);
+    void cleanSession(String userId, String clientID);
 
     boolean isMultiEndpointSupported();
 

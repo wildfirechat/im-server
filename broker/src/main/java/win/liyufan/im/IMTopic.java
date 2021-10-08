@@ -80,4 +80,6 @@ public interface IMTopic {
 
     String LoadRemoteMessagesTopic = "LRM";
     String KickoffPCClientTopic = "KPCC";
+
+    String ClearSessionTopic = "CST";
 }

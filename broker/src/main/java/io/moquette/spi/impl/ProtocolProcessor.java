@@ -44,12 +44,14 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.HttpUtils;
+import win.liyufan.im.IMTopic;
 import win.liyufan.im.Utility;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 import static io.moquette.spi.impl.InternalRepublisher.createPublishForQos;
 import static cn.wildfirechat.common.IMExceptionEvent.EventType.EVENT_CALLBACK_Exception;
 import static io.moquette.spi.impl.Utils.readBytesAndRewind;
@@ -582,7 +584,7 @@ public class ProtocolProcessor {
 
         //disconnect the session
 
-        m_sessionsStore.sessionForClient(clientID).disconnect(isDup, isRetain);
+        m_sessionsStore.sessionForClient(clientID).disconnect(session.getUsername(), isDup, isRetain);
     }
 
 

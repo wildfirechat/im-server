@@ -531,7 +531,7 @@ public class MemorySessionStore implements ISessionsStore {
             if (session.getUsername().equals(username)) {
                 return session;
             } else {
-                cleanSession(clientID);
+                cleanSession(null, clientID);
             }
         }
         return null;
@@ -739,9 +739,9 @@ public class MemorySessionStore implements ISessionsStore {
 
 
     @Override
-    public void disableSession(String clientId) {
+    public void disableSession(String userId, String clientId) {
         Session session = sessions.get(clientId);
-        if (session != null && session.getDeleted() == 0) {
+        if (session != null && session.getDeleted() == 0 && (userId == null || session.getUsername().equals(userId))) {
             databaseStore.updateSessionDeleted(session.getUsername(), clientId, 1);
             ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
             sessionSet.remove(clientId);
@@ -750,7 +750,7 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
-    public void cleanSession(String clientID) {
+    public void cleanSession(String userId, String clientID) {
         LOG.info("Fooooooooo <{}>", clientID);
 
         Session session = sessions.get(clientID);
@@ -758,6 +758,11 @@ public class MemorySessionStore implements ISessionsStore {
             LOG.error("Can't find the session for client <{}>", clientID);
             return;
         }
+
+        if(userId != null && !session.getUsername().equals(userId)) {
+            return;
+        }
+
         ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
         sessionSet.remove(clientID);
 
