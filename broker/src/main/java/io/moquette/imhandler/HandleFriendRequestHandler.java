@@ -19,6 +19,7 @@ import win.liyufan.im.I18n;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.MessageShardingUtil;
 
+import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(IMTopic.HandleFriendRequestTopic)
@@ -86,6 +87,10 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                     publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
                 }
             }
+            if(errorCode == ERROR_CODE_ALREADY_FRIENDS) {
+                errorCode = ERROR_CODE_SUCCESS;
+            }
+
             return errorCode;
     }
 }

@@ -2856,7 +2856,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
 
-
+        boolean alreadyFriend = false;
         if(!isAdmin && request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
             MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
 
@@ -2868,10 +2868,9 @@ public class MemoryMessagesStore implements IMessagesStore {
             for (FriendData fd : friends) {
                 if (fd.getFriendUid().equals(request.getTargetUid())) {
                     if (fd.getState() == 0) {
-                        return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
-                    } else {
-                        break;
+                        alreadyFriend = true;
                     }
+                    break;
                 }
             }
         }
@@ -2950,7 +2949,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (existRequest != null) {
-            if (mFriendRequestExpiration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestExpiration) {
+            if (!alreadyFriend && mFriendRequestExpiration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestExpiration) {
                 return ErrorCode.ERROR_CODE_FRIEND_REQUEST_EXPIRED;
             } else {
                 existRequest = existRequest.toBuilder().setStatus(request.getStatus()).setUpdateDt(System.currentTimeMillis()).build();
@@ -2976,7 +2975,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                     }
                 }
 
-                if(request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted){
+                if(!alreadyFriend && request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted){
                     MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
                     FriendData friendData1 = new FriendData(userId, request.getTargetUid(), "", request.getExtra(), 0, 0, System.currentTimeMillis());
                     databaseStore.persistOrUpdateFriendData(friendData1);
@@ -2996,6 +2995,9 @@ public class MemoryMessagesStore implements IMessagesStore {
                     msgBuilder.setContent(WFCMessage.MessageContent.newBuilder().setType(1).setSearchableContent(existRequest.getReason()).build());
 
                     callbackRelationEvent(userId, request.getTargetUid(), 0, "1");
+                }
+                if(alreadyFriend) {
+                    return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
                 }
                 return ErrorCode.ERROR_CODE_SUCCESS;
             }
