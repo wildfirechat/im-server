@@ -2819,6 +2819,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
         }
 
+        if (friendData1 != null && friendData1.getState() == 0) {
+            return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
+        }
+
         WFCMessage.FriendRequest newRequest = WFCMessage.FriendRequest
             .newBuilder()
             .setFromUid(userId)
