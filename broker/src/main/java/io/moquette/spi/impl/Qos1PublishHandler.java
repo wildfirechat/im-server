@@ -69,7 +69,6 @@ public class Qos1PublishHandler extends QosPublishHandler {
     private final MessagesPublisher publisher;
     private final ISessionsStore m_sessionStore;
     private final ThreadPoolExecutorWrapper m_imBusinessExecutor;
-    private final RateLimiter mLimitCounter = new RateLimiter(5, 100);
 
     private HashMap<String, IMHandler> m_imHandlers = new HashMap<>();
 
@@ -148,19 +147,6 @@ public class Qos1PublishHandler extends QosPublishHandler {
 
 	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
         LOG.info("imHandler fromUser={}, topic={}", fromUser, topic);
-        if(!isAdmin && !isRobotOrChannel && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
-            ByteBuf ackPayload = Unpooled.buffer();
-            ackPayload.ensureWritable(1).writeByte(ERROR_CODE_OVER_FREQUENCY.getCode());
-            try {
-                callback.onIMHandled(ERROR_CODE_OVER_FREQUENCY, ackPayload);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            }
-            LOG.warn("user {} request over frequency", fromUser);
-            return;
-        }
-
         IMCallback wrapper = (errorcode, ackPayload) -> {
             ackPayload.resetReaderIndex();
             byte code = ackPayload.readByte();
@@ -215,7 +201,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
 
         IMHandler handler = m_imHandlers.get(topic);
         if (handler != null) {
-            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper, isAdmin);
+            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper, isAdmin, isRobotOrChannel);
         } else {
             LOG.error("imHandler unknown topic={}", topic);
             ByteBuf ackPayload = Unpooled.buffer();

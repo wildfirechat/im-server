@@ -38,6 +38,7 @@ import java.util.*;
 
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
+import static io.moquette.BrokerConstants.CLIENT_REQUEST_RATE_LIMIT;
 
 /**
  * 请求处理接口<br>
@@ -52,7 +53,7 @@ abstract public class IMHandler<T> {
     protected static Server mServer = null;
     protected static MessagesPublisher publisher;
     private static ThreadPoolExecutorWrapper m_imBusinessExecutor;
-    private static final RateLimiter mLimitCounter = new RateLimiter(5, 100);
+    private static RateLimiter mLimitCounter;
     private Method parseDataMethod;
     private Class dataCls;
 
@@ -147,12 +148,24 @@ abstract public class IMHandler<T> {
         publisher = p;
         m_imBusinessExecutor = businessExecutor;
         mServer = server;
+        int clientRateLimit = 100;
+        try {
+            clientRateLimit = Integer.parseInt(server.getConfig().getProperty(CLIENT_REQUEST_RATE_LIMIT, "100"));
+        } catch (Exception e) {
+
+        }
+
+        if(clientRateLimit == 0) {
+            clientRateLimit = 100;
+        }
+
+        mLimitCounter = new RateLimiter(5, clientRateLimit);
     }
 
 
-    public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
         LOG.info("imHandler fromUser={}, clientId={}, topic={}", fromUser, clientID, topic);
-        if(!mLimitCounter.isGranted(clientID + fromUser + topic)) {
+        if(!isAdmin && !isRobotOrChannel && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
             ByteBuf ackPayload = Unpooled.buffer();
             ackPayload.ensureWritable(1).writeByte(ERROR_CODE_OVER_FREQUENCY.getCode());
             try {
@@ -166,7 +179,7 @@ abstract public class IMHandler<T> {
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
-	public void doHandler(String clientID, String fromUser, String topic, byte[] payloadContent, Qos1PublishHandler.IMCallback callback, boolean isAdmin) {
+	public void doHandler(String clientID, String fromUser, String topic, byte[] payloadContent, Qos1PublishHandler.IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
         m_imBusinessExecutor.execute(() -> {
             Qos1PublishHandler.IMCallback callbackWrapper = new Qos1PublishHandler.IMCallback() {
                 @Override
@@ -177,7 +190,7 @@ abstract public class IMHandler<T> {
                 }
             };
 
-            ErrorCode preActionCode = preAction(clientID, fromUser, topic, callbackWrapper);
+            ErrorCode preActionCode = preAction(clientID, fromUser, topic, callbackWrapper, isAdmin, isRobotOrChannel);
 
             if (preActionCode == ErrorCode.ERROR_CODE_SUCCESS) {
                 ByteBuf ackPayload = Unpooled.buffer(1);

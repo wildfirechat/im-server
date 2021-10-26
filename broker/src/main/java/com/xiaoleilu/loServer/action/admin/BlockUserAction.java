@@ -45,7 +45,7 @@ public class BlockUserAction extends AdminAction {
                 response.setContent(new Gson().toJson(result));
 
                 if (inputUserBlock.getStatus() == 2) {
-                    sendApiMessage(response, null, ServerAPIHelper.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), null);
+                    sendApiMessage(null, null, ServerAPIHelper.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), null);
                 }
 
                 sendResponse(response, ErrorCode.ERROR_CODE_SUCCESS, null);

@@ -178,6 +178,10 @@ public final class BrokerConstants {
     public static final String MESSAGES_RECALL_TIME_LIMIT = "message.recall_time_limit";
     public static final String MESSAGES_DISABLE_GROUP_MANAGER_RECALL = "message.disable_group_manager_recall";
 
+    public static final String HTTP_ADMIN_RATE_LIMIT = "http.admin.rate_limit";
+    public static final String HTTP_ROBOT_RATE_LIMIT = "http.robot.rate_limit";
+    public static final String HTTP_CHANNEL_RATE_LIMIT = "http.channel.rate_limit";
+    public static final String CLIENT_REQUEST_RATE_LIMIT = "client.request_rate_limit";
 
     private BrokerConstants() {
     }

@@ -24,6 +24,7 @@ import com.hazelcast.config.FileSystemXmlConfig;
 import com.hazelcast.core.*;
 import com.xiaoleilu.loServer.LoServer;
 import com.xiaoleilu.loServer.ServerSetting;
+import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.admin.AdminAction;
 import io.moquette.BrokerConstants;
 import io.moquette.persistence.*;
@@ -257,6 +258,7 @@ public class Server {
 
         initMediaServerConfig(config);
 
+        Action.init(config);
         String monitorEventAddress = config.getProperty(MONITOR_Exception_Event_Address);
         Utility.setMonitorEventAddress(monitorEventAddress);
 

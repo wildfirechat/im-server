@@ -33,7 +33,6 @@ import java.util.concurrent.Executor;
 
 abstract public class RobotAction extends Action {
     protected static final Logger LOG = LoggerFactory.getLogger(RobotAction.class);
-    private final RateLimiter mLimitCounter = new RateLimiter(10, 1000);
 
     protected WFCMessage.Robot robot;
 
@@ -64,7 +63,7 @@ abstract public class RobotAction extends Action {
             return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
-        if (!mLimitCounter.isGranted(rid)) {
+        if (!robotLimiter.isGranted(rid)) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
 

@@ -31,7 +31,6 @@ import java.util.concurrent.Executor;
 
 abstract public class ChannelAction extends Action {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ChannelAction.class);
-    private final RateLimiter mLimitCounter = new RateLimiter(10, 200);
     protected WFCMessage.ChannelInfo channelInfo;
 
     protected interface Callback {
@@ -61,7 +60,7 @@ abstract public class ChannelAction extends Action {
             return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
         }
 
-        if (!mLimitCounter.isGranted(cid)) {
+        if (!channelLimiter.isGranted(cid)) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
 

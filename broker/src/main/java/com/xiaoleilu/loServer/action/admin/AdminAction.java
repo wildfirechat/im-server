@@ -29,7 +29,6 @@ abstract public class AdminAction extends Action {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AdminAction.class);
     private static String SECRET_KEY = "123456";
     private static boolean NO_CHECK_TIME = false;
-    private final RateLimiter mLimitCounter = new RateLimiter(10, 500);
     public static void setSecretKey(String secretKey) {
         SECRET_KEY = secretKey;
     }
@@ -44,7 +43,7 @@ abstract public class AdminAction extends Action {
 
     @Override
     public ErrorCode preAction(Request request, Response response) {
-        if (!mLimitCounter.isGranted("admin")) {
+        if (!adminLimiter.isGranted("admin")) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
 
@@ -88,14 +87,16 @@ abstract public class AdminAction extends Action {
     }
 
     protected void sendResponse(Response response, ErrorCode errorCode, Object data) {
-        response.setStatus(HttpResponseStatus.OK);
-        if (errorCode == null) {
-            errorCode = ErrorCode.ERROR_CODE_SUCCESS;
-        }
+        if(response != null) {
+            response.setStatus(HttpResponseStatus.OK);
+            if (errorCode == null) {
+                errorCode = ErrorCode.ERROR_CODE_SUCCESS;
+            }
 
-        RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), data);
-        response.setContent(new Gson().toJson(result));
-        response.send();
+            RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), data);
+            response.setContent(new Gson().toJson(result));
+            response.send();
+        }
     }
     protected void sendApiMessage(Response response, String fromUser, String topic, byte[] message, ApiCallback callback) {
         sendApiMessage(response, fromUser, null, topic, message, callback, false);

@@ -13,6 +13,7 @@ import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.RequireAuthentication;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
+import io.moquette.server.config.IConfig;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.Utils;
@@ -21,10 +22,12 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import cn.wildfirechat.common.ErrorCode;
+import win.liyufan.im.RateLimiter;
 
 import java.nio.charset.StandardCharsets;
 
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
+import static io.moquette.BrokerConstants.*;
 
 /**
  * 请求处理接口<br>
@@ -38,6 +41,36 @@ abstract public class Action {
     public static ISessionsStore sessionsStore = null;
 
     public ChannelHandlerContext ctx;
+
+    protected static RateLimiter adminLimiter = null;
+    protected static RateLimiter robotLimiter = null;
+    protected static RateLimiter channelLimiter = null;
+
+    public static void init(IConfig config) {
+        int adminRate = 10000;
+        int robotRate = 1000;
+        int channelRate = 1000;
+
+        try {
+            adminRate = Integer.parseInt(config.getProperty(HTTP_ADMIN_RATE_LIMIT, "10000"));
+        } catch (NumberFormatException e) {
+
+        }
+        try {
+            robotRate = Integer.parseInt(config.getProperty(HTTP_ROBOT_RATE_LIMIT, "1000"));
+        } catch (NumberFormatException e) {
+
+        }
+        try {
+            channelRate = Integer.parseInt(config.getProperty(HTTP_CHANNEL_RATE_LIMIT, "1000"));
+        } catch (NumberFormatException e) {
+
+        }
+        adminLimiter = new RateLimiter(10, adminRate);
+        robotLimiter = new RateLimiter(10, robotRate);
+        channelLimiter = new RateLimiter(10, channelRate);
+    }
+
     protected class Result {
         Object data;
         ErrorCode errorCode;
