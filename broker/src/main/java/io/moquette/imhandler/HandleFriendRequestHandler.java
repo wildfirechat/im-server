@@ -58,8 +58,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         builder.setFromUser(request.getTargetUid());
                         builder.setConversation(WFCMessage.Conversation.newBuilder().setTarget(fromUser).setLine(0).setType(ProtoConstants.ConversationType.ConversationType_Private).build());
                         builder.setContent(contentBuilder);
-                        timestamp = System.currentTimeMillis();
-                        builder.setServerTimestamp(timestamp);
+                        builder.setServerTimestamp(++timestamp);
 
                         messageId = MessageShardingUtil.generateId();
                         builder.setMessageId(messageId);
@@ -74,10 +73,8 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         builder.setContent(contentBuilder);
                         messageId = MessageShardingUtil.generateId();
                         builder.setMessageId(messageId);
-                        timestamp = System.currentTimeMillis();
-                        builder.setServerTimestamp(timestamp);
+                        builder.setServerTimestamp(++timestamp);
                         saveAndPublish(request.getTargetUid(), null, builder.build());
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
