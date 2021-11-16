@@ -43,6 +43,7 @@ public enum ErrorCode {
     ERROR_CODE_ALREADY_FRIENDS(23, "already friends"),
 
     ERROR_CODE_RECALL_TIME_EXPIRED(24, "time expired"),
+    ERROR_CODE_ROBOT_NO_TOKEN(25, "robot no token"),
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
 
     ERROR_CODE_USER_NOT_PREPARED(238, "user not prepared"),
