@@ -93,6 +93,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private static boolean IS_MESSAGE_ROAMING = true;
 
     private static boolean IS_MESSAGE_REMOTE_HISTORY_MESSAGE = true;
+    private static boolean IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE = true;
 
     static final String USER_ROBOTS = "user_robots";
     static final String USER_THINGS = "user_things";
@@ -167,6 +168,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
+        IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_Chatroom_History_Message, "1"));
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
 
         try {
@@ -733,15 +735,22 @@ public class MemoryMessagesStore implements IMessagesStore {
     public WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
         WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();
         List<WFCMessage.Message> messages;
-        if (IS_MESSAGE_REMOTE_HISTORY_MESSAGE) {
-           messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
-        } else {
-           messages = new ArrayList<>();
+        boolean loadMessage = IS_MESSAGE_REMOTE_HISTORY_MESSAGE;
+        if(conversation.getType() == ProtoConstants.ConversationType.ConversationType_ChatRoom) {
+            loadMessage = IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE;
         }
+
+        if (loadMessage) {
+            messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
+        } else {
+            messages = new ArrayList<>();
+        }
+
         builder.setCurrent(0).setHead(0);
         if(messages != null) {
             builder.addAllMessage(messages);
         }
+
         return builder.build();
     }
 

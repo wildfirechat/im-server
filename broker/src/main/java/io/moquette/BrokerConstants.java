@@ -138,6 +138,7 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_ROAMING = "message.roaming";
     public static final String MESSAGE_Remote_History_Message = "message.remote_history_message";
+    public static final String MESSAGE_Remote_Chatroom_History_Message = "message.chatroom_remote_history_message";
 
     public static final String MESSAGE_Max_Queue = "message.max_queue";
 
