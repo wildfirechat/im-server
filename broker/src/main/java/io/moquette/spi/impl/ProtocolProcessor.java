@@ -264,7 +264,7 @@ public class ProtocolProcessor {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
             mServer.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)));
+                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)), HttpUtils.HttpPostType.POST_TYPE_User_Online_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);

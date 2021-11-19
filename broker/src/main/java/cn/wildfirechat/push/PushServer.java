@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 
 import static io.moquette.BrokerConstants.PUSH_ANDROID_SERVER_ADDRESS;
 import static io.moquette.BrokerConstants.PUSH_IOS_SERVER_ADDRESS;
+import static win.liyufan.im.HttpUtils.HttpPostType.POST_TYPE_Push;
 
 public class PushServer {
     private static final Logger LOG = LoggerFactory.getLogger(PushServer.class);
@@ -99,7 +100,7 @@ public class PushServer {
                 url = iOSPushServerUrl;
                 pushMessage.voipDeviceToken = session.getVoipDeviceToken();
             }
-            HttpUtils.httpJsonPost(url, new Gson().toJson(pushMessage, pushMessage.getClass()));
+            HttpUtils.httpJsonPost(url, new Gson().toJson(pushMessage, pushMessage.getClass()), POST_TYPE_Push);
         } else {
             LOG.info("Not mobile platform {}", session.getPlatform());
         }

@@ -1062,7 +1062,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.type = type;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_Grout_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1081,7 +1081,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.value = value;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mGroupMemberUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mGroupMemberUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_Grout_Member_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1099,7 +1099,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.value = value;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mRelationUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mRelationUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_User_Relation_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1112,7 +1112,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         if (!StringUtil.isNullOrEmpty(mUserInfoUpdateCallback)) {
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mUserInfoUpdateCallback, new Gson().toJson(InputOutputUserInfo.fromPbUser(user)));
+                    HttpUtils.httpJsonPost(mUserInfoUpdateCallback, new Gson().toJson(InputOutputUserInfo.fromPbUser(user)), HttpUtils.HttpPostType.POST_TYPE_User_Info_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1129,7 +1129,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.type = type;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mChannelInfoUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mChannelInfoUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_Channel_Info_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1145,7 +1145,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.type = type;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mChatroomInfoUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mChatroomInfoUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_Chatroom_Info_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -1163,7 +1163,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             event.type = type;
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mChatroomMemberUpdateCallback, new Gson().toJson(event));
+                    HttpUtils.httpJsonPost(mChatroomMemberUpdateCallback, new Gson().toJson(event), HttpUtils.HttpPostType.POST_TYPE_Chatroom_Member_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);

@@ -179,7 +179,7 @@ public class MessagesPublisher {
                         final WFCMessage.Message finalMsg = message;
                         Server.getServer().getCallbackScheduler().execute(() -> {
                             try {
-                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class));
+                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(SendMessageData.fromProtoMessage(finalMsg), SendMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -598,7 +598,7 @@ public class MessagesPublisher {
             if (channelInfo != null && !StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
                 Server.getServer().getCallbackScheduler().execute(() -> {
                     try {
-                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class));
+                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(SendMessageData.fromProtoMessage(message), SendMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Message_Callback);
                     } catch (Exception e) {
                         e.printStackTrace();
                         Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -645,7 +645,7 @@ public class MessagesPublisher {
     public void forwardMessage(final WFCMessage.Message message, String forwardUrl) {
         Server.getServer().getCallbackScheduler().execute(() -> {
             try {
-                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class));
+                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
             } catch (Exception e) {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -669,7 +669,7 @@ public class MessagesPublisher {
                         callback.onFailure(statusCode, errorMessage);
                     });
                 }
-            });
+            }, HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
         } catch (Exception e) {
             e.printStackTrace();
             Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -683,7 +683,7 @@ public class MessagesPublisher {
 
         Server.getServer().getCallbackScheduler().execute(() -> {
             try {
-                HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class));
+                HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Subscriber_Event_Callback);
             } catch (Exception e) {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
