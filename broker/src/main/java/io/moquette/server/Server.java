@@ -357,14 +357,18 @@ public class Server {
 
         MediaServerConfig.USER_QINIU = Integer.parseInt(config.getProperty(BrokerConstants.USER_QINIU)) > 0;
     }
+    
     private String getServerIp(IConfig config) {
         String serverIp = config.getProperty(BrokerConstants.SERVER_IP_PROPERTY_NAME);
-
         if (serverIp == null || serverIp.equals("0.0.0.0")) {
+            String warning = "警告：无效配置，server.ip不能为空，需要配置服务的公网IP地址或者域名才能在公网使用！！！\nIM服务将使用本地地址，只能在局域网内使用！";
+            System.out.println(warning);
+            LOG.error(warning);
             serverIp = Utility.getLocalAddress().getHostAddress();
         }
         return serverIp;
     }
+
     private boolean configureCluster(IConfig config) throws FileNotFoundException {
         LOG.info("Configuring embedded Hazelcast instance");
 
