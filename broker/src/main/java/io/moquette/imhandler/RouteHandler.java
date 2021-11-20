@@ -17,10 +17,6 @@ import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
-import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_IP;
-import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_Long_Port;
-import static io.moquette.BrokerConstants.HZ_Cluster_Node_External_Short_Port;
-
 @Handler(IMTopic.RouteTopic)
 public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
     @Override
@@ -38,10 +34,9 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
             return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
         }
 
-        Member member = mServer.getHazelcastInstance().getCluster().getLocalMember();
-        String serverIp = member.getStringAttribute(HZ_Cluster_Node_External_IP);
-        String longPort = member.getStringAttribute(HZ_Cluster_Node_External_Long_Port);
-        String shortPort = member.getStringAttribute(HZ_Cluster_Node_External_Short_Port);
+        String serverIp = mServer.getServerIp();
+        String longPort = mServer.getLongPort();
+        String shortPort = mServer.getShortPort();
 
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
         boolean isSessionAlreadyStored = clientSession != null;

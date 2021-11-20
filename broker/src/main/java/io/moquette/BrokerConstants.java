@@ -30,8 +30,6 @@ public final class BrokerConstants {
     public static final String HTTP_LOCAL_PORT = "local_port";
 
     public static final String HTTP_ADMIN_PORT = "http.admin.port";
-    public static final String NODE_ID = "node_id";
-    public static final String NODE_IDS = "node_ids";
     public static final String DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME = "moquette_store.mapdb";
     public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.dir") + File.separator
             + DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME;
@@ -106,11 +104,6 @@ public final class BrokerConstants {
     public static final String CHATROOM_INFO_UPDATE_CALLBACK = "chatroom.chatroom_info_update_callback";
     public static final String CHATROOM_MEMBER_UPDATE_CALLBACK = "chatroom.chatroom_member_update_callback";
 
-
-    public static final String HZ_Cluster_Node_External_IP = "node_external_ip";
-    public static final String HZ_Cluster_Node_External_Long_Port = "node_external_long_port";
-    public static final String HZ_Cluster_Node_External_Short_Port = "node_external_short_port";
-    public static final String HZ_Cluster_Node_ID = "node_id";
     public static final String HTTP_SERVER_SECRET_KEY = "http.admin.secret_key";
     public static final String HTTP_SERVER_API_NO_CHECK_TIME = "http.admin.no_check_time";
 

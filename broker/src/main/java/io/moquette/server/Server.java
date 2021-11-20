@@ -367,12 +367,9 @@ public class Server {
     }
     private boolean configureCluster(IConfig config) throws FileNotFoundException {
         LOG.info("Configuring embedded Hazelcast instance");
-        String serverIp = getServerIp(config);
 
+        serverIp = getServerIp(config);
         String hzConfigPath = "config/hazelcast.xml";
-        String hzClientIp = config.getProperty(BrokerConstants.HAZELCAST_CLIENT_IP, "localhost");
-        String hzClientPort = config.getProperty(BrokerConstants.HAZELCAST_CLIENT_PORT, "5703");
-
         if (hzConfigPath != null) {
             boolean isHzConfigOnClasspath = this.getClass().getClassLoader().getResource(hzConfigPath) != null;
             Config hzconfig = isHzConfigOnClasspath
@@ -385,29 +382,10 @@ public class Server {
             hazelcastInstance = Hazelcast.newHazelcastInstance();
         }
 
+        longPort = config.getProperty(BrokerConstants.PORT_PROPERTY_NAME);
+        shortPort = config.getProperty(BrokerConstants.HTTP_SERVER_PORT);
 
-        String longPort = config.getProperty(BrokerConstants.PORT_PROPERTY_NAME);
-        String shortPort = config.getProperty(BrokerConstants.HTTP_SERVER_PORT);
-        String nodeIdStr = config.getProperty(BrokerConstants.NODE_ID);
-        ISet<Integer> nodeIdSet = hazelcastInstance.getSet(BrokerConstants.NODE_IDS);
-        int nodeId;
-        try {
-            nodeId = Integer.parseInt(nodeIdStr);
-        }catch (Exception e){
-            throw new IllegalArgumentException("nodeId error: " + nodeIdStr);
-        }
-        if (nodeIdSet != null && nodeIdSet.contains(nodeId)){
-            LOG.error("只允许一个实例运行，多个实例会引起冲突，进程终止");
-            System.exit(-1);
-        }
-
-        MessageShardingUtil.setNodeId(nodeId);
-        nodeIdSet.add(nodeId);
-
-        hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_Long_Port, longPort);
-        hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_Short_Port, shortPort);
-        hazelcastInstance.getCluster().getLocalMember().setIntAttribute(HZ_Cluster_Node_ID, nodeId);
-        hazelcastInstance.getCluster().getLocalMember().setStringAttribute(HZ_Cluster_Node_External_IP, serverIp);
+        MessageShardingUtil.setNodeId(1);
         Tokenor.setKey(config.getProperty(BrokerConstants.TOKEN_SECRET_KEY));
         String expirTimeStr = config.getProperty(TOKEN_EXPIRE_TIME);
         if (!StringUtil.isNullOrEmpty(expirTimeStr)) {
@@ -419,6 +397,22 @@ public class Server {
         }
         ServerAPIHelper.init(this);
         return true;
+    }
+
+    private String serverIp;
+    private String longPort;
+    private String shortPort;
+
+    public String getServerIp() {
+        return serverIp;
+    }
+
+    public String getLongPort() {
+        return longPort;
+    }
+
+    public String getShortPort() {
+        return shortPort;
     }
 
     public HazelcastInstance getHazelcastInstance() {

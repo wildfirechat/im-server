@@ -2597,10 +2597,9 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (tokenUserId != null) {
             if (tokenUserId.equals(userId)) {
-                Member member = m_Server.getHazelcastInstance().getCluster().getLocalMember();
-                String serverIp = member.getStringAttribute(HZ_Cluster_Node_External_IP);
-                String longPort = member.getStringAttribute(HZ_Cluster_Node_External_Long_Port);
-                String shortPort = member.getStringAttribute(HZ_Cluster_Node_External_Short_Port);
+                String serverIp = m_Server.getServerIp();
+                String longPort = m_Server.getLongPort();
+                String shortPort = m_Server.getShortPort();
                 if (!StringUtil.isNullOrEmpty(serverIp)) {
                     serverIPs.add(serverIp);
                 }
