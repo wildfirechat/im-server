@@ -54,6 +54,9 @@ public class DBUtil {
         if (embedDB != null && embedDB.equals("1")) {
             IsEmbedDB = true;
             LOG.info("Use h2 database");
+            String warning = "您正在使用内置h2数据库，建议仅在开发验证或者用户数小于100人时才使用此数据库，其它情况建议使用MySQL。";
+            System.out.println(warning);
+            LOG.warn(warning);
         } else {
             IsEmbedDB = false;
             LOG.info("Use mysql database");

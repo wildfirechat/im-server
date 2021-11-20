@@ -356,6 +356,13 @@ public class Server {
         MediaServerConfig.FILE_STROAGE_REMOTE_SERVER_URL = config.getProperty(FILE_STORAGE_REMOTE_SERVER_URL);
 
         MediaServerConfig.USER_QINIU = Integer.parseInt(config.getProperty(BrokerConstants.USER_QINIU)) > 0;
+        if(MediaServerConfig.USER_QINIU) {
+            if(MediaServerConfig.QINIU_SERVER_URL.split(":").length == 2) {
+                String error = "媒体存储服务只能填上Host，不能带端口";
+                System.out.println(error);
+                LOG.error(error);
+            }
+        }
     }
     
     private String getServerIp(IConfig config) {
