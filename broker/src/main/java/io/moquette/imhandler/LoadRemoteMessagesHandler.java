@@ -38,7 +38,7 @@ public class LoadRemoteMessagesHandler extends IMHandler<WFCMessage.LoadRemoteMe
             }
         }
 
-        WFCMessage.PullMessageResult result = m_messagesStore.loadRemoteMessages(fromUser, request.getConversation(), beforeUid, request.getCount());
+        WFCMessage.PullMessageResult result = m_messagesStore.loadRemoteMessages(fromUser, request.getConversation(), beforeUid, request.getCount(), request.getContentTypeList());
         byte[] data = result.toByteArray();
         LOG.info("User {} load message with count({}), payload size({})", fromUser, result.getMessageCount(), data.length);
         ackPayload.ensureWritable(data.length).writeBytes(data);

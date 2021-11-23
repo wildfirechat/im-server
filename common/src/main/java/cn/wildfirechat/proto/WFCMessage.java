@@ -59417,6 +59417,20 @@ public final class WFCMessage {
      * <code>required int32 count = 3;</code>
      */
     int getCount();
+
+    // repeated int32 content_type = 4;
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    java.util.List<java.lang.Integer> getContentTypeList();
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    int getContentTypeCount();
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    int getContentType(int index);
   }
   /**
    * Protobuf type {@code LoadRemoteMessages}
@@ -59492,6 +59506,27 @@ public final class WFCMessage {
               count_ = input.readInt32();
               break;
             }
+            case 32: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                contentType_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              contentType_.add(input.readInt32());
+              break;
+            }
+            case 34: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
+                contentType_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                contentType_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -59500,6 +59535,9 @@ public final class WFCMessage {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          contentType_ = java.util.Collections.unmodifiableList(contentType_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -59586,10 +59624,34 @@ public final class WFCMessage {
       return count_;
     }
 
+    // repeated int32 content_type = 4;
+    public static final int CONTENT_TYPE_FIELD_NUMBER = 4;
+    private java.util.List<java.lang.Integer> contentType_;
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getContentTypeList() {
+      return contentType_;
+    }
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    public int getContentTypeCount() {
+      return contentType_.size();
+    }
+    /**
+     * <code>repeated int32 content_type = 4;</code>
+     */
+    public int getContentType(int index) {
+      return contentType_.get(index);
+    }
+
     private void initFields() {
       conversation_ = cn.wildfirechat.proto.WFCMessage.Conversation.getDefaultInstance();
       beforeUid_ = 0L;
       count_ = 0;
+      contentType_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -59628,6 +59690,9 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt32(3, count_);
       }
+      for (int i = 0; i < contentType_.size(); i++) {
+        output.writeInt32(4, contentType_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -59648,6 +59713,15 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, count_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < contentType_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(contentType_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getContentTypeList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -59776,6 +59850,8 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000002);
         count_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
+        contentType_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -59820,6 +59896,11 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000004;
         }
         result.count_ = count_;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          contentType_ = java.util.Collections.unmodifiableList(contentType_);
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.contentType_ = contentType_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -59844,6 +59925,16 @@ public final class WFCMessage {
         }
         if (other.hasCount()) {
           setCount(other.getCount());
+        }
+        if (!other.contentType_.isEmpty()) {
+          if (contentType_.isEmpty()) {
+            contentType_ = other.contentType_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureContentTypeIsMutable();
+            contentType_.addAll(other.contentType_);
+          }
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -60067,6 +60158,72 @@ public final class WFCMessage {
       public Builder clearCount() {
         bitField0_ = (bitField0_ & ~0x00000004);
         count_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // repeated int32 content_type = 4;
+      private java.util.List<java.lang.Integer> contentType_ = java.util.Collections.emptyList();
+      private void ensureContentTypeIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          contentType_ = new java.util.ArrayList<java.lang.Integer>(contentType_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getContentTypeList() {
+        return java.util.Collections.unmodifiableList(contentType_);
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public int getContentTypeCount() {
+        return contentType_.size();
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public int getContentType(int index) {
+        return contentType_.get(index);
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public Builder setContentType(
+          int index, int value) {
+        ensureContentTypeIsMutable();
+        contentType_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public Builder addContentType(int value) {
+        ensureContentTypeIsMutable();
+        contentType_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public Builder addAllContentType(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureContentTypeIsMutable();
+        super.addAll(values, contentType_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 content_type = 4;</code>
+       */
+      public Builder clearContentType() {
+        contentType_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
@@ -62158,14 +62315,15 @@ public final class WFCMessage {
       "t\030\001 \002(\t\022\021\n\tlong_port\030\002 \002(\005\022\022\n\nshort_port" +
       "\030\003 \002(\005\"G\n\017GetTokenRequest\022\017\n\007user_id\030\001 \002" +
       "(\t\022\021\n\tclient_id\030\002 \002(\t\022\020\n\010platform\030\003 \001(\005\"" +
-      "\\\n\022LoadRemoteMessages\022#\n\014conversation\030\001 " +
+      "r\n\022LoadRemoteMessages\022#\n\014conversation\030\001 " +
       "\002(\0132\r.Conversation\022\022\n\nbefore_uid\030\002 \002(\003\022\r" +
-      "\n\005count\030\003 \002(\005\"a\n\020MultiCastMessage\022\021\n\tfro",
-      "m_user\030\001 \002(\t\022 \n\007content\030\002 \002(\0132\017.MessageC" +
-      "ontent\022\n\n\002to\030\003 \003(\t\022\014\n\004line\030\004 \002(\005\"E\n\035Reca" +
-      "llMultiCastMessageRequest\022\022\n\nmessage_id\030" +
-      "\001 \002(\003\022\020\n\010receiver\030\002 \003(\tB#\n\025cn.wildfirech" +
-      "at.protoB\nWFCMessage"
+      "\n\005count\030\003 \002(\005\022\024\n\014content_type\030\004 \003(\005\"a\n\020M",
+      "ultiCastMessage\022\021\n\tfrom_user\030\001 \002(\t\022 \n\007co" +
+      "ntent\030\002 \002(\0132\017.MessageContent\022\n\n\002to\030\003 \003(\t" +
+      "\022\014\n\004line\030\004 \002(\005\"E\n\035RecallMultiCastMessage" +
+      "Request\022\022\n\nmessage_id\030\001 \002(\003\022\020\n\010receiver\030" +
+      "\002 \003(\tB#\n\025cn.wildfirechat.protoB\nWFCMessa" +
+      "ge"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -62591,7 +62749,7 @@ public final class WFCMessage {
           internal_static_LoadRemoteMessages_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_LoadRemoteMessages_descriptor,
-              new java.lang.String[] { "Conversation", "BeforeUid", "Count", });
+              new java.lang.String[] { "Conversation", "BeforeUid", "Count", "ContentType", });
           internal_static_MultiCastMessage_descriptor =
             getDescriptor().getMessageTypes().get(70);
           internal_static_MultiCastMessage_fieldAccessorTable = new

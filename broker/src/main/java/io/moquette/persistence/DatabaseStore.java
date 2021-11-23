@@ -784,13 +784,13 @@ public class DatabaseStore {
         }
     }
 
-    List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
+    List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count, Collection<Integer> contentTypes) {
         List<WFCMessage.Message> messages = new ArrayList<>();
         long[] before = new long[1];
         before[0] = beforeUid;
-        boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages);
+        boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes);
         while (messages.size() < count && hasMore) {
-            hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages);
+            hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes);
         }
 
         int month = 0;
@@ -800,7 +800,7 @@ public class DatabaseStore {
             int size = messages.size();
             hasMore = true;
             while (size == messages.size() && hasMore) {
-                hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages);
+                hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages, contentTypes);
             }
 
             if (size < messages.size()) {
@@ -811,7 +811,7 @@ public class DatabaseStore {
         return messages;
     }
 
-    boolean loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long[] before, int count, String table, List<WFCMessage.Message> messages) {
+    boolean loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long[] before, int count, String table, List<WFCMessage.Message> messages, Collection<Integer> contentTypes) {
         long beforeUid = before[0];
         String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_to` from " + table +" where";
         if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
@@ -820,7 +820,21 @@ public class DatabaseStore {
             sql += " _type = ? and _line = ? and _mid < ? and _target = ?";
         }
 
-        sql += "order by `_mid` DESC limit ?";
+        if(contentTypes != null && !contentTypes.isEmpty()) {
+            sql += " and _content_type in (";
+            boolean first = true;
+            for (int i:contentTypes) {
+                if(first) {
+                    first = false;
+                } else {
+                    sql += ",";
+                }
+                sql += i;
+            }
+            sql += ")";
+        }
+
+        sql += " order by `_mid` DESC limit ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -893,20 +907,21 @@ public class DatabaseStore {
         return false;
     }
 
-    void persistUserMessage(final String userId, final long messageId, final long messageSeq) {
+    void persistUserMessage(final String userId, final long messageId, final long messageSeq, final int messageContentType) {
         mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
 
-                String sql = "insert into " + getUserMessageTable(userId) + " (`_mid`, `_uid`, `_seq`) values(?, ?, ?)";
+                String sql = "insert into " + getUserMessageTable(userId) + " (`_mid`, `_uid`, `_seq`, `_cont_type`) values(?, ?, ?, ?)";
 
                 statement = connection.prepareStatement(sql);
                 int index = 1;
                 statement.setLong(index++, messageId);
                 statement.setString(index++, userId);
                 statement.setLong(index++, messageSeq);
+                statement.setInt(index++, messageContentType);
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
             } catch (SQLException e) {

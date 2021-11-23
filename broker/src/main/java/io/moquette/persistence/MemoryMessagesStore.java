@@ -732,7 +732,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count) {
+    public WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count, Collection<Integer> contentTypes) {
         WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();
         List<WFCMessage.Message> messages;
         boolean loadMessage = IS_MESSAGE_REMOTE_HISTORY_MESSAGE;
@@ -741,7 +741,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (loadMessage) {
-            messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count);
+            messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count, contentTypes);
         } else {
             messages = new ArrayList<>();
         }
@@ -871,7 +871,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             mWriteLock.unlock();
         }
 
-        databaseStore.persistUserMessage(user, messageId, messageSeq);
+        databaseStore.persistUserMessage(user, messageId, messageSeq, messageContentType);
         return messageSeq;
     }
 
