@@ -18,7 +18,7 @@ public class OutputGetChannelInfo {
     private String portrait;
     private String extra;
     private String owner;
-    private int status;
+    private int state;
     private long updateDt;
     private String callback;
     private int automatic;
@@ -72,12 +72,12 @@ public class OutputGetChannelInfo {
         this.owner = owner;
     }
 
-    public int getStatus() {
-        return status;
+    public int getState() {
+        return state;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setState(int state) {
+        this.state = state;
     }
 
     public long getUpdateDt() {
@@ -114,7 +114,7 @@ public class OutputGetChannelInfo {
         out.name = channelInfo.getName();
         out.owner = channelInfo.getOwner();
         out.portrait = channelInfo.getPortrait();
-        out.status = channelInfo.getStatus();
+        out.state = channelInfo.getStatus();
         out.updateDt = channelInfo.getUpdateDt();
         return out;
     }
