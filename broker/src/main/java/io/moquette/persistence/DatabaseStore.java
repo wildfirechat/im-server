@@ -784,13 +784,13 @@ public class DatabaseStore {
         }
     }
 
-    List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count, Collection<Integer> contentTypes) {
+    List<WFCMessage.Message> loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count, Collection<Integer> contentTypes, String channelOwner) {
         List<WFCMessage.Message> messages = new ArrayList<>();
         long[] before = new long[1];
         before[0] = beforeUid;
-        boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes);
+        boolean hasMore = loadRemoteMessagesFromTable(user, conversation, before, count, MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes, channelOwner);
         while (messages.size() < count && hasMore) {
-            hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes);
+            hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), MessageShardingUtil.getMessageTable(beforeUid), messages, contentTypes, channelOwner);
         }
 
         int month = 0;
@@ -800,7 +800,7 @@ public class DatabaseStore {
             int size = messages.size();
             hasMore = true;
             while (size == messages.size() && hasMore) {
-                hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages, contentTypes);
+                hasMore = loadRemoteMessagesFromTable(user, conversation, before, count - messages.size(), nexTable, messages, contentTypes, channelOwner);
             }
 
             if (size < messages.size()) {
@@ -811,11 +811,13 @@ public class DatabaseStore {
         return messages;
     }
 
-    boolean loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long[] before, int count, String table, List<WFCMessage.Message> messages, Collection<Integer> contentTypes) {
+    boolean loadRemoteMessagesFromTable(String user, WFCMessage.Conversation conversation, long[] before, int count, String table, List<WFCMessage.Message> messages, Collection<Integer> contentTypes, String channelOwner) {
         long beforeUid = before[0];
         String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_to` from " + table +" where";
         if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
             sql += " _type = ? and _line = ? and _mid < ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?))";
+        } else if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Channel && !user.equals(channelOwner)) {
+            sql += " _type = ? and _line = ? and _mid < ? and _target = ? and ((_from = ? and (_to = '' or _to = ?)) or (_from = ?))";
         } else {
             sql += " _type = ? and _line = ? and _mid < ? and _target = ?";
         }
@@ -851,7 +853,12 @@ public class DatabaseStore {
                 statement.setString(index++, user);
                 statement.setString(index++, user);
                 statement.setString(index++, conversation.getTarget());
+            } else if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Channel && !user.equals(channelOwner)) {
+                statement.setString(index++, channelOwner);
+                statement.setString(index++, user);
+                statement.setString(index++, user);
             }
+
             statement.setInt(index++, count);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {

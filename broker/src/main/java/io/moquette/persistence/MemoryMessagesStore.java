@@ -740,8 +740,19 @@ public class MemoryMessagesStore implements IMessagesStore {
             loadMessage = IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE;
         }
 
+        String channelOwner = null;
+        if(conversation.getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
+            IMap<String, WFCMessage.ChannelInfo> mIMap = m_Server.getHazelcastInstance().getMap(CHANNELS);
+            WFCMessage.ChannelInfo info = mIMap.get(conversation.getTarget());
+            if(info == null)  {
+                loadMessage = false;
+            } else {
+                channelOwner = info.getOwner();
+            }
+        }
+
         if (loadMessage) {
-            messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count, contentTypes);
+            messages = databaseStore.loadRemoteMessages(user, conversation, beforeUid, count, contentTypes, channelOwner);
         } else {
             messages = new ArrayList<>();
         }
