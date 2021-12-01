@@ -19,6 +19,13 @@ import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_M
 
 public class Main {
     private static boolean commercialServer = false;
+    //管理端口是8080
+    private static String AdminUrl = "http://localhost:18080";
+    private static String AdminSecret = "123456";
+
+    //机器人和频道使用IM服务的公开端口80，注意不是18080
+    private static String IMUrl = "http://localhost";
+
 
     public static void main(String[] args) throws Exception {
         //admin使用的是18080端口，超级管理接口，理论上不能对外开放端口，也不能让非内部服务知悉密钥。
@@ -32,7 +39,7 @@ public class Main {
 
     static void testAdmin() throws Exception {
         //初始化服务API
-        AdminConfig.initAdmin("http://localhost:18080", "123456");
+        AdminConfig.initAdmin(AdminUrl, AdminSecret);
 
         testUser();
         testUserRelation();
@@ -84,7 +91,13 @@ public class Main {
             System.exit(-1);
         }
 
-
+        IMResult<Void> destroyResult = UserAdmin.destroyRobot("robot1");
+        if(destroyResult != null && destroyResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("destroy user failure");
+            System.exit(-1);
+        }
 
         IMResult<InputOutputUserInfo> resultGetUserInfo1 = UserAdmin.getUserByName(userInfo.getName());
         if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -711,14 +724,43 @@ public class Main {
             System.exit(-1);
         }
 
+        String channelName = "MyChannel";
+        String channelOwner = "user1";
         InputCreateChannel inputCreateChannel = new InputCreateChannel();
-        inputCreateChannel.setName("MyChannel");
-        inputCreateChannel.setOwner("user1");
+        inputCreateChannel.setName(channelName);
+        inputCreateChannel.setOwner(channelOwner);
         IMResult<OutputCreateChannel> resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
         if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
+            inputCreateChannel.setTargetId(resultCreateChannel.result.getTargetId());
         } else {
             System.out.println("create channel failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputGetChannelInfo> resultGetChannel = GeneralAdmin.getChannelInfo(inputCreateChannel.getTargetId());
+        if(resultGetChannel != null && resultGetChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS
+                && resultGetChannel.getResult().getName().equals(channelName)
+                && resultGetChannel.getResult().getOwner().equals(channelOwner)) {
+            System.out.println("success");
+        } else {
+            System.out.println("get channel failure");
+            System.exit(-1);
+        }
+
+        IMResult<Void> voidIMResult = GeneralAdmin.destroyChannel(inputCreateChannel.getTargetId());
+        if(voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("success");
+        } else {
+            System.out.println("destroy channel failure");
+            System.exit(-1);
+        }
+
+        resultGetChannel = GeneralAdmin.getChannelInfo(inputCreateChannel.getTargetId());
+        if(resultGetChannel != null && resultGetChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && (resultGetChannel.getResult().getState() & ProtoConstants.ChannelState.Channel_State_Mask_Deleted) > 0) {
+            System.out.println("success");
+        } else {
+            System.out.println("get channel failure");
             System.exit(-1);
         }
 
@@ -887,10 +929,27 @@ public class Main {
     }
 
     static void testRobot() throws Exception {
-        //初始化机器人API，注意端口是80，不是18080
         String robotId = "robot1";
+        String robotSecret = "123456";
+        //初始化服务API
+        AdminConfig.initAdmin(AdminUrl, AdminSecret);
+        //创建机器人
+        InputCreateRobot createRobot = new InputCreateRobot();
+        createRobot.setUserId(robotId);
+        createRobot.setName(robotId);
+        createRobot.setDisplayName("机器人");
+        createRobot.setOwner("userId1");
+        createRobot.setSecret(robotSecret);
+        createRobot.setCallback("http://127.0.0.1:8883/robot/recvmsg");
+        IMResult<OutputCreateRobot> resultCreateRobot = UserAdmin.createRobot(createRobot);
+        if (resultCreateRobot != null && resultCreateRobot.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Create robot " + resultCreateRobot.getResult().getUserId() + " success");
+        } else {
+            System.out.println("Create robot failure");
+            System.exit(-1);
+        }
 
-        RobotService robotService = new RobotService("http://localhost", robotId, "123456");
+        RobotService robotService = new RobotService(IMUrl, robotId, robotSecret);
 
         //***********************************************
         //****  机器人API
@@ -1156,7 +1215,7 @@ public class Main {
     //***测试频道API功能，仅专业版支持***
     static void testChannel() throws Exception {
         //初始化服务API
-        AdminConfig.initAdmin("http://localhost:18080", "123456");
+        AdminConfig.initAdmin(AdminUrl, AdminSecret);
 
         //先创建3个用户
         InputOutputUserInfo userInfo = new InputOutputUserInfo();
@@ -1218,7 +1277,7 @@ public class Main {
 
 
         //2. 初始化api，注意端口是80，不是18080
-        ChannelServiceApi channelServiceApi = new ChannelServiceApi("http://localhost", resultCreateChannel.getResult().getTargetId(), secret);
+        ChannelServiceApi channelServiceApi = new ChannelServiceApi(IMUrl, resultCreateChannel.getResult().getTargetId(), secret);
 
 
 

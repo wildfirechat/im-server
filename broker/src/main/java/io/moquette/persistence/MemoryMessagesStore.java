@@ -2134,6 +2134,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         mUserMap.put(robot.getUid(), robot);
     }
 
+    @Override
+    public void destroyRobot(String robotId) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        IMap<String, WFCMessage.Robot> mUserMap = hzInstance.getMap(ROBOTS);
+        mUserMap.remove(robotId);
+    }
 
     @Override
     public ErrorCode getUserInfo(String fromUser, List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder) {

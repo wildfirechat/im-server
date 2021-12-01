@@ -17,8 +17,8 @@ import win.liyufan.im.IMTopic;
 import static win.liyufan.im.IMTopic.PutUserSettingTopic;
 import static win.liyufan.im.UserSettingScope.kUserSettingMyChannels;
 
-@Handler(value = IMTopic.DestoryChannelInfoTopic)
-public class DistoryChannelHandler extends GroupHandler<WFCMessage.IDBuf> {
+@Handler(value = IMTopic.DestroyChannelInfoTopic)
+public class DistroyChannelHandler extends GroupHandler<WFCMessage.IDBuf> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.distoryChannel(fromUser, request.getId());

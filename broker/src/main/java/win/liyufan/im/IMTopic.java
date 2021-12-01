@@ -70,7 +70,7 @@ public interface IMTopic {
     String CreateChannelTopic = "CHC";
     String ModifyChannelInfoTopic = "CHMI";
     String TransferChannelInfoTopic = "CHT";
-    String DestoryChannelInfoTopic = "CHD";
+    String DestroyChannelInfoTopic = "CHD";
     String ChannelSearchTopic = "CHS";
     String ChannelListenTopic = "CHL";
     String ChannelPullTopic = "CHP";

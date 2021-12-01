@@ -133,6 +133,7 @@ public interface IMessagesStore {
 
     WFCMessage.Robot getRobot(String robotId);
     void addRobot(WFCMessage.Robot robot);
+    void destroyRobot(String robotId);
 
     ErrorCode getUserInfo(String fromUser, List<WFCMessage.UserRequest> requestList, WFCMessage.PullUserResult.Builder builder);
 

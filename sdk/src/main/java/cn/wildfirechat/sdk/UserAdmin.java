@@ -42,6 +42,16 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, robot, OutputCreateRobot.class);
     }
 
+    /*
+    销毁机器人和销毁用户是同一个接口
+     */
+    public static IMResult<Void> destroyRobot(String userId) throws Exception {
+        String path = APIPath.Destroy_User;
+        InputDestroyUser inputDestroyUser = new InputDestroyUser();
+        inputDestroyUser.setUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, inputDestroyUser, Void.class);
+    }
+
     public static IMResult<OutputGetIMTokenData> getUserToken(String userId, String clientId, int platform) throws Exception {
         String path = APIPath.User_Get_Token;
         InputGetToken getToken = new InputGetToken(userId, clientId, platform);

@@ -29,6 +29,8 @@ public class DestroyUserHandler extends IMHandler<WFCMessage.IDBuf> {
                 m_messagesStore.clearUserGroups(fromUser);
                 m_messagesStore.clearUserChannels(fromUser);
                 m_messagesStore.destoryUser(fromUser);
+
+                m_messagesStore.destroyRobot(fromUser);
             });
             return ErrorCode.ERROR_CODE_SUCCESS;
         } else {
