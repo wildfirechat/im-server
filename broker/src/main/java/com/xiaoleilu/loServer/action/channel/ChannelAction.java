@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executor;
 
 abstract public class ChannelAction extends Action {
@@ -106,7 +107,7 @@ abstract public class ChannelAction extends Action {
         if (request instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request;
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
-            String content = new String(bytes);
+            String content = new String(bytes, StandardCharsets.UTF_8);
             Gson gson = new Gson();
             T t = gson.fromJson(content, cls);
             return t;
