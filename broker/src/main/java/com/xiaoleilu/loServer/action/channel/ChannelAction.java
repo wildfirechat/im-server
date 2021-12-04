@@ -84,7 +84,7 @@ abstract public class ChannelAction extends Action {
         }
         
         if (StringUtil.isNullOrEmpty(channelInfo.getSecret())) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            return ErrorCode.ERROR_CODE_CHANNEL_NO_SECRET;
         }
 
         String str = nonce + "|" + channelInfo.getSecret() + "|" + timestamp;

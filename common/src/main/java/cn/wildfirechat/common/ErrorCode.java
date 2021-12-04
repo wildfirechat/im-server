@@ -49,6 +49,7 @@ public enum ErrorCode {
     ERROR_CODE_WS_NOT_CONFIGURED_CORRECTLY(28, "ws not configured correctly"),
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
 
+    ERROR_CODE_CHANNEL_NO_SECRET(237, "channel no secret"),
     ERROR_CODE_USER_NOT_PREPARED(238, "user not prepared"),
     ERROR_CODE_API_NOT_SIGNED(239, "api not signed or sign parameter not completion"),
     ERROR_CODE_GROUP_EXCEED_MAX_MEMBER_COUNT(240, "group exceed max member count"),
