@@ -43,27 +43,17 @@ public class ServerSetting {
 	/** 根目录 */
 	private static File root;
 	/** Filter映射表 */
-	private static Map<String, Filter> filterMap;
+	private static Map<String, Filter> filterMap = new ConcurrentHashMap<>();
 	/** Action映射表 */
-	private static Map<String, Action> getActionMap;
-    private static Map<String, Action> postActionMap;
-    private static Map<String, Action> putActionMap;
-    private static Map<String, Action> deleteActionMap;
-    private static Map<String, Action> errorActionMap;
+	private static Map<String, Class<? extends Action>> getActionMap = new ConcurrentHashMap<>();
+    private static Map<String, Class<? extends Action>> postActionMap = new ConcurrentHashMap<>();
+    private static Map<String, Class<? extends Action>> putActionMap = new ConcurrentHashMap<>();
+    private static Map<String, Class<? extends Action>> deleteActionMap = new ConcurrentHashMap<>();
+    private static Map<String, Class<? extends Action>> errorActionMap = new ConcurrentHashMap<>();
 	
 	static{
-		filterMap = new ConcurrentHashMap<String, Filter>();
-
-        getActionMap = new ConcurrentHashMap<String, Action>();
-        postActionMap = new ConcurrentHashMap<String, Action>();
-
-        putActionMap = new ConcurrentHashMap<String, Action>();
-
-        deleteActionMap = new ConcurrentHashMap<String, Action>();
-
-        errorActionMap = new ConcurrentHashMap<String, Action>();
-        errorActionMap.put(StrUtil.SLASH, new DefaultIndexAction());
-        errorActionMap.put(MAPPING_ERROR, new UnknownErrorAction());
+        errorActionMap.put(StrUtil.SLASH, DefaultIndexAction.class);
+        errorActionMap.put(MAPPING_ERROR, UnknownErrorAction.class);
 	}
 	
 	/**
@@ -207,7 +197,7 @@ public class ServerSetting {
 	/**
 	 * @return 获取ActionMap
 	 */
-	public static Map<String, Action> getActionMap(String method) {
+	public static Map<String, Class<? extends Action>> getActionMap(String method) {
 	    if (method.equals("GET")) {
             return getActionMap;
         } else if(method.equals("POST")) {
@@ -221,7 +211,17 @@ public class ServerSetting {
 	}
 
     public static Action getErrorAction(String path) {
-        return errorActionMap.get(path);
+        Class<? extends Action> cls = errorActionMap.get(path);
+        if(cls != null) {
+            try {
+                return cls.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     /**
@@ -233,33 +233,17 @@ public class ServerSetting {
 		if(StrUtil.isBlank(path)){
 			path = StrUtil.SLASH;
 		}
-		return getActionMap(method).get(path.trim());
-	}
-	
-	/**
-	 * 设置Action类，已有的Action类将被覆盖
-	 * @param path 拦截路径（必须以"/"开头）
-	 * @param action Action类
-	 */
-	public static void setAction(String path, Action action) {
-		if(StrUtil.isBlank(path)){
-			path = StrUtil.SLASH;
-		}
-		
-		if(null == action) {
-			Logger.warn("Added blank action, pass it.");
-			return;
-		}
-		//所有路径必须以 "/" 开头，如果没有则补全之
-		if(false == path.startsWith(StrUtil.SLASH)) {
-			path = StrUtil.SLASH + path;
-		}
-		String method = "GET";
-        HttpMethod methodAnnotation = action.getClass().getAnnotation(HttpMethod.class);
-        if (methodAnnotation != null) {
-            method = methodAnnotation.value();
+        Class<? extends Action> cls = getActionMap(method).get(path.trim());
+        if(cls != null) {
+            try {
+                return cls.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
-		ServerSetting.getActionMap(method).put(path, action);
+        return null;
 	}
 	
 	/**
@@ -269,33 +253,41 @@ public class ServerSetting {
 	 * @param actionClass Action类
 	 */
 	public static void setAction(String path, Class<? extends Action> actionClass) {
-		setAction(path, (Action)Singleton.get(actionClass));
+        if(StrUtil.isBlank(path)){
+            path = StrUtil.SLASH;
+        }
+
+        if(null == actionClass) {
+            Logger.warn("Added blank action, pass it.");
+            return;
+        }
+        //所有路径必须以 "/" 开头，如果没有则补全之
+        if(false == path.startsWith(StrUtil.SLASH)) {
+            path = StrUtil.SLASH + path;
+        }
+        String method = "GET";
+        HttpMethod methodAnnotation = actionClass.getAnnotation(HttpMethod.class);
+        if (methodAnnotation != null) {
+            method = methodAnnotation.value();
+        }
+        ServerSetting.getActionMap(method).put(path, actionClass);
 	}
-	
-	/**
-	 * 增加Action类，已有的Action类将被覆盖<br>
-	 * 自动读取Route的注解来获得Path路径
-	 * @param action 带注解的Action对象
-	 */
-	public static void setAction(Action action) {
-		final Route route = action.getClass().getAnnotation(Route.class);
-		if(route != null){
-			final String path = route.value();
-			if(StrUtil.isNotBlank(path)){
-				setAction(path, action);
-				return;
-			}
-		}
-		throw new ServerSettingException("Can not find Route annotation,please add annotation to Action class!");
-	}
-	
+
 	/**
 	 * 增加Action类，已有的Action类将被覆盖<br>
 	 * 所有Action都是以单例模式存在的！
 	 * @param actionClass 带注解的Action类
 	 */
 	public static void setAction(Class<? extends Action> actionClass) {
-		setAction((Action)Singleton.get(actionClass));
+        final Route route = actionClass.getAnnotation(Route.class);
+        if(route != null){
+            final String path = route.value();
+            if(StrUtil.isNotBlank(path)){
+                setAction(path, actionClass);
+                return;
+            }
+        }
+        throw new ServerSettingException("Can not find Route annotation,please add annotation to Action class!");
 	}
 	//----------------------------------------------------------------------------------------------- Action start
 	
