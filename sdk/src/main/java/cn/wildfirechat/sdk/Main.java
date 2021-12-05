@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 import static cn.wildfirechat.pojos.MyInfoType.Modify_DisplayName;
+import static cn.wildfirechat.proto.ProtoConstants.ChannelState.*;
 import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_Member_Count;
 
 public class Main {
@@ -1266,7 +1267,7 @@ public class Main {
         inputCreateChannel.setOwner("userId1");
         String secret = "channelsecret";
         inputCreateChannel.setSecret(secret);
-        inputCreateChannel.setState(0xff);
+        inputCreateChannel.setState(Channel_State_Mask_FullInfo | Channel_State_Mask_Unsubscribed_User_Access | Channel_State_Mask_Active_Subscribe | Channel_State_Mask_Message_Unsubscribed);
         IMResult<OutputCreateChannel> resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
         if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create channel success");
