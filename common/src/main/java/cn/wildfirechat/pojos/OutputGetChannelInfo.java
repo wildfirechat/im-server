@@ -19,6 +19,8 @@ public class OutputGetChannelInfo {
     private String extra;
     private String owner;
     private int state;
+    //此字段已经废弃，为了兼容旧的SDK版本，以后会移除
+    private int status;
     private long updateDt;
     private String callback;
     private int automatic;
@@ -104,6 +106,14 @@ public class OutputGetChannelInfo {
         this.automatic = automatic;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public static OutputGetChannelInfo fromPbInfo(WFCMessage.ChannelInfo channelInfo) {
         OutputGetChannelInfo out = new OutputGetChannelInfo();
         out.automatic = channelInfo.getAutomatic();
@@ -115,6 +125,7 @@ public class OutputGetChannelInfo {
         out.owner = channelInfo.getOwner();
         out.portrait = channelInfo.getPortrait();
         out.state = channelInfo.getStatus();
+        out.status = out.state;
         out.updateDt = channelInfo.getUpdateDt();
         return out;
     }
