@@ -20,6 +20,7 @@ public class OutputGetChannelInfo {
     private String owner;
     private int state;
     //此字段已经废弃，为了兼容旧的SDK版本，以后会移除
+    @Deprecated()
     private int status;
     private long updateDt;
     private String callback;
