@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.GetUserSettingTopic)
 public class GetUserSettingHandler extends IMHandler<WFCMessage.Version> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.GetUserSettingResult.Builder builder = WFCMessage.GetUserSettingResult.newBuilder();
             ErrorCode errorCode = m_messagesStore.getUserSettings(fromUser, request.getVersion(), builder);
             if (errorCode == ERROR_CODE_SUCCESS) {

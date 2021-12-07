@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import java.util.List;
 @Handler(IMTopic.GetGroupInfoTopic)
 public class GetGroupInfoHandler extends IMHandler<WFCMessage.PullUserRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
             List<WFCMessage.GroupInfo> infos = m_messagesStore.getGroupInfos(request.getRequestList());
 
             WFCMessage.PullGroupInfoResult result = WFCMessage.PullGroupInfoResult.newBuilder().addAllInfo(infos).build();

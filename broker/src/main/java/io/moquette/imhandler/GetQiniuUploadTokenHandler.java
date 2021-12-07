@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.qiniu.util.Auth;
 import com.xiaoleilu.loServer.action.UploadFileAction;
@@ -20,7 +21,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.GetQiniuUploadTokenTopic)
 public class GetQiniuUploadTokenHandler extends IMHandler<Byte> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, Byte request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, Byte request, Qos1PublishHandler.IMCallback callback) {
         int type = request;
         String token;
 

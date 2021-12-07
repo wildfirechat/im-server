@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.SetFriendAliasTopic)
 public class SetFriendAliasRequestHandler extends GroupHandler<WFCMessage.AddFriendRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddFriendRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.AddFriendRequest request, Qos1PublishHandler.IMCallback callback) {
         long[] head = new long[1];
         ErrorCode errorCode = m_messagesStore.setFriendAliasRequest(fromUser, request.getTargetUid(), request.getReason(), head);
         if (errorCode == ERROR_CODE_SUCCESS) {

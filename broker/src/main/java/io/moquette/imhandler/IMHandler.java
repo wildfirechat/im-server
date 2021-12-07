@@ -163,9 +163,9 @@ abstract public class IMHandler<T> {
     }
 
 
-    public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
+    public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback, ProtoConstants.RequestSourceType requestSourceType) {
         LOG.info("imHandler fromUser={}, clientId={}, topic={}", fromUser, clientID, topic);
-        if(!isAdmin && !isRobotOrChannel && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
             ByteBuf ackPayload = Unpooled.buffer();
             ackPayload.ensureWritable(1).writeByte(ERROR_CODE_OVER_FREQUENCY.getCode());
             try {
@@ -179,7 +179,7 @@ abstract public class IMHandler<T> {
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
-	public void doHandler(String clientID, String fromUser, String topic, byte[] payloadContent, Qos1PublishHandler.IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
+	public void doHandler(String clientID, String fromUser, String topic, byte[] payloadContent, Qos1PublishHandler.IMCallback callback, ProtoConstants.RequestSourceType requestSourceType) {
         m_imBusinessExecutor.execute(() -> {
             Qos1PublishHandler.IMCallback callbackWrapper = new Qos1PublishHandler.IMCallback() {
                 @Override
@@ -190,7 +190,7 @@ abstract public class IMHandler<T> {
                 }
             };
 
-            ErrorCode preActionCode = preAction(clientID, fromUser, topic, callbackWrapper, isAdmin, isRobotOrChannel);
+            ErrorCode preActionCode = preAction(clientID, fromUser, topic, callbackWrapper, requestSourceType);
 
             if (preActionCode == ErrorCode.ERROR_CODE_SUCCESS) {
                 ByteBuf ackPayload = Unpooled.buffer(1);
@@ -199,7 +199,7 @@ abstract public class IMHandler<T> {
 
                 try {
                     LOG.debug("execute handler for topic {}", topic);
-                    errorCode = action(ackPayload, clientID, fromUser, isAdmin, getDataObject(payloadContent), callbackWrapper);
+                    errorCode = action(ackPayload, clientID, fromUser, requestSourceType, getDataObject(payloadContent), callbackWrapper);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e);
@@ -241,7 +241,7 @@ abstract public class IMHandler<T> {
 
 
     @ActionMethod
-    abstract public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, T request, Qos1PublishHandler.IMCallback callback)   ;
+    abstract public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, T request, Qos1PublishHandler.IMCallback callback)   ;
 
     public void afterAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback) {
 

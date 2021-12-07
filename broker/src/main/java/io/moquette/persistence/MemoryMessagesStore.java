@@ -157,6 +157,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private String mChatroomInfoUpdateCallback;
     private String mChatroomMemberUpdateCallback;
     private boolean mGroupAllowClientCustomOperationNotification;
+    private boolean mGroupAllowRobotCustomOperationNotification;
     private int mGroupVisibleQuitKickoffNotification;
     private int mSyncDataPartSize = 0;
 
@@ -397,6 +398,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mGroupAllowClientCustomOperationNotification = Boolean.parseBoolean(server.getConfig().getProperty(GROUP_Allow_Client_Custom_Operation_Notification));
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mGroupAllowRobotCustomOperationNotification = Boolean.parseBoolean(server.getConfig().getProperty(GROUP_Allow_Robot_Custom_Operation_Notification));
         } catch (Exception e) {
 
         }
@@ -3652,7 +3659,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode distoryChannel(String operator, String channelId) {
+    public ErrorCode distoryChannel(String operator, String channelId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
 
@@ -3662,7 +3669,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        if (oldInfo.getOwner() == null || !oldInfo.getOwner().equals(operator)) {
+        if ((oldInfo.getOwner() == null || !oldInfo.getOwner().equals(operator)) && !isAdmin) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
@@ -3796,6 +3803,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean isAllowClientCustomGroupNotification() {
         return mGroupAllowClientCustomOperationNotification;
+    }
+
+    @Override
+    public boolean isAllowRobotCustomGroupNotification() {
+        return mGroupAllowRobotCustomOperationNotification;
     }
 
     @Override

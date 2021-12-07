@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.pojos.GroupNotificationBinaryContent;
 import io.moquette.spi.impl.Qos1PublishHandler;
@@ -21,7 +22,8 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 public class AddGroupMember extends GroupHandler<WFCMessage.AddGroupMemberRequest> {
 
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.AddGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.AddGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+        boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
         ErrorCode errorCode = m_messagesStore.addGroupMembers(fromUser, isAdmin, request.getGroupId(), request.getAddedMemberList(), request.getExtra());
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

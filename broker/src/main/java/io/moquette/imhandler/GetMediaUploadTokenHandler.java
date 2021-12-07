@@ -9,6 +9,7 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.util.StringUtil;
 import com.qiniu.util.Auth;
@@ -22,7 +23,7 @@ import static io.moquette.server.config.MediaServerConfig.FILE_STROAGE_REMOTE_SE
 @Handler("GMUT")
 public class GetMediaUploadTokenHandler extends IMHandler<WFCMessage.GetUploadTokenRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.GetUploadTokenRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.GetUploadTokenRequest request, Qos1PublishHandler.IMCallback callback) {
         int type = request.getMediaType();
 
         String token;

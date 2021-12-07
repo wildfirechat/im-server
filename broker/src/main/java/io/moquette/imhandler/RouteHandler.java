@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.core.Member;
 import io.moquette.persistence.MemorySessionStore;
@@ -20,7 +21,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.RouteTopic)
 public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.RouteRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.RouteRequest request, Qos1PublishHandler.IMCallback callback) {
         MemorySessionStore.Session session = m_sessionsStore.sessionForClientAndUser(fromUser, clientID);
         if (session == null) {
             ErrorCode errorCode = m_sessionsStore.loadActiveSession(fromUser, clientID);

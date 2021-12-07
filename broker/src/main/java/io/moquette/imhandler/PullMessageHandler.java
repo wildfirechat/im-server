@@ -18,7 +18,7 @@ import win.liyufan.im.IMTopic;
 @Handler(value = IMTopic.PullMessageTopic)
 public class PullMessageHandler extends IMHandler<WFCMessage.PullMessageRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullMessageRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.PullMessageRequest request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
 
         if (request.getType() == ProtoConstants.PullType.Pull_ChatRoom && !m_messagesStore.checkUserClientInChatroom(fromUser, clientID, null)) {

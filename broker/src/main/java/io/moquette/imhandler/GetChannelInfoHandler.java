@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -17,7 +18,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.ChannelPullTopic)
 public class GetChannelInfoHandler extends IMHandler<WFCMessage.PullChannelInfo> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.PullChannelInfo request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.PullChannelInfo request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
         WFCMessage.ChannelInfo info = m_messagesStore.getChannelInfo(request.getChannelId());
         if (info == null) {

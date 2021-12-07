@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -17,7 +18,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.TransferChannelInfoTopic)
 public class TransferChannelHandler extends GroupHandler<WFCMessage.TransferChannel> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.TransferChannel request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.TransferChannel request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = m_messagesStore.transferChannel(fromUser, request.getChannelId(), request.getNewOwner());
         return errorCode;
     }

@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.channel;
 
 import cn.wildfirechat.common.IMExceptionEvent;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -140,6 +141,6 @@ abstract public class ChannelAction extends Action {
                     ctx.executor().execute(command);
                 };
             }
-        }, false, true);
+        }, ProtoConstants.RequestSourceType.Request_From_Channel);
     }
 }

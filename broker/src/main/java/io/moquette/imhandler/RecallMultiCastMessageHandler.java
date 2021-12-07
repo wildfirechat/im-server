@@ -9,6 +9,7 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -17,7 +18,8 @@ import win.liyufan.im.IMTopic;
 @Handler(value = IMTopic.RecallMultiCastMessageTopic)
 public class RecallMultiCastMessageHandler extends IMHandler<WFCMessage.RecallMultiCastMessageRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.RecallMultiCastMessageRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.RecallMultiCastMessageRequest request, Qos1PublishHandler.IMCallback callback) {
+        boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
         if (!isAdmin) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }

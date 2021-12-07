@@ -22,7 +22,7 @@ import static win.liyufan.im.IMTopic.KickoffPCClientTopic;
 @Handler(value = KickoffPCClientTopic)
 public class KickoffPCClientHandler extends GroupHandler<WFCMessage.IDBuf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
         String pcClientId = request.getId();
         if (StringUtil.isNullOrEmpty(pcClientId)) {
             return ErrorCode.INVALID_PARAMETER;

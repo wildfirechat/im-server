@@ -221,6 +221,13 @@ public class ProtoConstants {
         int Update_User_Name = 0x200;
     }
 
+    public enum RequestSourceType {
+        Request_From_User,
+        Request_From_Admin,
+        Request_From_Robot,
+        Request_From_Channel;
+    }
+
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
     public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
     public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER = 106;

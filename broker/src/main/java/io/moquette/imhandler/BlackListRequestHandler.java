@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.BlackListUserTopic)
 public class BlackListRequestHandler extends GroupHandler<WFCMessage.BlackUserRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.BlackUserRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.BlackUserRequest request, Qos1PublishHandler.IMCallback callback) {
         long[] head = new long[1];
         ErrorCode errorCode = m_messagesStore.blackUserRequest(fromUser, request.getUid(), request.getStatus(), head);
         if (errorCode == ERROR_CODE_SUCCESS) {

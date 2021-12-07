@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.action.ClassUtil;
@@ -103,7 +104,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         }
     }
 
-    public void onApiMessage(String fromUser, String clientId, byte[] message, int requestId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int requestId, String from, String request, ProtoConstants.RequestSourceType requestSourceType) {
         if (request.equals(ServerAPIHelper.CHECK_USER_ONLINE_REQUEST)) {
             checkUserOnlineHandler(message, ackPayload -> ServerAPIHelper.sendResponse(ERROR_CODE_SUCCESS.getCode(), ackPayload, from, requestId));
         } else {
@@ -114,7 +115,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                     ReferenceCountUtil.release(ackPayload);
                     ServerAPIHelper.sendResponse(errorCode.getCode(), response, from, requestId);
                 }
-            }, isAdmin, isRobotOrChannel);
+            }, requestSourceType);
         }
     }
 
@@ -145,7 +146,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         });
     }
 
-	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, boolean isAdmin, boolean isRobotOrChannel) {
+	void imHandler(String clientID, String fromUser, String topic, byte[] payloadContent, IMCallback callback, ProtoConstants.RequestSourceType requestSourceType) {
         LOG.info("imHandler fromUser={}, topic={}", fromUser, topic);
         IMCallback wrapper = (errorcode, ackPayload) -> {
             ackPayload.resetReaderIndex();
@@ -201,7 +202,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
 
         IMHandler handler = m_imHandlers.get(topic);
         if (handler != null) {
-            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper, isAdmin, isRobotOrChannel);
+            handler.doHandler(clientID, fromUser, topic, payloadContent, wrapper, requestSourceType);
         } else {
             LOG.error("imHandler unknown topic={}", topic);
             ByteBuf ackPayload = Unpooled.buffer();
@@ -247,7 +248,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
         
         MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
         payloadContent = AES.AESDecrypt(payloadContent, session.getSecret(), true);
-        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), false, false);
+        imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), ProtoConstants.RequestSourceType.Request_From_User);
     }
 
     private void sendPubAck(String clientId, int messageID, ByteBuf payload, ErrorCode errorCode) {

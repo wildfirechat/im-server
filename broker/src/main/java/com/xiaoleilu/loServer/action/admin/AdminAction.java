@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action.admin;
 
 import cn.wildfirechat.common.APIPath;
+import cn.wildfirechat.proto.ProtoConstants;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.Action;
@@ -132,6 +133,6 @@ abstract public class AdminAction extends Action {
                     ctx.executor().execute(command);
                 };
             }
-        }, !noAdmin);
+        }, noAdmin ? ProtoConstants.RequestSourceType.Request_From_User : ProtoConstants.RequestSourceType.Request_From_Admin);
     }
 }

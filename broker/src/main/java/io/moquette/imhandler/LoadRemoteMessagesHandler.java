@@ -18,7 +18,7 @@ import win.liyufan.im.IMTopic;
 @Handler(value = IMTopic.LoadRemoteMessagesTopic)
 public class LoadRemoteMessagesHandler extends IMHandler<WFCMessage.LoadRemoteMessages> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.LoadRemoteMessages request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.LoadRemoteMessages request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode = ErrorCode.ERROR_CODE_SUCCESS;
 
         long beforeUid = request.getBeforeUid();

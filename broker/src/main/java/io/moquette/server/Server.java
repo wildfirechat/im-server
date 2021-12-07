@@ -16,6 +16,7 @@
 
 package io.moquette.server;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.push.PushServer;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.hazelcast.config.ClasspathXmlConfig;
@@ -430,9 +431,9 @@ public class Server {
         return hazelcastInstance;
     }
 
-    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, ProtoConstants.RequestSourceType requestSourceType) {
         LOG.debug("onApiMessage");
-        m_processor.onApiMessage(fromUser, clientId, message, messageId, from, request, isAdmin, isRobotOrChannel);
+        m_processor.onApiMessage(fromUser, clientId, message, messageId, from, request, requestSourceType);
     }
 
     public boolean isShutdowning() {

@@ -698,13 +698,13 @@ public class ProtocolProcessor {
         return m_sessionsStore;
     }
 
-    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, boolean isAdmin, boolean isRobotOrChannel) {
+    public void onApiMessage(String fromUser, String clientId, byte[] message, int messageId, String from, String request, ProtoConstants.RequestSourceType requestSourceType) {
         if(request.equals(ServerAPIHelper.KICKOFF_USER_REQUEST)) {
             String userId = new String(message);
             mServer.getImBusinessScheduler().execute(()-> kickoffUserOffline(userId));
             return;
         }
-        qos1PublishHandler.onApiMessage(fromUser, clientId, message, messageId, from, request, isAdmin, isRobotOrChannel);
+        qos1PublishHandler.onApiMessage(fromUser, clientId, message, messageId, from, request, requestSourceType);
     }
     public void shutdown() {
         messagesPublisher.stopChatroomScheduler();

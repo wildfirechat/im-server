@@ -9,6 +9,7 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
@@ -19,7 +20,8 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.DestroyUserTopic)
 public class DestroyUserHandler extends IMHandler<WFCMessage.IDBuf> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
+        boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
         if (isAdmin) {
             mServer.getImBusinessScheduler().execute(()-> {
                 m_sessionsStore.clearUserSession(fromUser);

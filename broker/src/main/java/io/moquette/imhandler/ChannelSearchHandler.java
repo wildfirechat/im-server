@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import java.util.List;
 @Handler(IMTopic.ChannelSearchTopic)
 public class ChannelSearchHandler extends IMHandler<WFCMessage.SearchUserRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.SearchUserRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.SearchUserRequest request, Qos1PublishHandler.IMCallback callback) {
         List<WFCMessage.ChannelInfo> users = m_messagesStore.searchChannel(request.getKeyword(), request.getFuzzy() > 0, request.getPage());
         WFCMessage.SearchChannelResult.Builder builder = WFCMessage.SearchChannelResult.newBuilder();
         builder.addAllChannel(users);

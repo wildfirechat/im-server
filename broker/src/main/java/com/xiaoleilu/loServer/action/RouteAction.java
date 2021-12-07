@@ -8,6 +8,7 @@
 
 package com.xiaoleilu.loServer.action;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -134,7 +135,7 @@ public class RouteAction extends Action {
                                 ctx.executor().execute(command);
                             };
                         }
-                    }, false);
+                    }, ProtoConstants.RequestSourceType.Request_From_User);
                     return false;
                 }
             } catch (InvalidProtocolBufferException e) {

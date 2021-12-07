@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.hutool.system.UserInfo;
 import io.moquette.persistence.MemorySessionStore;
@@ -20,7 +21,7 @@ import win.liyufan.im.IMTopic;
 @Handler(IMTopic.GetTokenTopic)
 public class GetTokenHandler extends IMHandler<WFCMessage.GetTokenRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.GetTokenRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.GetTokenRequest request, Qos1PublishHandler.IMCallback callback) {
         MemorySessionStore.Session session = m_sessionsStore.updateOrCreateUserSession(fromUser, clientID, request.getPlatform());
         WFCMessage.User userInfo = m_messagesStore.getUserInfo(fromUser);
         if(userInfo != null && userInfo.getType() == 1) {

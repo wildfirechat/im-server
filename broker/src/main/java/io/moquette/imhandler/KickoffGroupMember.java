@@ -22,12 +22,13 @@ import static win.liyufan.im.IMTopic.KickoffGroupMemberTopic;
 @Handler(value = KickoffGroupMemberTopic)
 public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMemberRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.RemoveGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.RemoveGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
         ErrorCode errorCode;
         WFCMessage.GroupInfo groupInfo = m_messagesStore.getGroupInfo(request.getGroupId());
         if (groupInfo == null) {
             errorCode = ErrorCode.ERROR_CODE_NOT_EXIST;
         } else {
+            boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
             boolean isAllow = isAdmin;
             if (!isAllow) {
                 if (groupInfo.getOwner() != null) {
@@ -50,12 +51,15 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
             if (!isAllow && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)) {
                 errorCode = ErrorCode.ERROR_CODE_NOT_RIGHT;
             } else {
-                if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && !isAdmin && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+                if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !m_messagesStore.isAllowClientCustomGroupNotification()) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+                if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && requestSourceType == ProtoConstants.RequestSourceType.Request_From_Robot && !m_messagesStore.isAllowRobotCustomGroupNotification()) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
 
                 //send notify message first, then kickoff the member
-                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && (isAdmin || m_messagesStore.isAllowClientCustomGroupNotification())) {
+                if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
                     sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());
                 } else {
                     WFCMessage.MessageContent content = new GroupNotificationBinaryContent(request.getGroupId(), fromUser, null, request.getRemovedMemberList()).getKickokfMemberGroupNotifyContent();

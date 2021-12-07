@@ -25,10 +25,11 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 @Handler(IMTopic.HandleFriendRequestTopic)
 public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFriendRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.HandleFriendRequest request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.HandleFriendRequest request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
             builder.setFromUser(request.getTargetUid());
             long[] heads = new long[2];
+            boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
             ErrorCode errorCode = m_messagesStore.handleFriendRequest(fromUser, request, builder, heads, isAdmin);
 
             if (errorCode == ERROR_CODE_SUCCESS) {

@@ -8,6 +8,7 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import io.moquette.persistence.remote.*;
 import io.moquette.server.Server;
 import org.slf4j.Logger;
@@ -37,11 +38,7 @@ public class ServerAPIHelper {
         Executor getResponseExecutor();
     }
 
-    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, Callback callback, boolean isAdmin) {
-        sendRequest(fromUser, clientId, request, message, callback, isAdmin, false);
-    }
-
-    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, Callback callback, boolean isAdmin, boolean isRobotOrChannel) {
+    public static void sendRequest(String fromUser, String clientId, String request, byte[] message, Callback callback, ProtoConstants.RequestSourceType requestSourceType) {
         int requestId = 0;
 
         if (callback != null) {
@@ -54,7 +51,7 @@ public class ServerAPIHelper {
             requestMap.put(requestId, new RequestInfo(fromUser, clientId, callback, message, requestId, request));
         }
 
-        server.onApiMessage(fromUser, clientId, message, requestId, "", request, isAdmin, isRobotOrChannel);
+        server.onApiMessage(fromUser, clientId, message, requestId, "", request, requestSourceType);
     }
 
     public static void sendResponse(int errorCode, byte[] message, String toUuid, int requestId) {

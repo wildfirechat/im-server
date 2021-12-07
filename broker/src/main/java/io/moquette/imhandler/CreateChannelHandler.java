@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.util.StringUtil;
 import io.moquette.spi.impl.Qos1PublishHandler;
@@ -21,7 +22,7 @@ import static win.liyufan.im.UserSettingScope.kUserSettingMyChannels;
 @Handler(value = IMTopic.CreateChannelTopic)
 public class CreateChannelHandler extends GroupHandler<WFCMessage.ChannelInfo> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.ChannelInfo request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.ChannelInfo request, Qos1PublishHandler.IMCallback callback) {
         WFCMessage.ChannelInfo.Builder builder = request.toBuilder();
         if (StringUtil.isNullOrEmpty(request.getTargetId())) {
             builder.setTargetId(m_messagesStore.getShortUUID());
@@ -40,7 +41,7 @@ public class CreateChannelHandler extends GroupHandler<WFCMessage.ChannelInfo> {
 
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             WFCMessage.ModifyUserSettingReq modifyUserSettingReq = WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingMyChannels).setKey(request.getTargetId()).setValue("1").build();
-            mServer.onApiMessage(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic, false, false);
+            mServer.onApiMessage(fromUser, null, modifyUserSettingReq.toByteArray(), 0, fromUser, PutUserSettingTopic, requestSourceType);
             byte[] data = request.getTargetId().getBytes();
             ackPayload.ensureWritable(data.length).writeBytes(data);
             return ErrorCode.ERROR_CODE_SUCCESS;

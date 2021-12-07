@@ -9,6 +9,7 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
@@ -21,7 +22,7 @@ import java.util.List;
 @Handler(value = IMTopic.ClearSessionTopic)
 public class DisconnectHandler extends IMHandler<Byte> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, Byte request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, Byte request, Qos1PublishHandler.IMCallback callback) {
         if (request == 8) {
             m_sessionsStore.cleanSession(fromUser, clientID);
         } else if(request == 1) {

@@ -8,6 +8,7 @@
 
 package io.moquette.imhandler;
 
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.loServer.model.FriendData;
@@ -21,7 +22,7 @@ import java.util.List;
 @Handler(IMTopic.FriendPullTopic)
 public class FriendPullHandler extends IMHandler<WFCMessage.Version> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, boolean isAdmin, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.Version request, Qos1PublishHandler.IMCallback callback) {
         List<FriendData> friendDatas = m_messagesStore.getFriendList(fromUser, clientID, request.getVersion());
         WFCMessage.GetFriendsResult.Builder builder = WFCMessage.GetFriendsResult.newBuilder();
         for (FriendData data : friendDatas
