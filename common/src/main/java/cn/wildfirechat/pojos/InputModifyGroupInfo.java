@@ -55,7 +55,7 @@ public class InputModifyGroupInfo extends InputGroupBase {
             return WFCMessage.ModifyGroupInfoRequest.newBuilder()
                 .setGroupId(group_id)
                 .setType(type)
-                .setValue(value)
+                .setValue(value == null ? "" : value)
                 .addAllToLine(to_lines == null || to_lines.isEmpty() ? Arrays.asList(0) : to_lines)
                 .setNotifyContent(notify_message.toProtoMessageContent())
                 .build();
@@ -63,7 +63,7 @@ public class InputModifyGroupInfo extends InputGroupBase {
             return WFCMessage.ModifyGroupInfoRequest.newBuilder()
                 .setGroupId(group_id)
                 .setType(type)
-                .setValue(value)
+                .setValue(value == null ? "" : value)
                 .addAllToLine(to_lines == null || to_lines.isEmpty() ? Arrays.asList(0) : to_lines)
                 .build();
         }

@@ -34,42 +34,43 @@ public class UpdateProfileAction extends RobotAction {
 
             WFCMessage.User.Builder builder = messagesStore.getUserInfo(robot.getUid()).toBuilder();
             boolean modified = false;
+            String value = input.getStrValue() == null ? "" : input.getStrValue();
             switch (input.getIntValue()) {
                 case Modify_DisplayName:
-                    builder.setDisplayName(input.getStrValue());
+                    builder.setDisplayName(value);
                     modified = true;
                     break;
                 case Modify_Gender:
-                    builder.setGender(Integer.parseInt(input.getStrValue()));
+                    builder.setGender(Integer.parseInt(value));
                     modified = true;
                     break;
                 case Modify_Portrait:
-                    builder.setPortrait(input.getStrValue());
+                    builder.setPortrait(value);
                     modified = true;
                     break;
                 //不允许修改电话号码，如果修改电话号码必须通过admin进行修改
 //              case Modify_Mobile:
-//                    builder.setMobile(input.getStrValue());
+//                    builder.setMobile(value);
 //                    modified = true;
 //                    break;
                 case Modify_Email:
-                    builder.setEmail(input.getStrValue());
+                    builder.setEmail(value);
                     modified = true;
                     break;
                 case Modify_Address:
-                    builder.setAddress(input.getStrValue());
+                    builder.setAddress(value);
                     modified = true;
                     break;
                 case Modify_Company:
-                    builder.setCompany(input.getStrValue());
+                    builder.setCompany(value);
                     modified = true;
                     break;
                 case Modify_Social:
-                    builder.setSocial(input.getStrValue());
+                    builder.setSocial(value);
                     modified = true;
                     break;
                 case Modify_Extra:
-                    builder.setExtra(input.getStrValue());
+                    builder.setExtra(value);
                     modified = true;
                     break;
                 default:

@@ -2392,31 +2392,31 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
         WFCMessage.User.Builder builder = user.toBuilder();
         if((flag & Update_User_DisplayName) > 0) {
-            builder.setDisplayName(userInfo.getDisplayName());
+            builder.setDisplayName(userInfo.getDisplayName() == null ? "" : userInfo.getDisplayName());
         }
         if((flag & Update_User_Portrait) > 0) {
-            builder.setPortrait(userInfo.getPortrait());
+            builder.setPortrait(userInfo.getPortrait() == null ? "" : userInfo.getPortrait());
         }
         if((flag & Update_User_Gender) > 0) {
             builder.setGender(userInfo.getGender());
         }
         if((flag & Update_User_Mobile) > 0) {
-            builder.setMobile(userInfo.getMobile());
+            builder.setMobile(userInfo.getMobile() == null ? "" : userInfo.getMobile());
         }
         if((flag & Update_User_Email) > 0) {
-            builder.setEmail(userInfo.getEmail());
+            builder.setEmail(userInfo.getEmail() == null ? "" : userInfo.getEmail());
         }
         if((flag & Update_User_Address) > 0) {
-            builder.setAddress(userInfo.getAddress());
+            builder.setAddress(userInfo.getAddress() == null ? "" : userInfo.getAddress());
         }
         if((flag & Update_User_Company) > 0) {
-            builder.setCompany(userInfo.getCompany());
+            builder.setCompany(userInfo.getCompany() == null ? "" : userInfo.getCompany());
         }
         if((flag & Update_User_Social) > 0) {
-            builder.setSocial(userInfo.getSocial());
+            builder.setSocial(userInfo.getSocial() == null ? "" : userInfo.getSocial());
         }
         if((flag & Update_User_Extra) > 0) {
-            builder.setExtra(userInfo.getExtra());
+            builder.setExtra(userInfo.getExtra() == null ? "" : userInfo.getExtra());
         }
         if((flag & Update_User_Name) > 0) {
             if(StringUtil.isNullOrEmpty(userInfo.getName())) {
