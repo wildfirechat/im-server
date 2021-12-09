@@ -40,6 +40,7 @@ public interface IMTopic {
 
     String GetUserInfoTopic = "UPUI";
     String ModifyMyInfoTopic = "MMI";
+    String NotifyUserInfoTopic = "UIN";
 
 	String GetQiniuUploadTokenTopic = "GQNUT";
 

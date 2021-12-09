@@ -2223,7 +2223,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
 
-
         WFCMessage.User user = mUserMap.get(userId);
         if (user == null) {
             user = databaseStore.getPersistUser(userId);
@@ -2287,6 +2286,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             databaseStore.updateUser(user);
             mUserMap.set(userId, user);
 
+            IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserInfoTopic, user.getUid(), 0, null);
             callbackUserInfoEvent(user);
 
             return ErrorCode.ERROR_CODE_SUCCESS;
@@ -2433,6 +2433,8 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             return ErrorCode.ERROR_CODE_SERVER_ERROR;
         }
+
+        IMHandler.getPublisher().publishNotification(IMTopic.NotifyUserInfoTopic, user.getUid(), 0, null);
 
         mUserMap.put(user.getUid(), user);
         callbackUserInfoEvent(user);
