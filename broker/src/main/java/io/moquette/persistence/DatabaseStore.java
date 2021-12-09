@@ -519,7 +519,7 @@ public class DatabaseStore {
                 String sql;
                 if (disableRemoteMessageSearch) {
                     sql = "insert into " + table +
-                        " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                        " (`_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_content_type`, `_to`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                         " ON DUPLICATE KEY UPDATE " +
                         "`_data` = ?," +
                         "`_dt` = ?," +
