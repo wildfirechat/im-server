@@ -246,21 +246,21 @@ abstract public class IMHandler<T> {
     public void afterAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback) {
 
     }
-    protected long publish(String username, String clientID, WFCMessage.Message message) {
+    protected long publish(String username, String clientID, WFCMessage.Message message, ProtoConstants.RequestSourceType requestSourceType) {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, requestSourceType);
         mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }
 
-    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message) {
+    protected long saveAndPublish(String username, String clientID, WFCMessage.Message message, ProtoConstants.RequestSourceType requestSourceType) {
         Set<String> notifyReceivers = new LinkedHashSet<>();
 
         message = m_messagesStore.storeMessage(username, clientID, message);
         WFCMessage.Message.Builder messageBuilder = message.toBuilder();
-        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers);
+        int pullType = m_messagesStore.getNotifyReceivers(username, messageBuilder, notifyReceivers, requestSourceType);
         mServer.getImBusinessScheduler().execute(() -> this.publisher.publish2Receivers(messageBuilder.build(), notifyReceivers, clientID, pullType));
         return notifyReceivers.size();
     }

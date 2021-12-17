@@ -496,7 +496,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
     @Override
-    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers) {
+    public int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder messageBuilder, Set<String> notifyReceivers, ProtoConstants.RequestSourceType requestSourceType) {
         WFCMessage.Message message = messageBuilder.build();
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         int type = message.getConversation().getType();
@@ -556,8 +556,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         } else if(type == ProtoConstants.ConversationType.ConversationType_Channel) {
             WFCMessage.ChannelInfo channelInfo = getChannelInfo(message.getConversation().getTarget());
             if (channelInfo != null) {
-                notifyReceivers.add(fromUser);
                 if (channelInfo.getOwner().equals(fromUser)) {
+                    if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_Channel
+                        && !StringUtil.isNullOrEmpty(channelInfo.getCallback())
+                        && channelInfo.getAutomatic() == 1) {
+                        LOG.info("Channel api message not send to the owner when automatic");
+                    } else {
+                        notifyReceivers.add(fromUser);
+                    }
+
                     if((channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Global) > 0) {
                         if((message.getToList() != null && !message.getToList().isEmpty())) {
                             notifyReceivers.addAll(message.getToList());
@@ -581,6 +588,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                         }
                     }
                 } else {
+                    notifyReceivers.add(fromUser);
                     if (StringUtil.isNullOrEmpty(channelInfo.getCallback()) || channelInfo.getAutomatic() == 0) {
                         notifyReceivers.add(channelInfo.getOwner());
                     }

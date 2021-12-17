@@ -604,6 +604,12 @@ public class MessagesPublisher {
                         Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
                     }
                 });
+            } else {
+                if (channelInfo == null) {
+                    LOG.info("Channel {} not exist", message.getConversation().getTarget());
+                } else {
+                    LOG.info("Channel {} callback {}", message.getConversation().getTarget(), channelInfo.getCallback());
+                }
             }
         }
         long messageId = message.getMessageId();

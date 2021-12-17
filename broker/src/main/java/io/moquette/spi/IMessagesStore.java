@@ -18,6 +18,7 @@ package io.moquette.spi;
 
 import cn.wildfirechat.pojos.InputOutputUserInfo;
 import cn.wildfirechat.pojos.SystemSettingPojo;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
@@ -101,7 +102,7 @@ public interface IMessagesStore {
     DatabaseStore getDatabaseStore();
     WFCMessage.Message storeMessage(String fromUser, String fromClientId, WFCMessage.Message message);
     void storeSensitiveMessage(WFCMessage.Message message);
-	int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder message, Set<String> notifyReceivers);
+	int getNotifyReceivers(String fromUser, WFCMessage.Message.Builder message, Set<String> notifyReceivers, ProtoConstants.RequestSourceType requestSourceType);
     Set<String> getAllEnds();
     WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType);
     WFCMessage.PullMessageResult loadRemoteMessages(String user, WFCMessage.Conversation conversation, long beforeUid, int count, Collection<Integer> contentTypes);

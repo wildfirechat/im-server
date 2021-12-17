@@ -40,7 +40,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         builder.setMessageId(messageId);
                         builder.setServerTimestamp(timestamp);
                         if(!StringUtil.isNullOrEmpty(builder.getContent().getSearchableContent())) {
-                            saveAndPublish(request.getTargetUid(), null, builder.build());
+                            saveAndPublish(request.getTargetUid(), null, builder.build(), requestSourceType);
                         }
 
                         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
@@ -63,7 +63,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
 
                         messageId = MessageShardingUtil.generateId();
                         builder.setMessageId(messageId);
-                        saveAndPublish(request.getTargetUid(), null, builder.build());
+                        saveAndPublish(request.getTargetUid(), null, builder.build(), requestSourceType);
 
                         if (m_messagesStore.isNewFriendWelcomeMessage()) {
                             contentBuilder.setType(93);
@@ -75,7 +75,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                         messageId = MessageShardingUtil.generateId();
                         builder.setMessageId(messageId);
                         builder.setServerTimestamp(++timestamp);
-                        saveAndPublish(request.getTargetUid(), null, builder.build());
+                        saveAndPublish(request.getTargetUid(), null, builder.build(), requestSourceType);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

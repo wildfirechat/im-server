@@ -203,15 +203,15 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                             @Override
                             public void onSuccess(String content) {
                                 if(StringUtil.isNullOrEmpty(content)) {
-                                    saveAndPublish(fromUser, clientID, finalMsg);
+                                    saveAndPublish(fromUser, clientID, finalMsg, requestSourceType);
                                 } else {
                                     MessagePayload payload = new Gson().fromJson(content, MessagePayload.class);
                                     if (payload != null && payload.getType() > 0) {
                                         WFCMessage.Message newMsg = finalMsg.toBuilder().setContent(payload.toProtoMessageContent()).build();
-                                        saveAndPublish(fromUser, clientID, newMsg);
+                                        saveAndPublish(fromUser, clientID, newMsg, requestSourceType);
                                     } else {
                                         LOG.error("Response content {} from censor is invalid payload, ignore response and send original message", content);
-                                        saveAndPublish(fromUser, clientID, finalMsg);
+                                        saveAndPublish(fromUser, clientID, finalMsg, requestSourceType);
                                     }
                                 }
                                 if(mWaitRemoteSensitiveServerResponse) {
@@ -236,7 +236,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                                     }
                                 } else {
                                     LOG.warn("Failed to censor message with status {}, errorMessage {}. Send the original message", statusCode, errorMessage);
-                                    saveAndPublish(fromUser, clientID, finalMsg);
+                                    saveAndPublish(fromUser, clientID, finalMsg, requestSourceType);
 
                                     if(mWaitRemoteSensitiveServerResponse) {
                                         errorCode = ERROR_CODE_SUCCESS;
@@ -268,7 +268,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
 
             if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                 if(!ignoreMsg) {
-                    saveAndPublish(fromUser, clientID, message);
+                    saveAndPublish(fromUser, clientID, message, requestSourceType);
                 }
                 ackPayload = ackPayload.capacity(20);
                 ackPayload.writeLong(messageId);

@@ -34,7 +34,7 @@ public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        publish(fromUser, clientID, message);
+        publish(fromUser, clientID, message, requestSourceType);
 
         return errorCode;
     }
