@@ -780,6 +780,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         return builder.build();
     }
 
+    public void clearChatroomMembers(String chatroomId) {
+        MultiMap<String, UserClientEntry> chatroomMembers = m_Server.getHazelcastInstance().getMultiMap(CHATROOM_MEMBER_IDS);
+        IMap<String, String> userChatroomMap = m_Server.getHazelcastInstance().getMap(USER_CHATROOM);
+        chatroomMembers.get(chatroomId).forEach(userClientEntry -> {
+            userChatroomMap.remove(userClientEntry.userId);
+        });
+        chatroomMembers.remove(chatroomId);
+    }
+
     @Override
     public Collection<UserClientEntry> getChatroomMembers(String chatroomId) {
         MultiMap<String, UserClientEntry> chatroomMembers = m_Server.getHazelcastInstance().getMultiMap(CHATROOM_MEMBER_IDS);
@@ -2573,6 +2582,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.ChatroomInfo> chatroomInfoMap = hzInstance.getMap(CHATROOMS);
         WFCMessage.ChatroomInfo room = chatroomInfoMap.get(chatroomId);
         if (room != null) {
+            clearChatroomMembers(chatroomId);
             room = room.toBuilder().setUpdateDt(System.currentTimeMillis()).setState(ProtoConstants.ChatroomState.Chatroom_State_End).build();
             chatroomInfoMap.put(chatroomId, room);
             callbackChatroomInfoUpdateEvent(chatroomId, Chatroom_Event_Destroy);
