@@ -3202,7 +3202,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public ErrorCode handleJoinChatroom(String userId, String clientId, String chatroomId) {
         IMap<String, WFCMessage.ChatroomInfo> chatroomInfoMap = m_Server.getHazelcastInstance().getMap(CHATROOMS);
-        if (chatroomInfoMap == null || chatroomInfoMap.get(chatroomId) == null) {
+        if (chatroomInfoMap == null || chatroomInfoMap.get(chatroomId) == null || chatroomInfoMap.get(chatroomId).getState() == ProtoConstants.ChatroomState.Chatroom_State_End) {
             if(mChatroomCreateWhenNotExist) {
                 WFCMessage.ChatroomInfo.Builder builder = WFCMessage.ChatroomInfo.newBuilder().setTitle(chatroomId);
                 createChatroom(chatroomId, builder.build());
