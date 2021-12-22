@@ -25,6 +25,28 @@ public class SensitiveFilter {
         return false;
     }
 
+    private int getUrlLength(String text, int i) {
+        boolean startUrl = false;
+        if(text.charAt(i) == 'h') {
+            if(text.length() > i + 6 && text.substring(i, i+7).equals("http://")) {
+                startUrl = true;
+            } else if(text.length() > i + 7 && text.substring(i, i+8).equals("https://")) {
+                startUrl = true;
+            }
+        }
+
+        if(startUrl) {
+            for (int j = i+1; j < text.length(); j++) {
+                char ch = text.charAt(j);
+                if(ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t') {
+                    return j-i;
+                }
+            }
+            return text.length() - i - 1;
+        }
+        return 0;
+    }
+
     public Set<String> getSensitiveWords(String text,MatchType matchType){
         Set<String> sensitiveWords=new HashSet<>();
         if(text==null||text.trim().length()==0){
@@ -34,6 +56,11 @@ public class SensitiveFilter {
         String originalText = text;
         text = text.toLowerCase();
         for(int i=0;i<text.length();i++){
+            int urlLength = getUrlLength(text, i);
+            if(urlLength > 0) {
+                i = i + urlLength;
+                continue;
+            }
             int sensitiveWordLength = getSensitiveWordLength(text, i, matchType);
             if(sensitiveWordLength>0){
                 String sensitiveWord = originalText.substring(i, i + sensitiveWordLength);
@@ -117,5 +144,29 @@ public class SensitiveFilter {
         }
     }
 
+    public static void main(String[] args) {
+        Set<String> words = new HashSet<>();
+        words.add("sb");
+        words.add("xx");
+        SensitiveFilter sensitiveFilter = new SensitiveFilter(words);
+        String text1 = "u sb a";
+        Set<String> ss = sensitiveFilter.getSensitiveWords(text1, MatchType.MIN_MATCH);
+        System.out.println(ss.size());
 
+        text1 = "u xx";
+        ss = sensitiveFilter.getSensitiveWords(text1, MatchType.MIN_MATCH);
+        System.out.println(ss.size());
+
+        text1 = "a  url is https://sdsbhe.com here";
+        ss = sensitiveFilter.getSensitiveWords(text1, MatchType.MIN_MATCH);
+        System.out.println(ss.size());
+
+        text1 = "a  url is https://sdsbhe.com";
+        ss = sensitiveFilter.getSensitiveWords(text1, MatchType.MIN_MATCH);
+        System.out.println(ss.size());
+
+        text1 = "a  url is https://sdsbhe.com\nsb";
+        ss = sensitiveFilter.getSensitiveWords(text1, MatchType.MIN_MATCH);
+        System.out.println(ss.size());
+    }
 }
