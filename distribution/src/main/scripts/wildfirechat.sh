@@ -34,7 +34,7 @@ else
 fi
 export JAVA
 
-LOG_FILE=$WILDFIRECHAT_HOME/config/log4j.properties
+LOG_FILE=$WILDFIRECHAT_HOME/config/log4j2.xml
 HZ_CONF_FILE=$WILDFIRECHAT_HOME/config/hazelcast.xml
 C3P0_CONF_FILE=$WILDFIRECHAT_HOME/config/c3p0-config.xml
 
@@ -83,11 +83,12 @@ JAVA_OPTS="$JAVA_OPTS -XX:MaxGCPauseMillis=500"
 #JAVA_OPTS="$JAVA_OPTS -XX:NumberOfGCLogFiles=10"
 #JAVA_OPTS="$JAVA_OPTS -XX:GCLogFileSize=10M"
 
-echo ""
-echo "请设置JVM参数Xmx和Xms！！！"
+
+echo "警告：没有设置JVM内存参数！"
+echo "请设置JVM参数Xmx和Xms，设置为您为IM服务预留的内存大小，注意需要刨除操作系统占用，如果有其它系统也需要相应去除占用。"
 echo ""
 #JAVA_OPTS="$JAVA_OPTS -Xmx2G"
 #JAVA_OPTS="$JAVA_OPTS -Xms2G"
 
 
-$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -Dlog4j.configuration="file:$LOG_FILE" -Dcom.mchange.v2.c3p0.cfg.xml="$C3P0_CONF_FILE" -Dhazelcast.configuration="file:$HZ_CONF_FILE" -Dwildfirechat.path="$WILDFIRECHAT_PATH" -cp "$WILDFIRECHAT_HOME/lib/*" cn.wildfirechat.server.Server
+$JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -Dlog4j.configurationFile="file:$LOG_FILE" -Dlog4j2.formatMsgNoLookups=true -Dcom.mchange.v2.c3p0.cfg.xml="$C3P0_CONF_FILE" -Dhazelcast.configuration="file:$HZ_CONF_FILE" -Dwildfirechat.path="$WILDFIRECHAT_PATH" -cp "$WILDFIRECHAT_HOME/lib/*" cn.wildfirechat.server.Server

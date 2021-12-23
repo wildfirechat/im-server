@@ -40,9 +40,9 @@
         </file>
 
         <file>
-            <source>src/main/resources/log4j.properties</source>
+            <source>src/main/resources/log4j2.xml</source>
             <outputDirectory>config/</outputDirectory>
-            <destName>log4j.properties</destName>
+            <destName>log4j2.xml</destName>
         </file>
 
         <file>
