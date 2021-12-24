@@ -12,7 +12,6 @@ package com.xiaoleilu.loServer.action.channel;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.SendChannelMessageData;
 import cn.wildfirechat.proto.ProtoConstants;
-import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -24,7 +23,6 @@ import cn.wildfirechat.pojos.SendMessageResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 

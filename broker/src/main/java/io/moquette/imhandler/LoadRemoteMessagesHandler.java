@@ -33,7 +33,7 @@ public class LoadRemoteMessagesHandler extends IMHandler<WFCMessage.LoadRemoteMe
         }
 
         if (request.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
-            if (!m_messagesStore.checkUserInChannel(fromUser, request.getConversation().getTarget())) {
+            if (!m_messagesStore.canSendMessageInChannel(fromUser, request.getConversation().getTarget())) {
                 return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
             }
         }

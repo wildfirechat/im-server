@@ -211,6 +211,7 @@ public interface IMessagesStore {
     List<WFCMessage.ChannelInfo> searchChannel(String keyword, boolean buzzy, int page);
     ErrorCode listenChannel(String operator, String channelId, boolean listen);
     WFCMessage.ChannelInfo getChannelInfo(String channelId);
+    boolean canSendMessageInChannel(String user, String channelId);
     boolean checkUserInChannel(String user, String channelId);
     Collection<String> getChannelSubscriber(String channelId);
 

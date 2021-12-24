@@ -154,7 +154,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     }
                 } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
                     if(!m_messagesStore.getGroupMuteExceptionTypes().contains(message.getContent().getType())) {
-                        if (!m_messagesStore.checkUserInChannel(fromUser, message.getConversation().getTarget())) {
+                        if (!m_messagesStore.canSendMessageInChannel(fromUser, message.getConversation().getTarget())) {
                             return ErrorCode.ERROR_CODE_NOT_IN_CHANNEL;
                         }
                     }

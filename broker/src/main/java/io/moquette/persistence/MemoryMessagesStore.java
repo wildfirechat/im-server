@@ -48,7 +48,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import static cn.wildfirechat.common.IMExceptionEvent.EventType.EVENT_CALLBACK_Exception;
-import static cn.wildfirechat.proto.ProtoConstants.ChannelState.Channel_State_Mask_Deleted;
+import static cn.wildfirechat.proto.ProtoConstants.ChannelState.*;
 import static cn.wildfirechat.proto.ProtoConstants.ChannelUpdateEventType.*;
 import static cn.wildfirechat.proto.ProtoConstants.ChatroomMemberUpdateEventType.Chatroom_Member_Event_Join;
 import static cn.wildfirechat.proto.ProtoConstants.ChatroomMemberUpdateEventType.Chatroom_Member_Event_Leave;
@@ -3749,6 +3749,34 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
         return mIMap.get(channelId);
+    }
+
+    @Override
+    public boolean canSendMessageInChannel(String user, String channelId) {
+        IMap<String, WFCMessage.ChannelInfo> mIMap = m_Server.getHazelcastInstance().getMap(CHANNELS);
+        WFCMessage.ChannelInfo info = mIMap.get(channelId);
+        if(info == null || info.getStatus() == Channel_State_Mask_Deleted) {
+            return false;
+        }
+        if(user.equals(info.getOwner())) {
+            return true;
+        }
+
+        if((info.getStatus() & Channel_State_Mask_Global) > 0 || (info.getStatus() & Channel_State_Mask_Message_Unsubscribed) > 0) {
+            return true;
+        }
+
+        Collection<String> channelMembers = getChannelListener(channelId);
+        if (channelMembers == null) {
+            return false;
+        }
+
+        Collection<String> chatroomMembers = getChannelListener(channelId);
+        if (chatroomMembers == null || !chatroomMembers.contains(user)) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
