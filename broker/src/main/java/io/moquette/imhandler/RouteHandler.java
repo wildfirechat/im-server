@@ -32,6 +32,11 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
         }
 
         if (session == null || session.getDeleted() > 0) {
+            if(session == null) {
+                LOG.error("Session for <{}, {}> not exist", fromUser, clientID);
+            } else {
+                LOG.error("Session for <{}, {}> deleted", fromUser, clientID);
+            }
             return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
         }
 
