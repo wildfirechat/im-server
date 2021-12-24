@@ -13,6 +13,7 @@ public class PojoGroupMember {
     String alias;
     int type;
     String extra;
+    long createDt;
 
     public String getMember_id() {
         return member_id;
@@ -44,5 +45,13 @@ public class PojoGroupMember {
 
     public void setExtra(String extra) {
         this.extra = extra;
+    }
+
+    public long getCreateDt() {
+        return createDt;
+    }
+
+    public void setCreateDt(long createDt) {
+        this.createDt = createDt;
     }
 }

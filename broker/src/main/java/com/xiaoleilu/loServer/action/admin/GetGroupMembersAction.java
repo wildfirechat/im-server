@@ -63,6 +63,7 @@ public class GetGroupMembersAction extends AdminAction {
                         pm.setAlias(member.getAlias());
                         pm.setType(member.getType());
                         pm.setExtra(member.getExtra());
+                        pm.setCreateDt(member.getCreateDt());
                         out.getMembers().add(pm);
                     }
                     result = RestResult.ok(out);
