@@ -622,14 +622,15 @@ public class ProtocolProcessor {
         if(session != null) {
             session.refreshLastActiveTime();
             forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
-            m_messagesStore.updateUserOnlineSetting(session, false);
         }
 
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
         if(connectionDescriptors.removeConnection(oldConnDescr)) {
             m_interceptor.notifyClientConnectionLost(clientID, username);
         }
-
+        if(session != null) {
+            m_messagesStore.updateUserOnlineSetting(session, false);
+        }
     }
 
     /**
