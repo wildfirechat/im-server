@@ -48,6 +48,8 @@ public class ProtoConstants {
         int Platform_WEB = 5;
         int Platform_WX = 6;
         int Platform_LINUX = 7;
+        int Platform_iPad = 8;
+        int Platform_APad = 9;
     }
 
     //message NotifyMessage & PullMessageRequest -> type

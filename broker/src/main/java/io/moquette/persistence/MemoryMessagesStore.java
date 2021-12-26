@@ -2328,8 +2328,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (session.getPlatform() == Platform_LINUX || session.getPlatform() == Platform_Windows || session.getPlatform() == Platform_OSX) {
             updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build(), session.clientID);
+        } else if (session.getPlatform() == Platform_iPad || session.getPlatform() == Platform_APad) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Pad").setValue(online ? (System.currentTimeMillis()  + "|"  + session.getPlatform() + "|" + session.getClientID() + "|" + session.getPhoneName()) : "").build(), session.clientID);
         } else {
-            String value = null;
+            String pcValue = null;
+            String padValue = null;
             for (MemorySessionStore.Session s : m_Server.getStore().sessionsStore().sessionForUser(session.username)) {
                 if (s.getDeleted() != 0 || !m_Server.getConnectionsManager().isConnected(s.getClientID())) {
                     continue;
@@ -2339,25 +2342,36 @@ public class MemoryMessagesStore implements IMessagesStore {
                     case Platform_LINUX:
                     case Platform_Windows:
                     case Platform_OSX:
-                        value = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
+                        pcValue = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
+                        break;
+                    case Platform_iPad:
+                    case Platform_APad:
+                        padValue = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
                         break;
                     default:
                         break;
                 }
-
-                if (value != null) {
-                    break;
-                }
             }
 
             WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
-            if (value != null) {
+            if (pcValue != null) {
                 if (pcentry == null || StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(value).build(), session.clientID);
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(pcValue).build(), session.clientID);
                 }
             } else {
                 if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue())) {
                     updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build(), session.clientID);
+                }
+            }
+
+            WFCMessage.UserSettingEntry padentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "Pad");
+            if (padValue != null) {
+                if (padentry == null || StringUtil.isNullOrEmpty(padentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Pad").setValue(padValue).build(), session.clientID);
+                }
+            } else {
+                if (padentry != null && !StringUtil.isNullOrEmpty(padentry.getValue())) {
+                    updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Pad").setValue("").build(), session.clientID);
                 }
             }
         }
