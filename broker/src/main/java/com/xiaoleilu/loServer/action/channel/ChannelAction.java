@@ -70,6 +70,7 @@ abstract public class ChannelAction extends Action {
         try {
             ts = Long.parseLong(timestamp);
         } catch (Exception e) {
+            LOG.error("Channel timestamp:{} invalid", timestamp);
             e.printStackTrace();
             Utility.printExecption(LOG, e, IMExceptionEvent.EventType.CHANNEL_API_Exception);
             return ErrorCode.ERROR_CODE_API_NOT_SIGNED;
@@ -81,7 +82,7 @@ abstract public class ChannelAction extends Action {
 
         channelInfo = messagesStore.getChannelInfo(cid);
         if (channelInfo == null) {
-            return ErrorCode.INVALID_PARAMETER;
+            return ErrorCode.ERROR_CODE_CHANNEL_NO_EXIST;
         }
         
         if (StringUtil.isNullOrEmpty(channelInfo.getSecret())) {
