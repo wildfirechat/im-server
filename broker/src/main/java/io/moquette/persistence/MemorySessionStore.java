@@ -727,6 +727,10 @@ public class MemorySessionStore implements ISessionsStore {
     public ErrorCode kickoffPCClient(String operator, String pcClientId) {
         Session session = sessions.get(pcClientId);
         if (session != null) {
+            if(!operator.equals(session.getUsername())) {
+                LOG.error("kickoffPCClient failure, user {} don't have client {}", operator, pcClientId);
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
             if (session.getPlatform() == ProtoConstants.Platform.Platform_LINUX
                 || session.getPlatform() == ProtoConstants.Platform.Platform_Windows
                 || session.getPlatform() == ProtoConstants.Platform.Platform_OSX
@@ -737,8 +741,11 @@ public class MemorySessionStore implements ISessionsStore {
                 sessions.remove(pcClientId);
                 mServer.getProcessor().kickoffSession(session);
             } else {
+                LOG.error("session {} is not pc client:{}", pcClientId, session.getPlatform());
                 return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
+        } else {
+            LOG.error("Can't find the session for client <{}>", pcClientId);
         }
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
