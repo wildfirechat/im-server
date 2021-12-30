@@ -2313,6 +2313,24 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     }
 
+    public void forceCleanOnlineStatus(String userId, String clientId) {
+        if (m_Server.isShutdowning()) {
+            return;
+        }
+
+        if(!mMultiPlatformNotification || m_Server.getStore().sessionsStore().isMultiEndpointSupported()) {
+            WFCMessage.UserSettingEntry pcentry = getUserSetting(userId, kUserSettingPCOnline, "PC");
+            if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue()) && pcentry.getValue().contains(clientId)) {
+                updateUserSettings(userId, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build(), clientId);
+            }
+
+            WFCMessage.UserSettingEntry padentry = getUserSetting(userId, kUserSettingPCOnline, "Pad");
+            if (padentry != null && !StringUtil.isNullOrEmpty(padentry.getValue()) && padentry.getValue().contains(clientId)) {
+                updateUserSettings(userId, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Pad").setValue("").build(), clientId);
+            }
+        }
+    }
+
     @Override
     public void updateUserOnlineSetting(MemorySessionStore.Session session, boolean online) {
         if(!mMultiPlatformNotification) {

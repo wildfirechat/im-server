@@ -140,6 +140,8 @@ public interface IMessagesStore {
 
     ErrorCode modifyUserInfo(String userId, WFCMessage.ModifyMyInfoRequest request) throws Exception;
 
+    void forceCleanOnlineStatus(String userId, String clientId);
+
     void updateUserOnlineSetting(MemorySessionStore.Session session, boolean online);
 
     ErrorCode modifyUserStatus(String userId, int status);

@@ -729,7 +729,8 @@ public class MemorySessionStore implements ISessionsStore {
         if (session != null) {
             if(!operator.equals(session.getUsername())) {
                 LOG.error("kickoffPCClient failure, user {} don't have client {}", operator, pcClientId);
-                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                mServer.getProcessor().getMessagesStore().forceCleanOnlineStatus(operator, pcClientId);
+                return ErrorCode.ERROR_CODE_SUCCESS;
             }
             if (session.getPlatform() == ProtoConstants.Platform.Platform_LINUX
                 || session.getPlatform() == ProtoConstants.Platform.Platform_Windows
@@ -746,6 +747,7 @@ public class MemorySessionStore implements ISessionsStore {
             }
         } else {
             LOG.error("Can't find the session for client <{}>", pcClientId);
+            mServer.getProcessor().getMessagesStore().forceCleanOnlineStatus(operator, pcClientId);
         }
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
