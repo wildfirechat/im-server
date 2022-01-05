@@ -866,7 +866,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String user, long messageId) {
+    public long insertUserMessages(String sender, int conversationType, String target, int line, int messageContentType, String user, long messageId, boolean directing) {
         // messageId是全局的，messageSeq是跟个人相关的，理论上messageId的增长数度远远大于seq。
         // 考虑到一种情况，当服务器发生变化，用户发生迁移后，messageSeq还需要保持有序。 要么把Seq持久化，要么在迁移后Seq取一个肯定比以前更大的数字（这个数字就是messageId）
         // 这里选择使用后面一种情况
@@ -906,7 +906,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             mWriteLock.unlock();
         }
 
-        databaseStore.persistUserMessage(user, messageId, messageSeq, messageContentType);
+        databaseStore.persistUserMessage(user, messageId, messageSeq, conversationType, target, line, directing, messageContentType);
         return messageSeq;
     }
 

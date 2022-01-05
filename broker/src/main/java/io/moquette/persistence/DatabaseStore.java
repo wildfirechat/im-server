@@ -914,20 +914,24 @@ public class DatabaseStore {
         return false;
     }
 
-    void persistUserMessage(final String userId, final long messageId, final long messageSeq, final int messageContentType) {
+    void persistUserMessage(final String userId, final long messageId, final long messageSeq, int type, String target, int line, boolean directing, final int messageContentType) {
         mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
             try {
                 connection = DBUtil.getConnection();
 
-                String sql = "insert into " + getUserMessageTable(userId) + " (`_mid`, `_uid`, `_seq`, `_cont_type`) values(?, ?, ?, ?)";
+                String sql = "insert into " + getUserMessageTable(userId) + " (`_mid`, `_uid`, `_seq`, `_type`, `_target`, `_line`, `_directing`, `_cont_type`) values(?, ?, ?, ?, ?, ?, ?, ?)";
 
                 statement = connection.prepareStatement(sql);
                 int index = 1;
                 statement.setLong(index++, messageId);
                 statement.setString(index++, userId);
                 statement.setLong(index++, messageSeq);
+                statement.setInt(index++, type);
+                statement.setString(index++, target);
+                statement.setInt(index++, line);
+                statement.setInt(index++, directing ? 1 :0);
                 statement.setInt(index++, messageContentType);
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
