@@ -94,13 +94,9 @@ public class PushServer {
         pushMessage.deviceToken = session.getDeviceToken();
         pushMessage.unReceivedMsg = badge;
         pushMessage.userId = session.getUsername();
-        if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS
-            || session.getPlatform() == ProtoConstants.Platform.Platform_Android
-            || session.getPlatform() == ProtoConstants.Platform.Platform_iPad
-            || session.getPlatform() == ProtoConstants.Platform.Platform_APad) {
+        if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS || session.getPlatform() == ProtoConstants.Platform.Platform_Android) {
             String url = androidPushServerUrl;
-            if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS
-                || session.getPlatform() == ProtoConstants.Platform.Platform_iPad) {
+            if (session.getPlatform() == ProtoConstants.Platform.Platform_iOS) {
                 url = iOSPushServerUrl;
                 pushMessage.voipDeviceToken = session.getVoipDeviceToken();
             }

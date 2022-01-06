@@ -1577,8 +1577,6 @@ public class DatabaseStore {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
             } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
-            } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad) {
-                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
             } else {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and `_platform` = ? and `_cid` <> ? and `_deleted` = 0";
             }
@@ -1600,9 +1598,6 @@ public class DatabaseStore {
             } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
                 statement.setInt(index++, ProtoConstants.Platform.Platform_iOS);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_Android);
-            } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad) {
-                statement.setInt(index++, ProtoConstants.Platform.Platform_iPad);
-                statement.setInt(index++, ProtoConstants.Platform.Platform_APad);
             } else {
                 statement.setInt(index++, platform);
             }

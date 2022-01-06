@@ -407,10 +407,6 @@ public class MemorySessionStore implements ISessionsStore {
                             if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_LINUX) {
                                 remove = true;
                             }
-                        } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad) {
-                            if (s.getPlatform() == ProtoConstants.Platform.Platform_iPad || s.getPlatform() == ProtoConstants.Platform.Platform_APad) {
-                                remove = true;
-                            }
                         } else {
                             if (s.getPlatform() ==platform) {
                                 remove = true;
@@ -733,11 +729,9 @@ public class MemorySessionStore implements ISessionsStore {
                 return ErrorCode.ERROR_CODE_SUCCESS;
             }
             if (session.getPlatform() == ProtoConstants.Platform.Platform_LINUX
+                || session.getPlatform() == ProtoConstants.Platform.Platform_WEB
                 || session.getPlatform() == ProtoConstants.Platform.Platform_Windows
-                || session.getPlatform() == ProtoConstants.Platform.Platform_OSX
-                || session.getPlatform() == ProtoConstants.Platform.Platform_iPad
-                || session.getPlatform() == ProtoConstants.Platform.Platform_APad
-            ) {
+                || session.getPlatform() == ProtoConstants.Platform.Platform_OSX) {
                 databaseStore.updateSessionDeleted(operator, pcClientId, 1);
                 sessions.remove(pcClientId);
                 mServer.getProcessor().kickoffSession(session);
