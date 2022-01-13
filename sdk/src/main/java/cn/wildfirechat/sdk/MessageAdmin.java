@@ -37,6 +37,17 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, deleteMessageData, Void.class);
     }
 
+    public static IMResult<Void> updateMessageContent(String operator, long messageUid, MessagePayload payload, boolean distribute) throws Exception {
+        String path = APIPath.Msg_Update;
+        UpdateMessageContentData updateMessageContentData = new UpdateMessageContentData();
+        updateMessageContentData.setOperator(operator);
+        updateMessageContentData.setMessageUid(messageUid);
+        updateMessageContentData.setPayload(payload);
+        updateMessageContentData.setDistribute(distribute?1:0);
+        updateMessageContentData.setUpdateTimestamp(0);
+        return AdminHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
+    }
+
 
 
     /**

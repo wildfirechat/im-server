@@ -664,6 +664,24 @@ public class Main {
                 System.exit(-1);
             }
 
+            payload.setSearchableContent("hello world2");
+            resultSendMessage = MessageAdmin.sendMessage("user1", conversation, payload, null);
+            if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("send message success");
+            } else {
+                System.out.println("send message failure");
+                System.exit(-1);
+            }
+
+            payload.setSearchableContent("hello world3");
+            voidIMResult = MessageAdmin.updateMessageContent("user1", resultSendMessage.getResult().getMessageUid(), payload, true);
+            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("update message success");
+            } else {
+                System.out.println("update message failure");
+                System.exit(-1);
+            }
+
             IMResult<BroadMessageResult> resultBroadcastMessage = MessageAdmin.broadcastMessage("user1", 0, payload);
             if (resultBroadcastMessage != null && resultBroadcastMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("broad message success, send message to " + resultBroadcastMessage.getResult().getCount() + " users");
