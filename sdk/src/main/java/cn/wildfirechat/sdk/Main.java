@@ -269,6 +269,24 @@ public class Main {
             System.out.println("destroy user failure");
             System.exit(-1);
         }
+
+        if (commercialServer) {
+            IMResult<GetOnlineUserCountResult> getOnlineUserCountResultIMResult = UserAdmin.getOnlineUserCount();
+            if (getOnlineUserCountResultIMResult != null && getOnlineUserCountResultIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("get user online count success");
+            } else {
+                System.out.println("get user online count failure");
+                System.exit(-1);
+            }
+
+            IMResult<GetOnlineUserResult> getOnlineUserResultIMResult = UserAdmin.getOnlineUser(1, 0, 100);
+            if (getOnlineUserResultIMResult != null && getOnlineUserResultIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("get user online success");
+            } else {
+                System.out.println("get user online failure");
+                System.exit(-1);
+            }
+        }
     }
 
     //***********************************************

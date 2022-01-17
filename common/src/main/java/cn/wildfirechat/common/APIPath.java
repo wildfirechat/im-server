@@ -32,6 +32,8 @@ public interface APIPath {
     String User_Put_Setting = "/admin/user/put_setting";
     String User_Get_Setting = "/admin/user/get_setting";
     String User_Kickoff_Client = "/admin/user/kickoff_client";
+    String User_Online_Count = "/admin/user/online_count";
+    String User_Online_List = "/admin/user/online_list";
 
     String Friend_Update_Status = "/admin/friend/status";
     String Friend_Get_List = "/admin/friend/list";

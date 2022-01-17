@@ -117,4 +117,16 @@ public class UserAdmin {
         inputUserId.setUserId(userId);
         return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputDeviceList.class);
     }
+
+    public static IMResult<GetOnlineUserCountResult> getOnlineUserCount() throws Exception {
+        return AdminHttpUtils.httpJsonPost(APIPath.User_Online_Count, null, GetOnlineUserCountResult.class);
+    }
+
+    public static IMResult<GetOnlineUserResult> getOnlineUser(int nodeId, int offset, int count) throws Exception {
+        GetOnlineUserRequest request = new GetOnlineUserRequest();
+        request.nodeId = nodeId;
+        request.offset = offset;
+        request.count = count;
+        return AdminHttpUtils.httpJsonPost(APIPath.User_Online_List, request, GetOnlineUserResult.class);
+    }
 }
