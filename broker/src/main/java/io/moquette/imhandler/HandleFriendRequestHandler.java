@@ -28,7 +28,7 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.HandleFriendRequest request, Qos1PublishHandler.IMCallback callback) {
             WFCMessage.Message.Builder builder = WFCMessage.Message.newBuilder();
             builder.setFromUser(request.getTargetUid());
-            long[] heads = new long[2];
+            long[] heads = new long[4];
             boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
             ErrorCode errorCode = m_messagesStore.handleFriendRequest(fromUser, request, builder, heads, isAdmin);
 
@@ -83,6 +83,14 @@ public class HandleFriendRequestHandler extends IMHandler<WFCMessage.HandleFrien
                 if (request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted || isAdmin) {
                     publisher.publishNotification(IMTopic.NotifyFriendTopic, request.getTargetUid(), heads[0]);
                     publisher.publishNotification(IMTopic.NotifyFriendTopic, fromUser, heads[1]);
+                }
+                if(!isAdmin) {
+                    if(heads[2] > 0) {
+                        publisher.publishNotification(IMTopic.NotifyFriendRequestTopic, request.getTargetUid(), heads[2], fromUser, null);
+                    }
+                    if(heads[3] > 0) {
+                        publisher.publishNotification(IMTopic.NotifyFriendRequestTopic, fromUser, heads[3], fromUser, null);
+                    }
                 }
             }
             if(errorCode == ERROR_CODE_ALREADY_FRIENDS) {

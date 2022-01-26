@@ -3033,6 +3033,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 return ErrorCode.ERROR_CODE_FRIEND_REQUEST_EXPIRED;
             } else {
                 existRequest = existRequest.toBuilder().setStatus(request.getStatus()).setUpdateDt(System.currentTimeMillis()).build();
+                heads[2] = existRequest.getUpdateDt();
                 databaseStore.persistOrUpdateFriendRequest(existRequest);
 
                 if (request.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Accepted) {
@@ -3051,6 +3052,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
                     if (existTargetRequest != null && existTargetRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Sent) {
                         existTargetRequest = existTargetRequest.toBuilder().setStatus(request.getStatus()).setUpdateDt(existRequest.getUpdateDt()).build();
+                        heads[3] = existRequest.getUpdateDt();
                         databaseStore.persistOrUpdateFriendRequest(existTargetRequest);
                     }
                 }
