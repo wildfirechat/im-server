@@ -860,6 +860,7 @@ public class Main {
             System.exit(-1);
         }
 
+        Thread.sleep(1000);
         getChatroomInfoIMResult = ChatroomAdmin.getChatroomInfo(chatroomId);
         if (getChatroomInfoIMResult != null && getChatroomInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && getChatroomInfoIMResult.getResult().getState() == ProtoConstants.ChatroomState.Chatroom_State_End) {
             System.out.println("chatroom destroyed!");
