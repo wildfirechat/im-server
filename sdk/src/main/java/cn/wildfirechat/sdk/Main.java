@@ -20,6 +20,7 @@ import static cn.wildfirechat.proto.ProtoConstants.SystemSettingType.Group_Max_M
 
 public class Main {
     private static boolean commercialServer = false;
+    private static boolean advanceVoip = false;
     //管理端口是8080
     private static String AdminUrl = "http://localhost:18080";
     private static String AdminSecret = "123456";
@@ -51,6 +52,8 @@ public class Main {
         testSensitiveApi();
         if (commercialServer) {
             testDevice();
+        }
+        if(advanceVoip) {
             testConference();
         }
 
@@ -1522,7 +1525,7 @@ public class Main {
             System.out.println("conference list " + listResult.getResult().conferenceInfoList);
         }
 
-        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 9, false, 0, false);
+        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 9, false, 0, false, true);
         if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create conference failure");
             System.exit(-1);
@@ -1530,7 +1533,7 @@ public class Main {
             System.out.println("create conference");
         }
 
-        createResult = ConferenceAdmin.createRoom("helloroomid2", "hello room description advanced", "123456", 20, true, 0, false);
+        createResult = ConferenceAdmin.createRoom("helloroomid2", "hello room description advanced", "123456", 20, true, 0, false, true);
         if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create conference failure");
             System.exit(-1);

@@ -8,4 +8,5 @@ public class PojoConferenceCreate {
     public int bitrate;
     public boolean advance;
     public boolean recording;
+    public boolean permanent;
 }

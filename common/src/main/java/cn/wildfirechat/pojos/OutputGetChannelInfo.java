@@ -19,12 +19,11 @@ public class OutputGetChannelInfo {
     private String extra;
     private String owner;
     private int state;
-    //此字段已经废弃，为了兼容旧的SDK版本，以后会移除
-    @Deprecated()
     private int status;
     private long updateDt;
     private String callback;
     private int automatic;
+    private String secret;
 
 
     public String getChannelId() {
@@ -115,6 +114,14 @@ public class OutputGetChannelInfo {
         this.status = status;
     }
 
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
     public static OutputGetChannelInfo fromPbInfo(WFCMessage.ChannelInfo channelInfo) {
         OutputGetChannelInfo out = new OutputGetChannelInfo();
         out.automatic = channelInfo.getAutomatic();
@@ -126,8 +133,9 @@ public class OutputGetChannelInfo {
         out.owner = channelInfo.getOwner();
         out.portrait = channelInfo.getPortrait();
         out.state = channelInfo.getStatus();
-        out.status = out.state;
+        out.status = channelInfo.getStatus();;
         out.updateDt = channelInfo.getUpdateDt();
+        out.secret = channelInfo.getSecret();
         return out;
     }
 }

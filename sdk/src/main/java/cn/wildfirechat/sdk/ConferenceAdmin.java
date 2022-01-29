@@ -17,7 +17,7 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, data, PojoConferenceParticipantList.class);
     }
 
-    public static IMResult<Void> createRoom(String roomId, String description, String pin, int maxPublisher, boolean advance, int bitrate, boolean recording) throws Exception {
+    public static IMResult<Void> createRoom(String roomId, String description, String pin, int maxPublisher, boolean advance, int bitrate, boolean recording, boolean permanent) throws Exception {
         String path = APIPath.Conference_Create;
         PojoConferenceCreate create = new PojoConferenceCreate();
         create.roomId = roomId;
@@ -27,6 +27,7 @@ public class ConferenceAdmin {
         create.advance = advance;
         create.bitrate = bitrate;
         create.recording = recording;
+        create.permanent = permanent;
         return AdminHttpUtils.httpJsonPost(path, create, Void.class);
     }
 

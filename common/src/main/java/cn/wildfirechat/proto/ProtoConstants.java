@@ -129,7 +129,7 @@ public class ProtoConstants {
     //第3位表示是否允许给非订阅用户发送消息
     //第4位表示是否私有，不可以被用户搜索和主动订阅
     //第6位表示是否删除
-    //第8位表示是否是全局频道，全局频道没有订阅关系，会发送给系统内所有成员。
+    //第8位表示是否是全局频道，全局频道没有订阅关系，会发送给系统内所有成员。可以给非订阅用户单独发消息。
     public interface ChannelState {
         int Channel_State_Mask_FullInfo = 0x01;
         int Channel_State_Mask_Unsubscribed_User_Access = 0x02;
