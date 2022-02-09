@@ -553,7 +553,7 @@ public class DatabaseStore {
                 statement.setInt(index++, message.getContent().getType());
                 String to = message.getToUser();
                 if (StringUtil.isNullOrEmpty(message.getToUser())) {
-                    if (message.getToList()!= null && message.getToList().size() == 1) {
+                    if (message.getToList().size() > 0) {
                         to = message.getToList().get(0);
                     }
                 }
