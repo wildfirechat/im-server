@@ -48,6 +48,7 @@ public enum ErrorCode {
     ERROR_CODE_ROBOT_NO_TOKEN(27, "robot no token"),
     ERROR_CODE_WS_NOT_CONFIGURED_CORRECTLY(28, "ws not configured correctly"),
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
+    ERROR_CODE_CONFERENCE_SERVICE_NOT_AVAILABLE(61, "conference service not available"),
 
     ERROR_CODE_CHANNEL_NO_EXIST(236, "channel no exist"),
     ERROR_CODE_CHANNEL_NO_SECRET(237, "channel no secret"),
