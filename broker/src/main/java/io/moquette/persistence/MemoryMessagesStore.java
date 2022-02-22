@@ -2077,6 +2077,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (!canRecall) {
                 return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
+            
+            if(message.getContent().getType() == 80) {
+                return ErrorCode.ERROR_CODE_SUCCESS;
+            }
 
             JSONObject json = new JSONObject();
             json.put("s", message.getFromUser());
