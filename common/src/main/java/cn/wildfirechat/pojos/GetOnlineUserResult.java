@@ -9,7 +9,7 @@ public class GetOnlineUserResult {
         public int platform;
     }
 
-    ArrayList<GetOnlineUserResult.UserClient> userClients;
+    public ArrayList<GetOnlineUserResult.UserClient> userClients;
     public int totalCount;
     public int offset;
 }
