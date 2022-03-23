@@ -620,15 +620,19 @@ public class ProtocolProcessor {
         String username = NettyUtils.userName(channel);
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
-            session.refreshLastActiveTime();
-            forwardOnlineStatusEvent(username, clientID, session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
+            processOffline(session, clearSession);
         }
 
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
         if(connectionDescriptors.removeConnection(oldConnDescr)) {
             m_interceptor.notifyClientConnectionLost(clientID, username);
         }
+    }
+
+    public void processOffline(MemorySessionStore.Session session, boolean clearSession) {
         if(session != null) {
+            session.refreshLastActiveTime();
+            forwardOnlineStatusEvent(session.getUsername(), session.getClientID(), session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
             m_messagesStore.updateUserOnlineSetting(session, false);
         }
     }
