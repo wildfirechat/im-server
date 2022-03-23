@@ -751,7 +751,7 @@ public class MemorySessionStore implements ISessionsStore {
     public void disableSession(String userId, String clientId) {
         Session session = sessions.get(clientId);
         if (session != null && session.getDeleted() == 0 && (userId == null || session.getUsername().equals(userId))) {
-            mServer.getProcessor().processOffline(session, false);
+            mServer.getProcessor().processOffline(session, false, null);
             databaseStore.updateSessionDeleted(session.getUsername(), clientId, 1);
             ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
             sessionSet.remove(clientId);
@@ -773,7 +773,7 @@ public class MemorySessionStore implements ISessionsStore {
             return;
         }
 
-        mServer.getProcessor().processOffline(session, true);
+        mServer.getProcessor().processOffline(session, true, null);
         ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
         sessionSet.remove(clientID);
 
