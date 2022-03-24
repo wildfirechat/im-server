@@ -637,10 +637,10 @@ public class ProtocolProcessor {
         }
     }
 
-    public void processOffline(MemorySessionStore.Session session, boolean clearSession, Runnable runnable) {
+    public void processOffline(MemorySessionStore.Session session, boolean logout, Runnable runnable) {
         if(session != null) {
             session.refreshLastActiveTime();
-            forwardOnlineStatusEvent(session.getUsername(), session.getClientID(), session.getPlatform(), clearSession ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
+            forwardOnlineStatusEvent(session.getUsername(), session.getClientID(), session.getPlatform(), logout ? UserOnlineStatus.LOGOUT : UserOnlineStatus.OFFLINE, session.getAppName());
             if(runnable != null) {
                 runnable.run();
             }
