@@ -620,13 +620,10 @@ public class ProtocolProcessor {
         String username = NettyUtils.userName(channel);
         MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
         if(session != null) {
-            processOffline(session, clearSession, new Runnable() {
-                @Override
-                public void run() {
-                    ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
-                    if(connectionDescriptors.removeConnection(oldConnDescr)) {
-                        m_interceptor.notifyClientConnectionLost(clientID, username);
-                    }
+            processOffline(session, clearSession, () -> {
+                ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
+                if(connectionDescriptors.removeConnection(oldConnDescr)) {
+                    m_interceptor.notifyClientConnectionLost(clientID, username);
                 }
             });
         } else {

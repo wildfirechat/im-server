@@ -751,11 +751,12 @@ public class MemorySessionStore implements ISessionsStore {
     public void disableSession(String userId, String clientId) {
         Session session = sessions.get(clientId);
         if (session != null && session.getDeleted() == 0 && (userId == null || session.getUsername().equals(userId))) {
-            mServer.getProcessor().processOffline(session, true, null);
-            databaseStore.updateSessionDeleted(session.getUsername(), clientId, 1);
-            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
-            sessionSet.remove(clientId);
-            sessions.remove(clientId);
+            mServer.getProcessor().processOffline(session, true, () -> {
+                databaseStore.updateSessionDeleted(session.getUsername(), clientId, 1);
+                ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
+                sessionSet.remove(clientId);
+                sessions.remove(clientId);
+            });
         }
     }
 
@@ -773,24 +774,25 @@ public class MemorySessionStore implements ISessionsStore {
             return;
         }
 
-        mServer.getProcessor().processOffline(session, true, null);
-        ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
-        sessionSet.remove(clientID);
+        mServer.getProcessor().processOffline(session, true, () -> {
+            ConcurrentSkipListSet<String> sessionSet = getUserSessionSet(session.username);
+            sessionSet.remove(clientID);
 
-        // remove also the messages stored of type QoS1/2
-        LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", clientID);
+            // remove also the messages stored of type QoS1/2
+            LOG.info("Removing stored messages with QoS 1 and 2. ClientId={}", clientID);
 
-        session.secondPhaseStore.clear();
-        session.outboundFlightMessages.clear();
-        session.inboundFlightMessages.clear();
+            session.secondPhaseStore.clear();
+            session.outboundFlightMessages.clear();
+            session.inboundFlightMessages.clear();
 
-        LOG.info("Wiping existing subscriptions. ClientId={}", clientID);
+            LOG.info("Wiping existing subscriptions. ClientId={}", clientID);
 
-        //remove also the enqueued messages
-        dropQueue(clientID);
+            //remove also the enqueued messages
+            dropQueue(clientID);
 
-        // TODO this missing last step breaks the junit test
-        sessions.remove(clientID);
+            // TODO this missing last step breaks the junit test
+            sessions.remove(clientID);
+        });
     }
     @Override
     public boolean isMultiEndpointSupported() {
