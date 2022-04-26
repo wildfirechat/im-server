@@ -34,8 +34,8 @@ public class Main {
         testAdmin();
 
         //Robot和Channel都是使用的80端口，第三方可以创建或者为第三方创建，第三方可以使用robot或者channel与IM系统进行对接。
-        testRobot();
-        testChannel();
+//        testRobot();
+//        testChannel();
     }
 
 
@@ -43,19 +43,19 @@ public class Main {
         //初始化服务API
         AdminConfig.initAdmin(AdminUrl, AdminSecret);
 
-        testUser();
-        testUserRelation();
-        testGroup();
-        testChatroom();
+//        testUser();
+//        testUserRelation();
+//        testGroup();
+//        testChatroom();
         testMessage();
-        testGeneralApi();
-        testSensitiveApi();
-        if (commercialServer) {
-            testDevice();
-        }
-        if(advanceVoip) {
-            testConference();
-        }
+//        testGeneralApi();
+//        testSensitiveApi();
+//        if (commercialServer) {
+//            testDevice();
+//        }
+//        if(advanceVoip) {
+//            testConference();
+//        }
 
         System.out.println("Congratulation, all admin test case passed!!!!!!!");
     }
@@ -667,6 +667,13 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputMessageData> outputMessageDataIMResult = MessageAdmin.getMessage(resultSendMessage.result.getMessageUid());
+        if(outputMessageDataIMResult != null && outputMessageDataIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && outputMessageDataIMResult.getResult().getMessageId() == resultSendMessage.getResult().getMessageUid()) {
+            System.out.println("get message success");
+        } else {
+            System.out.println("get message failure");
+            System.exit(-1);
+        }
 
         IMResult<Void> voidIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {

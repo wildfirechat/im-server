@@ -48,7 +48,17 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
     }
 
-
+    /**
+     * 获取单条消息。如果想要更多消息的读取，可以直接读取IM服务的数据库。
+     * @param messageUid
+     * @return
+     * @throws Exception
+     */
+    public static IMResult<OutputMessageData> getMessage(long messageUid) throws Exception {
+        String path = APIPath.Msg_GetOne;
+        InputMessageUid inputMessageUid = new InputMessageUid(messageUid);
+        return AdminHttpUtils.httpJsonPost(path, inputMessageUid, OutputMessageData.class);
+    }
 
     /**
      * 撤回群发或者广播的消息
