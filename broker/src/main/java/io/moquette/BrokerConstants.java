@@ -160,6 +160,8 @@ public final class BrokerConstants {
     public static final String GROUP_Visible_Quit_Kickoff_Notification = "group.visible_quit_or_kickoff_notification";
 
     public static final String USER_HIDE_PROPERTIES = "user.hide_properties";
+    public static final String USER_KEEP_DISPLAY_NAME_WHEN_DESTROY = "user.keep_display_name_when_destroy";
+
     public static final String SYNC_Data_Part_Size = "sync.data_part_size";
 
     public static final String MESSAGES_FORBIDDEN_CLIENT_SEND_TYPES = "message.forbidden_client_send_types";

@@ -160,6 +160,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mGroupAllowRobotCustomOperationNotification;
     private int mGroupVisibleQuitKickoffNotification;
     private int mSyncDataPartSize = 0;
+    private boolean keepDisplayNameWhenDestroyUser = true;
 
     private Set<Integer> mUserHideProperties = new HashSet<>();
 
@@ -416,6 +417,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mSyncDataPartSize = Integer.parseInt(server.getConfig().getProperty(SYNC_Data_Part_Size, "0"));
+        } catch (Exception e) {
+
+        }
+        try {
+            keepDisplayNameWhenDestroyUser = Boolean.parseBoolean(server.getConfig().getProperty(USER_KEEP_DISPLAY_NAME_WHEN_DESTROY, "true"));
         } catch (Exception e) {
 
         }
@@ -2487,25 +2493,41 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void destoryUser(String userId) {
+    public void destroyUser(String userId) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
         WFCMessage.User us = mUserMap.get(userId);
         if (us != null) {
-            us = WFCMessage.User.newBuilder()
-                .setUid(userId)
-                .setUpdateDt(System.currentTimeMillis())
-                .setName(userId)
-                .setDeleted(1)
-                .clearDisplayName()
-                .clearAddress()
-                .clearCompany()
-                .clearEmail()
-                .clearExtra()
-                .clearMobile()
-                .clearPortrait()
-                .clearSocial()
-                .build();
+            if (keepDisplayNameWhenDestroyUser) {
+                us = WFCMessage.User.newBuilder()
+                    .setUid(userId)
+                    .setUpdateDt(System.currentTimeMillis())
+                    .setName(userId)
+                    .setDeleted(1)
+                    .clearAddress()
+                    .clearCompany()
+                    .clearEmail()
+                    .clearExtra()
+                    .clearMobile()
+                    .clearPortrait()
+                    .clearSocial()
+                    .build();
+            } else {
+                us = WFCMessage.User.newBuilder()
+                    .setUid(userId)
+                    .setUpdateDt(System.currentTimeMillis())
+                    .setName(userId)
+                    .setDeleted(1)
+                    .clearDisplayName()
+                    .clearAddress()
+                    .clearCompany()
+                    .clearEmail()
+                    .clearExtra()
+                    .clearMobile()
+                    .clearPortrait()
+                    .clearSocial()
+                    .build();
+            }
 
             try {
                 databaseStore.updateUser(us);

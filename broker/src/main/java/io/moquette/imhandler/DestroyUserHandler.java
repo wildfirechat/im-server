@@ -11,9 +11,7 @@ package io.moquette.imhandler;
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
-import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
-import io.moquette.spi.impl.security.TokenAuthenticator;
 import io.netty.buffer.ByteBuf;
 import win.liyufan.im.IMTopic;
 
@@ -30,7 +28,7 @@ public class DestroyUserHandler extends IMHandler<WFCMessage.IDBuf> {
                 m_messagesStore.clearUserFriend(fromUser);
                 m_messagesStore.clearUserGroups(fromUser);
                 m_messagesStore.clearUserChannels(fromUser);
-                m_messagesStore.destoryUser(fromUser);
+                m_messagesStore.destroyUser(fromUser);
 
                 m_messagesStore.destroyRobot(fromUser);
             });
