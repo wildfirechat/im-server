@@ -28,7 +28,7 @@ public enum ErrorCode {
     ERROR_CODE_INVALID_MESSAGE(10, "invalid message"),
 
     //Group error
-    ERROR_CODE_GROUP_ALREADY_EXIST(11, "group aleady exist"),
+    ERROR_CODE_GROUP_ALREADY_EXIST(11, "group already exist"),
 
     //user error
     ERROR_CODE_FRIEND_ALREADY_REQUEST(16, "already send request"),
@@ -49,6 +49,17 @@ public enum ErrorCode {
     ERROR_CODE_WS_NOT_CONFIGURED_CORRECTLY(28, "ws not configured correctly"),
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
     ERROR_CODE_CONFERENCE_SERVICE_NOT_AVAILABLE(61, "conference service not available"),
+
+
+    ERROR_CODE_SECRET_CHAT_ACCEPTED_BY_OTHER_CLIENT(81, "secret chat accepted by other client"),
+    ERROR_CODE_SECRET_CHAT_SESSION_NOT_EXIST(82, "secret chat session not exist"),
+    ERROR_CODE_SECRET_CHAT_NOT_SESSION_CLIENT(83, "not secret chat session client"),
+    ERROR_CODE_SECRET_CHAT_SESSION_NOT_READY(84, "secret chat session not ready"),
+    ERROR_CODE_SECRET_CHAT_SESSION_DESTROYED(85, "secret chat session destroyed"),
+    ERROR_CODE_SECRET_CHAT_MO_DISABLED(86, "origin side disable secret chat"),
+    ERROR_CODE_SECRET_CHAT_MT_DISABLED(87, "target side disable secret chat"),
+
+    ERROR_CODE_FUNCTION_DISABLED(220, "function disabled"),
 
     ERROR_CODE_CHANNEL_NO_EXIST(236, "channel no exist"),
     ERROR_CODE_CHANNEL_NO_SECRET(237, "channel no secret"),
