@@ -1142,23 +1142,21 @@ public class DatabaseStore {
         try {
             connection = DBUtil.getConnection();
 
-            StringBuilder sb = new StringBuilder("delete from t_user_setting where _scope in (1,3,5,7) and _uid in (");
+            StringBuilder sb = new StringBuilder("delete from t_user_setting where _scope in (1,3,5,6,7,19) and _uid in (");
             for (int i = 0; i < users.size(); i++) {
                 sb.append("?");
                 if (i != users.size() - 1) {
                     sb.append(",");
                 }
             }
-            sb.append(") and _key like '1-_-");
-            sb.append(groupId);
-            sb.append("'");
-
+            sb.append(") and _key like ?");
 
             statement = connection.prepareStatement(sb.toString());
             int index = 1;
             for (String userId:users) {
                 statement.setString(index++, userId);
             }
+            statement.setString(index++, "1-_-" + groupId);
 
             int count = statement.executeUpdate();
             LOG.info("Update rows {}", count);
