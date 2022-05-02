@@ -3773,14 +3773,13 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
-        getChannelListener(channelId);
-
-        if (listen) {
-            listeners.put(channelId, operator);
-        } else {
-            listeners.remove(channelId, operator);
+        try {
+            mWriteLock.lock();
+            databaseStore.updateChannelListener(channelId, operator, listen);
+            listeners.remove(channelId);
+        } finally {
+            mWriteLock.unlock();
         }
-        databaseStore.updateChannelListener(channelId, operator, listen);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -3790,9 +3789,14 @@ public class MemoryMessagesStore implements IMessagesStore {
         MultiMap<String, String> listeners = hzInstance.getMultiMap(CHANNEL_LISTENERS);
         Collection<String> result = listeners.get(channelId);
         if (result.isEmpty()) {
-            result = databaseStore.getChannelListener(channelId);
-            for (String userId : result) {
-                listeners.put(channelId, userId);
+            try {
+                mWriteLock.lock();
+                result = databaseStore.getChannelListener(channelId);
+                for (String userId : result) {
+                    listeners.put(channelId, userId);
+                }
+            } finally {
+                mWriteLock.unlock();
             }
         }
         return result;
@@ -3821,12 +3825,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         Collection<String> channelMembers = getChannelListener(channelId);
-        if (channelMembers == null) {
-            return false;
-        }
-
-        Collection<String> chatroomMembers = getChannelListener(channelId);
-        if (chatroomMembers == null || !chatroomMembers.contains(user)) {
+        if (channelMembers == null || !channelMembers.contains(user)) {
             return false;
         }
 
@@ -3852,12 +3851,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public Collection<String> getChannelSubscriber(String channelId) {
-        MultiMap<String, String> channelMembers = m_Server.getHazelcastInstance().getMultiMap(CHANNEL_LISTENERS);
-        if (channelMembers == null) {
-            return new ArrayList<>();
-        }
-
-        return channelMembers.get(channelId);
+        return getChannelListener(channelId);
     }
 
     @Override
