@@ -9,28 +9,28 @@ import java.util.List;
 
 //仅专业版支持，社区版不支持
 public class ChannelServiceApi {
-    private final ChannelHttpUtils httpUtils;
+    private final ChannelHttpUtils channelHttpUtils;
 
     public ChannelServiceApi(String imurl, String channelId, String secret) {
-        httpUtils = new ChannelHttpUtils(imurl, channelId, secret);
+        channelHttpUtils = new ChannelHttpUtils(imurl, channelId, secret);
     }
 
     public IMResult<InputOutputUserInfo> getUserInfo(String userId) throws Exception {
         String path = APIPath.Channel_User_Info;
         InputGetUserInfo getUserInfo = new InputGetUserInfo(userId, null, null);
-        return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+        return channelHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
     public IMResult<InputOutputUserInfo> getUserInfoByName(String userName) throws Exception {
         String path = APIPath.Channel_User_Info;
         InputGetUserInfo getUserInfo = new InputGetUserInfo(null, userName, null);
-        return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+        return channelHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
     public IMResult<InputOutputUserInfo> getUserInfoByMobile(String mobile) throws Exception {
         String path = APIPath.Channel_User_Info;
         InputGetUserInfo getUserInfo = new InputGetUserInfo(null, null, mobile);
-        return httpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+        return channelHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
     public IMResult<Void> modifyChannelInfo(/*ProtoConstants.ModifyChannelInfoType*/int type, String value) throws Exception {
@@ -38,12 +38,12 @@ public class ChannelServiceApi {
         InputModifyChannelInfo modifyChannelInfo = new InputModifyChannelInfo();
         modifyChannelInfo.setType(type);
         modifyChannelInfo.setValue(value);
-        return httpUtils.httpJsonPost(path, modifyChannelInfo, Void.class);
+        return channelHttpUtils.httpJsonPost(path, modifyChannelInfo, Void.class);
     }
 
     public IMResult<OutputGetChannelInfo> getChannelInfo() throws Exception {
         String path = APIPath.Channel_Get_Profile;
-        return httpUtils.httpJsonPost(path, null, OutputGetChannelInfo.class);
+        return channelHttpUtils.httpJsonPost(path, null, OutputGetChannelInfo.class);
     }
 
     public IMResult<SendMessageResult> sendMessage(int line, List<String> targets, MessagePayload payload) throws Exception {
@@ -52,7 +52,7 @@ public class ChannelServiceApi {
         messageData.setLine(0);
         messageData.setTargets(targets);
         messageData.setPayload(payload);
-        return httpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
+        return channelHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
     public IMResult<Void> subscribe(String userId) throws Exception {
@@ -60,7 +60,7 @@ public class ChannelServiceApi {
         InputChannelSubscribe input = new InputChannelSubscribe();
         input.setTarget(userId);
         input.setSubscribe(1);
-        return httpUtils.httpJsonPost(path, input, Void.class);
+        return channelHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
     public IMResult<Void> unsubscribe(String userId) throws Exception {
@@ -68,12 +68,20 @@ public class ChannelServiceApi {
         InputChannelSubscribe input = new InputChannelSubscribe();
         input.setTarget(userId);
         input.setSubscribe(0);
-        return httpUtils.httpJsonPost(path, input, Void.class);
+        return channelHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
     public IMResult<OutputStringList> getSubscriberList() throws Exception {
         String path = APIPath.Channel_Subscriber_List;
-        return httpUtils.httpJsonPost(path, null, OutputStringList.class);
+        return channelHttpUtils.httpJsonPost(path, null, OutputStringList.class);
+    }
+
+
+    public IMResult<OutputVerifyApplicationUserInfo> verifyApplicationUserInfo(String token) throws Exception {
+        String path = APIPath.Channel_Verify_Application_UserInfo;
+        InputVerifyApplicationUserInfo input = new InputVerifyApplicationUserInfo();
+        input.setToken(token);
+        return channelHttpUtils.httpJsonPost(path, input, OutputVerifyApplicationUserInfo.class);
     }
 
 }

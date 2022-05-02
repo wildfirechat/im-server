@@ -31,6 +31,7 @@ import io.moquette.server.Constants;
 import io.moquette.server.Server;
 import io.moquette.spi.IMatchingCondition;
 import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.impl.security.AES;
 import io.moquette.spi.security.Tokenor;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -61,6 +62,7 @@ import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static cn.wildfirechat.proto.ProtoConstants.Platform.*;
 import static cn.wildfirechat.proto.ProtoConstants.UpdateUserInfoMask.*;
 import static io.moquette.BrokerConstants.*;
+import static io.moquette.BrokerConstants.APPLICATION_SECRET_KEY;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static cn.wildfirechat.pojos.MyInfoType.*;
@@ -163,6 +165,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean keepDisplayNameWhenDestroyUser = true;
 
     private Set<Integer> mUserHideProperties = new HashSet<>();
+
+    private String mApplicationSecretKey;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -442,6 +446,15 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
         }
 
+        try {
+            mApplicationSecretKey = server.getConfig().getProperty(APPLICATION_SECRET_KEY, "wfcapp1290secretkey");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        while (StringUtil.isNullOrEmpty(mApplicationSecretKey) || mApplicationSecretKey.length() < 16) {
+            mApplicationSecretKey += "w";
+            mApplicationSecretKey += mApplicationSecretKey;
+        }
 
     }
 
@@ -3300,6 +3313,36 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
         return true;
     }
+
+    @Override
+    public String getApplicationToken(String fromUser, String applicationId) {
+        byte[] token = AES.AESEncrypt(fromUser + "?|?" + System.currentTimeMillis() + "?|?" + applicationId, mApplicationSecretKey);
+        return new String(Base64.getEncoder().encode(token));
+    }
+
+    @Override
+    public String verifyApplicationToken(String token, String applicationId) {
+        byte[] data = Base64.getDecoder().decode(token);
+        data = AES.AESDecrypt(data, mApplicationSecretKey, true);
+
+        if (data == null || data.length == 0) {
+            return null;
+        } else {
+            String str = new String(data);
+            String[] strArr = str.split("\\?\\|\\?");
+            if (strArr.length == 3) {
+                if (applicationId.equals(strArr[2])) {
+                    long timestamp= Long.parseLong(strArr[1]);
+                    if(System.currentTimeMillis() - timestamp > 60*1000) {
+                        return null;
+                    }
+                    return strArr[0];
+                }
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public boolean isNewFriendWelcomeMessage() {

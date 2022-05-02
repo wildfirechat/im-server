@@ -8,14 +8,14 @@
 
 package cn.wildfirechat.pojos;
 
-public class OutputVerifyApplicationUser {
-    private String userId;
+public class InputVerifyApplicationUserInfo {
+    private String token;
 
-    public String getUserId() {
-        return userId;
+    public String getToken() {
+        return token;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setToken(String token) {
+        this.token = token;
     }
 }

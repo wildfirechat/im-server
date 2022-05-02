@@ -1328,58 +1328,54 @@ public class Main {
         ChannelServiceApi channelServiceApi = new ChannelServiceApi(IMUrl, resultCreateChannel.getResult().getTargetId(), secret);
 
 
-
-        if (commercialServer) {
-            //3. 测试channel api功能
-            IMResult<Void> resultVoid = channelServiceApi.subscribe("userId2");
-            if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("subscribe success");
-            } else {
-                System.out.println("subscribe failure");
-                System.exit(-1);
-            }
-
-            resultVoid = channelServiceApi.subscribe("userId3");
-            if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("subscribe done");
-            } else {
-                System.out.println("subscribe failure");
-                System.exit(-1);
-            }
-
-            IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
-            if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3")) {
-                System.out.println("get subscriber done");
-            } else {
-                System.out.println("get subscriber failure");
-                System.exit(-1);
-            }
-
-            resultVoid = channelServiceApi.unsubscribe("userId2");
-            if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("unsubscriber done");
-            } else {
-                System.out.println("unsubscriber failure");
-                System.exit(-1);
-            }
-
-            resultStringList = channelServiceApi.getSubscriberList();
-            if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId3") && !resultStringList.getResult().getList().contains("userId2")) {
-                System.out.println("get subscriber done");
-            } else {
-                System.out.println("get subscriber failure");
-                System.exit(-1);
-            }
-
-            IMResult<InputOutputUserInfo> resultGetUserInfo1 = channelServiceApi.getUserInfo("userId3");
-            if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("get user info success");
-            } else {
-                System.out.println("get user info failure");
-                System.exit(-1);
-            }
+        //3. 测试channel api功能
+        IMResult<Void> resultVoid = channelServiceApi.subscribe("userId2");
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("subscribe success");
+        } else {
+            System.out.println("subscribe failure");
+            System.exit(-1);
         }
 
+        resultVoid = channelServiceApi.subscribe("userId3");
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("subscribe done");
+        } else {
+            System.out.println("subscribe failure");
+            System.exit(-1);
+        }
+
+        IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3")) {
+            System.out.println("get subscriber done");
+        } else {
+            System.out.println("get subscriber failure");
+            System.exit(-1);
+        }
+
+        resultVoid = channelServiceApi.unsubscribe("userId2");
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("unsubscriber done");
+        } else {
+            System.out.println("unsubscriber failure");
+            System.exit(-1);
+        }
+
+        resultStringList = channelServiceApi.getSubscriberList();
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId3") && !resultStringList.getResult().getList().contains("userId2")) {
+            System.out.println("get subscriber done");
+        } else {
+            System.out.println("get subscriber failure");
+            System.exit(-1);
+        }
+
+        IMResult<InputOutputUserInfo> resultGetUserInfo1 = channelServiceApi.getUserInfo("userId3");
+        if (resultGetUserInfo1 != null && resultGetUserInfo1.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get user info success");
+        } else {
+            System.out.println("get user info failure");
+            System.exit(-1);
+        }
 
         MessagePayload payload = new MessagePayload();
         payload.setType(1);
@@ -1403,22 +1399,20 @@ public class Main {
             System.exit(-1);
         }
 
-        if (commercialServer) {
-            IMResult<Void> voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Desc, "this is a test channel, update at:" + new Date().toString());
-            if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("modify channel profile success");
-            } else {
-                System.out.println("modify channel profile failure");
-                System.exit(-1);
-            }
+        IMResult<Void> voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Desc, "this is a test channel, update at:" + new Date().toString());
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("modify channel profile success");
+        } else {
+            System.out.println("modify channel profile failure");
+            System.exit(-1);
+        }
 
-            IMResult<OutputGetChannelInfo> outputGetChannelInfoIMResult = channelServiceApi.getChannelInfo();
-            if (outputGetChannelInfoIMResult != null && outputGetChannelInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("get channel info success");
-            } else {
-                System.out.println("get channel info failure");
-                System.exit(-1);
-            }
+        IMResult<OutputGetChannelInfo> outputGetChannelInfoIMResult = channelServiceApi.getChannelInfo();
+        if (outputGetChannelInfoIMResult != null && outputGetChannelInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get channel info success");
+        } else {
+            System.out.println("get channel info failure");
+            System.exit(-1);
         }
     }
     static void testSensitiveApi() throws Exception {

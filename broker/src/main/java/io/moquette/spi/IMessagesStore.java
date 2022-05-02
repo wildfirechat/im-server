@@ -193,6 +193,10 @@ public interface IMessagesStore {
 
     boolean checkChatroomParticipantIdelTime(MemorySessionStore.Session session);
 
+
+    String getApplicationToken(String fromUser, String applicationId);
+    String verifyApplicationToken(String token, String applicationId);
+
     ErrorCode getUserSettings(String userId, long version, WFCMessage.GetUserSettingResult.Builder builder);
     WFCMessage.UserSettingEntry getUserSetting(String userId, int scope, String key);
     List<WFCMessage.UserSettingEntry> getUserSetting(String userId, int scope);

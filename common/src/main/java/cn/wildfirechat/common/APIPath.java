@@ -91,17 +91,15 @@ public interface APIPath {
     String Channel_Message_Send = "/channel/message/send";
     String Channel_Subscribe = "/channel/subscribe";
     String Channel_Subscriber_List = "/channel/subscriber_list";
+    String Channel_Verify_Application_UserInfo = "/channel/user/verify";
 
     String Robot_User_Info = "/robot/user_info";
     String Robot_Message_Send = "/robot/message/send";
-
     String Robot_Set_Callback = "/robot/set_callback";
     String Robot_Get_Callback = "/robot/get_callback";
     String Robot_Delete_Callback = "/robot/delete_callback";
     String Robot_Update_Profile = "/robot/update_profile";
-
-    String Robot_Verify_Application_User = "/robot/user/verify";
-
+    String Robot_Verify_Application_UserInfo = "/robot/user/verify";
     String Robot_Group_Member_Add = "/robot/group/member/add";
     String Robot_Group_Allow_Member = "/robot/group/manager/allow";
     String Robot_Create_Group = "/robot/group/create";

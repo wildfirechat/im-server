@@ -4,7 +4,6 @@ import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
-import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
 import java.util.List;
 
@@ -214,4 +213,13 @@ public class RobotService {
         input.setNotify_message(notify_message);
         return robotHttpUtils.httpJsonPost(path, input, Void.class);
     }
+
+    public IMResult<OutputVerifyApplicationUserInfo> verifyApplicationUserInfo(String token) throws Exception {
+        String path = APIPath.Robot_Verify_Application_UserInfo;
+        InputVerifyApplicationUserInfo input = new InputVerifyApplicationUserInfo();
+        input.setToken(token);
+        return robotHttpUtils.httpJsonPost(path, input, OutputVerifyApplicationUserInfo.class);
+    }
+
+
 }

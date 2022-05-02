@@ -50,6 +50,7 @@ public enum ErrorCode {
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
     ERROR_CODE_CONFERENCE_SERVICE_NOT_AVAILABLE(61, "conference service not available"),
 
+    ERROR_CODE_APPLICATION_TOKEN_ERROR_OR_TIMEOUT(70, "application token error or timeout"),
 
     ERROR_CODE_SECRET_CHAT_ACCEPTED_BY_OTHER_CLIENT(81, "secret chat accepted by other client"),
     ERROR_CODE_SECRET_CHAT_SESSION_NOT_EXIST(82, "secret chat session not exist"),
