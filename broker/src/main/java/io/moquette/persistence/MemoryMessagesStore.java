@@ -3651,7 +3651,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public void clearUserChannels(String userId) {
-
+        databaseStore.getUserChannels(userId).forEach(s -> listenChannel(userId, s, false));
     }
 
 
@@ -3731,7 +3731,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode distoryChannel(String operator, String channelId, boolean isAdmin) {
+    public ErrorCode destroyChannel(String operator, String channelId, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
 
@@ -3751,6 +3751,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         newInfoBuilder.setStatus(oldInfo.getStatus() | Channel_State_Mask_Deleted);
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());
+        databaseStore.clearChannelListener(channelId);
+        hzInstance.getMultiMap(CHANNEL_LISTENERS).remove(channelId);
 
         callbackChannelInfoUpdateEvent(operator, channelId, Channel_Event_Destroy);
         return ErrorCode.ERROR_CODE_SUCCESS;

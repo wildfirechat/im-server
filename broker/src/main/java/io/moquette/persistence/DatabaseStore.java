@@ -3332,6 +3332,57 @@ public class DatabaseStore {
         });
     }
 
+    List<String> getUserChannels(String userId) {
+        List<String> out = new ArrayList<>();
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select _cid from t_channel_listener where _mid = ?";
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+            statement.setString(index++, userId);
+
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                String value = rs.getString(1);
+                if (!StringUtil.isNullOrEmpty(value)) {
+                    out.add(value);
+                }
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return out;
+    }
+
+    void clearChannelListener(final String channelId) {
+        LOG.info("Database remove channel {}", channelId);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_channel_listener where _cid=?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, channelId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
     public Set<String> getSensitiveWord() {
         Connection connection = null;
         PreparedStatement statement = null;

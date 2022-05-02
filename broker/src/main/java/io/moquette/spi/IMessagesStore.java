@@ -209,7 +209,7 @@ public interface IMessagesStore {
     void clearUserChannels(String userId);
     ErrorCode modifyChannelInfo(String operator, String channelId, int modifyType, String value);
     ErrorCode transferChannel(String operator, String channelId, String newOwner);
-    ErrorCode distoryChannel(String operator, String channelId, boolean isAdmin);
+    ErrorCode destroyChannel(String operator, String channelId, boolean isAdmin);
     List<WFCMessage.ChannelInfo> searchChannel(String keyword, boolean buzzy, int page);
     ErrorCode listenChannel(String operator, String channelId, boolean listen);
     WFCMessage.ChannelInfo getChannelInfo(String channelId);
