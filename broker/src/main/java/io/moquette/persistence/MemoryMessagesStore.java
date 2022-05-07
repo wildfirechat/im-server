@@ -3813,7 +3813,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
         WFCMessage.ChannelInfo channelInfo = mIMap.get(channelId);
         if(channelInfo != null && (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Private) > 0) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
         try {
@@ -3823,7 +3823,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         } finally {
             mWriteLock.unlock();
         }
-
+        
+        IMHandler.getPublisher().notifyChannelListenStatusChanged(channelInfo, operator, listen);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
