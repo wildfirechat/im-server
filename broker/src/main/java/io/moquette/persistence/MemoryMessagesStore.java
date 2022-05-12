@@ -577,8 +577,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (channelInfo != null) {
                 if (channelInfo.getOwner().equals(fromUser)) {
                     if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_Channel
-                        && !StringUtil.isNullOrEmpty(channelInfo.getCallback())
-                        && channelInfo.getAutomatic() == 1) {
+                        && channelInfo.getAutomatic() != 0) {
                         LOG.info("Channel api message not send to the owner when automatic");
                     } else {
                         notifyReceivers.add(fromUser);
@@ -608,8 +607,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                     }
                 } else {
                     notifyReceivers.add(fromUser);
-                    if (StringUtil.isNullOrEmpty(channelInfo.getCallback()) || channelInfo.getAutomatic() == 0) {
+                    if (channelInfo.getAutomatic() == 0) {
                         notifyReceivers.add(channelInfo.getOwner());
+                    } else {
+                        LOG.info("Channel api message not send to the owner when automatic");
                     }
                 }
             } else {
