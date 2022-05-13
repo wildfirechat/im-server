@@ -95,6 +95,14 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputRobot> outputRobotIMResult = UserAdmin.getRobotInfo("robot1");
+        if(outputRobotIMResult != null && outputRobotIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("Get robot success");
+        } else {
+            System.out.println("Get robot failure");
+            System.exit(-1);
+        }
+
         IMResult<Void> destroyResult = UserAdmin.destroyRobot("robot1");
         if(destroyResult != null && destroyResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("success");
@@ -1003,8 +1011,8 @@ public class Main {
         //****  机器人API
         //***********************************************
 
-        IMResult<InputOutputUserInfo> userInfoIMResult = robotService.getProfile(robotId);
-        if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+        IMResult<OutputRobot> robotProfileIMResult = robotService.getProfile();
+        if(robotProfileIMResult != null && robotProfileIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get profile success");
         } else {
             System.out.println("get profile failure");
@@ -1019,8 +1027,8 @@ public class Main {
             System.out.println("modify profile failure");
             System.exit(-1);
         }
-        userInfoIMResult = robotService.getProfile(robotId);
-        if(userInfoIMResult != null && userInfoIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && displayName.equals(userInfoIMResult.getResult().getDisplayName())) {
+        robotProfileIMResult = robotService.getProfile();
+        if(robotProfileIMResult != null && robotProfileIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && displayName.equals(robotProfileIMResult.getResult().getDisplayName())) {
             System.out.println("get profile success");
         } else {
             System.out.println("get profile failure");

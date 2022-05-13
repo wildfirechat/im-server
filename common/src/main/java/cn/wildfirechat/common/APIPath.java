@@ -26,6 +26,7 @@ public interface APIPath {
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
     String User_Get_Info = "/admin/user/get_info";
+    String User_Get_Robot_Info = "/admin/user/get_robot_info";
     String User_Get_Blocked_List = "/admin/user/get_blocked_list";
     String User_Check_Block_Status = "/admin/user/check_block_status";
     String User_Get_Online_Status = "/admin/user/onlinestatus";
@@ -94,6 +95,7 @@ public interface APIPath {
     String Channel_Verify_Application_UserInfo = "/channel/user/verify";
 
     String Robot_User_Info = "/robot/user_info";
+    String Robot_Get_Profile = "/robot/profile";
     String Robot_Message_Send = "/robot/message/send";
     String Robot_Set_Callback = "/robot/set_callback";
     String Robot_Get_Callback = "/robot/get_callback";

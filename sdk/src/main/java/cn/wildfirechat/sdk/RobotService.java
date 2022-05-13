@@ -3,6 +3,7 @@ package cn.wildfirechat.sdk;
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
+import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 
 import java.util.List;
@@ -58,8 +59,9 @@ public class RobotService {
         return robotHttpUtils.httpJsonPost(path, null, Void.class);
     }
 
-    public IMResult<InputOutputUserInfo> getProfile(String robotId) throws Exception {
-        return getUserInfo(robotId);
+    public IMResult<OutputRobot> getProfile() throws Exception {
+        String path = APIPath.Robot_Get_Profile;
+        return robotHttpUtils.httpJsonPost(path, null, OutputRobot.class);
     }
 
     /*
