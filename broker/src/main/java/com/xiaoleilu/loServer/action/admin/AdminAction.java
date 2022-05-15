@@ -34,6 +34,10 @@ abstract public class AdminAction extends Action {
         SECRET_KEY = secretKey;
     }
 
+    public static String getSecretKey() {
+        return SECRET_KEY;
+    }
+
     public static void setNoCheckTime(String noCheckTime) {
         try {
             NO_CHECK_TIME = Boolean.parseBoolean(noCheckTime);

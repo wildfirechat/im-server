@@ -136,4 +136,11 @@ public class UserAdmin {
         request.count = count;
         return AdminHttpUtils.httpJsonPost(APIPath.User_Online_List, request, GetOnlineUserResult.class);
     }
+
+    public static IMResult<OutputApplicationUserInfo> applicationGetUserInfo(String authCode) throws Exception {
+        String path = APIPath.User_Application_Get_UserInfo;
+        InputApplicationGetUserInfo input = new InputApplicationGetUserInfo();
+        input.setAuthCode(authCode);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputApplicationUserInfo.class);
+    }
 }

@@ -233,6 +233,7 @@ public class ProtoConstants {
     public interface ApplicationType {
         int ApplicationType_Robot = 0;
         int ApplicationType_Channel = 1;
+        int ApplicationType_Admin = 2;
     }
 
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;

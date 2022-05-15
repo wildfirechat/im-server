@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
+import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.common.ErrorCode;
 import io.moquette.BrokerConstants;
@@ -3316,7 +3317,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public String getApplicationAuthCode(String fromUser, String applicationId, int type, String host) {
         String secret = null;
-        if(type == 0) {
+        if(type == ProtoConstants.ApplicationType.ApplicationType_Robot) {
             WFCMessage.Robot robotData = getRobot(applicationId);
             if(robotData != null && !StringUtil.isNullOrEmpty(robotData.getCallback()) && !StringUtil.isNullOrEmpty(robotData.getSecret())) {
                 try {
@@ -3340,7 +3341,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
                 LOG.warn("get application auth code error, reason {}", errorReason);
             }
-        } else if(type == 1) {
+        } else if(type == ProtoConstants.ApplicationType.ApplicationType_Channel) {
             WFCMessage.ChannelInfo channelData = getChannelInfo(applicationId);
             if(channelData != null && !StringUtil.isNullOrEmpty(channelData.getCallback()) && !StringUtil.isNullOrEmpty(channelData.getSecret())) {
                 try {
@@ -3364,6 +3365,8 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
                 LOG.warn("get application auth code error, reason {}", errorReason);
             }
+        } else if(type == ProtoConstants.ApplicationType.ApplicationType_Admin) {
+            secret = AdminAction.getSecretKey();
         }
 
         if(!StringUtil.isNullOrEmpty(secret)) {
@@ -3378,16 +3381,18 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public String verifyApplicationAuthCode(String authCode, String applicationId, int type) {
         String secret = null;
-        if(type == 0) {
+        if(type == ProtoConstants.ApplicationType.ApplicationType_Robot) {
             WFCMessage.Robot robotData = getRobot(applicationId);
             if(robotData != null && !StringUtil.isNullOrEmpty(robotData.getCallback()) && !StringUtil.isNullOrEmpty(robotData.getSecret())) {
                 secret = robotData.getSecret();
             }
-        } else if(type == 1) {
+        } else if(type == ProtoConstants.ApplicationType.ApplicationType_Channel) {
             WFCMessage.ChannelInfo channelData = getChannelInfo(applicationId);
             if(channelData != null && !StringUtil.isNullOrEmpty(channelData.getCallback()) && !StringUtil.isNullOrEmpty(channelData.getSecret())) {
                 secret = channelData.getSecret();
             }
+        } else if(type == ProtoConstants.ApplicationType.ApplicationType_Admin) {
+            secret = AdminAction.getSecretKey();
         }
 
         secret = ensureSecretLength(secret);

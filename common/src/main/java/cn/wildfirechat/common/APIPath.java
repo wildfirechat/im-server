@@ -35,6 +35,7 @@ public interface APIPath {
     String User_Kickoff_Client = "/admin/user/kickoff_client";
     String User_Online_Count = "/admin/user/online_count";
     String User_Online_List = "/admin/user/online_list";
+    String User_Application_Get_UserInfo = "/admin/user/app_get_user_info";
 
     String Friend_Update_Status = "/admin/friend/status";
     String Friend_Get_List = "/admin/friend/list";
