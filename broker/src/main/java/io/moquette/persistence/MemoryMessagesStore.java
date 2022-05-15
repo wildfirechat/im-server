@@ -3367,6 +3367,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         } else if(type == ProtoConstants.ApplicationType.ApplicationType_Admin) {
             secret = AdminAction.getSecretKey();
+            applicationId = "wfadmin";
         }
 
         if(!StringUtil.isNullOrEmpty(secret)) {
@@ -3393,6 +3394,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         } else if(type == ProtoConstants.ApplicationType.ApplicationType_Admin) {
             secret = AdminAction.getSecretKey();
+            applicationId = "wfadmin";
         }
 
         secret = ensureSecretLength(secret);
