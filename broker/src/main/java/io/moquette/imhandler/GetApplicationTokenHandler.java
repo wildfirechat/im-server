@@ -18,12 +18,16 @@ import win.liyufan.im.IMTopic;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 
 @Handler(IMTopic.GetApplicationTokenRequestTopic)
-public class GetApplicationTokenHandler extends IMHandler<WFCMessage.IDBuf> {
+public class GetApplicationTokenHandler extends IMHandler<WFCMessage.AuthCodeRequest> {
     @Override
-    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.IDBuf request, Qos1PublishHandler.IMCallback callback) {
-        String token = m_messagesStore.getApplicationToken(fromUser, request.getId());
-        byte[] data =  WFCMessage.IDBuf.newBuilder().setId(token).build().toByteArray();
-        ackPayload.ensureWritable(data.length).writeBytes(data);
-        return ERROR_CODE_SUCCESS;
+    public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.AuthCodeRequest request, Qos1PublishHandler.IMCallback callback) {
+        String authCode = m_messagesStore.getApplicationAuthCode(fromUser, request.getTargetId(), request.getType(), request.getHost());
+        if(authCode != null) {
+            byte[] data = WFCMessage.IDBuf.newBuilder().setId(authCode).build().toByteArray();
+            ackPayload.ensureWritable(data.length).writeBytes(data);
+            return ERROR_CODE_SUCCESS;
+        }
+        return ErrorCode.INVALID_PARAMETER;
+
     }
 }

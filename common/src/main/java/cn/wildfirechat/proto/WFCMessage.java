@@ -61789,6 +61789,1723 @@ public final class WFCMessage {
     // @@protoc_insertion_point(class_scope:RecallMultiCastMessageRequest)
   }
 
+  public interface AuthCodeRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string target_id = 1;
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    boolean hasTargetId();
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    java.lang.String getTargetId();
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getTargetIdBytes();
+
+    // required int32 type = 2;
+    /**
+     * <code>required int32 type = 2;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>required int32 type = 2;</code>
+     */
+    int getType();
+
+    // required string host = 3;
+    /**
+     * <code>required string host = 3;</code>
+     */
+    boolean hasHost();
+    /**
+     * <code>required string host = 3;</code>
+     */
+    java.lang.String getHost();
+    /**
+     * <code>required string host = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getHostBytes();
+  }
+  /**
+   * Protobuf type {@code AuthCodeRequest}
+   */
+  public static final class AuthCodeRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements AuthCodeRequestOrBuilder {
+    // Use AuthCodeRequest.newBuilder() to construct.
+    private AuthCodeRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AuthCodeRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AuthCodeRequest defaultInstance;
+    public static AuthCodeRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AuthCodeRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AuthCodeRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              targetId_ = input.readBytes();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              type_ = input.readInt32();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              host_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_AuthCodeRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_AuthCodeRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.class, cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AuthCodeRequest> PARSER =
+        new com.google.protobuf.AbstractParser<AuthCodeRequest>() {
+      public AuthCodeRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AuthCodeRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AuthCodeRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string target_id = 1;
+    public static final int TARGET_ID_FIELD_NUMBER = 1;
+    private java.lang.Object targetId_;
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    public boolean hasTargetId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    public java.lang.String getTargetId() {
+      java.lang.Object ref = targetId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          targetId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string target_id = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTargetIdBytes() {
+      java.lang.Object ref = targetId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        targetId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required int32 type = 2;
+    public static final int TYPE_FIELD_NUMBER = 2;
+    private int type_;
+    /**
+     * <code>required int32 type = 2;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 type = 2;</code>
+     */
+    public int getType() {
+      return type_;
+    }
+
+    // required string host = 3;
+    public static final int HOST_FIELD_NUMBER = 3;
+    private java.lang.Object host_;
+    /**
+     * <code>required string host = 3;</code>
+     */
+    public boolean hasHost() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required string host = 3;</code>
+     */
+    public java.lang.String getHost() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          host_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string host = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getHostBytes() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        host_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      targetId_ = "";
+      type_ = 0;
+      host_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasTargetId()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasHost()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getTargetIdBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, type_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getHostBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getTargetIdBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, type_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getHostBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.AuthCodeRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code AuthCodeRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.AuthCodeRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_AuthCodeRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_AuthCodeRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.class, cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        targetId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        host_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_AuthCodeRequest_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.AuthCodeRequest getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.AuthCodeRequest build() {
+        cn.wildfirechat.proto.WFCMessage.AuthCodeRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.AuthCodeRequest buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.AuthCodeRequest result = new cn.wildfirechat.proto.WFCMessage.AuthCodeRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.targetId_ = targetId_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.host_ = host_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.AuthCodeRequest) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.AuthCodeRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.AuthCodeRequest other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.AuthCodeRequest.getDefaultInstance()) return this;
+        if (other.hasTargetId()) {
+          bitField0_ |= 0x00000001;
+          targetId_ = other.targetId_;
+          onChanged();
+        }
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasHost()) {
+          bitField0_ |= 0x00000004;
+          host_ = other.host_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasTargetId()) {
+          
+          return false;
+        }
+        if (!hasType()) {
+          
+          return false;
+        }
+        if (!hasHost()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.AuthCodeRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.AuthCodeRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string target_id = 1;
+      private java.lang.Object targetId_ = "";
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public boolean hasTargetId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public java.lang.String getTargetId() {
+        java.lang.Object ref = targetId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          targetId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTargetIdBytes() {
+        java.lang.Object ref = targetId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          targetId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public Builder setTargetId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        targetId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public Builder clearTargetId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        targetId_ = getDefaultInstance().getTargetId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string target_id = 1;</code>
+       */
+      public Builder setTargetIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        targetId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required int32 type = 2;
+      private int type_ ;
+      /**
+       * <code>required int32 type = 2;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 type = 2;</code>
+       */
+      public int getType() {
+        return type_;
+      }
+      /**
+       * <code>required int32 type = 2;</code>
+       */
+      public Builder setType(int value) {
+        bitField0_ |= 0x00000002;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 type = 2;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        type_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required string host = 3;
+      private java.lang.Object host_ = "";
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public boolean hasHost() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public java.lang.String getHost() {
+        java.lang.Object ref = host_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          host_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getHostBytes() {
+        java.lang.Object ref = host_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          host_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public Builder setHost(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        host_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public Builder clearHost() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        host_ = getDefaultInstance().getHost();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string host = 3;</code>
+       */
+      public Builder setHostBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        host_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:AuthCodeRequest)
+    }
+
+    static {
+      defaultInstance = new AuthCodeRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:AuthCodeRequest)
+  }
+
+  public interface ApplicationConfigRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string appId = 1;
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    boolean hasAppId();
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    java.lang.String getAppId();
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getAppIdBytes();
+
+    // required int32 appType = 2;
+    /**
+     * <code>required int32 appType = 2;</code>
+     */
+    boolean hasAppType();
+    /**
+     * <code>required int32 appType = 2;</code>
+     */
+    int getAppType();
+
+    // required int64 timestamp = 3;
+    /**
+     * <code>required int64 timestamp = 3;</code>
+     */
+    boolean hasTimestamp();
+    /**
+     * <code>required int64 timestamp = 3;</code>
+     */
+    long getTimestamp();
+
+    // required string nonce = 4;
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    boolean hasNonce();
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    java.lang.String getNonce();
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getNonceBytes();
+
+    // required string signature = 5;
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    boolean hasSignature();
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    java.lang.String getSignature();
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getSignatureBytes();
+  }
+  /**
+   * Protobuf type {@code ApplicationConfigRequest}
+   */
+  public static final class ApplicationConfigRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements ApplicationConfigRequestOrBuilder {
+    // Use ApplicationConfigRequest.newBuilder() to construct.
+    private ApplicationConfigRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ApplicationConfigRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ApplicationConfigRequest defaultInstance;
+    public static ApplicationConfigRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ApplicationConfigRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ApplicationConfigRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              appId_ = input.readBytes();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              appType_ = input.readInt32();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              timestamp_ = input.readInt64();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              nonce_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
+              signature_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ApplicationConfigRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ApplicationConfigRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.class, cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ApplicationConfigRequest> PARSER =
+        new com.google.protobuf.AbstractParser<ApplicationConfigRequest>() {
+      public ApplicationConfigRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ApplicationConfigRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ApplicationConfigRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string appId = 1;
+    public static final int APPID_FIELD_NUMBER = 1;
+    private java.lang.Object appId_;
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    public boolean hasAppId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    public java.lang.String getAppId() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          appId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string appId = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAppIdBytes() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        appId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required int32 appType = 2;
+    public static final int APPTYPE_FIELD_NUMBER = 2;
+    private int appType_;
+    /**
+     * <code>required int32 appType = 2;</code>
+     */
+    public boolean hasAppType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 appType = 2;</code>
+     */
+    public int getAppType() {
+      return appType_;
+    }
+
+    // required int64 timestamp = 3;
+    public static final int TIMESTAMP_FIELD_NUMBER = 3;
+    private long timestamp_;
+    /**
+     * <code>required int64 timestamp = 3;</code>
+     */
+    public boolean hasTimestamp() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int64 timestamp = 3;</code>
+     */
+    public long getTimestamp() {
+      return timestamp_;
+    }
+
+    // required string nonce = 4;
+    public static final int NONCE_FIELD_NUMBER = 4;
+    private java.lang.Object nonce_;
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    public boolean hasNonce() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    public java.lang.String getNonce() {
+      java.lang.Object ref = nonce_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          nonce_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string nonce = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNonceBytes() {
+      java.lang.Object ref = nonce_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        nonce_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string signature = 5;
+    public static final int SIGNATURE_FIELD_NUMBER = 5;
+    private java.lang.Object signature_;
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    public boolean hasSignature() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    public java.lang.String getSignature() {
+      java.lang.Object ref = signature_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          signature_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string signature = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSignatureBytes() {
+      java.lang.Object ref = signature_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        signature_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      appId_ = "";
+      appType_ = 0;
+      timestamp_ = 0L;
+      nonce_ = "";
+      signature_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasAppId()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasAppType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasTimestamp()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasNonce()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSignature()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getAppIdBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, appType_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, timestamp_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getNonceBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getSignatureBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getAppIdBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, appType_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, timestamp_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getNonceBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getSignatureBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ApplicationConfigRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ApplicationConfigRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ApplicationConfigRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.class, cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        appId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        appType_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        timestamp_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        nonce_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        signature_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ApplicationConfigRequest_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest build() {
+        cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest result = new cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.appId_ = appId_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.appType_ = appType_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.timestamp_ = timestamp_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.nonce_ = nonce_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.signature_ = signature_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest.getDefaultInstance()) return this;
+        if (other.hasAppId()) {
+          bitField0_ |= 0x00000001;
+          appId_ = other.appId_;
+          onChanged();
+        }
+        if (other.hasAppType()) {
+          setAppType(other.getAppType());
+        }
+        if (other.hasTimestamp()) {
+          setTimestamp(other.getTimestamp());
+        }
+        if (other.hasNonce()) {
+          bitField0_ |= 0x00000008;
+          nonce_ = other.nonce_;
+          onChanged();
+        }
+        if (other.hasSignature()) {
+          bitField0_ |= 0x00000010;
+          signature_ = other.signature_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasAppId()) {
+          
+          return false;
+        }
+        if (!hasAppType()) {
+          
+          return false;
+        }
+        if (!hasTimestamp()) {
+          
+          return false;
+        }
+        if (!hasNonce()) {
+          
+          return false;
+        }
+        if (!hasSignature()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.ApplicationConfigRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string appId = 1;
+      private java.lang.Object appId_ = "";
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public boolean hasAppId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public java.lang.String getAppId() {
+        java.lang.Object ref = appId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          appId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAppIdBytes() {
+        java.lang.Object ref = appId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          appId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public Builder setAppId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        appId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public Builder clearAppId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        appId_ = getDefaultInstance().getAppId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string appId = 1;</code>
+       */
+      public Builder setAppIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        appId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required int32 appType = 2;
+      private int appType_ ;
+      /**
+       * <code>required int32 appType = 2;</code>
+       */
+      public boolean hasAppType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 appType = 2;</code>
+       */
+      public int getAppType() {
+        return appType_;
+      }
+      /**
+       * <code>required int32 appType = 2;</code>
+       */
+      public Builder setAppType(int value) {
+        bitField0_ |= 0x00000002;
+        appType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 appType = 2;</code>
+       */
+      public Builder clearAppType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        appType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required int64 timestamp = 3;
+      private long timestamp_ ;
+      /**
+       * <code>required int64 timestamp = 3;</code>
+       */
+      public boolean hasTimestamp() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int64 timestamp = 3;</code>
+       */
+      public long getTimestamp() {
+        return timestamp_;
+      }
+      /**
+       * <code>required int64 timestamp = 3;</code>
+       */
+      public Builder setTimestamp(long value) {
+        bitField0_ |= 0x00000004;
+        timestamp_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 timestamp = 3;</code>
+       */
+      public Builder clearTimestamp() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        timestamp_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // required string nonce = 4;
+      private java.lang.Object nonce_ = "";
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public boolean hasNonce() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public java.lang.String getNonce() {
+        java.lang.Object ref = nonce_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          nonce_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNonceBytes() {
+        java.lang.Object ref = nonce_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          nonce_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public Builder setNonce(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        nonce_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public Builder clearNonce() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        nonce_ = getDefaultInstance().getNonce();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string nonce = 4;</code>
+       */
+      public Builder setNonceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        nonce_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string signature = 5;
+      private java.lang.Object signature_ = "";
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public boolean hasSignature() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public java.lang.String getSignature() {
+        java.lang.Object ref = signature_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          signature_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSignatureBytes() {
+        java.lang.Object ref = signature_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          signature_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public Builder setSignature(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        signature_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public Builder clearSignature() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        signature_ = getDefaultInstance().getSignature();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string signature = 5;</code>
+       */
+      public Builder setSignatureBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        signature_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:ApplicationConfigRequest)
+    }
+
+    static {
+      defaultInstance = new ApplicationConfigRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:ApplicationConfigRequest)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_AddFriendRequest_descriptor;
   private static
@@ -62149,6 +63866,16 @@ public final class WFCMessage {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_RecallMultiCastMessageRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_AuthCodeRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_AuthCodeRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_ApplicationConfigRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_ApplicationConfigRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -62322,8 +64049,12 @@ public final class WFCMessage {
       "ntent\030\002 \002(\0132\017.MessageContent\022\n\n\002to\030\003 \003(\t" +
       "\022\014\n\004line\030\004 \002(\005\"E\n\035RecallMultiCastMessage" +
       "Request\022\022\n\nmessage_id\030\001 \002(\003\022\020\n\010receiver\030" +
-      "\002 \003(\tB#\n\025cn.wildfirechat.protoB\nWFCMessa" +
-      "ge"
+      "\002 \003(\t\"@\n\017AuthCodeRequest\022\021\n\ttarget_id\030\001 " +
+      "\002(\t\022\014\n\004type\030\002 \002(\005\022\014\n\004host\030\003 \002(\t\"o\n\030Appli" +
+      "cationConfigRequest\022\r\n\005appId\030\001 \002(\t\022\017\n\007ap" +
+      "pType\030\002 \002(\005\022\021\n\ttimestamp\030\003 \002(\003\022\r\n\005nonce\030" +
+      "\004 \002(\t\022\021\n\tsignature\030\005 \002(\tB#\n\025cn.wildfirec" +
+      "hat.protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -62762,6 +64493,18 @@ public final class WFCMessage {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RecallMultiCastMessageRequest_descriptor,
               new java.lang.String[] { "MessageId", "Receiver", });
+          internal_static_AuthCodeRequest_descriptor =
+            getDescriptor().getMessageTypes().get(72);
+          internal_static_AuthCodeRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_AuthCodeRequest_descriptor,
+              new java.lang.String[] { "TargetId", "Type", "Host", });
+          internal_static_ApplicationConfigRequest_descriptor =
+            getDescriptor().getMessageTypes().get(73);
+          internal_static_ApplicationConfigRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_ApplicationConfigRequest_descriptor,
+              new java.lang.String[] { "AppId", "AppType", "Timestamp", "Nonce", "Signature", });
           return null;
         }
       };

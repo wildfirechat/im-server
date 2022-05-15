@@ -85,4 +85,5 @@ public interface IMTopic {
     String ClearSessionTopic = "CST";
 
     String GetApplicationTokenRequestTopic = "ATR";
+    String ApplicationConfigRequestTopic = "ACR";
 }

@@ -35,11 +35,14 @@ import io.moquette.spi.impl.security.AES;
 import io.moquette.spi.security.Tokenor;
 import io.moquette.spi.impl.subscriptions.Topic;
 import io.netty.handler.codec.mqtt.MqttVersion;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +65,6 @@ import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static cn.wildfirechat.proto.ProtoConstants.Platform.*;
 import static cn.wildfirechat.proto.ProtoConstants.UpdateUserInfoMask.*;
 import static io.moquette.BrokerConstants.*;
-import static io.moquette.BrokerConstants.APPLICATION_SECRET_KEY;
 import static io.moquette.server.Constants.MAX_CHATROOM_MESSAGE_QUEUE;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static cn.wildfirechat.pojos.MyInfoType.*;
@@ -165,8 +167,6 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean keepDisplayNameWhenDestroyUser = true;
 
     private Set<Integer> mUserHideProperties = new HashSet<>();
-
-    private String mApplicationSecretKey;
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
         m_Server = server;
@@ -445,17 +445,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
-
-        try {
-            mApplicationSecretKey = server.getConfig().getProperty(APPLICATION_SECRET_KEY, "wfcapp1290secretkey");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        while (StringUtil.isNullOrEmpty(mApplicationSecretKey) || mApplicationSecretKey.length() < 16) {
-            mApplicationSecretKey += "w";
-            mApplicationSecretKey += mApplicationSecretKey;
-        }
-
     }
 
     private void printMissConfigLog(String config, String defaultValue) {
@@ -3315,23 +3304,103 @@ public class MemoryMessagesStore implements IMessagesStore {
         return true;
     }
 
+    private String ensureSecretLength(String secret) {
+        while ( secret.length() < 16) {
+            secret += "w";
+            secret += secret;
+        }
+        return secret;
+    }
+
+
     @Override
-    public String getApplicationToken(String fromUser, String applicationId) {
-        byte[] token = AES.AESEncrypt(fromUser + "?|?" + System.currentTimeMillis() + "?|?" + applicationId, mApplicationSecretKey);
-        return new String(Base64.getEncoder().encode(token));
+    public String getApplicationAuthCode(String fromUser, String applicationId, int type, String host) {
+        String secret = null;
+        if(type == 0) {
+            WFCMessage.Robot robotData = getRobot(applicationId);
+            if(robotData != null && !StringUtil.isNullOrEmpty(robotData.getCallback()) && !StringUtil.isNullOrEmpty(robotData.getSecret())) {
+                try {
+                    URL url = new URL(robotData.getCallback());
+                    if(url.getHost().equals(host)) {
+                        secret = robotData.getSecret();
+                    } else {
+                        LOG.warn("get application auth code error, request host is not the same host with callback host");
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                String errorReason;
+                if(robotData == null) {
+                    errorReason = "Robot not exist.";
+                } else if(StringUtil.isNullOrEmpty(robotData.getCallback())) {
+                    errorReason = "Robot no callback address";
+                } else {
+                    errorReason = "Robot no secret";
+                }
+                LOG.warn("get application auth code error, reason {}", errorReason);
+            }
+        } else if(type == 1) {
+            WFCMessage.ChannelInfo channelData = getChannelInfo(applicationId);
+            if(channelData != null && !StringUtil.isNullOrEmpty(channelData.getCallback()) && !StringUtil.isNullOrEmpty(channelData.getSecret())) {
+                try {
+                    URL url = new URL(channelData.getCallback());
+                    if(url.getHost().equals(host)) {
+                        secret = channelData.getSecret();
+                    } else {
+                        LOG.warn("get application auth code error, request host is not the same host with callback host");
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                String errorReason;
+                if(channelData == null) {
+                    errorReason = "Channel not exist.";
+                } else if(StringUtil.isNullOrEmpty(channelData.getCallback())) {
+                    errorReason = "Channel no callback address";
+                } else {
+                    errorReason = "Channel no secret";
+                }
+                LOG.warn("get application auth code error, reason {}", errorReason);
+            }
+        }
+
+        if(!StringUtil.isNullOrEmpty(secret)) {
+            secret = ensureSecretLength(secret);
+            byte[] token = AES.AESEncrypt(fromUser + "?|?" + System.currentTimeMillis() + "?|?" + applicationId + "?|?" + type, secret);
+            return new String(Base64.getEncoder().encode(token));
+        }
+
+        return null;
     }
 
     @Override
-    public String verifyApplicationToken(String token, String applicationId) {
-        byte[] data = Base64.getDecoder().decode(token);
-        data = AES.AESDecrypt(data, mApplicationSecretKey, true);
+    public String verifyApplicationAuthCode(String authCode, String applicationId, int type) {
+        String secret = null;
+        if(type == 0) {
+            WFCMessage.Robot robotData = getRobot(applicationId);
+            if(robotData != null && !StringUtil.isNullOrEmpty(robotData.getCallback()) && !StringUtil.isNullOrEmpty(robotData.getSecret())) {
+                secret = robotData.getSecret();
+            }
+        } else if(type == 1) {
+            WFCMessage.ChannelInfo channelData = getChannelInfo(applicationId);
+            if(channelData != null && !StringUtil.isNullOrEmpty(channelData.getCallback()) && !StringUtil.isNullOrEmpty(channelData.getSecret())) {
+                secret = channelData.getSecret();
+            }
+        }
+
+        secret = ensureSecretLength(secret);
+
+        byte[] data = Base64.getDecoder().decode(authCode);
+        data = AES.AESDecrypt(data, secret, true);
 
         if (data == null || data.length == 0) {
             return null;
         } else {
             String str = new String(data);
             String[] strArr = str.split("\\?\\|\\?");
-            if (strArr.length == 3) {
+            if (strArr.length == 4) {
                 if (applicationId.equals(strArr[2])) {
                     long timestamp= Long.parseLong(strArr[1]);
                     if(System.currentTimeMillis() - timestamp > 60*1000) {
@@ -3344,6 +3413,40 @@ public class MemoryMessagesStore implements IMessagesStore {
         return null;
     }
 
+    @Override
+    public ErrorCode configApplication(String appId, int appType, long timestamp, String nonce, String signature) {
+        String secret;
+        if(System.currentTimeMillis()/1000 - timestamp > 300) {
+            return ErrorCode.ERROR_CODE_SIGN_EXPIRED;
+        }
+
+        if(appType == ProtoConstants.ApplicationType.ApplicationType_Robot) {
+            WFCMessage.Robot robotData = getRobot(appId);
+            if(robotData != null) {
+                secret = robotData.getSecret();
+            } else {
+                return ErrorCode.ERROR_CODE_NOT_EXIST;
+            }
+        } else if(appType == ProtoConstants.ApplicationType.ApplicationType_Channel) {
+            WFCMessage.ChannelInfo channelData = getChannelInfo(appId);
+            if(channelData != null) {
+                secret = channelData.getSecret();
+            } else {
+                return ErrorCode.ERROR_CODE_NOT_EXIST;
+            }
+        } else {
+            LOG.error("Config application type only support 0 or 1");
+            return ErrorCode.INVALID_PARAMETER;
+        }
+
+        String str = nonce + "|" + appId + "|" + timestamp + "|" + secret;
+        String sign = DigestUtils.sha1Hex(str);
+        if(sign.equals(signature)) {
+            return ErrorCode.ERROR_CODE_SUCCESS;
+        }
+
+        return ErrorCode.ERROR_CODE_AUTH_FAILURE;
+    }
 
     @Override
     public boolean isNewFriendWelcomeMessage() {

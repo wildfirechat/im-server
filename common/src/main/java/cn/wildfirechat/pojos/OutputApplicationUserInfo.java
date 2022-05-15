@@ -8,7 +8,7 @@
 
 package cn.wildfirechat.pojos;
 
-public class OutputVerifyApplicationUserInfo {
+public class OutputApplicationUserInfo {
     private String userId;
     private String displayName;
     private String portraitUrl;

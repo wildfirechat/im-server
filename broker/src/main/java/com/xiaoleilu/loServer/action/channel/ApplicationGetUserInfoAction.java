@@ -10,8 +10,9 @@ package com.xiaoleilu.loServer.action.channel;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
-import cn.wildfirechat.pojos.InputVerifyApplicationUserInfo;
-import cn.wildfirechat.pojos.OutputVerifyApplicationUserInfo;
+import cn.wildfirechat.pojos.InputApplicationGetUserInfo;
+import cn.wildfirechat.pojos.OutputApplicationUserInfo;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.xiaoleilu.loServer.RestResult;
@@ -23,21 +24,21 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 
-@Route(APIPath.Channel_Verify_Application_UserInfo)
+@Route(APIPath.Channel_Application_Get_UserInfo)
 @HttpMethod("POST")
-public class VerifyApplicationUserInfoAction extends ChannelAction {
+public class ApplicationGetUserInfoAction extends ChannelAction {
 
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            InputVerifyApplicationUserInfo inputUserToken = getRequestBody(request.getNettyRequest(), InputVerifyApplicationUserInfo.class);
+            InputApplicationGetUserInfo inputUserToken = getRequestBody(request.getNettyRequest(), InputApplicationGetUserInfo.class);
             RestResult result;
-            if (inputUserToken == null || StringUtil.isNullOrEmpty(inputUserToken.getToken())) {
+            if (inputUserToken == null || StringUtil.isNullOrEmpty(inputUserToken.getAuthCode())) {
                 result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
             } else {
-                String userId = messagesStore.verifyApplicationToken(inputUserToken.getToken(), channelInfo.getTargetId());
+                String userId = messagesStore.verifyApplicationAuthCode(inputUserToken.getAuthCode(), channelInfo.getTargetId(), ProtoConstants.ApplicationType.ApplicationType_Channel);
                 if(userId != null) {
-                    OutputVerifyApplicationUserInfo outputVerifyApplicationUser = new OutputVerifyApplicationUserInfo();
+                    OutputApplicationUserInfo outputVerifyApplicationUser = new OutputApplicationUserInfo();
                     outputVerifyApplicationUser.setUserId(userId);
                     WFCMessage.User user = messagesStore.getUserInfo(userId);
                     if(user != null) {

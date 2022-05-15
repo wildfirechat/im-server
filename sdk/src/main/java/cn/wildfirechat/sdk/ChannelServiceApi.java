@@ -4,8 +4,12 @@ import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.ChannelHttpUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.List;
+
+import static cn.wildfirechat.proto.ProtoConstants.ApplicationType.ApplicationType_Channel;
+import static cn.wildfirechat.proto.ProtoConstants.ApplicationType.ApplicationType_Robot;
 
 //仅专业版支持，社区版不支持
 public class ChannelServiceApi {
@@ -76,12 +80,25 @@ public class ChannelServiceApi {
         return channelHttpUtils.httpJsonPost(path, null, OutputStringList.class);
     }
 
+    public IMResult<OutputApplicationUserInfo> applicationGetUserInfo(String authCode) throws Exception {
+        String path = APIPath.Channel_Application_Get_UserInfo;
+        InputApplicationGetUserInfo input = new InputApplicationGetUserInfo();
+        input.setAuthCode(authCode);
+        return channelHttpUtils.httpJsonPost(path, input, OutputApplicationUserInfo.class);
+    }
 
-    public IMResult<OutputVerifyApplicationUserInfo> verifyApplicationUserInfo(String token) throws Exception {
-        String path = APIPath.Channel_Verify_Application_UserInfo;
-        InputVerifyApplicationUserInfo input = new InputVerifyApplicationUserInfo();
-        input.setToken(token);
-        return channelHttpUtils.httpJsonPost(path, input, OutputVerifyApplicationUserInfo.class);
+    public OutputApplicationConfigData getApplicationSignature() {
+        int nonce = (int)(Math.random() * 100000 + 3);
+        long timestamp = System.currentTimeMillis()/1000;
+        String str = nonce + "|" + channelHttpUtils.getChannelId() + "|" + timestamp + "|" + channelHttpUtils.getChannelSecret();
+        String sign = DigestUtils.sha1Hex(str);
+        OutputApplicationConfigData configData = new OutputApplicationConfigData();
+        configData.setAppId(channelHttpUtils.getChannelId());
+        configData.setAppType(ApplicationType_Channel);
+        configData.setTimestamp(timestamp);
+        configData.setNonceStr(nonce+"");
+        configData.setSignature(sign);
+        return configData;
     }
 
 }

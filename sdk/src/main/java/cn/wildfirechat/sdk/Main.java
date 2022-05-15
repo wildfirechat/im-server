@@ -1196,6 +1196,9 @@ public class Main {
                 System.out.println("cancel group manager failure");
                 System.exit(-1);
             }
+
+            OutputApplicationConfigData config = robotService.getApplicationSignature();
+            System.out.println(config);
         }
 
 
@@ -1422,6 +1425,8 @@ public class Main {
             System.out.println("get channel info failure");
             System.exit(-1);
         }
+        OutputApplicationConfigData config = channelServiceApi.getApplicationSignature();
+        System.out.println(config);
     }
     static void testSensitiveApi() throws Exception {
         List<String> words = Arrays.asList("a","b","c");

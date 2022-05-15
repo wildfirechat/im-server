@@ -115,4 +115,11 @@ public class ChannelHttpUtils {
         return str == null || str.isEmpty();
     }
 
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public String getChannelSecret() {
+        return channelSecret;
+    }
 }

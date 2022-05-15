@@ -118,4 +118,11 @@ public class RobotHttpUtils {
         return str == null || str.isEmpty();
     }
 
+    public String getRobotId() {
+        return robotId;
+    }
+
+    public String getRobotSecret() {
+        return robotSecret;
+    }
 }
