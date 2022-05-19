@@ -84,7 +84,59 @@ public class ProtoConstants {
         int File = 5;
         int Video = 6;
         int Sticker = 7;
-        int RichMedia = 8;
+        int Link = 8;
+        int P_TEXT = 9;
+        int Name_Card = 10;
+        int Composited = 11;
+        int Rich_Notification = 12;
+        int Enter_Channel_Chat = 71;
+        int Leave_Channel_Chat = 72;
+        int Recall = 80;
+        int Delete = 81;
+        int Tip = 90;
+        int Typing = 91;
+        int Friend_Greeting = 92;
+        int Friend_Added = 93;
+        int PC_Login_Request = 94;
+        int Create_Group = 104;
+        int Add_Group_Member = 105;
+        int Kickoff_Group_Member = 106;
+        int Quit_Group = 107;
+        int Dismiss_Group = 108;
+        int Transfer_Group_Owner = 109;
+        int Change_Group_Name = 110;;
+        int Modify_Group_Alias = 111;
+        int Change_Group_Portrait = 112;
+        int Change_Group_Mute = 113;
+        int Change_Group_JoinType = 114;
+        int Change_Group_PrivateChat = 115;
+        int Change_Group_Searchable = 116;
+        int Set_Group_Manager = 117;
+        int Mute_Group_Member = 118;
+        int Allow_Group_Member = 119;
+        int Kickoff_Group_Member_Visible_Notification = 120;
+        int Quit_Group_Visible_Notification = 121;
+        int Modify_Group_Extra = 122;
+        int Modify_Group_Member_Extra = 123;
+    }
+
+    public interface MessagePersistFlag {
+        int NOT_PERSIST = 0;
+        int PERSIST = 1;
+        int PERSIST_AND_COUNT = 3;
+        int TRANSPARENT = 4;
+    }
+
+    public interface MessageMediaType {
+        int GENERAL = 0;
+        int IMAGE = 1;
+        int VOICE = 2;
+        int VIDEO = 3;
+        int FILE = 4;
+        int PORTRAIT = 5;
+        int FAVORITE = 6;
+        int STICKER = 7;
+        int MOMENTS = 8;
     }
 
     //ModifyGroupInfoRequest -> type

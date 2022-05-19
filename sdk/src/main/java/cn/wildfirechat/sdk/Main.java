@@ -1,6 +1,8 @@
 package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.messagecontentbuilder.RichNotificationContentBuilder;
+import cn.wildfirechat.messagecontentbuilder.TextMessageContentBuilder;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
@@ -661,13 +663,29 @@ public class Main {
     //***********************************************
     static void testMessage() throws Exception {
         Conversation conversation = new Conversation();
-        conversation.setTarget("user2");
+        conversation.setTarget("ff2");
         conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
-        MessagePayload payload = new MessagePayload();
-        payload.setType(1);
-        payload.setSearchableContent("hello world");
+        MessagePayload payload = TextMessageContentBuilder.newBuilder("Hello world").build();
 
-        IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("user1", conversation, payload, null);
+        IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("ff1", conversation, payload, null);
+        if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("send message success");
+        } else {
+            System.out.println("send message failure");
+            System.exit(-1);
+        }
+
+        RichNotificationContentBuilder builder = RichNotificationContentBuilder.newBuilder("产品审核通知", "您好，您的SSL证书以审核通过并成功办理，请关注", "https://www.baidu.com")
+            .remark("谢谢惠顾")
+            .exName("证书小助手")
+            .appId("1234567890")
+            .addItem("登陆账户", "野火IM", "#173177")
+            .addItem("产品名称", "域名wildifrechat.cn申请的免费SSL证书", "#173177")
+            .addItem("审核通过", "通过", "#173177")
+            .addItem("说明", "请登陆账户查看处理", "#173177");
+
+
+        resultSendMessage = MessageAdmin.sendMessage("ff1", conversation, builder.build(), null);
         if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("send message success");
         } else {

@@ -626,8 +626,8 @@ public class MessagesPublisher {
                 pushContent = "[语音]";
             } else if(type == ProtoConstants.ContentType.Video) {
                 pushContent = "[视频]";
-            } else if(type == ProtoConstants.ContentType.RichMedia) {
-                pushContent = "[图文]";
+            } else if(type == ProtoConstants.ContentType.Link) {
+                pushContent = "[链接]";
             } else if(type == ProtoConstants.ContentType.File) {
                 pushContent = "[文件]";
             } else if(type == ProtoConstants.ContentType.Sticker) {
