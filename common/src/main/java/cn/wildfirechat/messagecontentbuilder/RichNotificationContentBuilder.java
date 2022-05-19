@@ -52,7 +52,7 @@ public class RichNotificationContentBuilder extends MessageContentBuilder{
         }
         JSONObject item = new JSONObject();
         item.put("key", key);
-        item.put("value", value);
+        item.put("value", value == null ? "" : value);
         if(!StringUtil.isNullOrEmpty(color)) {
             item.put("color", color);
         }
