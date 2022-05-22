@@ -89,6 +89,7 @@ public class ProtoConstants {
         int Name_Card = 10;
         int Composited = 11;
         int Rich_Notification = 12;
+        int Articles = 13;
         int Enter_Channel_Chat = 71;
         int Leave_Channel_Chat = 72;
         int Recall = 80;
