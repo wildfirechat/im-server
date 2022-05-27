@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
 
-public class ChannelHttpUtils {
+public class ChannelHttpUtils extends JsonUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ChannelHttpUtils.class);
 
     private String imurl;
@@ -101,18 +101,6 @@ public class ChannelHttpUtils {
                 post.releaseConnection();
             }
         }
-    }
-
-    private static <T> IMResult<T> fromJsonObject(String content, Class<T> clazz) {
-        Type type = TypeBuilder
-                .newInstance(IMResult.class)
-                .addTypeParam(clazz)
-                .build();
-        return new Gson().fromJson(content, type);
-    }
-
-    private static boolean isNullOrEmpty(String str) {
-        return str == null || str.isEmpty();
     }
 
     public String getChannelId() {
