@@ -994,7 +994,7 @@ public class DatabaseStore {
             }
             sb.append(")");
 
-            sb.append(" and _scope = 6 and _key = ?");
+            sb.append(" and _scope in (5,6,26) and _key = ?");
 
             statement = connection.prepareStatement(sb.toString());
             int index = 1;
