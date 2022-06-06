@@ -39,6 +39,7 @@ public class MemorySessionStore implements ISessionsStore {
     private static final Logger LOG = LoggerFactory.getLogger(MemorySessionStore.class);
 
     private boolean supportMultiEndpoint = false;
+    private boolean supportMultiPCEndpoint = false;
     private boolean clientSupportKickoff = false;
 
     public static class Session implements Comparable<Session>{
@@ -288,6 +289,11 @@ public class MemorySessionStore implements ISessionsStore {
         }
 
         try {
+            supportMultiPCEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_PC_ENDPOINT, "false"));
+        } catch (Exception e) {
+        }
+
+        try {
             clientSupportKickoff = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_CLIENT_SUPPORT_KICKOFF_EVENT, "false"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -385,7 +391,12 @@ public class MemorySessionStore implements ISessionsStore {
         }
         databaseStore.clearMultiUser(username, clientID);
 
-        if (!supportMultiEndpoint && platform > 0) {
+        if (!supportMultiEndpoint
+            && platform > 0
+            && !(platform == ProtoConstants.Platform.Platform_Windows && supportMultiPCEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_LINUX && supportMultiPCEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_OSX && supportMultiPCEndpoint)
+        ) {
             databaseStore.clearMultiEndpoint(username, clientID, platform);
             if (userSessions.get(username) != null) {
                 Iterator<String> it = userSessions.get(username).iterator();
