@@ -21,9 +21,9 @@
 * 拥有机器人和频道功能。
 
 ## 野火开源项目
-主要包括一下项目：
+主要包括以下项目：
 
-| [GitHub仓库地址(主站)](https://github.com/wildfirechat)      | [码云仓库地址(镜像)](https://gitee.com/wfchat)        | 说明                                                                                      
+| [GitHub仓库地址](https://github.com/wildfirechat)      | [码云仓库地址](https://gitee.com/wfchat)        | 说明                                                                                      
 | ------------------------------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------
 | [im-server](https://github.com/wildfirechat/im-server)       | [im-server](https://gitee.com/wfchat/im-server)          | 野火社区版IM服务，野火IM的核心服务，处理所有IM相关业务。                                                                                 |
 | [app_server](https://github.com/wildfirechat/app_server)     | [app_server](https://gitee.com/wfchat/app_server)     | Demo应用服务，模拟客户的应用服登陆处理逻辑及部分二次开发示例。                                                                                |  
