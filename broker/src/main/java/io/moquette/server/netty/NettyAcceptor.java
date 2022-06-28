@@ -160,7 +160,7 @@ public class NettyAcceptor implements ServerAcceptor {
                                              IConfig props) throws IOException {
         LOG.info("Configuring TCP MQTT transport");
         final MoquetteIdleTimeoutHandler timeoutHandler = new MoquetteIdleTimeoutHandler();
-        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME);
+        String host = props.getProperty(BrokerConstants.HOST_PROPERTY_NAME, "0.0.0.0");
         String tcpPortProp = props.getProperty(PORT_PROPERTY_NAME, DISABLED_PORT_BIND);
         if (DISABLED_PORT_BIND.equals(tcpPortProp)) {
             LOG.info("Property {} has been set to {}. TCP MQTT will be disabled", BrokerConstants.PORT_PROPERTY_NAME,
