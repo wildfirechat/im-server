@@ -166,14 +166,6 @@ abstract public class IMHandler<T> {
     public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback, ProtoConstants.RequestSourceType requestSourceType) {
         LOG.info("imHandler fromUser={}, clientId={}, topic={}", fromUser, clientID, topic);
         if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
-            ByteBuf ackPayload = Unpooled.buffer();
-            ackPayload.ensureWritable(1).writeByte(ERROR_CODE_OVER_FREQUENCY.getCode());
-            try {
-                callback.onIMHandled(ERROR_CODE_OVER_FREQUENCY, ackPayload);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Utility.printExecption(LOG, e);
-            }
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
         return ErrorCode.ERROR_CODE_SUCCESS;
