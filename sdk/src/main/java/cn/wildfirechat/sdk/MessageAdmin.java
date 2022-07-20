@@ -103,4 +103,16 @@ public class MessageAdmin {
         messageData.setPayload(payload);
         return AdminHttpUtils.httpJsonPost(path, messageData, MultiMessageResult.class);
     }
+
+    public static IMResult<OutputTimestamp> getConversationReadTimestamp(String userId, Conversation conversation) throws Exception {
+        String path = APIPath.Msg_ConvRead;
+        InputGetConvReadTime input = new InputGetConvReadTime(userId, conversation.getType(), conversation.getTarget(), conversation.getLine());
+        return AdminHttpUtils.httpJsonPost(path, input, OutputTimestamp.class);
+    }
+
+    public static IMResult<OutputTimestamp> getMessageDelivery(String userId) throws Exception {
+        String path = APIPath.Msg_Delivery;
+        InputUserId input = new InputUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputTimestamp.class);
+    }
 }

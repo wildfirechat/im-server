@@ -750,6 +750,20 @@ public class Main {
             } else {
                 System.out.println("failure");
             }
+
+            IMResult<OutputTimestamp> timestampResult = MessageAdmin.getConversationReadTimestamp("57gqmws2k", new Conversation(0, "admin", 0));
+            if(timestampResult != null && timestampResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("Get conversation read time success");
+            } else {
+                System.out.println("Get conversation read time failure");
+            }
+
+            timestampResult = MessageAdmin.getMessageDelivery("57gqmws2k");
+            if(timestampResult != null && timestampResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("Get message delivery success");
+            } else {
+                System.out.println("Get message delivery failure");
+            }
         }
 
         List<String> multicastReceivers = Arrays.asList("user2", "user3", "user4");

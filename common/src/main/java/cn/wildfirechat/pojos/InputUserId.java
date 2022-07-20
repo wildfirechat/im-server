@@ -11,6 +11,13 @@ package cn.wildfirechat.pojos;
 public class InputUserId {
     private String userId;
 
+    public InputUserId() {
+    }
+
+    public InputUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getUserId() {
         return userId;
     }

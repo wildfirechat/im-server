@@ -8,26 +8,36 @@
 
 package cn.wildfirechat.pojos;
 
-public class Conversation {
-    private int type;
+public class InputGetConvReadTime {
+    private String userId;
+    private int conversationType;
     private String target;
     private int line;
 
-    public Conversation() {
+    public InputGetConvReadTime() {
     }
 
-    public Conversation(int type, String target, int line) {
-        this.type = type;
+    public InputGetConvReadTime(String userId, int conversationType, String target, int line) {
+        this.userId = userId;
+        this.conversationType = conversationType;
         this.target = target;
         this.line = line;
     }
 
-    public int getType() {
-        return type;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public int getConversationType() {
+        return conversationType;
+    }
+
+    public void setConversationType(int conversationType) {
+        this.conversationType = conversationType;
     }
 
     public String getTarget() {
