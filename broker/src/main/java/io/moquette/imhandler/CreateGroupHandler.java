@@ -21,6 +21,9 @@ import win.liyufan.im.IMTopic;
 public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.CreateGroupRequest request, Qos1PublishHandler.IMCallback callback) {
+        if(request.getGroup().getGroupInfo().getType() < 0 || request.getGroup().getGroupInfo().getType() > 2) {
+            return ErrorCode.ERROR_CODE_INVALID_DATA;
+        }
 
         if (!StringUtil.isNullOrEmpty(request.getGroup().getGroupInfo().getTargetId())) {
             WFCMessage.GroupInfo existGroupInfo = m_messagesStore.getGroupInfo(request.getGroup().getGroupInfo().getTargetId());
