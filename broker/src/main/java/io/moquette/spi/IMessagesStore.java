@@ -233,6 +233,10 @@ public interface IMessagesStore {
     boolean isAllowRobotCustomGroupNotification();
     int getVisibleQuitKickoffNotification();
 
+    boolean isForwardMessageWithClientInfo();
+    boolean isRobotCallbackWithClientInfo();
+    boolean isChannelCallbackWithClientInfo();
+
     List<Integer> getClientForbiddenSendTypes();
     List<Integer> getBlackListExceptionTypes();
     List<Integer> getGroupMuteExceptionTypes();

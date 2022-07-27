@@ -167,6 +167,10 @@ public class MemoryMessagesStore implements IMessagesStore {
     private int mSyncDataPartSize = 0;
     private boolean keepDisplayNameWhenDestroyUser = true;
 
+    private boolean mForwardMessageWithClientInfo = false;
+    private boolean mRobotCallbackWithClientInfo = false;
+    private boolean mChannelCallbackWithClientInfo = false;
+
     private Set<Integer> mUserHideProperties = new HashSet<>();
 
     MemoryMessagesStore(Server server, DatabaseStore databaseStore) {
@@ -446,6 +450,23 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
+
+        try {
+            mForwardMessageWithClientInfo = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_With_Client_Info, "false"));
+        } catch (Exception e) {
+
+        }
+        try {
+            mRobotCallbackWithClientInfo = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.ROBOT_Callback_With_Client_Info, "false"));
+        } catch (Exception e) {
+
+        }
+        try {
+            mChannelCallbackWithClientInfo = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.CHANNEL_Callback_With_Client_Info, "false"));
+        } catch (Exception e) {
+
+        }
+
     }
 
     private void printMissConfigLog(String config, String defaultValue) {
@@ -4066,6 +4087,20 @@ public class MemoryMessagesStore implements IMessagesStore {
         return mGroupVisibleQuitKickoffNotification;
     }
 
+    @Override
+    public boolean isForwardMessageWithClientInfo() {
+        return mForwardMessageWithClientInfo;
+    }
+
+    @Override
+    public boolean isRobotCallbackWithClientInfo() {
+        return mRobotCallbackWithClientInfo;
+    }
+
+    @Override
+    public boolean isChannelCallbackWithClientInfo() {
+        return mChannelCallbackWithClientInfo;
+    }
 
     @Override
     public List<Integer> getClientForbiddenSendTypes() {

@@ -142,6 +142,10 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_NO_Forward_Admin_Message = "message.no_forward_admin_message";
 
+    public static final String MESSAGE_Forward_With_Client_Info = "message.forward_with_client_info";
+    public static final String ROBOT_Callback_With_Client_Info = "robot.callback_with_client_info";
+    public static final String CHANNEL_Callback_With_Client_Info = "channel.callback_with_client_info";
+
     public static final String FRIEND_Disable_Search = "friend.disable_search";
     public static final String FRIEND_Disable_NickName_Search = "friend.disable_nick_name_search";
     public static final String FRIEND_Disable_Friend_Request = "friend.disable_friend_request";

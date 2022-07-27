@@ -20,6 +20,7 @@ public class OutputMessageData {
     private MessagePayload payload;
     private List<String> toUsers;
     private long timestamp;
+    private OutputClient client;
 
     public String getSender() {
         return sender;
@@ -69,7 +70,19 @@ public class OutputMessageData {
         this.timestamp = timestamp;
     }
 
+    public OutputClient getClient() {
+        return client;
+    }
+
+    public void setClient(OutputClient client) {
+        this.client = client;
+    }
+
     public static OutputMessageData fromProtoMessage(WFCMessage.Message protoMessage) {
+        return fromProtoMessage(protoMessage, null);
+    }
+
+    public static OutputMessageData fromProtoMessage(WFCMessage.Message protoMessage, OutputClient fromClient) {
         OutputMessageData data = new OutputMessageData();
         data.messageId = protoMessage.getMessageId();
         data.sender = protoMessage.getFromUser();
@@ -80,6 +93,7 @@ public class OutputMessageData {
         data.payload = MessagePayload.fromProtoMessageContent(protoMessage.getContent());
         data.timestamp = protoMessage.getServerTimestamp();
         data.toUsers = protoMessage.getToList();
+        data.client = fromClient;
         return data;
     }
 }

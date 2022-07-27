@@ -9,11 +9,13 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.pojos.MessagePayload;
+import cn.wildfirechat.pojos.OutputClient;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
 import com.hazelcast.util.StringUtil;
 import io.moquette.BrokerConstants;
+import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
@@ -171,12 +173,20 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             }
             message = message.toBuilder().setFromUser(fromUser).setMessageId(messageId).setServerTimestamp(timestamp).build();
 
+            OutputClient outputClient = null;
+            if(m_messagesStore.isForwardMessageWithClientInfo() && requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !StringUtil.isNullOrEmpty(clientID)) {
+                MemorySessionStore.Session session = m_sessionsStore.getSession(clientID);
+                if(session != null && session.getUsername().equals(fromUser)) {
+                    outputClient = new OutputClient(session.getPlatform(), clientID);
+                }
+            }
+
             if (!StringUtil.isNullOrEmpty(mForwardUrl) && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage)) {
-                publisher.forwardMessage(message, mForwardUrl);
+                publisher.forwardMessage(message, mForwardUrl, outputClient);
             }
 
             if(!StringUtil.isNullOrEmpty(mMentionForwardUrl) && message.hasContent() && message.getContent().getMentionedType() != 0 && !(isAdmin && mNoForwardAdminMessage)) {
-                publisher.forwardMessage(message, mMentionForwardUrl);
+                publisher.forwardMessage(message, mMentionForwardUrl, outputClient);
             }
 
             if (!isAdmin) {

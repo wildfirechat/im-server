@@ -16,6 +16,7 @@
 
 package io.moquette.spi.impl;
 
+import cn.wildfirechat.pojos.OutputClient;
 import cn.wildfirechat.pojos.OutputMessageData;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -175,10 +176,19 @@ public class MessagesPublisher {
                         if (message == null) {
                             message = m_messagesStore.getMessage(messageId);
                         }
+                        OutputClient outputClient = null;
+                        if(m_messagesStore.isRobotCallbackWithClientInfo() && !StringUtil.isNullOrEmpty(exceptClientId)) {
+                            Session session = m_sessionsStore.getSession(exceptClientId);
+                            if(session != null && session.getUsername().equals(sender)) {
+                                outputClient = new OutputClient(session.getPlatform(), exceptClientId);
+                            }
+                        }
+
                         final WFCMessage.Message finalMsg = message;
+                        OutputClient finalOutputClient = outputClient;
                         Server.getServer().getCallbackScheduler().execute(() -> {
                             try {
-                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(OutputMessageData.fromProtoMessage(finalMsg), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
+                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(OutputMessageData.fromProtoMessage(finalMsg, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -595,9 +605,18 @@ public class MessagesPublisher {
         if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
             WFCMessage.ChannelInfo channelInfo = m_messagesStore.getChannelInfo(message.getConversation().getTarget());
             if (channelInfo != null && !StringUtil.isNullOrEmpty(channelInfo.getCallback())) {
+                OutputClient outputClient = null;
+                if(m_messagesStore.isChannelCallbackWithClientInfo() && !StringUtil.isNullOrEmpty(exceptClientId)) {
+                    Session session = m_sessionsStore.getSession(exceptClientId);
+                    if(session != null && session.getUsername().equals(message.getFromUser())) {
+                        outputClient = new OutputClient(session.getPlatform(), exceptClientId);
+                    }
+                }
+
+                OutputClient finalOutputClient = outputClient;
                 Server.getServer().getCallbackScheduler().execute(() -> {
                     try {
-                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Message_Callback);
+                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(OutputMessageData.fromProtoMessage(message, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Message_Callback);
                     } catch (Exception e) {
                         e.printStackTrace();
                         Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -647,10 +666,10 @@ public class MessagesPublisher {
 
     }
 
-    public void forwardMessage(final WFCMessage.Message message, String forwardUrl) {
+    public void forwardMessage(final WFCMessage.Message message, String forwardUrl, OutputClient outputClient) {
         Server.getServer().getCallbackScheduler().execute(() -> {
             try {
-                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
+                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message, outputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
             } catch (Exception e) {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
