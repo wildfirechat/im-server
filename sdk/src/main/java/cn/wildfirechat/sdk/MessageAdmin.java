@@ -19,6 +19,9 @@ public class MessageAdmin {
         messageData.setConv(conversation);
         messageData.setPayload(payload);
         messageData.setToUsers(toUsers);
+        if (payload.getType() == 1 && (payload.getSearchableContent() == null || payload.getSearchableContent().isEmpty())) {
+            System.out.println("Payload错误，Payload格式应该跟客户端消息encode出来的Payload对齐，这样客户端才能正确识别。比如文本消息，文本需要放到searchableContent属性。请与客户端同事确认Payload的格式，或则去 https://gitee.com/wfchat/android-chat/tree/master/client/src/main/java/cn/wildfirechat/message 找到消息encode的实现方法！");
+        }
         return AdminHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
