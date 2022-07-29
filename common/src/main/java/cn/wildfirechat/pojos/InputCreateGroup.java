@@ -67,16 +67,18 @@ public class InputCreateGroup extends InputGroupBase {
         }
 
         groupBuilder.setGroupInfo(groupInfoBuilder);
-        for (PojoGroupMember pojoGroupMember : group.getMembers()) {
-            WFCMessage.GroupMember.Builder groupMemberBuilder = WFCMessage.GroupMember.newBuilder().setMemberId(pojoGroupMember.getMember_id());
-            if (!StringUtil.isNullOrEmpty(pojoGroupMember.getAlias())) {
-                groupMemberBuilder.setAlias(pojoGroupMember.getAlias());
+        if(group.getMembers() != null) {
+            for (PojoGroupMember pojoGroupMember : group.getMembers()) {
+                WFCMessage.GroupMember.Builder groupMemberBuilder = WFCMessage.GroupMember.newBuilder().setMemberId(pojoGroupMember.getMember_id());
+                if (!StringUtil.isNullOrEmpty(pojoGroupMember.getAlias())) {
+                    groupMemberBuilder.setAlias(pojoGroupMember.getAlias());
+                }
+                groupMemberBuilder.setType(pojoGroupMember.getType());
+                if (!StringUtil.isNullOrEmpty(pojoGroupMember.getExtra())) {
+                    groupMemberBuilder.setExtra(pojoGroupMember.extra);
+                }
+                groupBuilder.addMembers(groupMemberBuilder);
             }
-            groupMemberBuilder.setType(pojoGroupMember.getType());
-            if(!StringUtil.isNullOrEmpty(pojoGroupMember.getExtra())) {
-                groupMemberBuilder.setExtra(pojoGroupMember.extra);
-            }
-            groupBuilder.addMembers(groupMemberBuilder);
         }
 
         WFCMessage.CreateGroupRequest.Builder createGroupReqBuilder = WFCMessage.CreateGroupRequest.newBuilder();
