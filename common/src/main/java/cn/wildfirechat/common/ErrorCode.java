@@ -29,6 +29,7 @@ public enum ErrorCode {
 
     //Group error
     ERROR_CODE_GROUP_ALREADY_EXIST(11, "group already exist"),
+    ERROR_CODE_ALREADY_IN_GROUP(12, "member already in group"),
 
     //user error
     ERROR_CODE_FRIEND_ALREADY_REQUEST(16, "already send request"),

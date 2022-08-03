@@ -1300,11 +1300,31 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
+        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
+        if (members == null || members.size() == 0) {
+            members = loadGroupMemberFromDB(hzInstance, groupId);
+        }
+
+        ArrayList<String> existMemberIds = new ArrayList<>();
+        for (WFCMessage.GroupMember member : members) {
+            if (member.getType() != GroupMemberType_Removed) {
+                existMemberIds.add(member.getMemberId());
+            }
+        }
+
         long updateDt = System.currentTimeMillis();
 
         List<WFCMessage.GroupMember> tmp = new ArrayList<>();
-        ArrayList<String> newInviteUsers = new ArrayList<>();
+        int newMemberCount = 0;
         for (WFCMessage.GroupMember member : memberList) {
+            if (existMemberIds.contains(member.getMemberId()) && member.getType() != GroupMemberType_Removed) {
+                if(!isAdmin)
+                    continue;
+            } else {
+                newMemberCount++;
+            }
+
             WFCMessage.GroupMember.Builder builder = member.toBuilder();
             builder.setUpdateDt(updateDt).setCreateDt(updateDt);
             if (member.getMemberId().equals(groupInfo.getOwner())) {
@@ -1324,28 +1344,22 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
             member = builder.build();
             tmp.add(member);
-            newInviteUsers.add(member.getMemberId());
             updateDt++;
         }
         memberList = tmp;
 
-        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
-        Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
-        if (members == null || members.size() == 0) {
-            members = loadGroupMemberFromDB(hzInstance, groupId);
-        }
-
-        if (maxCount != Integer.MAX_VALUE) {
-            int existCount = 0;
-            for (WFCMessage.GroupMember member : members) {
-                if (member.getType() != GroupMemberType_Removed) {
-                    existCount++;
-                }
+        if (memberList.size() == 0) {
+            if (!isAdmin) {
+                return ErrorCode.ERROR_CODE_ALREADY_IN_GROUP;
+            } else {
+                return ErrorCode.ERROR_CODE_SUCCESS;
             }
-            if (existCount + newInviteUsers.size() > maxCount) {
+        } else {
+            if (existMemberIds.size() + newMemberCount > maxCount) {
                 return ErrorCode.ERROR_CODE_GROUP_EXCEED_MAX_MEMBER_COUNT;
             }
         }
+
 
         databaseStore.persistGroupMember(groupId, memberList, true);
         databaseStore.updateGroupMemberCountDt(groupId);
