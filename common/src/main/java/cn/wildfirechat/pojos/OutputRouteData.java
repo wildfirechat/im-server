@@ -16,6 +16,9 @@ public class OutputRouteData { ;
     private int shortPort;
     private String secret;
 
+    public OutputRouteData() {
+    }
+
     public OutputRouteData(List<String> serverIPs, int longPort, int shortPort, String secret) {
         this.serverIPs = serverIPs;
         this.longPort = longPort;

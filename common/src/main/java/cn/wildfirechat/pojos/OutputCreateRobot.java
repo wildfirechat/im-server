@@ -12,6 +12,9 @@ public class OutputCreateRobot {
     private String userId;
     private String secret;
 
+    public OutputCreateRobot() {
+    }
+
     public OutputCreateRobot(String userId, String secret) {
         this.userId = userId;
         this.secret = secret;

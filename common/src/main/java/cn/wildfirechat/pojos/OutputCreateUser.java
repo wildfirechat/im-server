@@ -12,6 +12,9 @@ public class OutputCreateUser {
     private String userId;
     private String name;
 
+    public OutputCreateUser() {
+    }
+
     public OutputCreateUser(String userId, String name) {
         this.userId = userId;
         this.name = name;

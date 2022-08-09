@@ -31,6 +31,9 @@ public class GroupNotificationBinaryContent {
     //value2(member or something)
     private String m;
 
+    public GroupNotificationBinaryContent() {
+    }
+
     public GroupNotificationBinaryContent(String g, String o, String n, String m) {
         this.g = g;
         this.o = o;

@@ -13,6 +13,9 @@ public class InputChatroomMute {
     private String chatroomId;
     private int status;
 
+    public InputChatroomMute() {
+    }
+
     public InputChatroomMute(String chatroomId, int status) {
         this.chatroomId = chatroomId;
         this.status = status;

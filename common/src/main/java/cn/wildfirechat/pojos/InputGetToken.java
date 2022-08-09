@@ -5,6 +5,9 @@ public class InputGetToken {
     private String clientId;
     private Integer platform;
 
+    public InputGetToken() {
+    }
+
     public InputGetToken(String userId, String clientId, int platform) {
         this.userId = userId;
         this.clientId = clientId;

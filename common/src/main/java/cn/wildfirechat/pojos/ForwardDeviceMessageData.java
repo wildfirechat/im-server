@@ -18,6 +18,9 @@ public class ForwardDeviceMessageData {
     private int type;
     private byte[] data;
 
+    public ForwardDeviceMessageData() {
+    }
+
     public ForwardDeviceMessageData(String deviceId, int type, byte[] data) {
         this.deviceId = deviceId;
         this.type = type;

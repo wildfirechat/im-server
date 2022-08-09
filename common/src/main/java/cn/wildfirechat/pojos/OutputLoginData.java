@@ -14,6 +14,9 @@ public class OutputLoginData {
     private String userId;
     private String token;
 
+    public OutputLoginData() {
+    }
+
     public OutputLoginData(String userId, String token) {
         this.userId = userId;
         this.token = token;

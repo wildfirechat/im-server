@@ -13,6 +13,9 @@ public class OutputNotifyChannelSubscribeStatus {
     private String channelId;
     private int status;
 
+    public OutputNotifyChannelSubscribeStatus() {
+    }
+
     public OutputNotifyChannelSubscribeStatus(String userId, String channelId, boolean subscirbed) {
         this.userId = userId;
         this.channelId = channelId;

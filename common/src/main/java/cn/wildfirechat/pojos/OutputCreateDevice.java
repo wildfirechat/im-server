@@ -13,6 +13,9 @@ public class OutputCreateDevice {
     private String token;
     private String secret;
 
+    public OutputCreateDevice() {
+    }
+
     public OutputCreateDevice(String userId, String token, String secret) {
         this.deviceId = userId;
         this.token = token;

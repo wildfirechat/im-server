@@ -20,6 +20,9 @@ public class OutputDevice {
     private List<String> owners;
     private String extra;
 
+    public OutputDevice() {
+    }
+
     public OutputDevice(String deviceId, String token, String secret) {
         this.deviceId = deviceId;
         this.token = token;

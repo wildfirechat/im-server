@@ -13,6 +13,9 @@ public class InputOutputUserBlockStatus {
     private String userId;
     private int status;
 
+    public InputOutputUserBlockStatus() {
+    }
+
     public InputOutputUserBlockStatus(String userId, int status) {
         this.userId = userId;
         this.status = status;

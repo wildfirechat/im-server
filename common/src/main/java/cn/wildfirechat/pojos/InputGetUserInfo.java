@@ -13,6 +13,9 @@ public class InputGetUserInfo {
     private String name;
     private String mobile;
 
+    public InputGetUserInfo() {
+    }
+
     public InputGetUserInfo(String userId, String name, String mobile) {
         this.userId = userId;
         this.name = name;
