@@ -96,6 +96,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private static final String CHANNEL_LISTENERS = "channel_listeners";
 
     private static boolean IS_MESSAGE_ROAMING = true;
+    private static long msgCompensateTimeLimit = 300000;
 
     private static boolean IS_MESSAGE_REMOTE_HISTORY_MESSAGE = true;
     private static boolean IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE = true;
@@ -178,6 +179,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         this.databaseStore = databaseStore;
 
         IS_MESSAGE_ROAMING = "1".equals(m_Server.getConfig().getProperty(MESSAGE_ROAMING));
+        try {
+            msgCompensateTimeLimit = Long.parseLong(m_Server.getConfig().getProperty(MESSAGE_Compensate_Time_Limit, "300000"));
+        } catch (NumberFormatException e) {
+
+        }
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
         IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_Chatroom_History_Message, "1"));
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
@@ -739,7 +745,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                             }
                         }
 
-                        if (noRoaming && (System.currentTimeMillis() - bundle.getMessage().getServerTimestamp() > 5 * 60 * 1000)) {
+                        if (noRoaming && (System.currentTimeMillis() - bundle.getMessage().getServerTimestamp() > msgCompensateTimeLimit)) {
                             continue;
                         }
 

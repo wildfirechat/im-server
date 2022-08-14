@@ -131,6 +131,7 @@ public final class BrokerConstants {
     public static final String SERVER_CLIENT_SUPPORT_KICKOFF_EVENT = "server.client_support_kickoff_event";
 
     public static final String MESSAGE_ROAMING = "message.roaming";
+    public static final String MESSAGE_Compensate_Time_Limit = "message.compensate_time_limit";
     public static final String MESSAGE_Remote_History_Message = "message.remote_history_message";
     public static final String MESSAGE_Remote_Chatroom_History_Message = "message.chatroom_remote_history_message";
 
