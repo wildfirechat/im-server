@@ -2972,7 +2972,8 @@ public class DatabaseStore {
                     ", `_secret`" +
                     ", `_callback`" +
                     ", `_automatic`" +
-                    ", `_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    ", `_menu`" +
+                    ", `_dt`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON DUPLICATE KEY UPDATE `_name`=?" +
                     ", `_portrait`=?" +
                     ", `_owner`=?" +
@@ -2982,12 +2983,20 @@ public class DatabaseStore {
                     ", `_secret`=?" +
                     ", `_callback`=?" +
                     ", `_automatic`=?" +
+                    ", `_menu`=?" +
                     ", `_dt`=?";
 
                 statement = connection.prepareStatement(sql);
 
-                int index = 1;
+                WFCMessage.ChannelMenuList.Builder builder = WFCMessage.ChannelMenuList.newBuilder();
+                if (!channelInfo.getMenuList().isEmpty()) {
+                    for (WFCMessage.ChannelMenu menuBtn:channelInfo.getMenuList()) {
+                        builder.addMenu(menuBtn);
+                    }
+                }
+                byte[] menuBytes = builder.build().toByteArray();
 
+                int index = 1;
                 statement.setString(index++, channelInfo.getTargetId());
                 statement.setString(index++, channelInfo.getName());
                 statement.setString(index++, channelInfo.getPortrait());
@@ -2998,6 +3007,7 @@ public class DatabaseStore {
                 statement.setString(index++, channelInfo.getSecret());
                 statement.setString(index++, channelInfo.getCallback());
                 statement.setInt(index++, channelInfo.getAutomatic());
+                statement.setBytes(index++, menuBytes);
                 statement.setLong(index++, channelInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : channelInfo.getUpdateDt());
 
                 statement.setString(index++, channelInfo.getName());
@@ -3009,6 +3019,7 @@ public class DatabaseStore {
                 statement.setString(index++, channelInfo.getSecret());
                 statement.setString(index++, channelInfo.getCallback());
                 statement.setInt(index++, channelInfo.getAutomatic());
+                statement.setBytes(index++, menuBytes);
                 statement.setLong(index++, channelInfo.getUpdateDt() == 0 ? System.currentTimeMillis() : channelInfo.getUpdateDt());
 
                 int count = statement.executeUpdate();
@@ -3061,6 +3072,7 @@ public class DatabaseStore {
                 ", `_secret`" +
                 ", `_callback`" +
                 ", `_automatic`" +
+                ", `_menu`" +
                 ", `_dt` from t_channel  where `_cid` = ?";
 
             statement = connection.prepareStatement(sql);
@@ -3110,6 +3122,21 @@ public class DatabaseStore {
 
                 intValue = rs.getInt(index++);
                 builder.setAutomatic(intValue);
+
+                try {
+                    byte[] bytes = null;
+                    Blob blob = rs.getBlob(index++);
+                    if (blob != null) {
+                        bytes = toByteArray(blob.getBinaryStream());
+                    }
+
+                    WFCMessage.ChannelMenuList menuButtonList = WFCMessage.ChannelMenuList.parseFrom(bytes);
+                    if (menuButtonList.getMenuCount() > 0) {
+                        builder.addAllMenu(menuButtonList.getMenuList());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);

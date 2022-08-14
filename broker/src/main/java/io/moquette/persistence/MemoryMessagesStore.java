@@ -3888,8 +3888,14 @@ public class MemoryMessagesStore implements IMessagesStore {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e);
             }
+        } else if(modifyType == Modify_Channel_Menu) {
+            OutputGetChannelInfo.OutputMenuList outputMenuButtons = new Gson().fromJson(value, OutputGetChannelInfo.OutputMenuList.class);
+            if (!outputMenuButtons.isEmpty()) {
+                for (OutputGetChannelInfo.OutputMenu outputMenuButton : outputMenuButtons) {
+                    newInfoBuilder.addMenu(outputMenuButton.toPbInfo());
+                }
+            }
         }
-
 
         newInfoBuilder.setUpdateDt(System.currentTimeMillis());
         mIMap.put(channelId, newInfoBuilder.build());

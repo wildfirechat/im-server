@@ -173,6 +173,7 @@ public class ProtoConstants {
         int Modify_Channel_Secret = 4;
         int Modify_Channel_Callback = 5;
         int Modify_Channel_OnlyCallback = 6;
+        int Modify_Channel_Menu = 7;
     }
 
     //Channel -> status

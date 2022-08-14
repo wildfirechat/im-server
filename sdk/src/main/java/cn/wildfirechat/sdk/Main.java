@@ -8,6 +8,7 @@ import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
+import com.google.gson.Gson;
 import io.netty.util.internal.StringUtil;
 
 
@@ -827,8 +828,8 @@ public class Main {
 
         IMResult<OutputGetChannelInfo> resultGetChannel = GeneralAdmin.getChannelInfo(inputCreateChannel.getTargetId());
         if(resultGetChannel != null && resultGetChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS
-                && resultGetChannel.getResult().getName().equals(channelName)
-                && resultGetChannel.getResult().getOwner().equals(channelOwner)) {
+            && resultGetChannel.getResult().getName().equals(channelName)
+            && resultGetChannel.getResult().getOwner().equals(channelOwner)) {
             System.out.println("success");
         } else {
             System.out.println("get channel failure");
@@ -1356,7 +1357,11 @@ public class Main {
         inputCreateChannel.setName("testChannel");
         inputCreateChannel.setOwner("userId1");
         String secret = "channelsecret";
+        String channelId = "channelId123";
         inputCreateChannel.setSecret(secret);
+        inputCreateChannel.setTargetId(channelId);
+        inputCreateChannel.setAuto(1);
+        inputCreateChannel.setCallback("http://192.168.1.81:8088/wf/channelId123");
         inputCreateChannel.setState(Channel_State_Mask_FullInfo | Channel_State_Mask_Unsubscribed_User_Access | Channel_State_Mask_Active_Subscribe | Channel_State_Mask_Message_Unsubscribed);
         IMResult<OutputCreateChannel> resultCreateChannel = GeneralAdmin.createChannel(inputCreateChannel);
         if (resultCreateChannel != null && resultCreateChannel.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -1368,7 +1373,7 @@ public class Main {
 
 
         //2. 初始化api，注意端口是80，不是18080
-        ChannelServiceApi channelServiceApi = new ChannelServiceApi(IMUrl, resultCreateChannel.getResult().getTargetId(), secret);
+        ChannelServiceApi channelServiceApi = new ChannelServiceApi(IMUrl, channelId, secret);
 
 
         //3. 测试channel api功能
@@ -1447,6 +1452,38 @@ public class Main {
             System.out.println("modify channel profile success");
         } else {
             System.out.println("modify channel profile failure");
+            System.exit(-1);
+        }
+
+        List<OutputGetChannelInfo.OutputMenu> menus = new ArrayList<>();
+        OutputGetChannelInfo.OutputMenu menu1 = new OutputGetChannelInfo.OutputMenu();
+        menu1.type = "view";
+        menu1.name = "一级菜单1";
+        menu1.key = "key1";
+        menu1.url = "http://www.baidu.com";
+        menus.add(menu1);
+
+        OutputGetChannelInfo.OutputMenu menu2 = new OutputGetChannelInfo.OutputMenu();
+        menu2.type = "view";
+        menu2.name = "一级菜单2";
+        menu2.key = "key2";
+        menu2.url = "http://www.sohu.com";
+        menu2.subMenus = new ArrayList<>();
+        menus.add(menu2);
+
+        OutputGetChannelInfo.OutputMenu menu21 = new OutputGetChannelInfo.OutputMenu();
+        menu21.type = "click";
+        menu21.name = "二级菜单21";
+        menu21.key = "key21";
+        menu21.url = "http://www.sohu.com";
+        menu2.subMenus.add(menu21);
+
+        String menuStr = new Gson().toJson(menus);
+        voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Menu, menuStr);
+        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("modify channel menu success");
+        } else {
+            System.out.println("modify channel menu failure");
             System.exit(-1);
         }
 

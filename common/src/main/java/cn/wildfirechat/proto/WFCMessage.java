@@ -5324,6 +5324,2645 @@ public final class WFCMessage {
     // @@protoc_insertion_point(class_scope:Group)
   }
 
+  public interface ChannelMenuOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string type = 1;
+    /**
+     * <code>required string type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>required string type = 1;</code>
+     */
+    java.lang.String getType();
+    /**
+     * <code>required string type = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getTypeBytes();
+
+    // required string name = 2;
+    /**
+     * <code>required string name = 2;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>required string name = 2;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>required string name = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional string key = 3;
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    boolean hasKey();
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    java.lang.String getKey();
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getKeyBytes();
+
+    // optional string url = 4;
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    boolean hasUrl();
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    java.lang.String getUrl();
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getUrlBytes();
+
+    // optional string media_id = 5;
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    boolean hasMediaId();
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    java.lang.String getMediaId();
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getMediaIdBytes();
+
+    // optional string article_id = 6;
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    boolean hasArticleId();
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    java.lang.String getArticleId();
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    com.google.protobuf.ByteString
+        getArticleIdBytes();
+
+    // optional string app_id = 7;
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    boolean hasAppId();
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    java.lang.String getAppId();
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getAppIdBytes();
+
+    // optional string app_page = 8;
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    boolean hasAppPage();
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    java.lang.String getAppPage();
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getAppPageBytes();
+
+    // repeated .ChannelMenu sub_menu = 9;
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> 
+        getSubMenuList();
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenu getSubMenu(int index);
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    int getSubMenuCount();
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getSubMenuOrBuilderList();
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getSubMenuOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code ChannelMenu}
+   */
+  public static final class ChannelMenu extends
+      com.google.protobuf.GeneratedMessage
+      implements ChannelMenuOrBuilder {
+    // Use ChannelMenu.newBuilder() to construct.
+    private ChannelMenu(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ChannelMenu(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ChannelMenu defaultInstance;
+    public static ChannelMenu getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ChannelMenu getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ChannelMenu(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              type_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              name_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              key_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              url_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
+              mediaId_ = input.readBytes();
+              break;
+            }
+            case 50: {
+              bitField0_ |= 0x00000020;
+              articleId_ = input.readBytes();
+              break;
+            }
+            case 58: {
+              bitField0_ |= 0x00000040;
+              appId_ = input.readBytes();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              appPage_ = input.readBytes();
+              break;
+            }
+            case 74: {
+              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+                subMenu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>();
+                mutable_bitField0_ |= 0x00000100;
+              }
+              subMenu_.add(input.readMessage(cn.wildfirechat.proto.WFCMessage.ChannelMenu.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+          subMenu_ = java.util.Collections.unmodifiableList(subMenu_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenu_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenu_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.ChannelMenu.class, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ChannelMenu> PARSER =
+        new com.google.protobuf.AbstractParser<ChannelMenu>() {
+      public ChannelMenu parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ChannelMenu(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ChannelMenu> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private java.lang.Object type_;
+    /**
+     * <code>required string type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string type = 1;</code>
+     */
+    public java.lang.String getType() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          type_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string type = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTypeBytes() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        type_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string name = 2;
+    public static final int NAME_FIELD_NUMBER = 2;
+    private java.lang.Object name_;
+    /**
+     * <code>required string name = 2;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required string name = 2;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string name = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string key = 3;
+    public static final int KEY_FIELD_NUMBER = 3;
+    private java.lang.Object key_;
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    public boolean hasKey() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    public java.lang.String getKey() {
+      java.lang.Object ref = key_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          key_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string key = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getKeyBytes() {
+      java.lang.Object ref = key_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        key_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string url = 4;
+    public static final int URL_FIELD_NUMBER = 4;
+    private java.lang.Object url_;
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    public boolean hasUrl() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    public java.lang.String getUrl() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          url_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string url = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        url_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string media_id = 5;
+    public static final int MEDIA_ID_FIELD_NUMBER = 5;
+    private java.lang.Object mediaId_;
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    public boolean hasMediaId() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    public java.lang.String getMediaId() {
+      java.lang.Object ref = mediaId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          mediaId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string media_id = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMediaIdBytes() {
+      java.lang.Object ref = mediaId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        mediaId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string article_id = 6;
+    public static final int ARTICLE_ID_FIELD_NUMBER = 6;
+    private java.lang.Object articleId_;
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    public boolean hasArticleId() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    public java.lang.String getArticleId() {
+      java.lang.Object ref = articleId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          articleId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string article_id = 6;</code>
+     */
+    public com.google.protobuf.ByteString
+        getArticleIdBytes() {
+      java.lang.Object ref = articleId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        articleId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string app_id = 7;
+    public static final int APP_ID_FIELD_NUMBER = 7;
+    private java.lang.Object appId_;
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    public boolean hasAppId() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    public java.lang.String getAppId() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          appId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string app_id = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAppIdBytes() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        appId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string app_page = 8;
+    public static final int APP_PAGE_FIELD_NUMBER = 8;
+    private java.lang.Object appPage_;
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    public boolean hasAppPage() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    public java.lang.String getAppPage() {
+      java.lang.Object ref = appPage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          appPage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string app_page = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAppPageBytes() {
+      java.lang.Object ref = appPage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        appPage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .ChannelMenu sub_menu = 9;
+    public static final int SUB_MENU_FIELD_NUMBER = 9;
+    private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> subMenu_;
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getSubMenuList() {
+      return subMenu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getSubMenuOrBuilderList() {
+      return subMenu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    public int getSubMenuCount() {
+      return subMenu_.size();
+    }
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenu getSubMenu(int index) {
+      return subMenu_.get(index);
+    }
+    /**
+     * <code>repeated .ChannelMenu sub_menu = 9;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getSubMenuOrBuilder(
+        int index) {
+      return subMenu_.get(index);
+    }
+
+    private void initFields() {
+      type_ = "";
+      name_ = "";
+      key_ = "";
+      url_ = "";
+      mediaId_ = "";
+      articleId_ = "";
+      appId_ = "";
+      appPage_ = "";
+      subMenu_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getSubMenuCount(); i++) {
+        if (!getSubMenu(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getKeyBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getUrlBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getMediaIdBytes());
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBytes(6, getArticleIdBytes());
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBytes(7, getAppIdBytes());
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, getAppPageBytes());
+      }
+      for (int i = 0; i < subMenu_.size(); i++) {
+        output.writeMessage(9, subMenu_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getKeyBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getUrlBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getMediaIdBytes());
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(6, getArticleIdBytes());
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(7, getAppIdBytes());
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getAppPageBytes());
+      }
+      for (int i = 0; i < subMenu_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, subMenu_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenu parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.ChannelMenu prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ChannelMenu}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenu_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenu_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.ChannelMenu.class, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.ChannelMenu.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getSubMenuFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        type_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        key_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        url_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        mediaId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        articleId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000020);
+        appId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000040);
+        appPage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
+        if (subMenuBuilder_ == null) {
+          subMenu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000100);
+        } else {
+          subMenuBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenu_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu build() {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenu result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenu result = new cn.wildfirechat.proto.WFCMessage.ChannelMenu(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.key_ = key_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.url_ = url_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.mediaId_ = mediaId_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.articleId_ = articleId_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.appId_ = appId_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.appPage_ = appPage_;
+        if (subMenuBuilder_ == null) {
+          if (((bitField0_ & 0x00000100) == 0x00000100)) {
+            subMenu_ = java.util.Collections.unmodifiableList(subMenu_);
+            bitField0_ = (bitField0_ & ~0x00000100);
+          }
+          result.subMenu_ = subMenu_;
+        } else {
+          result.subMenu_ = subMenuBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.ChannelMenu) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.ChannelMenu)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.ChannelMenu other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          bitField0_ |= 0x00000001;
+          type_ = other.type_;
+          onChanged();
+        }
+        if (other.hasName()) {
+          bitField0_ |= 0x00000002;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasKey()) {
+          bitField0_ |= 0x00000004;
+          key_ = other.key_;
+          onChanged();
+        }
+        if (other.hasUrl()) {
+          bitField0_ |= 0x00000008;
+          url_ = other.url_;
+          onChanged();
+        }
+        if (other.hasMediaId()) {
+          bitField0_ |= 0x00000010;
+          mediaId_ = other.mediaId_;
+          onChanged();
+        }
+        if (other.hasArticleId()) {
+          bitField0_ |= 0x00000020;
+          articleId_ = other.articleId_;
+          onChanged();
+        }
+        if (other.hasAppId()) {
+          bitField0_ |= 0x00000040;
+          appId_ = other.appId_;
+          onChanged();
+        }
+        if (other.hasAppPage()) {
+          bitField0_ |= 0x00000080;
+          appPage_ = other.appPage_;
+          onChanged();
+        }
+        if (subMenuBuilder_ == null) {
+          if (!other.subMenu_.isEmpty()) {
+            if (subMenu_.isEmpty()) {
+              subMenu_ = other.subMenu_;
+              bitField0_ = (bitField0_ & ~0x00000100);
+            } else {
+              ensureSubMenuIsMutable();
+              subMenu_.addAll(other.subMenu_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.subMenu_.isEmpty()) {
+            if (subMenuBuilder_.isEmpty()) {
+              subMenuBuilder_.dispose();
+              subMenuBuilder_ = null;
+              subMenu_ = other.subMenu_;
+              bitField0_ = (bitField0_ & ~0x00000100);
+              subMenuBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getSubMenuFieldBuilder() : null;
+            } else {
+              subMenuBuilder_.addAllMessages(other.subMenu_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasType()) {
+          
+          return false;
+        }
+        if (!hasName()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getSubMenuCount(); i++) {
+          if (!getSubMenu(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenu parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.ChannelMenu) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string type = 1;
+      private java.lang.Object type_ = "";
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public java.lang.String getType() {
+        java.lang.Object ref = type_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          type_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes() {
+        java.lang.Object ref = type_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          type_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public Builder setType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = getDefaultInstance().getType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string type = 1;</code>
+       */
+      public Builder setTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string name = 2;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string name = 2;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string key = 3;
+      private java.lang.Object key_ = "";
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public java.lang.String getKey() {
+        java.lang.Object ref = key_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          key_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getKeyBytes() {
+        java.lang.Object ref = key_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          key_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public Builder setKey(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        key_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public Builder clearKey() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        key_ = getDefaultInstance().getKey();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string key = 3;</code>
+       */
+      public Builder setKeyBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        key_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string url = 4;
+      private java.lang.Object url_ = "";
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public boolean hasUrl() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public java.lang.String getUrl() {
+        java.lang.Object ref = url_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          url_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUrlBytes() {
+        java.lang.Object ref = url_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          url_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public Builder setUrl(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public Builder clearUrl() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        url_ = getDefaultInstance().getUrl();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 4;</code>
+       */
+      public Builder setUrlBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string media_id = 5;
+      private java.lang.Object mediaId_ = "";
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public boolean hasMediaId() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public java.lang.String getMediaId() {
+        java.lang.Object ref = mediaId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          mediaId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMediaIdBytes() {
+        java.lang.Object ref = mediaId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          mediaId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public Builder setMediaId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        mediaId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public Builder clearMediaId() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        mediaId_ = getDefaultInstance().getMediaId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string media_id = 5;</code>
+       */
+      public Builder setMediaIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        mediaId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string article_id = 6;
+      private java.lang.Object articleId_ = "";
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public boolean hasArticleId() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public java.lang.String getArticleId() {
+        java.lang.Object ref = articleId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          articleId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public com.google.protobuf.ByteString
+          getArticleIdBytes() {
+        java.lang.Object ref = articleId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          articleId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public Builder setArticleId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        articleId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public Builder clearArticleId() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        articleId_ = getDefaultInstance().getArticleId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string article_id = 6;</code>
+       */
+      public Builder setArticleIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        articleId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string app_id = 7;
+      private java.lang.Object appId_ = "";
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public boolean hasAppId() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public java.lang.String getAppId() {
+        java.lang.Object ref = appId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          appId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAppIdBytes() {
+        java.lang.Object ref = appId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          appId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public Builder setAppId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000040;
+        appId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public Builder clearAppId() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        appId_ = getDefaultInstance().getAppId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_id = 7;</code>
+       */
+      public Builder setAppIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000040;
+        appId_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string app_page = 8;
+      private java.lang.Object appPage_ = "";
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public boolean hasAppPage() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public java.lang.String getAppPage() {
+        java.lang.Object ref = appPage_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          appPage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAppPageBytes() {
+        java.lang.Object ref = appPage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          appPage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public Builder setAppPage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        appPage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public Builder clearAppPage() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        appPage_ = getDefaultInstance().getAppPage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_page = 8;</code>
+       */
+      public Builder setAppPageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        appPage_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .ChannelMenu sub_menu = 9;
+      private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> subMenu_ =
+        java.util.Collections.emptyList();
+      private void ensureSubMenuIsMutable() {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+          subMenu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>(subMenu_);
+          bitField0_ |= 0x00000100;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> subMenuBuilder_;
+
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getSubMenuList() {
+        if (subMenuBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(subMenu_);
+        } else {
+          return subMenuBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public int getSubMenuCount() {
+        if (subMenuBuilder_ == null) {
+          return subMenu_.size();
+        } else {
+          return subMenuBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu getSubMenu(int index) {
+        if (subMenuBuilder_ == null) {
+          return subMenu_.get(index);
+        } else {
+          return subMenuBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder setSubMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (subMenuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSubMenuIsMutable();
+          subMenu_.set(index, value);
+          onChanged();
+        } else {
+          subMenuBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder setSubMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (subMenuBuilder_ == null) {
+          ensureSubMenuIsMutable();
+          subMenu_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          subMenuBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder addSubMenu(cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (subMenuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSubMenuIsMutable();
+          subMenu_.add(value);
+          onChanged();
+        } else {
+          subMenuBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder addSubMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (subMenuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureSubMenuIsMutable();
+          subMenu_.add(index, value);
+          onChanged();
+        } else {
+          subMenuBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder addSubMenu(
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (subMenuBuilder_ == null) {
+          ensureSubMenuIsMutable();
+          subMenu_.add(builderForValue.build());
+          onChanged();
+        } else {
+          subMenuBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder addSubMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (subMenuBuilder_ == null) {
+          ensureSubMenuIsMutable();
+          subMenu_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          subMenuBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder addAllSubMenu(
+          java.lang.Iterable<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenu> values) {
+        if (subMenuBuilder_ == null) {
+          ensureSubMenuIsMutable();
+          super.addAll(values, subMenu_);
+          onChanged();
+        } else {
+          subMenuBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder clearSubMenu() {
+        if (subMenuBuilder_ == null) {
+          subMenu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000100);
+          onChanged();
+        } else {
+          subMenuBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public Builder removeSubMenu(int index) {
+        if (subMenuBuilder_ == null) {
+          ensureSubMenuIsMutable();
+          subMenu_.remove(index);
+          onChanged();
+        } else {
+          subMenuBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder getSubMenuBuilder(
+          int index) {
+        return getSubMenuFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getSubMenuOrBuilder(
+          int index) {
+        if (subMenuBuilder_ == null) {
+          return subMenu_.get(index);  } else {
+          return subMenuBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+           getSubMenuOrBuilderList() {
+        if (subMenuBuilder_ != null) {
+          return subMenuBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(subMenu_);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addSubMenuBuilder() {
+        return getSubMenuFieldBuilder().addBuilder(
+            cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addSubMenuBuilder(
+          int index) {
+        return getSubMenuFieldBuilder().addBuilder(
+            index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu sub_menu = 9;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder> 
+           getSubMenuBuilderList() {
+        return getSubMenuFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+          getSubMenuFieldBuilder() {
+        if (subMenuBuilder_ == null) {
+          subMenuBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder>(
+                  subMenu_,
+                  ((bitField0_ & 0x00000100) == 0x00000100),
+                  getParentForChildren(),
+                  isClean());
+          subMenu_ = null;
+        }
+        return subMenuBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:ChannelMenu)
+    }
+
+    static {
+      defaultInstance = new ChannelMenu(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:ChannelMenu)
+  }
+
+  public interface ChannelMenuListOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .ChannelMenu menu = 1;
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> 
+        getMenuList();
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index);
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    int getMenuCount();
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getMenuOrBuilderList();
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code ChannelMenuList}
+   */
+  public static final class ChannelMenuList extends
+      com.google.protobuf.GeneratedMessage
+      implements ChannelMenuListOrBuilder {
+    // Use ChannelMenuList.newBuilder() to construct.
+    private ChannelMenuList(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ChannelMenuList(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ChannelMenuList defaultInstance;
+    public static ChannelMenuList getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ChannelMenuList getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ChannelMenuList(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                menu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              menu_.add(input.readMessage(cn.wildfirechat.proto.WFCMessage.ChannelMenu.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          menu_ = java.util.Collections.unmodifiableList(menu_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenuList_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenuList_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              cn.wildfirechat.proto.WFCMessage.ChannelMenuList.class, cn.wildfirechat.proto.WFCMessage.ChannelMenuList.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ChannelMenuList> PARSER =
+        new com.google.protobuf.AbstractParser<ChannelMenuList>() {
+      public ChannelMenuList parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ChannelMenuList(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ChannelMenuList> getParserForType() {
+      return PARSER;
+    }
+
+    // repeated .ChannelMenu menu = 1;
+    public static final int MENU_FIELD_NUMBER = 1;
+    private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> menu_;
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getMenuList() {
+      return menu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getMenuOrBuilderList() {
+      return menu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    public int getMenuCount() {
+      return menu_.size();
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index) {
+      return menu_.get(index);
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 1;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+        int index) {
+      return menu_.get(index);
+    }
+
+    private void initFields() {
+      menu_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getMenuCount(); i++) {
+        if (!getMenu(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < menu_.size(); i++) {
+        output.writeMessage(1, menu_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < menu_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, menu_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static cn.wildfirechat.proto.WFCMessage.ChannelMenuList parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(cn.wildfirechat.proto.WFCMessage.ChannelMenuList prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ChannelMenuList}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements cn.wildfirechat.proto.WFCMessage.ChannelMenuListOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenuList_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenuList_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                cn.wildfirechat.proto.WFCMessage.ChannelMenuList.class, cn.wildfirechat.proto.WFCMessage.ChannelMenuList.Builder.class);
+      }
+
+      // Construct using cn.wildfirechat.proto.WFCMessage.ChannelMenuList.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getMenuFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (menuBuilder_ == null) {
+          menu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          menuBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return cn.wildfirechat.proto.WFCMessage.internal_static_ChannelMenuList_descriptor;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuList getDefaultInstanceForType() {
+        return cn.wildfirechat.proto.WFCMessage.ChannelMenuList.getDefaultInstance();
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuList build() {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenuList result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuList buildPartial() {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenuList result = new cn.wildfirechat.proto.WFCMessage.ChannelMenuList(this);
+        int from_bitField0_ = bitField0_;
+        if (menuBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            menu_ = java.util.Collections.unmodifiableList(menu_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.menu_ = menu_;
+        } else {
+          result.menu_ = menuBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof cn.wildfirechat.proto.WFCMessage.ChannelMenuList) {
+          return mergeFrom((cn.wildfirechat.proto.WFCMessage.ChannelMenuList)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(cn.wildfirechat.proto.WFCMessage.ChannelMenuList other) {
+        if (other == cn.wildfirechat.proto.WFCMessage.ChannelMenuList.getDefaultInstance()) return this;
+        if (menuBuilder_ == null) {
+          if (!other.menu_.isEmpty()) {
+            if (menu_.isEmpty()) {
+              menu_ = other.menu_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureMenuIsMutable();
+              menu_.addAll(other.menu_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.menu_.isEmpty()) {
+            if (menuBuilder_.isEmpty()) {
+              menuBuilder_.dispose();
+              menuBuilder_ = null;
+              menu_ = other.menu_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              menuBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getMenuFieldBuilder() : null;
+            } else {
+              menuBuilder_.addAllMessages(other.menu_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getMenuCount(); i++) {
+          if (!getMenu(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        cn.wildfirechat.proto.WFCMessage.ChannelMenuList parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (cn.wildfirechat.proto.WFCMessage.ChannelMenuList) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .ChannelMenu menu = 1;
+      private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> menu_ =
+        java.util.Collections.emptyList();
+      private void ensureMenuIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          menu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>(menu_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> menuBuilder_;
+
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getMenuList() {
+        if (menuBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(menu_);
+        } else {
+          return menuBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public int getMenuCount() {
+        if (menuBuilder_ == null) {
+          return menu_.size();
+        } else {
+          return menuBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index) {
+        if (menuBuilder_ == null) {
+          return menu_.get(index);
+        } else {
+          return menuBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder setMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.set(index, value);
+          onChanged();
+        } else {
+          menuBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder setMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder addMenu(cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.add(value);
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder addMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.add(index, value);
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder addMenu(
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.add(builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder addMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder addAllMenu(
+          java.lang.Iterable<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenu> values) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          super.addAll(values, menu_);
+          onChanged();
+        } else {
+          menuBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder clearMenu() {
+        if (menuBuilder_ == null) {
+          menu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          menuBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public Builder removeMenu(int index) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.remove(index);
+          onChanged();
+        } else {
+          menuBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder getMenuBuilder(
+          int index) {
+        return getMenuFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+          int index) {
+        if (menuBuilder_ == null) {
+          return menu_.get(index);  } else {
+          return menuBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+           getMenuOrBuilderList() {
+        if (menuBuilder_ != null) {
+          return menuBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(menu_);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addMenuBuilder() {
+        return getMenuFieldBuilder().addBuilder(
+            cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addMenuBuilder(
+          int index) {
+        return getMenuFieldBuilder().addBuilder(
+            index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 1;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder> 
+           getMenuBuilderList() {
+        return getMenuFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+          getMenuFieldBuilder() {
+        if (menuBuilder_ == null) {
+          menuBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder>(
+                  menu_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          menu_ = null;
+        }
+        return menuBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:ChannelMenuList)
+    }
+
+    static {
+      defaultInstance = new ChannelMenuList(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:ChannelMenuList)
+  }
+
   public interface ChannelInfoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -5484,6 +8123,31 @@ public final class WFCMessage {
      * <code>optional int32 automatic = 11;</code>
      */
     int getAutomatic();
+
+    // repeated .ChannelMenu menu = 12;
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> 
+        getMenuList();
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index);
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    int getMenuCount();
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getMenuOrBuilderList();
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code ChannelInfo}
@@ -5591,6 +8255,14 @@ public final class WFCMessage {
               automatic_ = input.readInt32();
               break;
             }
+            case 98: {
+              if (!((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+                menu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>();
+                mutable_bitField0_ |= 0x00000800;
+              }
+              menu_.add(input.readMessage(cn.wildfirechat.proto.WFCMessage.ChannelMenu.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -5599,6 +8271,9 @@ public final class WFCMessage {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+          menu_ = java.util.Collections.unmodifiableList(menu_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -6031,6 +8706,42 @@ public final class WFCMessage {
       return automatic_;
     }
 
+    // repeated .ChannelMenu menu = 12;
+    public static final int MENU_FIELD_NUMBER = 12;
+    private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> menu_;
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getMenuList() {
+      return menu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+        getMenuOrBuilderList() {
+      return menu_;
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    public int getMenuCount() {
+      return menu_.size();
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index) {
+      return menu_.get(index);
+    }
+    /**
+     * <code>repeated .ChannelMenu menu = 12;</code>
+     */
+    public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+        int index) {
+      return menu_.get(index);
+    }
+
     private void initFields() {
       targetId_ = "";
       name_ = "";
@@ -6043,6 +8754,7 @@ public final class WFCMessage {
       secret_ = "";
       callback_ = "";
       automatic_ = 0;
+      menu_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6052,6 +8764,12 @@ public final class WFCMessage {
       if (!hasName()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      for (int i = 0; i < getMenuCount(); i++) {
+        if (!getMenu(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -6092,6 +8810,9 @@ public final class WFCMessage {
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeInt32(11, automatic_);
+      }
+      for (int i = 0; i < menu_.size(); i++) {
+        output.writeMessage(12, menu_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -6145,6 +8866,10 @@ public final class WFCMessage {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(11, automatic_);
+      }
+      for (int i = 0; i < menu_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, menu_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6254,6 +8979,7 @@ public final class WFCMessage {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getMenuFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6284,6 +9010,12 @@ public final class WFCMessage {
         bitField0_ = (bitField0_ & ~0x00000200);
         automatic_ = 0;
         bitField0_ = (bitField0_ & ~0x00000400);
+        if (menuBuilder_ == null) {
+          menu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000800);
+        } else {
+          menuBuilder_.clear();
+        }
         return this;
       }
 
@@ -6356,6 +9088,15 @@ public final class WFCMessage {
           to_bitField0_ |= 0x00000400;
         }
         result.automatic_ = automatic_;
+        if (menuBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
+            menu_ = java.util.Collections.unmodifiableList(menu_);
+            bitField0_ = (bitField0_ & ~0x00000800);
+          }
+          result.menu_ = menu_;
+        } else {
+          result.menu_ = menuBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6421,6 +9162,32 @@ public final class WFCMessage {
         if (other.hasAutomatic()) {
           setAutomatic(other.getAutomatic());
         }
+        if (menuBuilder_ == null) {
+          if (!other.menu_.isEmpty()) {
+            if (menu_.isEmpty()) {
+              menu_ = other.menu_;
+              bitField0_ = (bitField0_ & ~0x00000800);
+            } else {
+              ensureMenuIsMutable();
+              menu_.addAll(other.menu_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.menu_.isEmpty()) {
+            if (menuBuilder_.isEmpty()) {
+              menuBuilder_.dispose();
+              menuBuilder_ = null;
+              menu_ = other.menu_;
+              bitField0_ = (bitField0_ & ~0x00000800);
+              menuBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getMenuFieldBuilder() : null;
+            } else {
+              menuBuilder_.addAllMessages(other.menu_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -6429,6 +9196,12 @@ public final class WFCMessage {
         if (!hasName()) {
           
           return false;
+        }
+        for (int i = 0; i < getMenuCount(); i++) {
+          if (!getMenu(i).isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -7157,6 +9930,246 @@ public final class WFCMessage {
         automatic_ = 0;
         onChanged();
         return this;
+      }
+
+      // repeated .ChannelMenu menu = 12;
+      private java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> menu_ =
+        java.util.Collections.emptyList();
+      private void ensureMenuIsMutable() {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+          menu_ = new java.util.ArrayList<cn.wildfirechat.proto.WFCMessage.ChannelMenu>(menu_);
+          bitField0_ |= 0x00000800;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> menuBuilder_;
+
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu> getMenuList() {
+        if (menuBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(menu_);
+        } else {
+          return menuBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public int getMenuCount() {
+        if (menuBuilder_ == null) {
+          return menu_.size();
+        } else {
+          return menuBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu getMenu(int index) {
+        if (menuBuilder_ == null) {
+          return menu_.get(index);
+        } else {
+          return menuBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder setMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.set(index, value);
+          onChanged();
+        } else {
+          menuBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder setMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder addMenu(cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.add(value);
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder addMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu value) {
+        if (menuBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureMenuIsMutable();
+          menu_.add(index, value);
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder addMenu(
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.add(builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder addMenu(
+          int index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder builderForValue) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          menuBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder addAllMenu(
+          java.lang.Iterable<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenu> values) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          super.addAll(values, menu_);
+          onChanged();
+        } else {
+          menuBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder clearMenu() {
+        if (menuBuilder_ == null) {
+          menu_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000800);
+          onChanged();
+        } else {
+          menuBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public Builder removeMenu(int index) {
+        if (menuBuilder_ == null) {
+          ensureMenuIsMutable();
+          menu_.remove(index);
+          onChanged();
+        } else {
+          menuBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder getMenuBuilder(
+          int index) {
+        return getMenuFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder getMenuOrBuilder(
+          int index) {
+        if (menuBuilder_ == null) {
+          return menu_.get(index);  } else {
+          return menuBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public java.util.List<? extends cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+           getMenuOrBuilderList() {
+        if (menuBuilder_ != null) {
+          return menuBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(menu_);
+        }
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addMenuBuilder() {
+        return getMenuFieldBuilder().addBuilder(
+            cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder addMenuBuilder(
+          int index) {
+        return getMenuFieldBuilder().addBuilder(
+            index, cn.wildfirechat.proto.WFCMessage.ChannelMenu.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .ChannelMenu menu = 12;</code>
+       */
+      public java.util.List<cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder> 
+           getMenuBuilderList() {
+        return getMenuFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder> 
+          getMenuFieldBuilder() {
+        if (menuBuilder_ == null) {
+          menuBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              cn.wildfirechat.proto.WFCMessage.ChannelMenu, cn.wildfirechat.proto.WFCMessage.ChannelMenu.Builder, cn.wildfirechat.proto.WFCMessage.ChannelMenuOrBuilder>(
+                  menu_,
+                  ((bitField0_ & 0x00000800) == 0x00000800),
+                  getParentForChildren(),
+                  isClean());
+          menu_ = null;
+        }
+        return menuBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:ChannelInfo)
@@ -63532,6 +66545,16 @@ public final class WFCMessage {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_Group_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_ChannelMenu_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_ChannelMenu_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_ChannelMenuList_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_ChannelMenuList_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_ChannelInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -63901,160 +66924,166 @@ public final class WFCMessage {
       " \002(\005\022\021\n\tupdate_dt\030\004 \001(\003\022\021\n\tcreate_dt\030\005 \001" +
       "(\003\022\r\n\005extra\030\006 \001(\t\"F\n\005Group\022\036\n\ngroup_info" +
       "\030\001 \002(\0132\n.GroupInfo\022\035\n\007members\030\002 \003(\0132\014.Gr" +
-      "oupMember\"\304\001\n\013ChannelInfo\022\021\n\ttarget_id\030\001" +
-      " \001(\t\022\014\n\004name\030\002 \002(\t\022\020\n\010portrait\030\003 \001(\t\022\r\n\005" +
-      "owner\030\004 \001(\t\022\016\n\006status\030\005 \001(\005\022\014\n\004desc\030\006 \001(" +
-      "\t\022\r\n\005extra\030\007 \001(\t\022\021\n\tupdate_dt\030\010 \001(\003\022\016\n\006s",
-      "ecret\030\t \001(\t\022\020\n\010callback\030\n \001(\t\022\021\n\tautomat" +
-      "ic\030\013 \001(\005\"D\n\021ModifyChannelInfo\022\022\n\nchannel" +
-      "_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\"8" +
-      "\n\017TransferChannel\022\022\n\nchannel_id\030\001 \002(\t\022\021\n" +
-      "\tnew_owner\030\002 \002(\t\"3\n\017PullChannelInfo\022\022\n\nc" +
-      "hannel_id\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"H\n\023PullCha" +
-      "nnelListener\022\022\n\nchannel_id\030\001 \002(\t\022\016\n\006offs" +
-      "et\030\002 \002(\005\022\r\n\005count\030\003 \002(\005\"R\n\031PullChannelLi" +
-      "stenerResult\022\023\n\013total_count\030\001 \002(\005\022\016\n\006off" +
-      "set\030\002 \002(\005\022\020\n\010listener\030\003 \003(\t\"3\n\rListenCha",
-      "nnel\022\022\n\nchannel_id\030\001 \002(\t\022\016\n\006listen\030\002 \002(\005" +
-      "\"E\n\023SearchChannelResult\022\035\n\007channel\030\001 \003(\013" +
-      "2\014.ChannelInfo\022\017\n\007keyword\030\002 \002(\t\"\235\002\n\016Mess" +
-      "ageContent\022\014\n\004type\030\001 \002(\005\022\032\n\022searchable_c" +
-      "ontent\030\002 \001(\t\022\024\n\014push_content\030\003 \001(\t\022\017\n\007co" +
-      "ntent\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\022\021\n\tmediaType\030\006" +
-      " \001(\005\022\026\n\016remoteMediaUrl\030\007 \001(\t\022\024\n\014persist_" +
-      "flag\030\010 \001(\005\022\027\n\017expire_duration\030\t \001(\005\022\026\n\016m" +
-      "entioned_type\030\n \001(\005\022\030\n\020mentioned_target\030" +
-      "\013 \003(\t\022\r\n\005extra\030\014 \001(\t\022\021\n\tpush_data\030\r \001(\t\"",
-      "\226\001\n\025AddGroupMemberRequest\022\020\n\010group_id\030\001 " +
-      "\002(\t\022\"\n\014added_member\030\002 \003(\0132\014.GroupMember\022" +
-      "\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\013" +
-      "2\017.MessageContent\022\r\n\005extra\030\005 \001(\t\"{\n\022Crea" +
-      "teGroupRequest\022\025\n\005group\030\001 \002(\0132\006.Group\022\017\n" +
-      "\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003 \001(\0132\017" +
-      ".MessageContent\022\024\n\014member_extra\030\004 \001(\t\"a\n" +
-      "\023DismissGroupRequest\022\020\n\010group_id\030\001 \002(\t\022\017" +
-      "\n\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003 \001(\0132" +
-      "\017.MessageContent\"\245\001\n\rFriendRequest\022\020\n\010fr",
-      "om_uid\030\001 \001(\t\022\016\n\006to_uid\030\002 \002(\t\022\016\n\006reason\030\003" +
-      " \002(\t\022\016\n\006status\030\004 \001(\005\022\021\n\tupdate_dt\030\005 \001(\003\022" +
-      "\030\n\020from_read_status\030\006 \001(\010\022\026\n\016to_read_sta" +
-      "tus\030\007 \001(\010\022\r\n\005extra\030\010 \001(\t\"#\n\rGeneralResul" +
-      "t\022\022\n\nerror_code\030\001 \002(\005\"?\n\025GetUploadTokenR" +
-      "equest\022\022\n\nmedia_type\030\001 \002(\005\022\022\n\nmedia_path" +
-      "\030\002 \002(\t\"S\n\024GetUploadTokenResult\022\016\n\006domain" +
-      "\030\001 \002(\t\022\r\n\005token\030\002 \002(\t\022\016\n\006server\030\003 \002(\t\022\014\n" +
-      "\004port\030\004 \001(\005\"H\n\023HandleFriendRequest\022\022\n\nta" +
-      "rget_uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005\022\r\n\005extra\030",
-      "\003 \001(\t\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tIDListBuf\022" +
-      "\n\n\002id\030\001 \003(\t\"\256\001\n\007Message\022#\n\014conversation\030" +
-      "\001 \002(\0132\r.Conversation\022\021\n\tfrom_user\030\002 \002(\t\022" +
-      " \n\007content\030\003 \002(\0132\017.MessageContent\022\022\n\nmes" +
-      "sage_id\030\004 \001(\003\022\030\n\020server_timestamp\030\005 \001(\003\022" +
-      "\017\n\007to_user\030\006 \001(\t\022\n\n\002to\030\007 \003(\t\"\353\001\n\004User\022\013\n" +
-      "\003uid\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\024\n\014display_name" +
-      "\030\003 \001(\t\022\020\n\010portrait\030\004 \001(\t\022\016\n\006mobile\030\005 \001(\t" +
-      "\022\r\n\005email\030\006 \001(\t\022\017\n\007address\030\007 \001(\t\022\017\n\007comp" +
-      "any\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\021\n\tupdate_dt\030\n ",
-      "\001(\003\022\016\n\006gender\030\013 \001(\005\022\016\n\006social\030\014 \001(\t\022\014\n\004t" +
-      "ype\030\r \001(\005\022\017\n\007deleted\030\016 \001(\005\"c\n\005Robot\022\013\n\003u" +
-      "id\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r\n\005owner\030\003 \001(\t\022\016" +
-      "\n\006secret\030\004 \001(\t\022\020\n\010callback\030\005 \001(\t\022\r\n\005extr" +
-      "a\030\006 \001(\t\"(\n\017GetRobotsResult\022\025\n\005entry\030\001 \003(" +
-      "\0132\006.Robot\"g\n\030UploadDeviceTokenRequest\022\020\n" +
-      "\010platform\030\001 \002(\005\022\020\n\010app_name\030\002 \002(\t\022\024\n\014dev" +
-      "ice_token\030\003 \002(\t\022\021\n\tpush_type\030\004 \002(\005\"\201\001\n\026M" +
-      "odifyGroupInfoRequest\022\020\n\010group_id\030\001 \002(\t\022" +
-      "\014\n\004type\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\022\017\n\007to_line\030",
-      "\004 \003(\005\022\'\n\016notify_content\030\005 \001(\0132\017.MessageC" +
-      "ontent\"\203\001\n\026SetGroupManagerRequest\022\020\n\010gro" +
-      "up_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\017\n\007user_id\030\003 \003" +
-      "(\t\022\017\n\007to_line\030\004 \003(\005\022\'\n\016notify_content\030\005 " +
-      "\001(\0132\017.MessageContent\"(\n\tInfoEntry\022\014\n\004typ" +
-      "e\030\001 \002(\005\022\r\n\005value\030\002 \002(\t\"0\n\023ModifyMyInfoRe" +
-      "quest\022\031\n\005entry\030\001 \003(\0132\n.InfoEntry\";\n\rNoti" +
-      "fyMessage\022\014\n\004type\030\001 \002(\005\022\014\n\004head\030\002 \002(\003\022\016\n" +
-      "\006target\030\003 \001(\t\"=\n\022PullMessageRequest\022\n\n\002i" +
-      "d\030\001 \002(\003\022\014\n\004type\030\002 \002(\005\022\r\n\005delay\030\003 \001(\003\"M\n\021",
-      "PullMessageResult\022\031\n\007message\030\001 \003(\0132\010.Mes" +
-      "sage\022\017\n\007current\030\002 \002(\003\022\014\n\004head\030\003 \002(\003\"/\n\023P" +
-      "ullGroupInfoResult\022\030\n\004info\030\001 \003(\0132\n.Group" +
-      "Info\"6\n\026PullGroupMemberRequest\022\016\n\006target" +
-      "\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"5\n\025PullGroupMemberR" +
-      "esult\022\034\n\006member\030\001 \003(\0132\014.GroupMember\"-\n\013U" +
-      "serRequest\022\013\n\003uid\030\001 \002(\t\022\021\n\tupdate_dt\030\002 \001" +
-      "(\003\"0\n\017PullUserRequest\022\035\n\007request\030\001 \003(\0132\014" +
-      ".UserRequest\"/\n\nUserResult\022\023\n\004user\030\001 \002(\013" +
-      "2\005.User\022\014\n\004code\030\002 \002(\005\"-\n\016PullUserResult\022",
-      "\033\n\006result\030\001 \003(\0132\013.UserResult\"^\n\020QuitGrou" +
-      "pRequest\022\020\n\010group_id\030\001 \002(\t\022\017\n\007to_line\030\002 " +
-      "\003(\005\022\'\n\016notify_content\030\003 \001(\0132\017.MessageCon" +
-      "tent\"~\n\030RemoveGroupMemberRequest\022\020\n\010grou" +
-      "p_id\030\001 \002(\t\022\026\n\016removed_member\030\002 \003(\t\022\017\n\007to" +
-      "_line\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.Me" +
-      "ssageContent\"u\n\024TransferGroupRequest\022\020\n\010" +
-      "group_id\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002(\t\022\017\n\007to_" +
-      "line\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.Mes" +
-      "sageContent\"\206\001\n\026ModifyGroupMemberAlias\022\020",
-      "\n\010group_id\030\001 \002(\t\022\r\n\005alias\030\002 \002(\t\022\017\n\007to_li" +
-      "ne\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(\0132\017.Messa" +
-      "geContent\022\021\n\tmember_id\030\005 \001(\t\"\206\001\n\026ModifyG" +
-      "roupMemberExtra\022\020\n\010group_id\030\001 \002(\t\022\017\n\007to_" +
-      "line\030\002 \003(\005\022\'\n\016notify_content\030\003 \001(\0132\017.Mes" +
-      "sageContent\022\r\n\005extra\030\004 \001(\t\022\021\n\tmember_id\030" +
-      "\005 \001(\t\"P\n\020UserSettingEntry\022\r\n\005scope\030\001 \002(\005" +
-      "\022\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 \002(\t\022\021\n\tupdate_d" +
-      "t\030\004 \002(\003\"A\n\024ModifyUserSettingReq\022\r\n\005scope" +
-      "\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 \002(\t\"\032\n\007Ve",
-      "rsion\022\017\n\007version\030\001 \002(\003\"8\n\024GetUserSetting" +
-      "Result\022 \n\005entry\030\001 \003(\0132\021.UserSettingEntry" +
-      "\"f\n\006Friend\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\021" +
-      "\n\tupdate_dt\030\003 \002(\003\022\r\n\005alias\030\004 \001(\t\022\017\n\007blac" +
-      "ked\030\005 \001(\005\022\r\n\005extra\030\006 \001(\t\"*\n\020GetFriendsRe" +
-      "sult\022\026\n\005entry\030\001 \003(\0132\007.Friend\"7\n\026GetFrien" +
-      "dRequestResult\022\035\n\005entry\030\001 \003(\0132\016.FriendRe" +
-      "quest\"\243\001\n\021ConnectAckPayload\022\020\n\010msg_head\030" +
-      "\001 \001(\003\022\023\n\013friend_head\030\002 \001(\003\022\026\n\016friend_rq_" +
-      "head\030\003 \001(\003\022\024\n\014setting_head\030\004 \001(\003\022\021\n\tnode",
-      "_addr\030\005 \001(\t\022\021\n\tnode_port\030\006 \001(\005\022\023\n\013server" +
-      "_time\030\007 \001(\003\"P\n\rIMHttpWrapper\022\r\n\005token\030\001 " +
-      "\002(\t\022\021\n\tclient_id\030\002 \002(\t\022\017\n\007request\030\003 \002(\t\022" +
-      "\014\n\004data\030\004 \001(\014\"A\n\021SearchUserRequest\022\017\n\007ke" +
-      "yword\030\001 \002(\t\022\r\n\005fuzzy\030\002 \001(\005\022\014\n\004page\030\003 \001(\005" +
-      "\"(\n\020SearchUserResult\022\024\n\005entry\030\001 \003(\0132\005.Us" +
-      "er\"@\n\026GetChatroomInfoRequest\022\023\n\013chatroom" +
-      "_id\030\001 \002(\t\022\021\n\tupdate_dt\030\002 \001(\003\"\227\001\n\014Chatroo" +
-      "mInfo\022\r\n\005title\030\001 \002(\t\022\014\n\004desc\030\002 \001(\t\022\020\n\010po" +
-      "rtrait\030\003 \001(\t\022\024\n\014member_count\030\004 \001(\005\022\021\n\tcr",
-      "eate_dt\030\005 \001(\003\022\021\n\tupdate_dt\030\006 \001(\003\022\r\n\005extr" +
-      "a\030\007 \001(\t\022\r\n\005state\030\010 \001(\005\"F\n\034GetChatroomMem" +
-      "berInfoRequest\022\023\n\013chatroom_id\030\001 \002(\t\022\021\n\tm" +
-      "ax_count\030\002 \001(\005\";\n\022ChatroomMemberInfo\022\024\n\014" +
-      "member_count\030\001 \001(\005\022\017\n\007members\030\002 \003(\t\"\026\n\010I" +
-      "NT64Buf\022\n\n\002id\030\001 \002(\003\"4\n\023NotifyRecallMessa" +
-      "ge\022\n\n\002id\030\001 \002(\003\022\021\n\tfrom_user\030\002 \002(\t\"/\n\020Bla" +
-      "ckUserRequest\022\013\n\003uid\030\001 \002(\t\022\016\n\006status\030\002 \002" +
-      "(\005\"\323\001\n\014RouteRequest\022\013\n\003app\030\001 \001(\t\022\020\n\010plat" +
-      "form\030\002 \001(\005\022\021\n\tpush_type\030\003 \001(\005\022\023\n\013device_",
-      "name\030\004 \001(\t\022\026\n\016device_version\030\005 \001(\t\022\022\n\nph" +
-      "one_name\030\006 \001(\t\022\020\n\010language\030\007 \001(\t\022\024\n\014carr" +
-      "ier_name\030\010 \001(\t\022\023\n\013app_version\030\t \001(\t\022\023\n\013s" +
-      "dk_version\030\n \001(\t\"D\n\rRouteResponse\022\014\n\004hos" +
-      "t\030\001 \002(\t\022\021\n\tlong_port\030\002 \002(\005\022\022\n\nshort_port" +
-      "\030\003 \002(\005\"G\n\017GetTokenRequest\022\017\n\007user_id\030\001 \002" +
-      "(\t\022\021\n\tclient_id\030\002 \002(\t\022\020\n\010platform\030\003 \001(\005\"" +
-      "r\n\022LoadRemoteMessages\022#\n\014conversation\030\001 " +
-      "\002(\0132\r.Conversation\022\022\n\nbefore_uid\030\002 \002(\003\022\r" +
-      "\n\005count\030\003 \002(\005\022\024\n\014content_type\030\004 \003(\005\"a\n\020M",
-      "ultiCastMessage\022\021\n\tfrom_user\030\001 \002(\t\022 \n\007co" +
-      "ntent\030\002 \002(\0132\017.MessageContent\022\n\n\002to\030\003 \003(\t" +
-      "\022\014\n\004line\030\004 \002(\005\"E\n\035RecallMultiCastMessage" +
-      "Request\022\022\n\nmessage_id\030\001 \002(\003\022\020\n\010receiver\030" +
-      "\002 \003(\t\"@\n\017AuthCodeRequest\022\021\n\ttarget_id\030\001 " +
-      "\002(\t\022\014\n\004type\030\002 \002(\005\022\014\n\004host\030\003 \002(\t\"o\n\030Appli" +
-      "cationConfigRequest\022\r\n\005appId\030\001 \002(\t\022\017\n\007ap" +
-      "pType\030\002 \002(\005\022\021\n\ttimestamp\030\003 \002(\003\022\r\n\005nonce\030" +
-      "\004 \002(\t\022\021\n\tsignature\030\005 \002(\tB#\n\025cn.wildfirec" +
-      "hat.protoB\nWFCMessage"
+      "oupMember\"\253\001\n\013ChannelMenu\022\014\n\004type\030\001 \002(\t\022" +
+      "\014\n\004name\030\002 \002(\t\022\013\n\003key\030\003 \001(\t\022\013\n\003url\030\004 \001(\t\022" +
+      "\020\n\010media_id\030\005 \001(\t\022\022\n\narticle_id\030\006 \001(\t\022\016\n" +
+      "\006app_id\030\007 \001(\t\022\020\n\010app_page\030\010 \001(\t\022\036\n\010sub_m",
+      "enu\030\t \003(\0132\014.ChannelMenu\"-\n\017ChannelMenuLi" +
+      "st\022\032\n\004menu\030\001 \003(\0132\014.ChannelMenu\"\340\001\n\013Chann" +
+      "elInfo\022\021\n\ttarget_id\030\001 \001(\t\022\014\n\004name\030\002 \002(\t\022" +
+      "\020\n\010portrait\030\003 \001(\t\022\r\n\005owner\030\004 \001(\t\022\016\n\006stat" +
+      "us\030\005 \001(\005\022\014\n\004desc\030\006 \001(\t\022\r\n\005extra\030\007 \001(\t\022\021\n" +
+      "\tupdate_dt\030\010 \001(\003\022\016\n\006secret\030\t \001(\t\022\020\n\010call" +
+      "back\030\n \001(\t\022\021\n\tautomatic\030\013 \001(\005\022\032\n\004menu\030\014 " +
+      "\003(\0132\014.ChannelMenu\"D\n\021ModifyChannelInfo\022\022" +
+      "\n\nchannel_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r\n\005valu" +
+      "e\030\003 \002(\t\"8\n\017TransferChannel\022\022\n\nchannel_id",
+      "\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002(\t\"3\n\017PullChannel" +
+      "Info\022\022\n\nchannel_id\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"H" +
+      "\n\023PullChannelListener\022\022\n\nchannel_id\030\001 \002(" +
+      "\t\022\016\n\006offset\030\002 \002(\005\022\r\n\005count\030\003 \002(\005\"R\n\031Pull" +
+      "ChannelListenerResult\022\023\n\013total_count\030\001 \002" +
+      "(\005\022\016\n\006offset\030\002 \002(\005\022\020\n\010listener\030\003 \003(\t\"3\n\r" +
+      "ListenChannel\022\022\n\nchannel_id\030\001 \002(\t\022\016\n\006lis" +
+      "ten\030\002 \002(\005\"E\n\023SearchChannelResult\022\035\n\007chan" +
+      "nel\030\001 \003(\0132\014.ChannelInfo\022\017\n\007keyword\030\002 \002(\t" +
+      "\"\235\002\n\016MessageContent\022\014\n\004type\030\001 \002(\005\022\032\n\022sea",
+      "rchable_content\030\002 \001(\t\022\024\n\014push_content\030\003 " +
+      "\001(\t\022\017\n\007content\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\022\021\n\tme" +
+      "diaType\030\006 \001(\005\022\026\n\016remoteMediaUrl\030\007 \001(\t\022\024\n" +
+      "\014persist_flag\030\010 \001(\005\022\027\n\017expire_duration\030\t" +
+      " \001(\005\022\026\n\016mentioned_type\030\n \001(\005\022\030\n\020mentione" +
+      "d_target\030\013 \003(\t\022\r\n\005extra\030\014 \001(\t\022\021\n\tpush_da" +
+      "ta\030\r \001(\t\"\226\001\n\025AddGroupMemberRequest\022\020\n\010gr" +
+      "oup_id\030\001 \002(\t\022\"\n\014added_member\030\002 \003(\0132\014.Gro" +
+      "upMember\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_cont" +
+      "ent\030\004 \001(\0132\017.MessageContent\022\r\n\005extra\030\005 \001(",
+      "\t\"{\n\022CreateGroupRequest\022\025\n\005group\030\001 \002(\0132\006" +
+      ".Group\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_conten" +
+      "t\030\003 \001(\0132\017.MessageContent\022\024\n\014member_extra" +
+      "\030\004 \001(\t\"a\n\023DismissGroupRequest\022\020\n\010group_i" +
+      "d\030\001 \002(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_conte" +
+      "nt\030\003 \001(\0132\017.MessageContent\"\245\001\n\rFriendRequ" +
+      "est\022\020\n\010from_uid\030\001 \001(\t\022\016\n\006to_uid\030\002 \002(\t\022\016\n" +
+      "\006reason\030\003 \002(\t\022\016\n\006status\030\004 \001(\005\022\021\n\tupdate_" +
+      "dt\030\005 \001(\003\022\030\n\020from_read_status\030\006 \001(\010\022\026\n\016to" +
+      "_read_status\030\007 \001(\010\022\r\n\005extra\030\010 \001(\t\"#\n\rGen",
+      "eralResult\022\022\n\nerror_code\030\001 \002(\005\"?\n\025GetUpl" +
+      "oadTokenRequest\022\022\n\nmedia_type\030\001 \002(\005\022\022\n\nm" +
+      "edia_path\030\002 \002(\t\"S\n\024GetUploadTokenResult\022" +
+      "\016\n\006domain\030\001 \002(\t\022\r\n\005token\030\002 \002(\t\022\016\n\006server" +
+      "\030\003 \002(\t\022\014\n\004port\030\004 \001(\005\"H\n\023HandleFriendRequ" +
+      "est\022\022\n\ntarget_uid\030\001 \002(\t\022\016\n\006status\030\002 \002(\005\022" +
+      "\r\n\005extra\030\003 \001(\t\"\023\n\005IDBuf\022\n\n\002id\030\001 \002(\t\"\027\n\tI" +
+      "DListBuf\022\n\n\002id\030\001 \003(\t\"\256\001\n\007Message\022#\n\014conv" +
+      "ersation\030\001 \002(\0132\r.Conversation\022\021\n\tfrom_us" +
+      "er\030\002 \002(\t\022 \n\007content\030\003 \002(\0132\017.MessageConte",
+      "nt\022\022\n\nmessage_id\030\004 \001(\003\022\030\n\020server_timesta" +
+      "mp\030\005 \001(\003\022\017\n\007to_user\030\006 \001(\t\022\n\n\002to\030\007 \003(\t\"\353\001" +
+      "\n\004User\022\013\n\003uid\030\001 \002(\t\022\014\n\004name\030\002 \001(\t\022\024\n\014dis" +
+      "play_name\030\003 \001(\t\022\020\n\010portrait\030\004 \001(\t\022\016\n\006mob" +
+      "ile\030\005 \001(\t\022\r\n\005email\030\006 \001(\t\022\017\n\007address\030\007 \001(" +
+      "\t\022\017\n\007company\030\010 \001(\t\022\r\n\005extra\030\t \001(\t\022\021\n\tupd" +
+      "ate_dt\030\n \001(\003\022\016\n\006gender\030\013 \001(\005\022\016\n\006social\030\014" +
+      " \001(\t\022\014\n\004type\030\r \001(\005\022\017\n\007deleted\030\016 \001(\005\"c\n\005R" +
+      "obot\022\013\n\003uid\030\001 \002(\t\022\r\n\005state\030\002 \002(\005\022\r\n\005owne" +
+      "r\030\003 \001(\t\022\016\n\006secret\030\004 \001(\t\022\020\n\010callback\030\005 \001(",
+      "\t\022\r\n\005extra\030\006 \001(\t\"(\n\017GetRobotsResult\022\025\n\005e" +
+      "ntry\030\001 \003(\0132\006.Robot\"g\n\030UploadDeviceTokenR" +
+      "equest\022\020\n\010platform\030\001 \002(\005\022\020\n\010app_name\030\002 \002" +
+      "(\t\022\024\n\014device_token\030\003 \002(\t\022\021\n\tpush_type\030\004 " +
+      "\002(\005\"\201\001\n\026ModifyGroupInfoRequest\022\020\n\010group_" +
+      "id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\r\n\005value\030\003 \002(\t\022\017\n" +
+      "\007to_line\030\004 \003(\005\022\'\n\016notify_content\030\005 \001(\0132\017" +
+      ".MessageContent\"\203\001\n\026SetGroupManagerReque" +
+      "st\022\020\n\010group_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\017\n\007us" +
+      "er_id\030\003 \003(\t\022\017\n\007to_line\030\004 \003(\005\022\'\n\016notify_c",
+      "ontent\030\005 \001(\0132\017.MessageContent\"(\n\tInfoEnt" +
+      "ry\022\014\n\004type\030\001 \002(\005\022\r\n\005value\030\002 \002(\t\"0\n\023Modif" +
+      "yMyInfoRequest\022\031\n\005entry\030\001 \003(\0132\n.InfoEntr" +
+      "y\";\n\rNotifyMessage\022\014\n\004type\030\001 \002(\005\022\014\n\004head" +
+      "\030\002 \002(\003\022\016\n\006target\030\003 \001(\t\"=\n\022PullMessageReq" +
+      "uest\022\n\n\002id\030\001 \002(\003\022\014\n\004type\030\002 \002(\005\022\r\n\005delay\030" +
+      "\003 \001(\003\"M\n\021PullMessageResult\022\031\n\007message\030\001 " +
+      "\003(\0132\010.Message\022\017\n\007current\030\002 \002(\003\022\014\n\004head\030\003" +
+      " \002(\003\"/\n\023PullGroupInfoResult\022\030\n\004info\030\001 \003(" +
+      "\0132\n.GroupInfo\"6\n\026PullGroupMemberRequest\022",
+      "\016\n\006target\030\001 \002(\t\022\014\n\004head\030\002 \002(\003\"5\n\025PullGro" +
+      "upMemberResult\022\034\n\006member\030\001 \003(\0132\014.GroupMe" +
+      "mber\"-\n\013UserRequest\022\013\n\003uid\030\001 \002(\t\022\021\n\tupda" +
+      "te_dt\030\002 \001(\003\"0\n\017PullUserRequest\022\035\n\007reques" +
+      "t\030\001 \003(\0132\014.UserRequest\"/\n\nUserResult\022\023\n\004u" +
+      "ser\030\001 \002(\0132\005.User\022\014\n\004code\030\002 \002(\005\"-\n\016PullUs" +
+      "erResult\022\033\n\006result\030\001 \003(\0132\013.UserResult\"^\n" +
+      "\020QuitGroupRequest\022\020\n\010group_id\030\001 \002(\t\022\017\n\007t" +
+      "o_line\030\002 \003(\005\022\'\n\016notify_content\030\003 \001(\0132\017.M" +
+      "essageContent\"~\n\030RemoveGroupMemberReques",
+      "t\022\020\n\010group_id\030\001 \002(\t\022\026\n\016removed_member\030\002 " +
+      "\003(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_content\030\004" +
+      " \001(\0132\017.MessageContent\"u\n\024TransferGroupRe" +
+      "quest\022\020\n\010group_id\030\001 \002(\t\022\021\n\tnew_owner\030\002 \002" +
+      "(\t\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_content\030\004 " +
+      "\001(\0132\017.MessageContent\"\206\001\n\026ModifyGroupMemb" +
+      "erAlias\022\020\n\010group_id\030\001 \002(\t\022\r\n\005alias\030\002 \002(\t" +
+      "\022\017\n\007to_line\030\003 \003(\005\022\'\n\016notify_content\030\004 \001(" +
+      "\0132\017.MessageContent\022\021\n\tmember_id\030\005 \001(\t\"\206\001" +
+      "\n\026ModifyGroupMemberExtra\022\020\n\010group_id\030\001 \002",
+      "(\t\022\017\n\007to_line\030\002 \003(\005\022\'\n\016notify_content\030\003 " +
+      "\001(\0132\017.MessageContent\022\r\n\005extra\030\004 \001(\t\022\021\n\tm" +
+      "ember_id\030\005 \001(\t\"P\n\020UserSettingEntry\022\r\n\005sc" +
+      "ope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 \002(\t\022\021\n" +
+      "\tupdate_dt\030\004 \002(\003\"A\n\024ModifyUserSettingReq" +
+      "\022\r\n\005scope\030\001 \002(\005\022\013\n\003key\030\002 \002(\t\022\r\n\005value\030\003 " +
+      "\002(\t\"\032\n\007Version\022\017\n\007version\030\001 \002(\003\"8\n\024GetUs" +
+      "erSettingResult\022 \n\005entry\030\001 \003(\0132\021.UserSet" +
+      "tingEntry\"f\n\006Friend\022\013\n\003uid\030\001 \002(\t\022\r\n\005stat" +
+      "e\030\002 \002(\005\022\021\n\tupdate_dt\030\003 \002(\003\022\r\n\005alias\030\004 \001(",
+      "\t\022\017\n\007blacked\030\005 \001(\005\022\r\n\005extra\030\006 \001(\t\"*\n\020Get" +
+      "FriendsResult\022\026\n\005entry\030\001 \003(\0132\007.Friend\"7\n" +
+      "\026GetFriendRequestResult\022\035\n\005entry\030\001 \003(\0132\016" +
+      ".FriendRequest\"\243\001\n\021ConnectAckPayload\022\020\n\010" +
+      "msg_head\030\001 \001(\003\022\023\n\013friend_head\030\002 \001(\003\022\026\n\016f" +
+      "riend_rq_head\030\003 \001(\003\022\024\n\014setting_head\030\004 \001(" +
+      "\003\022\021\n\tnode_addr\030\005 \001(\t\022\021\n\tnode_port\030\006 \001(\005\022" +
+      "\023\n\013server_time\030\007 \001(\003\"P\n\rIMHttpWrapper\022\r\n" +
+      "\005token\030\001 \002(\t\022\021\n\tclient_id\030\002 \002(\t\022\017\n\007reque" +
+      "st\030\003 \002(\t\022\014\n\004data\030\004 \001(\014\"A\n\021SearchUserRequ",
+      "est\022\017\n\007keyword\030\001 \002(\t\022\r\n\005fuzzy\030\002 \001(\005\022\014\n\004p" +
+      "age\030\003 \001(\005\"(\n\020SearchUserResult\022\024\n\005entry\030\001" +
+      " \003(\0132\005.User\"@\n\026GetChatroomInfoRequest\022\023\n" +
+      "\013chatroom_id\030\001 \002(\t\022\021\n\tupdate_dt\030\002 \001(\003\"\227\001" +
+      "\n\014ChatroomInfo\022\r\n\005title\030\001 \002(\t\022\014\n\004desc\030\002 " +
+      "\001(\t\022\020\n\010portrait\030\003 \001(\t\022\024\n\014member_count\030\004 " +
+      "\001(\005\022\021\n\tcreate_dt\030\005 \001(\003\022\021\n\tupdate_dt\030\006 \001(" +
+      "\003\022\r\n\005extra\030\007 \001(\t\022\r\n\005state\030\010 \001(\005\"F\n\034GetCh" +
+      "atroomMemberInfoRequest\022\023\n\013chatroom_id\030\001" +
+      " \002(\t\022\021\n\tmax_count\030\002 \001(\005\";\n\022ChatroomMembe",
+      "rInfo\022\024\n\014member_count\030\001 \001(\005\022\017\n\007members\030\002" +
+      " \003(\t\"\026\n\010INT64Buf\022\n\n\002id\030\001 \002(\003\"4\n\023NotifyRe" +
+      "callMessage\022\n\n\002id\030\001 \002(\003\022\021\n\tfrom_user\030\002 \002" +
+      "(\t\"/\n\020BlackUserRequest\022\013\n\003uid\030\001 \002(\t\022\016\n\006s" +
+      "tatus\030\002 \002(\005\"\323\001\n\014RouteRequest\022\013\n\003app\030\001 \001(" +
+      "\t\022\020\n\010platform\030\002 \001(\005\022\021\n\tpush_type\030\003 \001(\005\022\023" +
+      "\n\013device_name\030\004 \001(\t\022\026\n\016device_version\030\005 " +
+      "\001(\t\022\022\n\nphone_name\030\006 \001(\t\022\020\n\010language\030\007 \001(" +
+      "\t\022\024\n\014carrier_name\030\010 \001(\t\022\023\n\013app_version\030\t" +
+      " \001(\t\022\023\n\013sdk_version\030\n \001(\t\"D\n\rRouteRespon",
+      "se\022\014\n\004host\030\001 \002(\t\022\021\n\tlong_port\030\002 \002(\005\022\022\n\ns" +
+      "hort_port\030\003 \002(\005\"G\n\017GetTokenRequest\022\017\n\007us" +
+      "er_id\030\001 \002(\t\022\021\n\tclient_id\030\002 \002(\t\022\020\n\010platfo" +
+      "rm\030\003 \001(\005\"r\n\022LoadRemoteMessages\022#\n\014conver" +
+      "sation\030\001 \002(\0132\r.Conversation\022\022\n\nbefore_ui" +
+      "d\030\002 \002(\003\022\r\n\005count\030\003 \002(\005\022\024\n\014content_type\030\004" +
+      " \003(\005\"a\n\020MultiCastMessage\022\021\n\tfrom_user\030\001 " +
+      "\002(\t\022 \n\007content\030\002 \002(\0132\017.MessageContent\022\n\n" +
+      "\002to\030\003 \003(\t\022\014\n\004line\030\004 \002(\005\"E\n\035RecallMultiCa" +
+      "stMessageRequest\022\022\n\nmessage_id\030\001 \002(\003\022\020\n\010",
+      "receiver\030\002 \003(\t\"@\n\017AuthCodeRequest\022\021\n\ttar" +
+      "get_id\030\001 \002(\t\022\014\n\004type\030\002 \002(\005\022\014\n\004host\030\003 \002(\t" +
+      "\"o\n\030ApplicationConfigRequest\022\r\n\005appId\030\001 " +
+      "\002(\t\022\017\n\007appType\030\002 \002(\005\022\021\n\ttimestamp\030\003 \002(\003\022" +
+      "\r\n\005nonce\030\004 \002(\t\022\021\n\tsignature\030\005 \002(\tB#\n\025cn." +
+      "wildfirechat.protoB\nWFCMessage"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -64091,416 +67120,428 @@ public final class WFCMessage {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Group_descriptor,
               new java.lang.String[] { "GroupInfo", "Members", });
-          internal_static_ChannelInfo_descriptor =
+          internal_static_ChannelMenu_descriptor =
             getDescriptor().getMessageTypes().get(5);
+          internal_static_ChannelMenu_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_ChannelMenu_descriptor,
+              new java.lang.String[] { "Type", "Name", "Key", "Url", "MediaId", "ArticleId", "AppId", "AppPage", "SubMenu", });
+          internal_static_ChannelMenuList_descriptor =
+            getDescriptor().getMessageTypes().get(6);
+          internal_static_ChannelMenuList_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_ChannelMenuList_descriptor,
+              new java.lang.String[] { "Menu", });
+          internal_static_ChannelInfo_descriptor =
+            getDescriptor().getMessageTypes().get(7);
           internal_static_ChannelInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ChannelInfo_descriptor,
-              new java.lang.String[] { "TargetId", "Name", "Portrait", "Owner", "Status", "Desc", "Extra", "UpdateDt", "Secret", "Callback", "Automatic", });
+              new java.lang.String[] { "TargetId", "Name", "Portrait", "Owner", "Status", "Desc", "Extra", "UpdateDt", "Secret", "Callback", "Automatic", "Menu", });
           internal_static_ModifyChannelInfo_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_ModifyChannelInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyChannelInfo_descriptor,
               new java.lang.String[] { "ChannelId", "Type", "Value", });
           internal_static_TransferChannel_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_TransferChannel_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TransferChannel_descriptor,
               new java.lang.String[] { "ChannelId", "NewOwner", });
           internal_static_PullChannelInfo_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_PullChannelInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullChannelInfo_descriptor,
               new java.lang.String[] { "ChannelId", "Head", });
           internal_static_PullChannelListener_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_PullChannelListener_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullChannelListener_descriptor,
               new java.lang.String[] { "ChannelId", "Offset", "Count", });
           internal_static_PullChannelListenerResult_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_PullChannelListenerResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullChannelListenerResult_descriptor,
               new java.lang.String[] { "TotalCount", "Offset", "Listener", });
           internal_static_ListenChannel_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_ListenChannel_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ListenChannel_descriptor,
               new java.lang.String[] { "ChannelId", "Listen", });
           internal_static_SearchChannelResult_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_SearchChannelResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SearchChannelResult_descriptor,
               new java.lang.String[] { "Channel", "Keyword", });
           internal_static_MessageContent_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_MessageContent_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_MessageContent_descriptor,
               new java.lang.String[] { "Type", "SearchableContent", "PushContent", "Content", "Data", "MediaType", "RemoteMediaUrl", "PersistFlag", "ExpireDuration", "MentionedType", "MentionedTarget", "Extra", "PushData", });
           internal_static_AddGroupMemberRequest_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_AddGroupMemberRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_AddGroupMemberRequest_descriptor,
               new java.lang.String[] { "GroupId", "AddedMember", "ToLine", "NotifyContent", "Extra", });
           internal_static_CreateGroupRequest_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_CreateGroupRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_CreateGroupRequest_descriptor,
               new java.lang.String[] { "Group", "ToLine", "NotifyContent", "MemberExtra", });
           internal_static_DismissGroupRequest_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_DismissGroupRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_DismissGroupRequest_descriptor,
               new java.lang.String[] { "GroupId", "ToLine", "NotifyContent", });
           internal_static_FriendRequest_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_FriendRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_FriendRequest_descriptor,
               new java.lang.String[] { "FromUid", "ToUid", "Reason", "Status", "UpdateDt", "FromReadStatus", "ToReadStatus", "Extra", });
           internal_static_GeneralResult_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_GeneralResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GeneralResult_descriptor,
               new java.lang.String[] { "ErrorCode", });
           internal_static_GetUploadTokenRequest_descriptor =
-            getDescriptor().getMessageTypes().get(19);
+            getDescriptor().getMessageTypes().get(21);
           internal_static_GetUploadTokenRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetUploadTokenRequest_descriptor,
               new java.lang.String[] { "MediaType", "MediaPath", });
           internal_static_GetUploadTokenResult_descriptor =
-            getDescriptor().getMessageTypes().get(20);
+            getDescriptor().getMessageTypes().get(22);
           internal_static_GetUploadTokenResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetUploadTokenResult_descriptor,
               new java.lang.String[] { "Domain", "Token", "Server", "Port", });
           internal_static_HandleFriendRequest_descriptor =
-            getDescriptor().getMessageTypes().get(21);
+            getDescriptor().getMessageTypes().get(23);
           internal_static_HandleFriendRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_HandleFriendRequest_descriptor,
               new java.lang.String[] { "TargetUid", "Status", "Extra", });
           internal_static_IDBuf_descriptor =
-            getDescriptor().getMessageTypes().get(22);
+            getDescriptor().getMessageTypes().get(24);
           internal_static_IDBuf_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_IDBuf_descriptor,
               new java.lang.String[] { "Id", });
           internal_static_IDListBuf_descriptor =
-            getDescriptor().getMessageTypes().get(23);
+            getDescriptor().getMessageTypes().get(25);
           internal_static_IDListBuf_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_IDListBuf_descriptor,
               new java.lang.String[] { "Id", });
           internal_static_Message_descriptor =
-            getDescriptor().getMessageTypes().get(24);
+            getDescriptor().getMessageTypes().get(26);
           internal_static_Message_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Message_descriptor,
               new java.lang.String[] { "Conversation", "FromUser", "Content", "MessageId", "ServerTimestamp", "ToUser", "To", });
           internal_static_User_descriptor =
-            getDescriptor().getMessageTypes().get(25);
+            getDescriptor().getMessageTypes().get(27);
           internal_static_User_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_User_descriptor,
               new java.lang.String[] { "Uid", "Name", "DisplayName", "Portrait", "Mobile", "Email", "Address", "Company", "Extra", "UpdateDt", "Gender", "Social", "Type", "Deleted", });
           internal_static_Robot_descriptor =
-            getDescriptor().getMessageTypes().get(26);
+            getDescriptor().getMessageTypes().get(28);
           internal_static_Robot_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Robot_descriptor,
               new java.lang.String[] { "Uid", "State", "Owner", "Secret", "Callback", "Extra", });
           internal_static_GetRobotsResult_descriptor =
-            getDescriptor().getMessageTypes().get(27);
+            getDescriptor().getMessageTypes().get(29);
           internal_static_GetRobotsResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetRobotsResult_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_UploadDeviceTokenRequest_descriptor =
-            getDescriptor().getMessageTypes().get(28);
+            getDescriptor().getMessageTypes().get(30);
           internal_static_UploadDeviceTokenRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_UploadDeviceTokenRequest_descriptor,
               new java.lang.String[] { "Platform", "AppName", "DeviceToken", "PushType", });
           internal_static_ModifyGroupInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(29);
+            getDescriptor().getMessageTypes().get(31);
           internal_static_ModifyGroupInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyGroupInfoRequest_descriptor,
               new java.lang.String[] { "GroupId", "Type", "Value", "ToLine", "NotifyContent", });
           internal_static_SetGroupManagerRequest_descriptor =
-            getDescriptor().getMessageTypes().get(30);
+            getDescriptor().getMessageTypes().get(32);
           internal_static_SetGroupManagerRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SetGroupManagerRequest_descriptor,
               new java.lang.String[] { "GroupId", "Type", "UserId", "ToLine", "NotifyContent", });
           internal_static_InfoEntry_descriptor =
-            getDescriptor().getMessageTypes().get(31);
+            getDescriptor().getMessageTypes().get(33);
           internal_static_InfoEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_InfoEntry_descriptor,
               new java.lang.String[] { "Type", "Value", });
           internal_static_ModifyMyInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(32);
+            getDescriptor().getMessageTypes().get(34);
           internal_static_ModifyMyInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyMyInfoRequest_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_NotifyMessage_descriptor =
-            getDescriptor().getMessageTypes().get(33);
+            getDescriptor().getMessageTypes().get(35);
           internal_static_NotifyMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_NotifyMessage_descriptor,
               new java.lang.String[] { "Type", "Head", "Target", });
           internal_static_PullMessageRequest_descriptor =
-            getDescriptor().getMessageTypes().get(34);
+            getDescriptor().getMessageTypes().get(36);
           internal_static_PullMessageRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullMessageRequest_descriptor,
               new java.lang.String[] { "Id", "Type", "Delay", });
           internal_static_PullMessageResult_descriptor =
-            getDescriptor().getMessageTypes().get(35);
+            getDescriptor().getMessageTypes().get(37);
           internal_static_PullMessageResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullMessageResult_descriptor,
               new java.lang.String[] { "Message", "Current", "Head", });
           internal_static_PullGroupInfoResult_descriptor =
-            getDescriptor().getMessageTypes().get(36);
+            getDescriptor().getMessageTypes().get(38);
           internal_static_PullGroupInfoResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullGroupInfoResult_descriptor,
               new java.lang.String[] { "Info", });
           internal_static_PullGroupMemberRequest_descriptor =
-            getDescriptor().getMessageTypes().get(37);
+            getDescriptor().getMessageTypes().get(39);
           internal_static_PullGroupMemberRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullGroupMemberRequest_descriptor,
               new java.lang.String[] { "Target", "Head", });
           internal_static_PullGroupMemberResult_descriptor =
-            getDescriptor().getMessageTypes().get(38);
+            getDescriptor().getMessageTypes().get(40);
           internal_static_PullGroupMemberResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullGroupMemberResult_descriptor,
               new java.lang.String[] { "Member", });
           internal_static_UserRequest_descriptor =
-            getDescriptor().getMessageTypes().get(39);
+            getDescriptor().getMessageTypes().get(41);
           internal_static_UserRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_UserRequest_descriptor,
               new java.lang.String[] { "Uid", "UpdateDt", });
           internal_static_PullUserRequest_descriptor =
-            getDescriptor().getMessageTypes().get(40);
+            getDescriptor().getMessageTypes().get(42);
           internal_static_PullUserRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullUserRequest_descriptor,
               new java.lang.String[] { "Request", });
           internal_static_UserResult_descriptor =
-            getDescriptor().getMessageTypes().get(41);
+            getDescriptor().getMessageTypes().get(43);
           internal_static_UserResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_UserResult_descriptor,
               new java.lang.String[] { "User", "Code", });
           internal_static_PullUserResult_descriptor =
-            getDescriptor().getMessageTypes().get(42);
+            getDescriptor().getMessageTypes().get(44);
           internal_static_PullUserResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PullUserResult_descriptor,
               new java.lang.String[] { "Result", });
           internal_static_QuitGroupRequest_descriptor =
-            getDescriptor().getMessageTypes().get(43);
+            getDescriptor().getMessageTypes().get(45);
           internal_static_QuitGroupRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_QuitGroupRequest_descriptor,
               new java.lang.String[] { "GroupId", "ToLine", "NotifyContent", });
           internal_static_RemoveGroupMemberRequest_descriptor =
-            getDescriptor().getMessageTypes().get(44);
+            getDescriptor().getMessageTypes().get(46);
           internal_static_RemoveGroupMemberRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RemoveGroupMemberRequest_descriptor,
               new java.lang.String[] { "GroupId", "RemovedMember", "ToLine", "NotifyContent", });
           internal_static_TransferGroupRequest_descriptor =
-            getDescriptor().getMessageTypes().get(45);
+            getDescriptor().getMessageTypes().get(47);
           internal_static_TransferGroupRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TransferGroupRequest_descriptor,
               new java.lang.String[] { "GroupId", "NewOwner", "ToLine", "NotifyContent", });
           internal_static_ModifyGroupMemberAlias_descriptor =
-            getDescriptor().getMessageTypes().get(46);
+            getDescriptor().getMessageTypes().get(48);
           internal_static_ModifyGroupMemberAlias_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyGroupMemberAlias_descriptor,
               new java.lang.String[] { "GroupId", "Alias", "ToLine", "NotifyContent", "MemberId", });
           internal_static_ModifyGroupMemberExtra_descriptor =
-            getDescriptor().getMessageTypes().get(47);
+            getDescriptor().getMessageTypes().get(49);
           internal_static_ModifyGroupMemberExtra_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyGroupMemberExtra_descriptor,
               new java.lang.String[] { "GroupId", "ToLine", "NotifyContent", "Extra", "MemberId", });
           internal_static_UserSettingEntry_descriptor =
-            getDescriptor().getMessageTypes().get(48);
+            getDescriptor().getMessageTypes().get(50);
           internal_static_UserSettingEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_UserSettingEntry_descriptor,
               new java.lang.String[] { "Scope", "Key", "Value", "UpdateDt", });
           internal_static_ModifyUserSettingReq_descriptor =
-            getDescriptor().getMessageTypes().get(49);
+            getDescriptor().getMessageTypes().get(51);
           internal_static_ModifyUserSettingReq_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ModifyUserSettingReq_descriptor,
               new java.lang.String[] { "Scope", "Key", "Value", });
           internal_static_Version_descriptor =
-            getDescriptor().getMessageTypes().get(50);
+            getDescriptor().getMessageTypes().get(52);
           internal_static_Version_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Version_descriptor,
               new java.lang.String[] { "Version", });
           internal_static_GetUserSettingResult_descriptor =
-            getDescriptor().getMessageTypes().get(51);
+            getDescriptor().getMessageTypes().get(53);
           internal_static_GetUserSettingResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetUserSettingResult_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_Friend_descriptor =
-            getDescriptor().getMessageTypes().get(52);
+            getDescriptor().getMessageTypes().get(54);
           internal_static_Friend_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Friend_descriptor,
               new java.lang.String[] { "Uid", "State", "UpdateDt", "Alias", "Blacked", "Extra", });
           internal_static_GetFriendsResult_descriptor =
-            getDescriptor().getMessageTypes().get(53);
+            getDescriptor().getMessageTypes().get(55);
           internal_static_GetFriendsResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetFriendsResult_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_GetFriendRequestResult_descriptor =
-            getDescriptor().getMessageTypes().get(54);
+            getDescriptor().getMessageTypes().get(56);
           internal_static_GetFriendRequestResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetFriendRequestResult_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_ConnectAckPayload_descriptor =
-            getDescriptor().getMessageTypes().get(55);
+            getDescriptor().getMessageTypes().get(57);
           internal_static_ConnectAckPayload_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ConnectAckPayload_descriptor,
               new java.lang.String[] { "MsgHead", "FriendHead", "FriendRqHead", "SettingHead", "NodeAddr", "NodePort", "ServerTime", });
           internal_static_IMHttpWrapper_descriptor =
-            getDescriptor().getMessageTypes().get(56);
+            getDescriptor().getMessageTypes().get(58);
           internal_static_IMHttpWrapper_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_IMHttpWrapper_descriptor,
               new java.lang.String[] { "Token", "ClientId", "Request", "Data", });
           internal_static_SearchUserRequest_descriptor =
-            getDescriptor().getMessageTypes().get(57);
+            getDescriptor().getMessageTypes().get(59);
           internal_static_SearchUserRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SearchUserRequest_descriptor,
               new java.lang.String[] { "Keyword", "Fuzzy", "Page", });
           internal_static_SearchUserResult_descriptor =
-            getDescriptor().getMessageTypes().get(58);
+            getDescriptor().getMessageTypes().get(60);
           internal_static_SearchUserResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SearchUserResult_descriptor,
               new java.lang.String[] { "Entry", });
           internal_static_GetChatroomInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(59);
+            getDescriptor().getMessageTypes().get(61);
           internal_static_GetChatroomInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetChatroomInfoRequest_descriptor,
               new java.lang.String[] { "ChatroomId", "UpdateDt", });
           internal_static_ChatroomInfo_descriptor =
-            getDescriptor().getMessageTypes().get(60);
+            getDescriptor().getMessageTypes().get(62);
           internal_static_ChatroomInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ChatroomInfo_descriptor,
               new java.lang.String[] { "Title", "Desc", "Portrait", "MemberCount", "CreateDt", "UpdateDt", "Extra", "State", });
           internal_static_GetChatroomMemberInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(61);
+            getDescriptor().getMessageTypes().get(63);
           internal_static_GetChatroomMemberInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetChatroomMemberInfoRequest_descriptor,
               new java.lang.String[] { "ChatroomId", "MaxCount", });
           internal_static_ChatroomMemberInfo_descriptor =
-            getDescriptor().getMessageTypes().get(62);
+            getDescriptor().getMessageTypes().get(64);
           internal_static_ChatroomMemberInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ChatroomMemberInfo_descriptor,
               new java.lang.String[] { "MemberCount", "Members", });
           internal_static_INT64Buf_descriptor =
-            getDescriptor().getMessageTypes().get(63);
+            getDescriptor().getMessageTypes().get(65);
           internal_static_INT64Buf_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_INT64Buf_descriptor,
               new java.lang.String[] { "Id", });
           internal_static_NotifyRecallMessage_descriptor =
-            getDescriptor().getMessageTypes().get(64);
+            getDescriptor().getMessageTypes().get(66);
           internal_static_NotifyRecallMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_NotifyRecallMessage_descriptor,
               new java.lang.String[] { "Id", "FromUser", });
           internal_static_BlackUserRequest_descriptor =
-            getDescriptor().getMessageTypes().get(65);
+            getDescriptor().getMessageTypes().get(67);
           internal_static_BlackUserRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_BlackUserRequest_descriptor,
               new java.lang.String[] { "Uid", "Status", });
           internal_static_RouteRequest_descriptor =
-            getDescriptor().getMessageTypes().get(66);
+            getDescriptor().getMessageTypes().get(68);
           internal_static_RouteRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RouteRequest_descriptor,
               new java.lang.String[] { "App", "Platform", "PushType", "DeviceName", "DeviceVersion", "PhoneName", "Language", "CarrierName", "AppVersion", "SdkVersion", });
           internal_static_RouteResponse_descriptor =
-            getDescriptor().getMessageTypes().get(67);
+            getDescriptor().getMessageTypes().get(69);
           internal_static_RouteResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RouteResponse_descriptor,
               new java.lang.String[] { "Host", "LongPort", "ShortPort", });
           internal_static_GetTokenRequest_descriptor =
-            getDescriptor().getMessageTypes().get(68);
+            getDescriptor().getMessageTypes().get(70);
           internal_static_GetTokenRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenRequest_descriptor,
               new java.lang.String[] { "UserId", "ClientId", "Platform", });
           internal_static_LoadRemoteMessages_descriptor =
-            getDescriptor().getMessageTypes().get(69);
+            getDescriptor().getMessageTypes().get(71);
           internal_static_LoadRemoteMessages_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_LoadRemoteMessages_descriptor,
               new java.lang.String[] { "Conversation", "BeforeUid", "Count", "ContentType", });
           internal_static_MultiCastMessage_descriptor =
-            getDescriptor().getMessageTypes().get(70);
+            getDescriptor().getMessageTypes().get(72);
           internal_static_MultiCastMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_MultiCastMessage_descriptor,
               new java.lang.String[] { "FromUser", "Content", "To", "Line", });
           internal_static_RecallMultiCastMessageRequest_descriptor =
-            getDescriptor().getMessageTypes().get(71);
+            getDescriptor().getMessageTypes().get(73);
           internal_static_RecallMultiCastMessageRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RecallMultiCastMessageRequest_descriptor,
               new java.lang.String[] { "MessageId", "Receiver", });
           internal_static_AuthCodeRequest_descriptor =
-            getDescriptor().getMessageTypes().get(72);
+            getDescriptor().getMessageTypes().get(74);
           internal_static_AuthCodeRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_AuthCodeRequest_descriptor,
               new java.lang.String[] { "TargetId", "Type", "Host", });
           internal_static_ApplicationConfigRequest_descriptor =
-            getDescriptor().getMessageTypes().get(73);
+            getDescriptor().getMessageTypes().get(75);
           internal_static_ApplicationConfigRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_ApplicationConfigRequest_descriptor,
