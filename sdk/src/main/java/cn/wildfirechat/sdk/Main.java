@@ -12,10 +12,7 @@ import com.google.gson.Gson;
 import io.netty.util.internal.StringUtil;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static cn.wildfirechat.pojos.MyInfoType.Modify_DisplayName;
 import static cn.wildfirechat.proto.ProtoConstants.ChannelState.*;
@@ -1441,7 +1438,7 @@ public class Main {
         articleContent.addSubArticle("article2", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第二个测试文章", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
         articleContent.addSubArticle("article3", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第三个测试文章", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
         payload = articleContent.toPayload();
-        
+
         resultSendMessage = channelServiceApi.sendMessage(0, null, payload);
         if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("send message to all the subscriber success");
@@ -1470,6 +1467,7 @@ public class Main {
 
         List<OutputGetChannelInfo.OutputMenu> menus = new ArrayList<>();
         OutputGetChannelInfo.OutputMenu menu1 = new OutputGetChannelInfo.OutputMenu();
+        menu1.menuId = UUID.randomUUID().toString();
         menu1.type = "view";
         menu1.name = "一级菜单1";
         menu1.key = "key1";
@@ -1477,6 +1475,7 @@ public class Main {
         menus.add(menu1);
 
         OutputGetChannelInfo.OutputMenu menu2 = new OutputGetChannelInfo.OutputMenu();
+        menu2.menuId = UUID.randomUUID().toString();
         menu2.type = "view";
         menu2.name = "一级菜单2";
         menu2.key = "key2";
@@ -1485,6 +1484,7 @@ public class Main {
         menus.add(menu2);
 
         OutputGetChannelInfo.OutputMenu menu21 = new OutputGetChannelInfo.OutputMenu();
+        menu21.menuId = UUID.randomUUID().toString();
         menu21.type = "click";
         menu21.name = "二级菜单21";
         menu21.key = "key21";
