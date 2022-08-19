@@ -49,6 +49,10 @@
         </file>
 
         <file>
+            <source>src/main/files/release_note.md</source>
+        </file>
+
+        <file>
             <source>../broker/target/moquette-broker-${project.version}.jar</source>
             <outputDirectory>lib/</outputDirectory>
             <destName>moquette-broker-${project.version}.jar</destName>
