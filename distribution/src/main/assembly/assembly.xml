@@ -24,6 +24,11 @@
             <directory>../broker/config/i18n/</directory>
             <outputDirectory>/config/i18n</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>src/main/resources/</directory>
+            <outputDirectory>config/</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>
@@ -40,32 +45,7 @@
         </file>
 
         <file>
-            <source>src/main/resources/log4j2.xml</source>
-            <outputDirectory>config/</outputDirectory>
-            <destName>log4j2.xml</destName>
-        </file>
-
-        <file>
-            <source>src/main/resources/wildfirechat.conf</source>
-            <outputDirectory>config/</outputDirectory>
-        </file>
-
-        <file>
-            <source>src/main/resources/hazelcast.xml</source>
-            <outputDirectory>config/</outputDirectory>
-        </file>
-        <file>
-            <source>src/main/resources/c3p0-config.xml</source>
-            <outputDirectory>config/</outputDirectory>
-        </file>
-
-        <file>
-            <source>src/main/resources/README.txt</source>
-        </file>
-
-        <file>
-            <source>src/main/resources/git.properties</source>
-            <outputDirectory>config/</outputDirectory>
+            <source>src/main/files/README.txt</source>
         </file>
 
         <file>

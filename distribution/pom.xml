@@ -51,7 +51,7 @@
                     <!--指定"git.properties"文件的存放路径(相对于${project.basedir}的一个路径);-->
                     <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
                     <!--".git"文件夹未找到时,构建是否失败;若设置true,则构建失败;若设置false,则跳过执行该目标;默认值:true;-->
-                    <failOnNoGitDirectory>true</failOnNoGitDirectory>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
 
                     <!--git描述配置,可选;由JGit提供实现;-->
                     <gitDescribe>
