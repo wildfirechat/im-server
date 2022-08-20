@@ -39,6 +39,18 @@ public class GeneralAdmin {
         return AdminHttpUtils.httpJsonPost(path, inputChannelId, OutputGetChannelInfo.class);
     }
 
+    public static IMResult<Void> subscribeChannel(String channelId, String userId) throws Exception {
+        String path = APIPath.Subscribe_Channel;
+        InputSubscribeChannel input = new InputSubscribeChannel(channelId, userId, 1);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    public static IMResult<Void> unsubscribeChannel(String channelId, String userId) throws Exception {
+        String path = APIPath.Subscribe_Channel;
+        InputSubscribeChannel input = new InputSubscribeChannel(channelId, userId, 0);
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
     //以下仅专业版支持
     public static IMResult<Void> setConversationTop(String userId, int conversationType, String target, int line, boolean isTop) throws Exception {
         String key = conversationType + "-" + line + "-" + target;

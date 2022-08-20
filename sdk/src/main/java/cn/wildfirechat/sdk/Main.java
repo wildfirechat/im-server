@@ -1183,8 +1183,8 @@ public class Main {
         }
 
         PojoGroupMember m = new PojoGroupMember();
-        m.setMember_id("user1");
-        m.setAlias("hello user1");
+        m.setMember_id("user0");
+        m.setAlias("hello user0");
 
         voidIMResult = robotService.addGroupMembers(groupInfo.getTarget_id(), Arrays.asList(m), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
@@ -1390,8 +1390,16 @@ public class Main {
             System.exit(-1);
         }
 
+        resultVoid = GeneralAdmin.subscribeChannel(channelId, "userId4");
+        if (resultVoid != null && resultVoid.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("subscribe done");
+        } else {
+            System.out.println("subscribe failure");
+            System.exit(-1);
+        }
+
         IMResult<OutputStringList> resultStringList = channelServiceApi.getSubscriberList();
-        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3")) {
+        if (resultStringList != null && resultStringList.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && resultStringList.getResult().getList().contains("userId2") && resultStringList.getResult().getList().contains("userId3") && resultStringList.getResult().getList().contains("userId4")) {
             System.out.println("get subscriber done");
         } else {
             System.out.println("get subscriber failure");
