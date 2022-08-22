@@ -114,6 +114,13 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 	        handleOptions(ctx, request, response);
 	        return;
         }
+
+        if ("HEAD".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpResponseStatus.OK);
+            response.send();
+            return;
+        }
+
 		Action action;
 		if (isValidePath(request.getPath())) {
             action = ServerSetting.getAction(request.getPath(), request.getMethod().toUpperCase());
