@@ -11,8 +11,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 
 
 public class RobotHttpUtils extends JsonUtils {
@@ -34,7 +37,16 @@ public class RobotHttpUtils extends JsonUtils {
         this.url = url;
         this.robotId = robotId;
         this.robotSecret = robotSecret;
-        this.httpClient = HttpClients.createDefault();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setValidateAfterInactivity(1000);
+        httpClient = HttpClients.custom()
+            .setConnectionManager(cm)
+            .evictExpiredConnections()
+            .evictIdleConnections(60L, TimeUnit.SECONDS)
+            .setRetryHandler(DefaultHttpRequestRetryHandler.INSTANCE)
+            .setMaxConnTotal(100)
+            .setMaxConnPerRoute(50)
+            .build();
     }
 
 
