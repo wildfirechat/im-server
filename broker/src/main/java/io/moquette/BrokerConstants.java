@@ -120,6 +120,7 @@ public final class BrokerConstants {
     public static final String SENSITIVE_Remote_Fail_When_Matched = "sensitive.remote_fail_when_matched";
 
     public static final String MESSAGE_Forward_Url = "message.forward.url";
+    public static final String MESSAGE_Sensitive_Forward_Url = "message.sensitive.forward.url";
     public static final String MESSAGE_Forward_Types = "message.forward.types";
     public static final String MESSAGE_MentionMsg_Forward_Url = "message.mentionmsg.forward.url";
 

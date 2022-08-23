@@ -34,6 +34,7 @@ import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private int mSensitiveType = 0;  //命中敏感词时，0 失败，1 吞掉， 2 敏感词替换成*。
     private String mForwardUrl = null;
+    private String mSensitiveMessageForwardUrl = null;
     private Set<Integer> mForwardMessageTypes = new HashSet<>();
     private String mMentionForwardUrl = null;
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
@@ -56,7 +57,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 }
             }
         }
-
+        mSensitiveMessageForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Sensitive_Forward_Url);
         mMentionForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_MentionMsg_Forward_Url);
 
         try {
@@ -194,6 +195,9 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     Set<String> matched = m_messagesStore.handleSensitiveWord(message.getContent().getSearchableContent());
                     if (matched != null && !matched.isEmpty()) {
                         m_messagesStore.storeSensitiveMessage(message);
+                        if (!StringUtil.isNullOrEmpty(mSensitiveMessageForwardUrl)) {
+                            publisher.forwardMessage(message, mSensitiveMessageForwardUrl, outputClient);
+                        }
                         if (mSensitiveType == 0) {
                             errorCode = ErrorCode.ERROR_CODE_SENSITIVE_MATCHED;
                         } else if (mSensitiveType == 1) {
