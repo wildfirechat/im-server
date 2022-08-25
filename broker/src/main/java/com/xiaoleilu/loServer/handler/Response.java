@@ -41,6 +41,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import org.apache.tika.Tika;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -469,7 +470,9 @@ public class Response {
 		this.setContentLength(fileLength);
 		
 		//文件类型
-		String contentType = HttpUtil.getMimeType(file.getName());
+        Tika tika = new Tika();
+        String contentType = tika.detect(file);
+//		String contentType = HttpUtil.getMimeType(file.getName());
 		if(StrUtil.isBlank(contentType)){
 			//无法识别默认使用数据流
 			contentType = "application/octet-stream";
