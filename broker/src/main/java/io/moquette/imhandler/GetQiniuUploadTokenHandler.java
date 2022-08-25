@@ -26,6 +26,7 @@ public class GetQiniuUploadTokenHandler extends IMHandler<Byte> {
         String token;
 
         WFCMessage.GetUploadTokenResult.Builder resultBuilder = WFCMessage.GetUploadTokenResult.newBuilder();
+
         if (MediaServerConfig.USER_QINIU) {
             Auth auth = Auth.create(MediaServerConfig.QINIU_ACCESS_KEY, MediaServerConfig.QINIU_SECRET_KEY);
 
