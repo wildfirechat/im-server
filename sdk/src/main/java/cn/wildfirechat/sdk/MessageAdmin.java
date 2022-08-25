@@ -51,6 +51,14 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
     }
 
+    public static IMResult<Void> clearConversation(String userId, Conversation conversation) throws Exception {
+        String path = APIPath.Conversation_Delete;
+        InputUserConversation input = new InputUserConversation();
+        input.userId = userId;
+        input.conversation = conversation;
+        return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
     /**
      * 获取单条消息。如果想要更多消息的读取，可以直接读取IM服务的数据库。
      * @param messageUid

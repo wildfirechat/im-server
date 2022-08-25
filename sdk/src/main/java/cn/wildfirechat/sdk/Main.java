@@ -762,6 +762,17 @@ public class Main {
             } else {
                 System.out.println("Get message delivery failure");
             }
+
+            conversation = new Conversation();
+            conversation.setTarget("user1");
+            conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
+            conversation.setLine(0);
+            IMResult<Void> clearConversationResult = MessageAdmin.clearConversation("user2", conversation);
+            if (clearConversationResult != null && clearConversationResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("clear conversation success");
+            } else {
+                System.out.println("clear conversation failure");
+            }
         }
 
         List<String> multicastReceivers = Arrays.asList("user2", "user3", "user4");
