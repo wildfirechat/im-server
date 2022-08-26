@@ -19,4 +19,5 @@ public class IMExceptionEvent {
     public String msg;
     public String call_stack;
     public int count;
+    public int node_id;
 }
