@@ -45,16 +45,16 @@ public class GeneralAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
     }
 
-    public static IMResult<OutputBooleanValue> unsubscribeChannel(String channelId, String userId) throws Exception {
-        String path = APIPath.Check_User_Subscribe_Channel;
-        InputSubscribeChannel input = new InputSubscribeChannel(channelId, userId, 0);
-        return AdminHttpUtils.httpJsonPost(path, input, OutputBooleanValue.class);
-    }
-
-    public static IMResult<Void> isUserSubscribedChannel(String userId, String channelId) throws Exception {
+    public static IMResult<Void> unsubscribeChannel(String channelId, String userId) throws Exception {
         String path = APIPath.Subscribe_Channel;
         InputSubscribeChannel input = new InputSubscribeChannel(channelId, userId, 0);
         return AdminHttpUtils.httpJsonPost(path, input, Void.class);
+    }
+
+    public static IMResult<OutputBooleanValue> isUserSubscribedChannel(String userId, String channelId) throws Exception {
+        String path = APIPath.Check_User_Subscribe_Channel;
+        InputSubscribeChannel input = new InputSubscribeChannel(channelId, userId, 0);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputBooleanValue.class);
     }
 
     //以下仅专业版支持
