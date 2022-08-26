@@ -39,6 +39,8 @@ import java.util.*;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_OVER_FREQUENCY;
 import static cn.wildfirechat.common.ErrorCode.ERROR_CODE_SUCCESS;
 import static io.moquette.BrokerConstants.CLIENT_REQUEST_RATE_LIMIT;
+import static win.liyufan.im.IMTopic.GetUserSettingTopic;
+import static win.liyufan.im.IMTopic.PullMessageTopic;
 
 /**
  * 请求处理接口<br>
@@ -162,10 +164,17 @@ abstract public class IMHandler<T> {
         mLimitCounter = new RateLimiter(5, clientRateLimit);
     }
 
+    boolean isNotLimitTopic(String topic) {
+        if (PullMessageTopic.equals(topic)
+            || GetUserSettingTopic.equals(topic)) {
+            return true;
+        }
+        return false;
+    }
 
     public ErrorCode preAction(String clientID, String fromUser, String topic, Qos1PublishHandler.IMCallback callback, ProtoConstants.RequestSourceType requestSourceType) {
         LOG.info("imHandler fromUser={}, clientId={}, topic={}", fromUser, clientID, topic);
-        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !isNotLimitTopic(topic) && !mLimitCounter.isGranted(clientID + fromUser + topic)) {
             return ErrorCode.ERROR_CODE_OVER_FREQUENCY;
         }
         return ErrorCode.ERROR_CODE_SUCCESS;
