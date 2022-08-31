@@ -12,6 +12,14 @@
 # 更新记录
 
 --------------
+Release note 0.94:
+1. Server SDK添加删除会话接口
+2. 解决内置对象存储某些类型文件返回content-type错误问题
+3. 添加server api检查是否订阅频道接口
+4. 添加超频检查忽略信令
+5. gson单例化，且关掉html转义。
+
+--------------
 Release note 0.93:
 1. Server API添加订阅频道功能
 2. 短链接端口添加HEAD方法处理
