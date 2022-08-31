@@ -98,7 +98,7 @@ public class Utility {
         if(now - t >= SendExceptionDuration) {
             for (Map.Entry<String, IMExceptionEvent> entry : exceptionEventHashMap.entrySet()) {
                 if(entry.getValue().count > 0) {
-                    String jsonStr = new Gson().toJson(entry.getValue());
+                    String jsonStr = GsonUtil.gson.toJson(entry.getValue());
                     Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(gMonitorEventAddress, jsonStr, HttpUtils.HttpPostType.POST_TYPE_Server_Exception_Callback));
                     entry.getValue().count = 0;
                     lastSendTime = now;
@@ -111,7 +111,7 @@ public class Utility {
                 event.msg = "监控心跳通知";
                 event.call_stack = "别担心！这个是心跳消息，已经有24小时没有出现异常消息了！";
                 event.count = IMExceptionEvent.EventType.HEART_BEAT;
-                String jsonStr = new Gson().toJson(event);
+                String jsonStr = GsonUtil.gson.toJson(event);
                 Server.getServer().getCallbackScheduler().execute(() -> HttpUtils.httpJsonPost(gMonitorEventAddress, jsonStr, HttpUtils.HttpPostType.POST_TYPE_Server_Exception_Callback));
             }
         }

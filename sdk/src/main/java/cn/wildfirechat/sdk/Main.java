@@ -9,6 +9,7 @@ import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 import cn.wildfirechat.sdk.utilities.RobotHttpUtils;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.netty.util.internal.StringUtil;
 
 
@@ -1510,7 +1511,7 @@ public class Main {
         menu21.url = "http://www.sohu.com";
         menu2.subMenus.add(menu21);
 
-        String menuStr = new Gson().toJson(menus);
+        String menuStr = new GsonBuilder().disableHtmlEscaping().create().toJson(menus);
         voidIMResult = channelServiceApi.modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Menu, menuStr);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("modify channel menu success");

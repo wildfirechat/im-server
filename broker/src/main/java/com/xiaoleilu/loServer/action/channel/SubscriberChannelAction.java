@@ -38,7 +38,7 @@ public class SubscriberChannelAction extends ChannelAction {
                 if(input.getSubscribe() > 0 && (channelInfo.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Active_Subscribe) == 0) {
                     response.setStatus(HttpResponseStatus.OK);
                     RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_RIGHT);
-                    response.setContent(new Gson().toJson(result));
+                    response.setContent(gson.toJson(result));
                     return true;
                 }
                 WFCMessage.ListenChannel listenChannel = WFCMessage.ListenChannel.newBuilder().setChannelId(channelInfo.getTargetId()).setListen(input.getSubscribe()).build();

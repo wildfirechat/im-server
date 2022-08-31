@@ -37,7 +37,7 @@ public class DestoryChatroomAction extends AdminAction {
             FullHttpRequest fullHttpRequest = (FullHttpRequest)request.getNettyRequest();
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
             String content = new String(bytes);
-            Gson gson = new Gson();
+            
             InputDestoryChatroom inputDestoryChatroom = gson.fromJson(content, InputDestoryChatroom.class);
             if (inputDestoryChatroom != null
                 && !StringUtil.isNullOrEmpty(inputDestoryChatroom.getChatroomId())) {

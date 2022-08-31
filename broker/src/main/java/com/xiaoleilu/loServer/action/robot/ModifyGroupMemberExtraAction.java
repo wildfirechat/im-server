@@ -53,7 +53,7 @@ public class ModifyGroupMemberExtraAction extends RobotAction {
             } else {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result = RestResult.resultOf(ErrorCode.INVALID_PARAMETER);
-                response.setContent(new Gson().toJson(result));
+                response.setContent(gson.toJson(result));
             }
         }
         return true;

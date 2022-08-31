@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk.utilities;
 
 import cn.wildfirechat.sdk.model.IMResult;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import ikidou.reflect.TypeBuilder;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RobotHttpUtils extends JsonUtils {
     private static final Logger LOG = LoggerFactory.getLogger(RobotHttpUtils.class);
+    public static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private final String url;
     private final String robotId;
@@ -75,7 +77,7 @@ public class RobotHttpUtils extends JsonUtils {
 
             String jsonStr = null;
             if (object != null) {
-                jsonStr = new Gson().toJson(object);
+                jsonStr = gson.toJson(object);
             }
             LOG.info("http request content: {}", jsonStr);
 

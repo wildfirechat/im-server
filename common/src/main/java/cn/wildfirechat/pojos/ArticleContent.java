@@ -1,6 +1,7 @@
 package cn.wildfirechat.pojos;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class ArticleContent {
         MessagePayload payload = new MessagePayload();
         payload.setType(13);
         payload.setSearchableContent(top.title);
-        payload.setBase64edData(Base64.getEncoder().encodeToString(new Gson().toJson(this).getBytes(StandardCharsets.UTF_8)));
+        payload.setBase64edData(Base64.getEncoder().encodeToString(new GsonBuilder().disableHtmlEscaping().create().toJson(this).getBytes(StandardCharsets.UTF_8)));
         return payload;
     }
 }

@@ -99,7 +99,7 @@ abstract public class AdminAction extends Action {
             }
 
             RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), data);
-            response.setContent(new Gson().toJson(result));
+            response.setContent(gson.toJson(result));
             response.send();
         }
     }

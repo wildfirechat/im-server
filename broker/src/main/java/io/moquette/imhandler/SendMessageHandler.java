@@ -20,10 +20,7 @@ import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import cn.wildfirechat.common.ErrorCode;
 import io.netty.buffer.Unpooled;
-import win.liyufan.im.HttpUtils;
-import win.liyufan.im.IMTopic;
-import win.liyufan.im.MessageShardingUtil;
-import win.liyufan.im.Utility;
+import win.liyufan.im.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -219,7 +216,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                                 if(StringUtil.isNullOrEmpty(content)) {
                                     saveAndPublish(fromUser, clientID, finalMsg, requestSourceType);
                                 } else {
-                                    MessagePayload payload = new Gson().fromJson(content, MessagePayload.class);
+                                    MessagePayload payload = GsonUtil.gson.fromJson(content, MessagePayload.class);
                                     if (payload != null && payload.getType() > 0) {
                                         WFCMessage.Message newMsg = finalMsg.toBuilder().setContent(payload.toProtoMessageContent()).build();
                                         saveAndPublish(fromUser, clientID, newMsg, requestSourceType);

@@ -35,6 +35,7 @@ import io.moquette.spi.ISessionsStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
+import win.liyufan.im.GsonUtil;
 import win.liyufan.im.HttpUtils;
 import win.liyufan.im.IMTopic;
 
@@ -188,7 +189,7 @@ public class MessagesPublisher {
                         OutputClient finalOutputClient = outputClient;
                         Server.getServer().getCallbackScheduler().execute(() -> {
                             try {
-                                HttpUtils.httpJsonPost(robot.getCallback(), new Gson().toJson(OutputMessageData.fromProtoMessage(finalMsg, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
+                                HttpUtils.httpJsonPost(robot.getCallback(), GsonUtil.gson.toJson(OutputMessageData.fromProtoMessage(finalMsg, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -616,7 +617,7 @@ public class MessagesPublisher {
                 OutputClient finalOutputClient = outputClient;
                 Server.getServer().getCallbackScheduler().execute(() -> {
                     try {
-                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", new Gson().toJson(OutputMessageData.fromProtoMessage(message, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Message_Callback);
+                        HttpUtils.httpJsonPost(channelInfo.getCallback() + "/message", GsonUtil.gson.toJson(OutputMessageData.fromProtoMessage(message, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Message_Callback);
                     } catch (Exception e) {
                         e.printStackTrace();
                         Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -669,7 +670,7 @@ public class MessagesPublisher {
     public void forwardMessage(final WFCMessage.Message message, String forwardUrl, OutputClient outputClient) {
         Server.getServer().getCallbackScheduler().execute(() -> {
             try {
-                HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message, outputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
+                HttpUtils.httpJsonPost(forwardUrl, GsonUtil.gson.toJson(OutputMessageData.fromProtoMessage(message, outputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Forward_Message_Callback);
             } catch (Exception e) {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
@@ -679,7 +680,7 @@ public class MessagesPublisher {
 
     public void forwardMessageWithCallback(final WFCMessage.Message message, String forwardUrl, HttpUtils.HttpCallback callback) {
         try {
-            HttpUtils.httpJsonPost(forwardUrl, new Gson().toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), new HttpUtils.HttpCallback() {
+            HttpUtils.httpJsonPost(forwardUrl, GsonUtil.gson.toJson(OutputMessageData.fromProtoMessage(message), OutputMessageData.class), new HttpUtils.HttpCallback() {
                 @Override
                 public void onSuccess(String content) {
                     Server.getServer().getImBusinessScheduler().execute(()->{
@@ -707,7 +708,7 @@ public class MessagesPublisher {
 
         Server.getServer().getCallbackScheduler().execute(() -> {
             try {
-                HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", new Gson().toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Subscriber_Event_Callback);
+                HttpUtils.httpJsonPost(channelInfo.getCallback() + "/subscribe", GsonUtil.gson.toJson(new OutputNotifyChannelSubscribeStatus(user, channelInfo.getTargetId(), listen), OutputNotifyChannelSubscribeStatus.class), HttpUtils.HttpPostType.POST_TYPE_Channel_Subscriber_Event_Callback);
             } catch (Exception e) {
                 e.printStackTrace();
                 Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);

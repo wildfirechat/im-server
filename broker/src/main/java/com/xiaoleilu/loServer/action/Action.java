@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.RequireAuthentication;
 import com.xiaoleilu.loServer.handler.Request;
@@ -39,7 +40,7 @@ import static io.moquette.BrokerConstants.*;
 abstract public class Action {
     public static IMessagesStore messagesStore = null;
     public static ISessionsStore sessionsStore = null;
-
+    protected static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
     public ChannelHandlerContext ctx;
 
     protected static RateLimiter adminLimiter = null;
@@ -129,7 +130,7 @@ abstract public class Action {
             }
 
             RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), RestResult.resultOf(errorCode));
-            response.setContent(new Gson().toJson(result));
+            response.setContent(gson.toJson(result));
             response.send();
         }
 
@@ -145,7 +146,7 @@ abstract public class Action {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request;
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
             String content = new String(bytes, StandardCharsets.UTF_8);//contribute by JiaRG from github
-            Gson gson = new Gson();
+            
             T t = gson.fromJson(content, cls);
             return t;
         }
@@ -154,6 +155,6 @@ abstract public class Action {
 
     protected void setResponseContent(RestResult result, Response response) {
         response.setStatus(HttpResponseStatus.OK);
-        response.setContent(new Gson().toJson(result));
+        response.setContent(gson.toJson(result));
     }
 }

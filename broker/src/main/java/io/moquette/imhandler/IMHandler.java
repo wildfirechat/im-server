@@ -25,6 +25,7 @@ import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import cn.wildfirechat.common.ErrorCode;
+import win.liyufan.im.GsonUtil;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
@@ -141,7 +142,7 @@ abstract public class IMHandler<T> {
 //         }
 
         //json ?
-        return (T)(new Gson().fromJson(new String(bytes), dataCls));
+        return (T)(GsonUtil.gson.fromJson(new String(bytes), dataCls));
     }
 
     public static void init(IMessagesStore ms, ISessionsStore ss, MessagesPublisher p, ThreadPoolExecutorWrapper businessExecutor, Server server) {

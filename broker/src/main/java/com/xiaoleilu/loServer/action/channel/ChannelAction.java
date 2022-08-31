@@ -101,7 +101,7 @@ abstract public class ChannelAction extends Action {
         }
 
         RestResult result = RestResult.resultOf(errorCode, errorCode.getMsg(), data);
-        response.setContent(new Gson().toJson(result));
+        response.setContent(gson.toJson(result));
         response.send();
     }
 
@@ -110,7 +110,7 @@ abstract public class ChannelAction extends Action {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request;
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
             String content = new String(bytes, StandardCharsets.UTF_8);
-            Gson gson = new Gson();
+            
             T t = gson.fromJson(content, cls);
             return t;
         }

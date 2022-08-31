@@ -11,6 +11,7 @@ package cn.wildfirechat.pojos;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -89,7 +90,7 @@ public class GroupNotificationBinaryContent {
     }
 
     public WFCMessage.MessageContent getGroupNotifyContent(int groupContentType) {
-        return WFCMessage.MessageContent.newBuilder().setType(groupContentType).setData(ByteString.copyFromUtf8(new Gson().toJson(this))).build();
+        return WFCMessage.MessageContent.newBuilder().setType(groupContentType).setData(ByteString.copyFromUtf8(new GsonBuilder().disableHtmlEscaping().create().toJson(this))).build();
     }
 
     public WFCMessage.MessageContent getAddGroupNotifyContent() {

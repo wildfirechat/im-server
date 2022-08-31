@@ -57,6 +57,7 @@ import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import cn.wildfirechat.common.ErrorCode;
+import win.liyufan.im.GsonUtil;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
@@ -142,7 +143,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
                 out.addSession(userId, session.getClientID(), session.getPlatform(), status, session.getLastActiveTime());
             }
 
-            callback.onRouteHandled(new Gson().toJson(out).getBytes());
+            callback.onRouteHandled(GsonUtil.gson.toJson(out).getBytes());
         });
     }
 

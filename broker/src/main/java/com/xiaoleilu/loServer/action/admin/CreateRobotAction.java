@@ -67,7 +67,7 @@ public class CreateRobotAction extends AdminAction {
                     Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
                     response.setStatus(HttpResponseStatus.OK);
                     RestResult result = RestResult.resultOf(ErrorCode.ERROR_CODE_SERVER_ERROR, e.getMessage());
-                    response.setContent(new Gson().toJson(result));
+                    response.setContent(gson.toJson(result));
                     return true;
                 }
 

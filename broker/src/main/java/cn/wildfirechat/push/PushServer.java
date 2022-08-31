@@ -11,6 +11,7 @@ package cn.wildfirechat.push;
 import cn.wildfirechat.common.IMExceptionEvent;
 import cn.wildfirechat.proto.ProtoConstants;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.server.config.IConfig;
 import io.moquette.spi.ISessionsStore;
@@ -29,7 +30,7 @@ import static win.liyufan.im.HttpUtils.HttpPostType.POST_TYPE_Push;
 
 public class PushServer {
     private static final Logger LOG = LoggerFactory.getLogger(PushServer.class);
-
+    protected static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
     public interface PushMessageType {
         int PUSH_MESSAGE_TYPE_NORMAL = 0;
         int PUSH_MESSAGE_TYPE_VOIP_INVITE = 1;
@@ -100,7 +101,7 @@ public class PushServer {
                 url = iOSPushServerUrl;
                 pushMessage.voipDeviceToken = session.getVoipDeviceToken();
             }
-            HttpUtils.httpJsonPost(url, new Gson().toJson(pushMessage, pushMessage.getClass()), POST_TYPE_Push);
+            HttpUtils.httpJsonPost(url, gson.toJson(pushMessage, pushMessage.getClass()), POST_TYPE_Push);
         } else {
             LOG.info("Not mobile platform {}", session.getPlatform());
         }

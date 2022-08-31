@@ -34,7 +34,7 @@ public class VersionAction extends Action {
 
             try {
 
-                response.setContent(Utility.formatJson(new Gson().toJson(GitRepositoryState.getGitRepositoryState())));
+                response.setContent(Utility.formatJson(gson.toJson(GitRepositoryState.getGitRepositoryState())));
             } catch (IOException e) {
                 e.printStackTrace();
                 response.setContent("{\"version\":\"unknown\"}");

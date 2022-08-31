@@ -42,7 +42,7 @@ public class BlockUserAction extends AdminAction {
                 response.setStatus(HttpResponseStatus.OK);
                 RestResult result;
                 result = RestResult.resultOf(errorCode);
-                response.setContent(new Gson().toJson(result));
+                response.setContent(gson.toJson(result));
 
                 if (inputUserBlock.getStatus() == 2) {
                     sendApiMessage(null, null, ServerAPIHelper.KICKOFF_USER_REQUEST, inputUserBlock.getUserId().getBytes(), null);

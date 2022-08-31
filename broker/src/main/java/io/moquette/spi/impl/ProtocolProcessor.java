@@ -43,6 +43,7 @@ import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import win.liyufan.im.GsonUtil;
 import win.liyufan.im.HttpUtils;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.Utility;
@@ -264,7 +265,7 @@ public class ProtocolProcessor {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
             mServer.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, new Gson().toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)), HttpUtils.HttpPostType.POST_TYPE_User_Online_Event_Callback);
+                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, GsonUtil.gson.toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)), HttpUtils.HttpPostType.POST_TYPE_User_Online_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);

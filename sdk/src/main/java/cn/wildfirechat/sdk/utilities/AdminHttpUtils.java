@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk.utilities;
 
 import cn.wildfirechat.sdk.model.IMResult;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import ikidou.reflect.TypeBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AdminHttpUtils extends JsonUtils {
     private static final Logger LOG = LoggerFactory.getLogger(AdminHttpUtils.class);
+    public static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private static String adminUrl;
     private static String adminSecret;
@@ -124,7 +126,7 @@ public class AdminHttpUtils extends JsonUtils {
 
             String jsonStr = "";
             if (object != null) {
-                jsonStr = new Gson().toJson(object);
+                jsonStr = gson.toJson(object);
             }
             LOG.info("http request content: {}", jsonStr);
 

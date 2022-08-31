@@ -52,7 +52,7 @@ public class ApplicationGetUserInfoAction extends RobotAction {
             }
 
             response.setStatus(HttpResponseStatus.OK);
-            response.setContent(new Gson().toJson(result));
+            response.setContent(gson.toJson(result));
         }
         return true;
     }
