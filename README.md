@@ -60,6 +60,8 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 
 ![野火IM](http://static.wildfirechat.net/wx.jpg)
 
+## 快速使用
+野火提供免费的社区版IM服务和移动端，包括完整的移动端即时通讯和实时音视频功能，可以无条件商用。您可以直接从开源项目里下载到完整的后端和移动端产品，包括社区版IM服务、应用服务、开放平台服务、频道（公众号）服务、机器人服务、推送服务以及Android和iOS端源码。可以按照[快速开始](https://docs.wildfirechat.cn/quick_start/)来部署应用服务和IM服务，然后打包移动端，以最小化运行。之后可以详细阅读文档部署其他支撑服务。
 
 ## 应用截图
 ![ios-demo](http://static.wildfirechat.cn/ios-demo.gif)
