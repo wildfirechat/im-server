@@ -15,3 +15,6 @@
 
 #### demo对比结果
 请用demo对比测试，demo上是什么状态。
+
+#### 检索已有问题
+除了可以检索已有issue外，还可以去野火论坛查找已有问题，论坛地址为 https://bbs.wildfirechat.cn
