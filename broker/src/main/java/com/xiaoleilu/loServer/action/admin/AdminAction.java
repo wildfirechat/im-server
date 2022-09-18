@@ -112,7 +112,7 @@ abstract public class AdminAction extends Action {
     }
 
     protected void sendApiMessage(Response response, String fromUser, String clientId, String topic, byte[] message, ApiCallback callback, boolean noAdmin) {
-        ServerAPIHelper.sendRequest(fromUser, clientId, topic, message, new ServerAPIHelper.Callback() {
+        ServerAPIHelper.sendRequest(fromUser, clientId, topic, message, callback == null ? null : new ServerAPIHelper.Callback() {
             @Override
             public void onSuccess(byte[] result) {
                 if(callback != null) {

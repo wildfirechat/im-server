@@ -72,7 +72,7 @@ public class InterceptConnectMessage extends InterceptAbstractMessage {
     }
 
     public byte[] getPassword() {
-        return msg.payload().password();
+        return msg.payload().passwordInBytes();
     }
 
     public String getWillTopic() {

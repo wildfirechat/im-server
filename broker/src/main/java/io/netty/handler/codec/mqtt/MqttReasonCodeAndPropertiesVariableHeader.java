@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 The Netty Project
+ * Copyright 2020 The Netty Project
  *
  * The Netty Project licenses this file to you under the Apache License,
  * version 2.0 (the "License"); you may not use this file except in compliance
@@ -19,33 +19,23 @@ package io.netty.handler.codec.mqtt;
 import io.netty.util.internal.StringUtil;
 
 /**
- * Variable header of {@link MqttConnectMessage}
+ * Variable Header for AUTH and DISCONNECT messages represented by {@link MqttMessage}
  */
-public final class MqttConnAckVariableHeader {
+public final class MqttReasonCodeAndPropertiesVariableHeader {
 
-    private final MqttConnectReturnCode connectReturnCode;
-
-    private final boolean sessionPresent;
-
+    private final byte reasonCode;
     private final MqttProperties properties;
 
-    public MqttConnAckVariableHeader(MqttConnectReturnCode connectReturnCode, boolean sessionPresent) {
-        this(connectReturnCode, sessionPresent, MqttProperties.NO_PROPERTIES);
-    }
+    public static final byte REASON_CODE_OK = 0;
 
-    public MqttConnAckVariableHeader(MqttConnectReturnCode connectReturnCode, boolean sessionPresent,
-                                     MqttProperties properties) {
-        this.connectReturnCode = connectReturnCode;
-        this.sessionPresent = sessionPresent;
+    public MqttReasonCodeAndPropertiesVariableHeader(byte reasonCode,
+                                                     MqttProperties properties) {
+        this.reasonCode = reasonCode;
         this.properties = MqttProperties.withEmptyDefaults(properties);
     }
 
-    public MqttConnectReturnCode connectReturnCode() {
-        return connectReturnCode;
-    }
-
-    public boolean isSessionPresent() {
-        return sessionPresent;
+    public byte reasonCode() {
+        return reasonCode;
     }
 
     public MqttProperties properties() {
@@ -56,8 +46,8 @@ public final class MqttConnAckVariableHeader {
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
             .append('[')
-            .append("connectReturnCode=").append(connectReturnCode)
-            .append(", sessionPresent=").append(sessionPresent)
+            .append("reasonCode=").append(reasonCode)
+            .append(", properties=").append(properties)
             .append(']')
             .toString();
     }

@@ -81,18 +81,6 @@ public class Request {
 
 		// request URI parameters
 		this.putParams(new QueryStringDecoder(uri));
-		if(nettyRequest.method() != HttpMethod.GET){
-			HttpPostRequestDecoder decoder = null;
-			try {
-				decoder = new HttpPostRequestDecoder(HTTP_DATA_FACTORY, nettyRequest);
-				this.putParams(decoder);
-			} finally {
-				if(null != decoder){
-					decoder.destroy();
-					decoder = null;
-				}
-			}
-		}
 
 		// IP
 		this.putIp(ctx);

@@ -308,7 +308,7 @@ public class ProtocolProcessor {
             }
             byte[] pwd = null;
             if (msg.variableHeader().hasPassword()) {
-                pwd = msg.payload().password();
+                pwd = msg.payload().passwordInBytes();
 
                 MemorySessionStore.Session session = m_sessionsStore.getSession(clientId);
                 if (session == null) {
