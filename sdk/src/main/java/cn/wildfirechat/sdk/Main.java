@@ -1454,9 +1454,9 @@ public class Main {
             System.exit(-1);
         }
 
-        ArticleContent articleContent = new ArticleContent("article1", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是一个测试文章", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", true);
-        articleContent.addSubArticle("article2", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第二个测试文章", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
-        articleContent.addSubArticle("article3", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第三个测试文章", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
+        ArticleContent articleContent = new ArticleContent("article1", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是一个测试文章", "测试一下文章的功能", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", true);
+        articleContent.addSubArticle("article2", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第二个测试文章", "测试一下文章的功能", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
+        articleContent.addSubArticle("article3", "https://media.wfcoss.cn/channel-assets/20220816/2dd76540daa9444dae44e942aa1c2bbc.png", "这是第三个测试文章", "测试一下文章的功能", "https://mp.weixin.qq.com/s/W6tanLbALd3qqZM8r3MTgA", false);
         payload = articleContent.toPayload();
 
         resultSendMessage = channelServiceApi.sendMessage(0, null, payload);

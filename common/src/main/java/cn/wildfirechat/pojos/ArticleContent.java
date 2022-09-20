@@ -13,16 +13,18 @@ public class ArticleContent {
         public String id;
         public String cover;
         public String title;
+        public String digest;
         public String url;
         public boolean rr;
 
         public Article() {
         }
 
-        public Article(String id, String cover, String title, String url, boolean rr) {
+        public Article(String id, String cover, String title, String digest, String url, boolean rr) {
             this.id = id;
             this.cover = cover;
             this.title = title;
+            this.digest = digest;
             this.url = url;
             this.rr = rr;
         }
@@ -33,14 +35,14 @@ public class ArticleContent {
     public ArticleContent() {
     }
 
-    public ArticleContent(String id, String cover, String title, String url, boolean rr) {
-        this.top = new Article(id, cover, title, url, rr);
+    public ArticleContent(String id, String cover, String title, String digest, String url, boolean rr) {
+        this.top = new Article(id, cover, title, digest, url, rr);
     }
 
-    public ArticleContent addSubArticle(String id, String cover, String title, String url, boolean rr)  {
+    public ArticleContent addSubArticle(String id, String cover, String title, String digest, String url, boolean rr)  {
         if (subArticles == null)
             subArticles = new ArrayList<>();
-        subArticles.add(new Article(id, cover, title, url, rr));
+        subArticles.add(new Article(id, cover, title, digest, url, rr));
         return this;
     }
 
