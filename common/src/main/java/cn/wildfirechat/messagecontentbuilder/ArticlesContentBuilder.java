@@ -17,28 +17,31 @@ public class ArticlesContentBuilder extends MessageContentBuilder{
         public String id;
         public String cover;
         public String title;
+        public String digest;
         public String url;
         public boolean readReport;
     }
     public Article topArticle;
     public List<Article> subArticles;
 
-    public static ArticlesContentBuilder newBuilder(String id, String cover, String title, String url, boolean readReport) {
+    public static ArticlesContentBuilder newBuilder(String id, String cover, String title, String digest, String url, boolean readReport) {
         ArticlesContentBuilder builder = new ArticlesContentBuilder();
         builder.topArticle = new Article();
         builder.topArticle.id = id;
         builder.topArticle.cover = cover;
         builder.topArticle.title = title;
+        builder.topArticle.digest = digest;
         builder.topArticle.url = url;
         builder.topArticle.readReport = readReport;
         return builder;
     }
 
-    public ArticlesContentBuilder addSubArticle(String id, String cover, String title, String url, boolean readReport) {
+    public ArticlesContentBuilder addSubArticle(String id, String cover, String title, String digest, String url, boolean readReport) {
         Article article = new Article();
         article.id = id;
         article.cover = cover;
         article.title = title;
+        article.digest = digest;
         article.url = url;
         article.readReport = readReport;
         if(subArticles == null) {
@@ -56,6 +59,8 @@ public class ArticlesContentBuilder extends MessageContentBuilder{
             top.put("cover", article.cover);
         if(!StringUtil.isNullOrEmpty(article.title))
             top.put("title", article.title);
+        if(!StringUtil.isNullOrEmpty(article.digest))
+            top.put("digest", article.digest);
         if(!StringUtil.isNullOrEmpty(article.url))
             top.put("url", article.url);
         if(article.readReport)
