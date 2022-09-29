@@ -539,8 +539,17 @@ public class MemoryMessagesStore implements IMessagesStore {
         int pullType = ProtoConstants.PullType.Pull_Normal;
 
         if (type == ProtoConstants.ConversationType.ConversationType_Private) {
-            notifyReceivers.add(fromUser);
-            notifyReceivers.add(message.getConversation().getTarget());
+            if(message.getToCount() > 0) {
+                if(message.getToList().contains(fromUser)) {
+                    notifyReceivers.add(fromUser);
+                }
+                if(message.getToList().contains(message.getConversation().getTarget())) {
+                    notifyReceivers.add(message.getConversation().getTarget());
+                }
+            } else {
+                notifyReceivers.add(fromUser);
+                notifyReceivers.add(message.getConversation().getTarget());
+            }
             pullType = ProtoConstants.PullType.Pull_Normal;
         } else if (type == ProtoConstants.ConversationType.ConversationType_Group) {
             notifyReceivers.add(fromUser);
