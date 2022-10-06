@@ -92,6 +92,7 @@ public interface APIPath {
     String Conference_List_Participant = "/admin/conference/list_participant";
     String Conference_Create = "/admin/conference/create";
     String Conference_Destroy = "/admin/conference/destroy";
+    String Conference_Recording = "/admin/conference/recording";
 
     String Channel_User_Info = "/channel/user_info";
     String Channel_Update_Profile = "/channel/update_profile";

@@ -31,6 +31,15 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, create, Void.class);
     }
 
+    public static IMResult<Void> enableRecording(String roomId, boolean advance, boolean recording) throws Exception {
+        String path = APIPath.Conference_Recording;
+        PojoConferenceRecording create = new PojoConferenceRecording();
+        create.roomId = roomId;
+        create.recording = recording;
+        create.advance = advance;
+        return AdminHttpUtils.httpJsonPost(path, create, Void.class);
+    }
+
     public static IMResult<Void> destroy(String roomId, boolean advance) throws Exception {
         String path = APIPath.Conference_Destroy;
         PojoConferenceRoomId conferenceRoomId = new PojoConferenceRoomId(roomId, advance);

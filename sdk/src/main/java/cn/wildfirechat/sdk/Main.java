@@ -1642,20 +1642,28 @@ public class Main {
             System.out.println("conference list " + listResult.getResult().conferenceInfoList);
         }
 
-        IMResult<Void> createResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 9, false, 0, false, true);
-        if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+        IMResult<Void> voidIMResult = ConferenceAdmin.createRoom("helloroomid", "hello room description", "123456", 9, false, 0, false, true);
+        if(voidIMResult == null || voidIMResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create conference failure");
             System.exit(-1);
         } else {
             System.out.println("create conference");
         }
 
-        createResult = ConferenceAdmin.createRoom("helloroomid2", "hello room description advanced", "123456", 20, true, 0, false, true);
-        if(createResult == null || createResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+        voidIMResult = ConferenceAdmin.createRoom("helloroomid2", "hello room description advanced", "123456", 20, true, 0, false, true);
+        if(voidIMResult == null || voidIMResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("create conference failure");
             System.exit(-1);
         } else {
             System.out.println("create conference");
+        }
+
+        voidIMResult = ConferenceAdmin.enableRecording("helloroomid2", true, true);
+        if(voidIMResult == null || voidIMResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("recording conference failure");
+            System.exit(-1);
+        } else {
+            System.out.println("recording conference success");
         }
 
         listResult = ConferenceAdmin.listConferences();
