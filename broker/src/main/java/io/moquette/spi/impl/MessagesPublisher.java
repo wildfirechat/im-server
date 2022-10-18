@@ -652,6 +652,8 @@ public class MessagesPublisher {
                 pushContent = "[文件]";
             } else if(type == ProtoConstants.ContentType.Sticker) {
                 pushContent = "[表情]";
+            } else if (type == ProtoConstants.ContentType.Name_Card) {
+                pushContent = "[名片]";
             }
         }
 
