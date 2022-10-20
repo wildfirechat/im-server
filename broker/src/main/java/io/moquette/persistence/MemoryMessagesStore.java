@@ -3372,10 +3372,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             if(robotData != null && !StringUtil.isNullOrEmpty(robotData.getCallback()) && !StringUtil.isNullOrEmpty(robotData.getSecret())) {
                 try {
                     URL url = new URL(robotData.getCallback());
-                    if(url.getHost().equals(host)) {
+                    if(url.getHost() == null) {
+                        LOG.error("get application auth code error, application callback is invalid url");
+                    } else if(url.getHost().equals(host)) {
                         secret = robotData.getSecret();
                     } else {
-                        LOG.warn("get application auth code error, request host is not the same host with callback host");
+                        LOG.error("get application auth code error, request host is not the same host with callback host");
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -3396,10 +3398,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             if(channelData != null && !StringUtil.isNullOrEmpty(channelData.getCallback()) && !StringUtil.isNullOrEmpty(channelData.getSecret())) {
                 try {
                     URL url = new URL(channelData.getCallback());
-                    if(url.getHost().equals(host)) {
+                    if(url.getHost() == null) {
+                        LOG.error("get application auth code error, application callback is invalid url");
+                    } else if(url.getHost().equals(host)) {
                         secret = channelData.getSecret();
                     } else {
-                        LOG.warn("get application auth code error, request host is not the same host with callback host");
+                        LOG.error("get application auth code error, request host is not the same host with callback host");
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
