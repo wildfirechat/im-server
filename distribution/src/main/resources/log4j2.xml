@@ -6,7 +6,6 @@
     <Properties>
         <!--自定义一些常量，之后使用${变量名}引用-->
         <Property name="MSG_LOG_HOME">./logs</Property>
-        <Property name="logFileName">test.log</Property>
         <property name="charset">UTF-8</property>
         <!--自定义的输出格式-->
         <property name="pattern">%d %-5p [%t] %C{2} (%F:%L) - %m%n</property>

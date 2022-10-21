@@ -24,7 +24,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.moquette.BrokerConstants;
 import io.moquette.server.config.IConfig;
 import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.configuration.FlywayConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

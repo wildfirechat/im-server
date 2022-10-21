@@ -29,6 +29,11 @@
             <directory>src/main/resources/</directory>
             <outputDirectory>config/</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>../systemd/</directory>
+            <outputDirectory>/systemd</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>
