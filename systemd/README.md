@@ -9,13 +9,14 @@
 > 专业版软件包压缩了2次，先解压出```distribution-bundle-tar.tar.gz```，再拷贝到IM目录再次解压，所以注意确认目录下有bin、config等目录才对。
 
 ## 放置Server File
-把```im-server.service```放到```/etc/systemd/system/```目录下。
+把```im-server.service```放到```/usr/lib/systemd/system/```目录下。
 
 ## 管理服务
-* 启动： ```sudo systemctl start im-server.service```
-* 停止： ```sudo systemctl stop im-server.service```
-* 重启： ```sudo systemctl restart im-server.service```
-* 查看控制台日志: ```journalctl -f -u im-server.service```
+* 刷新服务： ```sudo systemctl daemon-reload```，当手动安装后需要执行命令。
+* 启动： ```sudo systemctl start im-server.service```。
+* 停止： ```sudo systemctl stop im-server.service```。
+* 重启： ```sudo systemctl restart im-server.service```。
+* 查看控制台日志: ```journalctl -f -u im-server.service```。
 
 ## 日志
 日志文件在```/usr/local/im-server/logs```目录下。如果需要提供日志给野火官方，请把这个目录下的日志和制台日志(```journalctl -f -u im-server.service```)一起发给野火。
