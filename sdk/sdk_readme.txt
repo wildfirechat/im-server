@@ -28,7 +28,6 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.11</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>

@@ -20,6 +20,13 @@
             <artifactId>moquette-broker</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.vafer/jdeb -->
+        <dependency>
+            <groupId>org.vafer</groupId>
+            <artifactId>jdeb</artifactId>
+            <version>1.10</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 
@@ -89,6 +96,34 @@
                                 <descriptor>${basedir}/src/main/assembly/assembly.xml</descriptor>
                             </descriptors>
                             <tarLongFileMode>gnu</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jdeb</goal>
+                        </goals>
+                        <configuration>
+                            <controlDir>${project.basedir}/src/main/deb/control</controlDir>
+                            <skipPOMs>false</skipPOMs>
+                            <deb>${project.build.directory}/wildfirechat-${project.version}.deb</deb>
+                            <dataSet>
+                                <data>
+                                    <src>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</src>
+                                    <type>archive</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/local/wildfirechat/im</prefix>
+                                    </mapper>
+                                </data>
+                            </dataSet>
                         </configuration>
                     </execution>
                 </executions>

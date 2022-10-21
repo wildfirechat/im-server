@@ -1,0 +1,9 @@
+Package: wildfirechat
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: Wildfirechat <support@wildfirechat.cn>
+Description:  Wildfirechat IM Server
+Distribution: development
+Homepage: https://wildfirechat.cn
