@@ -12,11 +12,14 @@
 把```im-server.service```放到```/usr/lib/systemd/system/```目录下。
 
 ## 管理服务
-* 刷新服务： ```sudo systemctl daemon-reload```，当手动安装后需要执行命令。
-* 启动： ```sudo systemctl start im-server.service```。
-* 停止： ```sudo systemctl stop im-server.service```。
-* 重启： ```sudo systemctl restart im-server.service```。
-* 查看控制台日志: ```journalctl -f -u im-server.service```。
+* 刷新配置，当安装或者更新后需要执行： ```sudo systemctl daemon-reload```
+* 启动服务： ```sudo systemctl start im-server.service```
+* 停止服务： ```sudo systemctl stop im-server.service```
+* 重启服务： ```sudo systemctl restart im-server.service```
+* 查看服务状态：```sudo systemctl status im-server.service```
+* 设置开机自启动：```sudo systemctl enable im-server.service```
+* 禁止开机自启动：```sudo systemctl disable im-server.service```
+* 查看控制台日志: ```journalctl -f -u im-server.service```
 
 ## 日志
 日志文件在```/usr/local/im-server/logs```目录下。如果需要提供日志给野火官方，请把这个目录下的日志和制台日志(```journalctl -f -u im-server.service```)一起发给野火。

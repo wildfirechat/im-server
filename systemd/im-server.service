@@ -6,9 +6,6 @@ After=network-online.target
 
 [Service]
 WorkingDirectory=/usr/local/im-server
-
-ProtectProc=invisible
-
 ExecStart=/bin/sh bin/wildfirechat.sh 2>&1
 
 # Let systemd restart this service always
