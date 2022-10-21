@@ -6,4 +6,5 @@ Architecture: all
 Maintainer: Wildfirechat <support@wildfirechat.cn>
 Description:  Wildfirechat IM Server
 Distribution: development
+Depends: openjdk-8-jre-headless
 Homepage: https://wildfirechat.cn

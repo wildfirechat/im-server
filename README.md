@@ -91,11 +91,10 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 ## 编译
 在安装JDK1.8以上及maven的前提下，在命令行中执行```mvn clean package```，生成的目标文件在```./distribution/target/distribution-xxxx-bundle-tar.tar.gz```
 > 由于使用了一个git的maven插件，如果本地没有git信息就会编译出错，请使用```git clone```的方法下载代码，或者下载压缩包解压后在根目录创建```.git```的空目录。建议用```git clone```的方式下载代码。
+> 由于```distribution/pom.xml```中使用了生成RPM包的plugin，所以需要本地安装有rpm。如果不需要RPM包，可以删除掉```distribution/pom.xml```文件中的RPM plugin。
 
 ## 配置
-解压```distribution-xxxx-bundle-tar.tar.gz```，修改解压出来的```config```目录下的```wildfirechat.conf```。修改如下部分：
-1. 修改```server.ip```为您的服务器的公网IP，或者域名。如果用域名需要做好域名解析。
-2. 可以阅读配置文件注释和文档，对其它配置项进行调整。
+解压```distribution-xxxx-bundle-tar.tar.gz```，修改解压出来的```config```目录下的```wildfirechat.conf```，可以阅读配置文件注释和文档，对其它配置项进行调整。
 
 ## 运行
 在程序目录运行如下命令：

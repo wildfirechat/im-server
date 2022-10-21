@@ -4,10 +4,10 @@
 <!--monitorInterval="30"  :间隔秒数,自动检测配置文件的变更和重新配置本身-->
 <configuration status="WARN" monitorInterval="60">
     <Properties>
-        <!--自定义一些常量，之后使用${变量名}引用-->
+        <!--        日志路径-->
         <Property name="MSG_LOG_HOME">./logs</Property>
+<!--        <Property name="MSG_LOG_HOME">/var/log/wildfirechat/im/logs</Property>-->
         <property name="charset">UTF-8</property>
-        <!--自定义的输出格式-->
         <property name="pattern">%d %-5p [%t] %C{2} (%F:%L) - %m%n</property>
     </Properties>
     <!--appenders:定义输出内容,输出格式,输出方式,日志保存策略等,常用其下三种标签[console,File,RollingFile]-->

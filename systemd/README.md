@@ -15,10 +15,12 @@
 * 启动： ```sudo systemctl start wildfire-im.service```
 * 停止： ```sudo systemctl stop wildfire-im.service```
 * 重启： ```sudo systemctl restart wildfire-im.service```
-* 查看控制台日志: ```journalctl -f -u wildfire-im.service```
+* 查看控制台日志: ```sudo journalctl -f -u wildfire-im.service```
 
 ## 日志
 日志文件在```/usr/local/wildfirechat/im/logs```目录下。如果需要提供日志给野火官方，请把这个目录下的日志和制台日志(```journalctl -f -u wildfire-im.service```)一起发给野火。
+
+也可以把日志放到```/var/log/wildfirechat/im```目录下，可以修改```/usr/local/wildfirechat/im/config/log4j2.xml```修改日志的路径。
 
 ## 配置
 需要对IM服务配置来达到最好的执行效果，配置文件在````/usr/local/wildfirechat/im/config````目录下。另外还可以设置服务的内存大小，修改```/usr/local/wildfirechat/im/bin/wildfirechat.sh```文件的倒数3、4行。打开Xmx和Xms配置，设置为合适的内存大小。
