@@ -1,10 +1,10 @@
-Package: wildfirechat
+Package: im-server
 Version: [[version]]
 Section: misc
 Priority: optional
 Architecture: all
 Maintainer: Wildfirechat <support@wildfirechat.cn>
-Description:  Wildfirechat IM Server
+Description:  IM Server
 Distribution: development
 Depends: openjdk-8-jre-headless
 Homepage: https://wildfirechat.cn

@@ -106,14 +106,22 @@
                         <configuration>
                             <controlDir>${project.basedir}/src/main/deb/control</controlDir>
                             <skipPOMs>false</skipPOMs>
-                            <deb>${project.build.directory}/wildfirechat-${project.version}.deb</deb>
+                            <deb>${project.build.directory}/im-server-${project.version}.deb</deb>
                             <dataSet>
                                 <data>
                                     <src>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</src>
                                     <type>archive</type>
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>/usr/local/wildfirechat/im</prefix>
+                                        <prefix>/usr/local/im-server</prefix>
+                                    </mapper>
+                                </data>
+                                <data>
+                                    <src>${project.basedir}/../systemd/im-server.service</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/lib/systemd/system</prefix>
                                     </mapper>
                                 </data>
                             </dataSet>
@@ -139,26 +147,23 @@
 
                 <configuration>
                     <group>Applications/Chat</group>
-                    <name>wildfirechat</name>
-                    <packager>Wildfirechat</packager>
+                    <name>im-server</name>
                     <needarch>noarch</needarch>
                     <targetOS>linux</targetOS>
-                    <prefix>/usr/local/wildfirechat/im</prefix>
+                    <prefix>/usr/local/im-server</prefix>
                     <defineStatements>
                         <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
                     </defineStatements>
                     <copyTo>
-                        target/wildfirechat-${project.version}.rpm
+                        target/im-server-${project.version}.rpm
                     </copyTo>
-                    <autoRequires>no</autoRequires>
-                    <autoProvides>no</autoProvides>
                     <requires>
                         <require>java-1.8.0-openjdk-headless</require>
                     </requires>
 
                     <mappings>
                         <mapping>
-                            <directory>/usr/local/wildfirechat/im</directory>
+                            <directory>/usr/local/im-server</directory>
                             <filemode>755</filemode>
                             <sources>
                                 <source>
@@ -166,15 +171,28 @@
                                 </source>
                             </sources>
                         </mapping>
+
+                        <mapping>
+                            <directory>/usr/lib/systemd/system</directory>
+                            <filemode>644</filemode>
+                            <username>root</username>
+                            <groupname>root</groupname>
+                            <directoryIncluded>false</directoryIncluded>
+                            <sources>
+                                <source>
+                                    <location>${project.basedir}/../systemd/im-server.service</location>
+                                </source>
+                            </sources>
+                        </mapping>
                     </mappings>
                     <postinstallScriptlet>
                         <script>
-                            echo "Unzip packages..." ; cd /usr/local/wildfirechat/im ; tar -xzvf distribution*.tar.gz ; echo "Wildfire im installed in /usr/local/wildfirechat/im"
+                            echo "Unzip packages..." ; cd /usr/local/im-server ; tar -xzvf distribution*.tar.gz ; echo "Im server installed in /usr/local/im-server" ; systemctl daemon-reload
                         </script>
                     </postinstallScriptlet>
                     <postremoveScriptlet>
                         <script>
-                            echo "Remove files..." ; cd /usr/local/wildfirechat/im ; rm -rf *
+                            echo "Remove files..." ; cd /usr/local/im-server ; rm -rf * ; rm -rf /usr/lib/systemd/system/im-server.service ; systemctl daemon-reload
                         </script>
                     </postremoveScriptlet>
                 </configuration>

@@ -5,7 +5,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-WorkingDirectory=/usr/local/wildfirechat/im
+WorkingDirectory=/usr/local/im-server
 
 ProtectProc=invisible
 
