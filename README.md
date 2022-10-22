@@ -105,7 +105,7 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 解压```distribution-xxxx-bundle-tar.tar.gz```，修改解压出来的```config```目录下的```wildfirechat.conf```，可以阅读配置文件注释和文档，对其它配置项进行调整。
 
 ## 运行
-在程序目录运行如下命令：
+在解压```distribution-xxxx-bundle-tar.tar.gz```后的目录下运行如下命令：
 ```
 ./bin/wildfirechat.sh
 ```
@@ -136,7 +136,7 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 
 <img src="http://static.wildfirechat.cn/wx_wfc_qrcode.jpg" width = 50% height = 50% />
 
-我们有研发工程师值班处理issue和论坛，一般简单问题几个小时就会回复一遍，疑难Bug的修改和新需求的开发我们也会尽快解决。
+我们有核心研发工程师轮流值班处理issue和论坛，会及时处理的，疑难Bug的修改和新需求的开发我们也会尽快解决。
 
 ## 特别感谢
 1. [moquette](https://github.com/moquette-io/moquette) 本项目是基于此项目二次开发而来，处理MQTT相关业务。
