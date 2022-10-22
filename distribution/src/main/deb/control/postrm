@@ -1,2 +1,4 @@
+rm -rf /usr/local/im-server
+rm -rf /usr/lib/systemd/system/im-server.service
 systemctl daemon-reload
-rm -rf
+
