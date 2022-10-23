@@ -9,6 +9,8 @@ WORKDIR /opt/im-server
 
 VOLUME /opt/im-server/config
 VOLUME /opt/im-server/logs
+VOLUME /opt/im-server/h2db
+VOLUME /opt/im-server/media
 
 EXPOSE 80/tcp 1883/tcp 8083/tcp 8084/tcp 18080/tcp
 
