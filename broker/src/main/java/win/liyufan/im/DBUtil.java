@@ -49,6 +49,7 @@ public class DBUtil {
 
     public static void init(IConfig config) {
         String embedDB = config.getProperty(BrokerConstants.EMBED_DB_PROPERTY_NAME);
+        String h2dbPath = config.getProperty(BrokerConstants.H2DB_PATH, "./h2db/wfchat");
         boolean autoCleanMsgs = "true".equals(config.getProperty(BrokerConstants.DB_AUTO_CLEAN_HISTORY_MESSAGES));
         if (embedDB != null && embedDB.equals("1")) {
             IsEmbedDB = true;
@@ -67,7 +68,7 @@ public class DBUtil {
                 migrateLocation = "filesystem:./migrate/h2";
                 comboPooledDataSource = new ComboPooledDataSource();
 
-                comboPooledDataSource.setJdbcUrl( "jdbc:h2:./h2db/wfchat;AUTO_SERVER=TRUE;MODE=MySQL" );
+                comboPooledDataSource.setJdbcUrl( "jdbc:h2:" + h2dbPath + ";AUTO_SERVER=TRUE;MODE=MySQL" );
                 comboPooledDataSource.setUser("SA");
                 comboPooledDataSource.setPassword("SA");
                 comboPooledDataSource.setMinPoolSize(5);
