@@ -21,11 +21,6 @@
         </fileSet>
 
         <fileSet>
-            <directory>../broker/config/i18n/</directory>
-            <outputDirectory>/config/i18n</outputDirectory>
-        </fileSet>
-
-        <fileSet>
             <directory>src/main/resources/</directory>
             <outputDirectory>config/</outputDirectory>
         </fileSet>

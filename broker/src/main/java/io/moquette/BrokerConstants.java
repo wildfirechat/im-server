@@ -156,7 +156,6 @@ public final class BrokerConstants {
     public static final String FRIEND_Repeat_Request_Duration = "friend.repeat_request_duration";
     public static final String FRIEND_Reject_Request_Duration = "friend.reject_request_duration";
     public static final String FRIEND_Request_Expiration_Duration = "friend.request_expiration_duration";
-    public static final String FRIEND_New_Welcome_Message = "friend.new_welcome_message";
 
     public static final String CHATROOM_Participant_Idle_Time = "chatroom.participant_idle_time";
     public static final String CHATROOM_Rejoin_When_Active = "chatroom.rejoin_when_active";

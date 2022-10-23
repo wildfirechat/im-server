@@ -179,7 +179,6 @@ public interface IMessagesStore {
 
     ErrorCode saveAddFriendRequest(String userId, WFCMessage.AddFriendRequest request, long[] head, boolean isAdmin);
     ErrorCode handleFriendRequest(String userId, WFCMessage.HandleFriendRequest request, WFCMessage.Message.Builder msgBuilder, long[] heads, boolean isAdmin);
-    boolean isNewFriendWelcomeMessage();
     ErrorCode deleteFriend(String userId, String friendUid, long[] head);
     ErrorCode blackUserRequest(String fromUser, String targetUserId, int status, long[] head);
     FriendData getFriendData(String fromUser, String targetUserId);
