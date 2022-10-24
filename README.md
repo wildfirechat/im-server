@@ -121,9 +121,15 @@ mvn clean package
 
 ## 升级说明
 1. 从0.42 版本增加了群成员数限制，默认为2000。如果您从之前的版本升级到这个版本或以后，需要注意到群成员数的限制。升级之后超出限制的群不受影响，但不能继续加人，如果您想修改默认值，可以在升级版本之后，修改t_setting表，把默认的大小改为您期望的人数。另外修改t_group表，把已经存在的群组max_member_count改成您期望的，然后重启。
-2. 0.46和0.47版本升级到0.48及以后版本时，可能会提示flyway migrate 38错误，请执行 [修复脚本](https://github.com/wildfirechat/server/blob/wildfirechat/flyway_repaire_migrate_38.sql) 进行修复。0.46和0.47版本之外的版本不会出现此问题。
-3. 从0.54之前版本升级到0.54及以后版本时，会提示flyway migrate错误。因为0.54版本删除了sql脚本中默认敏感词的内容，flyway checksum失败。请执行```update flyway_schema_history set checksum = 0 where script = 'V17__add_default_sensitive_word.sql';```来修复。
-4. 从0.59之前的版本升级到之后的版本执行数据库升级时间比较长，请耐心等待提示运行成功，避免中途中断。
+2. 0.50版本添加了是否允许客户端发送群操作通知的配置。如果您在客户端自定义群通知，需要在服务器端配置允许，没有使用自定义群操作通知的不受影响。***
+3. 0.46和0.47版本升级到0.48及以后版本时，可能会提示flyway migrate 38错误，请执行 [修复脚本](https://github.com/wildfirechat/server/blob/wildfirechat/flyway_repaire_migrate_38.sql) 进行修复。0.46和0.47版本之外的版本不会出现此问题。
+4. 从0.54之前版本升级到0.54及以后版本时，会提示flyway migrate错误。因为0.54版本删除了sql脚本中默认敏感词的内容，flyway checksum失败。请执行```update flyway_schema_history set checksum = 0 where script = 'V17__add_default_sensitive_word.sql';```来修复。
+5. 从0.59之前的版本升级到之后的版本执行数据库升级时间比较长，请耐心等待提示运行成功，避免中途中断。
+6. 0.62/0.63 版本有严重的问题，请使用0.64及以后版本，或者0.61版。
+7. 从0.68 版本起添加了pc在线是否默认手机接收推送的开关，默认为开，与以前版本作用相反，请注意兼容（可以关掉与之前保持一致或者升级客户端）
+8. 从0.78 版本起把MySQL数据库中关键字都改为大小写敏感，另外生成id的方法也做了改变，只生成小写的id，避免出现id重复的问题，建议所有客户都升级
+9. 从0.79 版本起把log4j升级到log4j2，因为log4j已经不再维护而且还有已知的漏洞，建议所有客户都升级，升级时注意更新log4j2的配置文件
+10. 0.97版本更改了启动脚本```wildfirechat.sh```，如果是升级服务，请注意更新启动脚本。
 
 
 ## 联系我们
