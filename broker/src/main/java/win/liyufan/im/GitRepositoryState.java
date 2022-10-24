@@ -68,7 +68,9 @@ public class GitRepositoryState {
     public static GitRepositoryState getGitRepositoryState() throws IOException {
         Properties properties = new Properties();
         try {
-            InputStream inputStream = new FileInputStream("config/git.properties");
+            String configPath = System.getProperty("wildfirechat.path", null);
+            File f = new File(configPath, "config/git.properties");
+            InputStream inputStream = new FileInputStream(f);
             BufferedReader bf = new BufferedReader(new InputStreamReader(inputStream));
             properties.load(bf);
         } catch (IOException e) {
