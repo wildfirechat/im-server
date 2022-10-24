@@ -113,7 +113,7 @@
                                     <type>archive</type>
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>/usr/local/im-server</prefix>
+                                        <prefix>/opt/im-server</prefix>
                                     </mapper>
                                 </data>
                                 <data>
@@ -150,7 +150,7 @@
                     <name>im-server</name>
                     <needarch>noarch</needarch>
                     <targetOS>linux</targetOS>
-                    <prefix>/usr/local/im-server</prefix>
+                    <prefix>/opt/im-server</prefix>
                     <defineStatements>
                         <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
                     </defineStatements>
@@ -163,7 +163,7 @@
 
                     <mappings>
                         <mapping>
-                            <directory>/usr/local/im-server</directory>
+                            <directory>/opt/im-server</directory>
                             <filemode>755</filemode>
                             <sources>
                                 <source>
@@ -186,14 +186,14 @@
                         </mapping>
                     </mappings>
                     <postinstallScriptlet>
-                        <script>
-                            echo "Unzip packages..." ; cd /usr/local/im-server ; tar -xzvf distribution*.tar.gz ; echo "Im server installed in /usr/local/im-server" ; systemctl daemon-reload
-                        </script>
+                        <scriptFile>${project.basedir}/src/main/rpm/install.sh</scriptFile>
+                        <fileEncoding>utf-8</fileEncoding>
+                        <filter>true</filter>
                     </postinstallScriptlet>
                     <postremoveScriptlet>
-                        <script>
-                            echo "Remove files..." ; cd /usr/local/im-server ; rm -rf * ; rm -rf /usr/lib/systemd/system/im-server.service ; systemctl daemon-reload
-                        </script>
+                        <scriptFile>${project.basedir}/src/main/rpm/uninstall.sh</scriptFile>
+                        <fileEncoding>utf-8</fileEncoding>
+                        <filter>true</filter>
                     </postremoveScriptlet>
                 </configuration>
             </plugin>

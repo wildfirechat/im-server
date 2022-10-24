@@ -79,4 +79,4 @@ echo
 rem set JAVA_OPTS=%JAVA_OPTS% -Xmx2G
 rem set JAVA_OPTS=%JAVA_OPTS% -Xms2G
 
-%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configurationFile=%LOG_FILE% -Dcom.mchange.v2.c3p0.cfg.xml=%C3P0_CONF_FILE% -Dhazelcast.configuration=file:%HZ_CONF_FILE% -Dwildfirechat.path=%WILDFIRECHAT_PATH% -cp %WILDFIRECHAT_HOME%\lib\* cn.wildfirechat.server.Server
+%JAVA% -server %JAVA_OPTS% %JAVA_OPTS_SCRIPT% -Dlog4j.configurationFile=%LOG_FILE% -Dcom.mchange.v2.c3p0.cfg.xml=%C3P0_CONF_FILE% -Dhazelcast.configuration=%HZ_CONF_FILE% -Dwildfirechat.path=%WILDFIRECHAT_PATH% -cp %WILDFIRECHAT_HOME%\lib\* cn.wildfirechat.server.Server

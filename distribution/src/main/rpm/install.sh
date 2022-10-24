@@ -1,4 +1,8 @@
 set -e
+
+cd /opt/im-server
+tar -xzvf distribution*.tar.gz
+
 sed -i 's/h2db.path .\/h2db\/wfchat/h2db.path \/var\/lib\/im-server\/h2db\/imdb/' /opt/im-server/config/wildfirechat.conf
 sed -i 's/local.media.storage.root .\/media/local.media.storage.root \/var\/lib\/im-server\/media/' /opt/im-server/config/wildfirechat.conf
 sed -i 's/<Property name="MSG_LOG_HOME">.\/logs<\/Property>/<Property name="MSG_LOG_HOME">\/var\/log\/im-server<\/Property>/' /opt/im-server/config/log4j2.xml
@@ -10,6 +14,7 @@ fi
 
 mv -f  /opt/im-server/config /etc/im-server
 systemctl daemon-reload
+
 echo "IM server folders:"
 echo "/etc/im-server/config     config"
 echo "/opt/im-server            binary files"

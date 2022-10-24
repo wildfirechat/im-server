@@ -1,11 +1,11 @@
 [Unit]
-Description=WildfirechatIM
+Description=IM Server
 Documentation=https://docs.wildfirechat.cn
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-WorkingDirectory=/usr/local/im-server
+WorkingDirectory=/opt/im-server
 ExecStart=/bin/sh bin/wildfirechat.sh 2>&1
 
 # Let systemd restart this service always

@@ -378,7 +378,7 @@ public class Server {
         LOG.info("Configuring embedded Hazelcast instance");
 
         serverIp = getServerIp(config);
-        String hzConfigPath = "config/hazelcast.xml";
+        String hzConfigPath = System.getProperty("hazelcast.configuration", "config/hazelcast.xml");
         if (hzConfigPath != null) {
             boolean isHzConfigOnClasspath = this.getClass().getClassLoader().getResource(hzConfigPath) != null;
             Config hzconfig = isHzConfigOnClasspath
