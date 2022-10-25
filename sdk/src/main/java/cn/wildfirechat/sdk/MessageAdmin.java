@@ -33,6 +33,7 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
     }
 
+    //仅专业版支持
     public static IMResult<Void> deleteMessage(long messageUid) throws Exception {
         String path = APIPath.Msg_Delete;
         DeleteMessageData deleteMessageData = new DeleteMessageData();
@@ -40,12 +41,14 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, deleteMessageData, Void.class);
     }
 
+    //仅专业版支持
     public static IMResult<Void> clearUserMessages(String userId, Conversation conversation, long fromTime, long toTime) throws Exception {
         String path = APIPath.Msg_Clear_By_User;
         InputClearUserMessages clearUserMessages = new InputClearUserMessages(userId, conversation, fromTime, toTime);
         return AdminHttpUtils.httpJsonPost(path, clearUserMessages, Void.class);
     }
 
+    //仅专业版支持
     public static IMResult<Void> updateMessageContent(String operator, long messageUid, MessagePayload payload, boolean distribute) throws Exception {
         String path = APIPath.Msg_Update;
         UpdateMessageContentData updateMessageContentData = new UpdateMessageContentData();
@@ -57,6 +60,7 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
     }
 
+    //仅专业版支持
     public static IMResult<Void> clearConversation(String userId, Conversation conversation) throws Exception {
         String path = APIPath.Conversation_Delete;
         InputUserConversation input = new InputUserConversation();
