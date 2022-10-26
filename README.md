@@ -148,11 +148,11 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 
 PC客户端界面
 
-<img src="./screenshots/20_pc.png" width = 50% height = 50% />
+<img src="./screenshots/20_pc.png"/>
 
 移动客户端、PC客户端和Web客户端三端同框
 
-<img src="./screenshots/21_three_platform.png" width = 50% height = 50% />
+<img src="./screenshots/21_three_platform.png" />
 
 小程序客户端
 
