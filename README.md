@@ -74,28 +74,91 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 之后再部署开放平台服务、频道（公众号）服务、机器人服务、推送服务、Turn服务（音视频服务）来实现完整的应用功能，详情可以详细阅读文档。
 
 ## 应用截图
-![ios-demo](http://static.wildfirechat.cn/ios-demo.gif)
+登录界面
 
-<img src="http://static.wildfirechat.cn/ios-message-view.png" width = 50% height = 50% />
+<img src="./screenshots/1_login.png" width = 50% height = 50% />
 
-<img src="http://static.wildfirechat.cn/ios-contact-view.png" width = 50% height = 50% />
+会话列表
 
-<img src="http://static.wildfirechat.cn/ios-discover-view.png" width = 50% height = 50% />
+<img src="./screenshots/2_conversation_list.png" width = 50% height = 50% />
 
-<img src="http://static.wildfirechat.cn/ios-settings-view.png" width = 50% height = 50% />
+好友列表
 
-<img src="http://static.wildfirechat.cn/ios-messagelist-view.png" width = 50% height = 50% />
+<img src="./screenshots/3_contacts_list.png" width = 50% height = 50% />
 
-<img src="http://static.wildfirechat.cn/ios-chat-setting-view.png" width = 50% height = 50% />
+工作台
 
-<img src="http://static.wildfirechat.cn/ios-takephoto-view.png" width = 50% height = 50% />
+<img src="./screenshots/4_workplatform.png" width = 50% height = 50% />
 
-<img src="http://static.wildfirechat.cn/ios-record-voice-view.png" width = 50% height = 50% />
+发现
 
-<img src="http://static.wildfirechat.cn/ios-location-view.png" width = 50% height = 50% />
+<img src="./screenshots/5_discover.png" width = 50% height = 50% />
 
-<img src="http://static.wildfirechat.cn/ios-voip-view.png" width = 50% height = 50% />
+我的页面
 
+<img src="./screenshots/6_settings.png" width = 50% height = 50% />
+
+消息聊天
+
+<img src="./screenshots/7_conversation.png" width = 50% height = 50% />
+
+动态表情
+
+<img src="./screenshots/8_conversation_sticker.png" width = 50% height = 50% />
+
+语音消息
+
+<img src="./screenshots/9_conversation_voice_msg.png" width = 50% height = 50% />
+
+位置消息
+
+<img src="./screenshots/10_conversation_location.png" width = 50% height = 50% />
+
+拍摄图片或者小视频
+
+<img src="./screenshots/11_conversation_capture.jpeg" width = 50% height = 50% />
+
+会话设置
+
+<img src="./screenshots/13_conversation_settings.png" width = 50% height = 50% />
+
+朋友圈
+
+<img src="./screenshots/14_moments.png" width = 50% height = 50% />
+
+新好友
+
+<img src="./screenshots/15_new_friends.png" width = 50% height = 50% />
+
+多人视频通话
+
+<img src="./screenshots/16_videocall.png" width = 50% height = 50% />
+
+会议主页
+
+<img src="./screenshots/17_conference_home.png" width = 50% height = 50% />
+
+会议详情
+
+<img src="./screenshots/18_conference_info.png" width = 50% height = 50% />
+
+会议界面
+
+<img src="./screenshots/19_conference.png" width = 50% height = 50% />
+
+PC客户端界面
+
+<img src="./screenshots/20_pc.png" width = 50% height = 50% />
+
+移动客户端、PC客户端和Web客户端三端同框
+
+<img src="./screenshots/21_three_platform.png" width = 50% height = 50% />
+
+小程序客户端
+
+<img src="./screenshots/22_micro_app.jpeg" width = 50% height = 50% />
+
+> 更多详细信息请下载demo进行体验。
 
 ## 编译
 由于```distribution/pom.xml```中使用了生成RPM包的plugin，所以需要本地安装有rpm。如果不需要RPM包，可以删除掉```distribution/pom.xml```文件中的RPM plugin。
@@ -136,7 +199,7 @@ mvn clean package
 
 商务合作请微信联系：
 
-* 微信1：wildfirechat 
+* 微信1：wildfirechat
 * 微信2：wfchat
 
 ## 问题交流
