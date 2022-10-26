@@ -158,6 +158,18 @@ PC客户端界面
 
 <img src="./screenshots/22_micro_app.jpeg" width = 50% height = 50% />
 
+公众号管理后台
+
+<img src="./screenshots/23_channel.png"/>
+
+开放平台管理后台
+
+<img src="./screenshots/24_open_platform.png" />
+
+IM服务管理后台
+
+<img src="./screenshots/25_im_admin.png" />
+
 > 更多详细信息请下载demo进行体验。
 
 ## 编译
