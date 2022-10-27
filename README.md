@@ -28,7 +28,7 @@
 ## 野火开源项目
 主要包括以下项目：
 
-| [GitHub仓库地址](https://github.com/wildfirechat)      | [码云仓库地址](https://gitee.com/wfchat)        | 说明                                                                                      
+| [GitHub仓库](https://github.com/wildfirechat)      | [码云仓库](https://gitee.com/wfchat)        | 说明                                                                                      
 | ------------------------------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------
 | [im-server](https://github.com/wildfirechat/im-server)       | [im-server](https://gitee.com/wfchat/im-server)          | 野火社区版IM服务，野火IM的核心服务，处理所有IM相关业务。  |
 | [app-server](https://github.com/wildfirechat/app-server)     | [app-server](https://gitee.com/wfchat/app-server)     | Demo应用服务，模拟客户的应用服登陆处理逻辑及部分二次开发示例。 |
@@ -45,7 +45,7 @@
 | [web-chat](https://github.com/wildfirechat/vue-chat)         | [web-chat](https://gitee.com/wfchat/vue-chat)         | 野火IM Web 端, [体验地址](https://web.wildfirechat.cn)。  |
 | [wx-chat](https://github.com/wildfirechat/wx-chat)           | [wx-chat](https://gitee.com/wfchat/wx-chat)           | 小程序平台的Demo(支持微信、百度、阿里、字节、QQ 等小程序平台)。  |
 | [uni-chat](https://github.com/wildfirechat/uni-chat)           | [uni-chat](https://gitee.com/wfchat/uni-chat)           | UniApp平台移动端应用(使用原生插件)。   |
-| [uni-wfc-client](https://github.com/wildfirechat/uni-wfc-client)           | [uni-wfc-client](https://gitee.com/wfchat/uni-wfc-client)           | UniApp平台原生插件。   |
+| [uni-wfc-client](https://github.com/wildfirechat/uni-wfc-client)           | [uni-wfc-client](https://gitee.com/wfchat/uni-wfc-client)           | UniApp平台原生插件。已[商店](https://ext.dcloud.net.cn/plugin?id=7895)上架   |
 | [flutter_imclient](https://github.com/wildfirechat/flutter_imclient)           | [flutter_imclient](https://gitee.com/wfchat/flutter_imclient)           | Flutter平台原生插件。   |
 | [docs](https://github.com/wildfirechat/docs)                 | [docs](https://gitee.com/wfchat/docs)                 | 野火IM相关文档，包含设计、概念、开发、使用说明，[在线查看](https://docs.wildfirechat.cn/)。 |
 
