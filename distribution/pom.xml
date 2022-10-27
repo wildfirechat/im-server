@@ -130,73 +130,70 @@
                 </executions>
             </plugin>
 
-<!--        打包RPM 开始-->
 <!--        打包RPM 包需要本地有rpm命令才可以，linux和mac都可以安装rpm。如果是windows需要cygwin安装rpm才可以，如果不需要rpm包，可以把这个plugin注释掉-->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>rpm-maven-plugin</artifactId>
-                <version>2.2.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-rpm</id>
-                        <goals>
-                            <goal>rpm</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
-                <configuration>
-                    <group>Applications/Chat</group>
-                    <name>im-server</name>
-                    <needarch>noarch</needarch>
-                    <targetOS>linux</targetOS>
-                    <prefix>/opt/im-server</prefix>
-                    <defineStatements>
-                        <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
-                    </defineStatements>
-                    <copyTo>
-                        target/im-server-${project.version}.rpm
-                    </copyTo>
-                    <requires>
-                        <require>java-1.8.0-openjdk-headless</require>
-                    </requires>
-
-                    <mappings>
-                        <mapping>
-                            <directory>/opt/im-server</directory>
-                            <filemode>755</filemode>
-                            <sources>
-                                <source>
-                                    <location>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</location>
-                                </source>
-                            </sources>
-                        </mapping>
-
-                        <mapping>
-                            <directory>/usr/lib/systemd/system</directory>
-                            <filemode>644</filemode>
-                            <username>root</username>
-                            <groupname>root</groupname>
-                            <directoryIncluded>false</directoryIncluded>
-                            <sources>
-                                <source>
-                                    <location>${project.basedir}/../systemd/im-server.service</location>
-                                </source>
-                            </sources>
-                        </mapping>
-                    </mappings>
-                    <postinstallScriptlet>
-                        <scriptFile>${project.basedir}/src/main/rpm/install.sh</scriptFile>
-                        <fileEncoding>utf-8</fileEncoding>
-                        <filter>true</filter>
-                    </postinstallScriptlet>
-                    <postremoveScriptlet>
-                        <scriptFile>${project.basedir}/src/main/rpm/uninstall.sh</scriptFile>
-                        <fileEncoding>utf-8</fileEncoding>
-                        <filter>true</filter>
-                    </postremoveScriptlet>
-                </configuration>
-            </plugin>
+<!--        打包RPM插件，如果需要打包RPM格式请打开下面注释  -->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>rpm-maven-plugin</artifactId>-->
+<!--                <version>2.2.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>generate-rpm</id>-->
+<!--                        <goals>-->
+<!--                            <goal>rpm</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <group>Applications/Chat</group>-->
+<!--                    <name>im-server</name>-->
+<!--                    <needarch>noarch</needarch>-->
+<!--                    <targetOS>linux</targetOS>-->
+<!--                    <prefix>/opt/im-server</prefix>-->
+<!--                    <defineStatements>-->
+<!--                        <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>-->
+<!--                    </defineStatements>-->
+<!--                    <copyTo>-->
+<!--                        target/im-server-${project.version}.rpm-->
+<!--                    </copyTo>-->
+<!--                    <requires>-->
+<!--                        <require>java-1.8.0-openjdk-headless</require>-->
+<!--                    </requires>-->
+<!--                    <mappings>-->
+<!--                        <mapping>-->
+<!--                            <directory>/opt/im-server</directory>-->
+<!--                            <filemode>755</filemode>-->
+<!--                            <sources>-->
+<!--                                <source>-->
+<!--                                    <location>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</location>-->
+<!--                                </source>-->
+<!--                            </sources>-->
+<!--                        </mapping>-->
+<!--                        <mapping>-->
+<!--                            <directory>/usr/lib/systemd/system</directory>-->
+<!--                            <filemode>644</filemode>-->
+<!--                            <username>root</username>-->
+<!--                            <groupname>root</groupname>-->
+<!--                            <directoryIncluded>false</directoryIncluded>-->
+<!--                            <sources>-->
+<!--                                <source>-->
+<!--                                    <location>${project.basedir}/../systemd/im-server.service</location>-->
+<!--                                </source>-->
+<!--                            </sources>-->
+<!--                        </mapping>-->
+<!--                    </mappings>-->
+<!--                    <postinstallScriptlet>-->
+<!--                        <scriptFile>${project.basedir}/src/main/rpm/install.sh</scriptFile>-->
+<!--                        <fileEncoding>utf-8</fileEncoding>-->
+<!--                        <filter>true</filter>-->
+<!--                    </postinstallScriptlet>-->
+<!--                    <postremoveScriptlet>-->
+<!--                        <scriptFile>${project.basedir}/src/main/rpm/uninstall.sh</scriptFile>-->
+<!--                        <fileEncoding>utf-8</fileEncoding>-->
+<!--                        <filter>true</filter>-->
+<!--                    </postremoveScriptlet>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 <!--            打包RPM 结束-->
 
         </plugins>
