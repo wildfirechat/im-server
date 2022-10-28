@@ -617,6 +617,13 @@ public class Main {
             System.exit(-1);
         }
 
+        groupIdsIMResult = GroupAdmin.getCommonGroups("user1", "user2");
+        if (groupIdsIMResult != null && groupIdsIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get user common groups success");
+        } else {
+            System.out.println("get user common groups failure");
+            System.exit(-1);
+        }
 
         //仅专业版支持
         if (commercialServer) {

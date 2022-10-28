@@ -170,4 +170,10 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputGroupIds.class);
     }
 
+    public static IMResult<OutputGroupIds> getCommonGroups(String user1, String user2) throws Exception {
+        String path = APIPath.Get_Common_Groups;
+        StringPairPojo intput = new StringPairPojo(user1, user2);
+        return AdminHttpUtils.httpJsonPost(path, intput, OutputGroupIds.class);
+    }
+
 }

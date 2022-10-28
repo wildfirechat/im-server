@@ -1712,6 +1712,35 @@ public class DatabaseStore {
         return null;
     }
 
+    Set<String> getCommonGroupIds(String userId1, String userId2) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select t1._gid from t_group_member t1, t_group_member t2 where t1._mid = ? and t2._mid = ? and t1._type <> 4 and t2._type <> 4 and t1._gid = t2._gid";
+            statement = connection.prepareStatement(sql);
+
+            statement.setString(1, userId1);
+            statement.setString(2, userId2);
+
+            rs = statement.executeQuery();
+            Set<String> out = new HashSet<>();
+            while (rs.next()) {
+                String uid = rs.getString(1);
+                out.add(uid);
+            }
+            return out;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return null;
+    }
+
     void updateGroupMemberDt(final String groupId, final long dt) {
         Connection connection = null;
         PreparedStatement statement = null;

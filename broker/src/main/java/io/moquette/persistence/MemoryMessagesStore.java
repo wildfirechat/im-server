@@ -1832,6 +1832,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public Set<String> getCommonGroupIds(String userId1, String userId2) {
+        return databaseStore.getCommonGroupIds(userId1, userId2);
+    }
+
+    @Override
     public ErrorCode getGroupMembers(String fromUser, String groupId, long maxDt, List<WFCMessage.GroupMember> members) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);

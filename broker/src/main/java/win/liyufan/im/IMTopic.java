@@ -37,6 +37,8 @@ public interface IMTopic {
     String GetGroupMemberTopic = "GPGM";
     String TransferGroupTopic = "GTG";
     String SetGroupManagerTopic = "GSM";
+    String GetMyGroupsTopic = "GMGS";
+    String GetCommonGroupsTopic = "GCGS";
 
     String GetUserInfoTopic = "UPUI";
     String ModifyMyInfoTopic = "MMI";
