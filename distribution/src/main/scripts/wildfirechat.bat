@@ -14,11 +14,11 @@ goto end
 :okHome
 
 rem Set JavaHome if it exists
-if exist { "%JAVA_HOME%\bin\java" } (
+if exist [ "%JAVA_HOME%\bin\java" ]  (
     set "JAVA="%JAVA_HOME%\bin\java""
-) else {
+) else (
     set "JAVA="java""
-}
+)
 
 echo Using JAVA_HOME:       "%JAVA_HOME%"
 echo Using WILDFIRECHAT_HOME:   "%WILDFIRECHAT_HOME%"
@@ -73,7 +73,9 @@ rem set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 rem set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=10M"
 
 echo
-echo 请设置JVM参数Xmx和Xms！！！
+echo "Please set Xmx and Xms parameters!"
+echo "Please set Xmx and Xms parameters!"
+echo "Please set Xmx and Xms parameters!"
 echo
 
 rem set JAVA_OPTS=%JAVA_OPTS% -Xmx2G
