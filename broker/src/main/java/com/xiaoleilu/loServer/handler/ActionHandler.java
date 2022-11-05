@@ -34,7 +34,6 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 
     @Override
 	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest fullHttpRequest) throws Exception {
-        Logger.info("Http request whit url {}", fullHttpRequest.uri());
 		final Request request = Request.build(ctx, fullHttpRequest);
 		final Response response = Response.build(ctx, request);
 
@@ -124,6 +123,9 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 		Action action;
 		if (isValidePath(request.getPath())) {
             action = ServerSetting.getAction(request.getPath(), request.getMethod().toUpperCase());
+            if (action != null) {
+                Logger.info("Http request whit url {}", request.getPath());
+            }
         } else {
             action = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
         }
@@ -137,7 +139,11 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 			action = ServerSetting.getAction(ServerSetting.MAPPING_ALL, request.getMethod());
 			if(null == action){
 				// 非Action方法，调用静态文件读取
-				action = Singleton.get(FileAction.class);
+                if(request.getPath().startsWith("/fs")) {
+                    action = Singleton.get(FileAction.class);
+                } else {
+                    action = ServerSetting.getErrorAction(ServerSetting.MAPPING_ERROR);
+                }
 			}
 		}
         action.ctx = ctx;
