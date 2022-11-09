@@ -44,7 +44,7 @@ public class GetUserAction extends ChannelAction {
 
                 RestResult result;
 
-                if (user == null || StringUtil.isNullOrEmpty(user.getName())) {
+                if (user == null || StringUtil.isNullOrEmpty(user.getName()) || user.getDeleted() > 0) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 } else {
                     if (channelInfo.getOwner().equals(inputUserId.getUserId()) ||

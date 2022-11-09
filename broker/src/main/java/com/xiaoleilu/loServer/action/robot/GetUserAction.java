@@ -44,7 +44,7 @@ public class GetUserAction extends RobotAction {
                 }
 
                 RestResult result;
-                if (user == null) {
+                if (user == null || user.getDeleted() > 0) {
                     result = RestResult.resultOf(ErrorCode.ERROR_CODE_NOT_EXIST);
                 } else {
                     result = RestResult.ok(InputOutputUserInfo.fromPbUser(user));
