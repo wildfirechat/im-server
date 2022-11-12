@@ -12,6 +12,10 @@ if [ ! -d /etc/im-server ]; then
 mkdir /etc/im-server
 fi
 
+if [ ! -d /var/log/im-server ]; then
+mkdir /var/log/im-server
+fi
+
 mv -f  /opt/im-server/config /etc/im-server
 systemctl daemon-reload
 
