@@ -1420,7 +1420,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode quitGroup(String operator, String groupId) {
+    public ErrorCode quitGroup(String operator, String groupId, boolean admin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
 
@@ -1438,6 +1438,10 @@ public class MemoryMessagesStore implements IMessagesStore {
                 }
             }
             return ErrorCode.ERROR_CODE_NOT_EXIST;
+        }
+        
+        if(!admin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
         if (groupInfo.getType() != ProtoConstants.GroupType.GroupType_Free && groupInfo.getOwner() != null && groupInfo.getOwner().equals(operator)) {

@@ -31,7 +31,7 @@ public class QuitGroupHandler extends GroupHandler<WFCMessage.QuitGroupRequest> 
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
-        ErrorCode errorCode = m_messagesStore.quitGroup(fromUser, request.getGroupId());
+        ErrorCode errorCode = m_messagesStore.quitGroup(fromUser, request.getGroupId(), isAdmin);
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
                 sendGroupNotification(fromUser, request.getGroupId(), request.getToLineList(), request.getNotifyContent());

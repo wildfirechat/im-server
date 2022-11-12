@@ -110,7 +110,7 @@ public interface IMessagesStore {
     WFCMessage.GroupInfo createGroup(String operator, WFCMessage.GroupInfo groupInfo, List<WFCMessage.GroupMember> memberList, String memberExtra, boolean isAdmin);
     ErrorCode addGroupMembers(String operator, boolean isAdmin, String groupId, List<WFCMessage.GroupMember> memberList, String extra);
     ErrorCode kickoffGroupMembers(String operator, boolean isAdmin, String groupId, List<String> memberList);
-    ErrorCode quitGroup(String operator, String groupId);
+    ErrorCode quitGroup(String operator, String groupId, boolean admin);
     void clearUserGroups(String userId);
     ErrorCode dismissGroup(String operator, String groupId, boolean isAdmin);
     ErrorCode modifyGroupInfo(String operator, String groupId, int modifyType, String value, boolean isAdmin);
