@@ -40,6 +40,10 @@ public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupReque
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(!isAdmin && request.getGroup().getGroupInfo().getType() == ProtoConstants.GroupType.GroupType_Organization) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         WFCMessage.GroupInfo groupInfo = m_messagesStore.createGroup(fromUser, request.getGroup().getGroupInfo(), request.getGroup().getMembersList(), request.getMemberExtra(), isAdmin);
         if (groupInfo != null) {
             if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
