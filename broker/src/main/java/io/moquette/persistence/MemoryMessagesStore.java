@@ -1266,6 +1266,9 @@ public class MemoryMessagesStore implements IMessagesStore {
         int maxCount = Integer.MAX_VALUE;
 
         if (!isAdmin) {
+            if (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
             boolean isMember = false;
             boolean isManager = false;
             WFCMessage.GroupMember gm = getGroupMember(groupId, operator);
@@ -1511,6 +1514,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Free ||
+            groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization ||
             (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
                 && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)))) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
@@ -1554,7 +1558,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (!isAdmin) {
-            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted) {
+            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Organization && modifyType != Modify_Group_Extra && modifyType != Modify_Group_Mute && modifyType != Modify_Group_PrivateChat) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+
+            if (oldInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || oldInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
                 boolean isAllow = false;
                 if ((oldInfo.getOwner() != null && oldInfo.getOwner().equals(operator))) {
                     isAllow = true;
@@ -1917,6 +1925,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
             && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
+        if (!isAdmin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 

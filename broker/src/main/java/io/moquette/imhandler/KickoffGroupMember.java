@@ -29,6 +29,10 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
             errorCode = ErrorCode.ERROR_CODE_NOT_EXIST;
         } else {
             boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
+            if (!isAdmin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+
             boolean isAllow = isAdmin;
             if (!isAllow) {
                 if (groupInfo.getOwner() != null) {

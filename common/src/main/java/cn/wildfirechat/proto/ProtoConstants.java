@@ -19,6 +19,8 @@ public class ProtoConstants {
         int GroupType_Free = 1;
         //member can only quit, owner can do all the operations
         int GroupType_Restricted = 2;
+        //member can not do anything, server api manage the group
+        int GroupType_Organization = 3;
     }
 
     //message GroupMember -> type
