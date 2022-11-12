@@ -31,6 +31,20 @@ public class Main {
 
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 5) {
+            AdminUrl = args[0];
+            AdminSecret = args[1];
+            IMUrl = args[2];
+            commercialServer = Boolean.parseBoolean(args[3]);
+            advanceVoip = Boolean.parseBoolean(args[4]);
+        } else {
+            System.out.println("Usage: java -jar checker.jar adminUrl adminSecret imUrl commercialServer advanceVoip \n      e.g. java -jar checker.jar http://192.168.1.80:18080 123456 http://192.168.1.80 false false");
+            System.out.println();
+            System.out.println();
+            System.out.println("Use default value: java -jar checker.jar http://127.0.0.1:18080 123456 http://127.0.0.1 false false");
+        }
+
+
         //admin使用的是18080端口，超级管理接口，理论上不能对外开放端口，也不能让非内部服务知悉密钥。
         testAdmin();
 

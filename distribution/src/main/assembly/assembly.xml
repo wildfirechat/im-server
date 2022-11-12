@@ -29,6 +29,11 @@
             <directory>../systemd/</directory>
             <outputDirectory>/systemd</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <directory>src/main/checker/</directory>
+            <outputDirectory>checker/</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>
@@ -74,6 +79,11 @@
             <source>../common/target/common-${project.version}.jar</source>
             <outputDirectory>server_sdk/</outputDirectory>
             <destName>common-${project.version}.jar</destName>
+        </file>
+
+        <file>
+            <source>../sdk/target/checker.jar</source>
+            <outputDirectory>checker/</outputDirectory>
         </file>
     </files>
 
