@@ -22,6 +22,7 @@ import cn.wildfirechat.common.ErrorCode;
 import io.netty.buffer.Unpooled;
 import win.liyufan.im.*;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
     private String mForwardUrl = null;
     private String mSensitiveMessageForwardUrl = null;
     private Set<Integer> mForwardMessageTypes = new HashSet<>();
+    private Set<Integer> mForwardExcludeMessageTypes = new HashSet<>();
     private String mMentionForwardUrl = null;
     private int mBlacklistStrategy = 0; //黑名单中时，0失败，1吞掉。
     private boolean mNoForwardAdminMessage = false;
@@ -47,12 +49,9 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
         mForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Url);
         if (!StringUtil.isNullOrEmpty(mForwardUrl)) {
             String forwardTypes = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Types);
-            if (!StringUtil.isNullOrEmpty(forwardTypes)) {
-                String[] tss = forwardTypes.split(",");
-                for (String ts:tss) {
-                    mForwardMessageTypes.add(Integer.parseInt(ts.trim()));
-                }
-            }
+            parseTypes(mForwardMessageTypes, forwardTypes);
+            String excludeTypes = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Forward_Exclude_Types);
+            parseTypes(mForwardExcludeMessageTypes, excludeTypes);
         }
         mSensitiveMessageForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_Sensitive_Forward_Url);
         mMentionForwardUrl = mServer.getConfig().getProperty(BrokerConstants.MESSAGE_MentionMsg_Forward_Url);
@@ -95,6 +94,30 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
             Utility.printExecption(LOG, e);
         }
 
+    }
+
+    private void parseTypes(Collection<Integer> collection, String types) {
+        try {
+            if (!StringUtil.isNullOrEmpty(types)) {
+                String[] tss = types.split(",");
+                for (String ts:tss) {
+                    if(ts.contains("-")) {
+                        String[] ss = ts.split("-");
+                        if(ss.length == 2) {
+                            int begin = Integer.parseInt(ss[0]);
+                            int end = Integer.parseInt(ss[1]);
+                            for (int i = begin; i <= end ; i++) {
+                                collection.add(i);
+                            }
+                        }
+                    } else {
+                        collection.add(Integer.parseInt(ts.trim()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -179,7 +202,7 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                 }
             }
 
-            if (!StringUtil.isNullOrEmpty(mForwardUrl) && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage)) {
+            if (!StringUtil.isNullOrEmpty(mForwardUrl) && (mForwardMessageTypes.isEmpty() || mForwardMessageTypes.contains(message.getContent().getType())) && !(isAdmin && mNoForwardAdminMessage) && !mForwardExcludeMessageTypes.contains(message.getContent().getType())) {
                 publisher.forwardMessage(message, mForwardUrl, outputClient);
             }
 
