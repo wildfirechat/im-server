@@ -1439,7 +1439,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
-        
+
         if(!admin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
@@ -1486,7 +1486,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         int[] removedCount = new int[1];
         for (String groupId : groupIds) {
             removedCount[0] = 0;
-            ErrorCode errorCode = quitGroup(userId, groupId);
+            ErrorCode errorCode = quitGroup(userId, groupId, true);
             LOG.info("clear user {} group {} result {}", userId, groupId, errorCode);
         }
     }
