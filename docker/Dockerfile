@@ -1,6 +1,6 @@
 FROM openjdk:8-jre-alpine
 
-ADD ../distribution/target/distribution-*-bundle-tar.tar.gz /opt/im-server/
+ADD distribution-*-bundle-tar.tar.gz /opt/im-server/
 
 RUN sed -i 's/#JAVA_OPTS="$JAVA_OPTS -Xmx128M"/JAVA_OPTS="$JAVA_OPTS -Xmx$JVM_XMX"/g' /opt/im-server/bin/wildfirechat.sh
 RUN sed -i 's/#JAVA_OPTS="$JAVA_OPTS -Xms128M"/JAVA_OPTS="$JAVA_OPTS -Xms$JVM_XMS"/g' /opt/im-server/bin/wildfirechat.sh
