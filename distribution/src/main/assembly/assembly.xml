@@ -85,8 +85,17 @@
             <source>../sdk/target/checker.jar</source>
             <outputDirectory>checker/</outputDirectory>
         </file>
-    </files>
 
+        <file>
+            <source>../docker/Dockerfile</source>
+            <outputDirectory>docker/</outputDirectory>
+        </file>
+
+        <file>
+            <source>../docker/README.md</source>
+            <outputDirectory>docker/</outputDirectory>
+        </file>
+    </files>
 
     <dependencySets>
         <dependencySet>
