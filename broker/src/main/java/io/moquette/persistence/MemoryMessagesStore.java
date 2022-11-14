@@ -142,6 +142,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mMultiPlatformNotification = false;
     private boolean mMobileDefaultSilentWhenPCOnline = true;
     private boolean mDisableStrangerChat = false;
+    private Set<String> mAllowStrangerChatSet = new HashSet<>();
 
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
@@ -193,6 +194,18 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
             printMissConfigLog(MESSAGE_Disable_Stranger_Chat, mDisableStrangerChat + "");
+        }
+
+        try {
+            String allowStrangerList = m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Allow_Stranger_Chat_List);
+            if(!StringUtil.isNullOrEmptyAfterTrim(allowStrangerList)) {
+                allowStrangerList = allowStrangerList.replace("，", ",");
+                for (String s : allowStrangerList.split(",")) {
+                    mAllowStrangerChatSet.add(s.trim());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
@@ -2800,6 +2813,11 @@ public class MemoryMessagesStore implements IMessagesStore {
 
 
         if (mDisableStrangerChat) {
+            //在禁止私聊时，是否是允许私聊的用户id
+            if(mAllowStrangerChatSet.contains(targetUser)) {
+                return ErrorCode.ERROR_CODE_SUCCESS;
+            }
+
             //在禁止私聊时，允许机器人，物联网设备及管理员进行私聊。
             IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
             WFCMessage.User target = mUserMap.get(targetUser);

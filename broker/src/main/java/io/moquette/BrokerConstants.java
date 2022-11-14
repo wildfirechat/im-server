@@ -142,6 +142,7 @@ public final class BrokerConstants {
     public static final String MESSAGE_Max_Queue = "message.max_queue";
 
     public static final String MESSAGE_Disable_Stranger_Chat = "message.disable_stranger_chat";
+    public static final String MESSAGE_Allow_Stranger_Chat_List = "message.allow_stranger_chat_list";
 
     public static final String MESSAGE_Blacklist_Strategy = "message.blacklist.strategy";
 
