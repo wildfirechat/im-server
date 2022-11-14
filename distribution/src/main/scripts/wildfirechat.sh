@@ -18,7 +18,6 @@ while [ -h "$PRG" ]; do
 done
 
 PRGDIR=`dirname "$PRG"`
-cd $PRGDIR
 cd ..
 WILDFIRECHAT_HOME=`pwd`
 
