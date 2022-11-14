@@ -240,7 +240,12 @@ public class UploadFileAction extends Action {
 
                 datePath = "fs/" + bucket[0] + "/" + datePath; //add bucket
 
-                String dir = "./" + MediaServerConfig.FILE_STROAGE_ROOT + "/" + datePath;
+                String dir;
+                if(MediaServerConfig.FILE_STROAGE_ROOT.startsWith("/") || MediaServerConfig.FILE_STROAGE_ROOT.startsWith("~/") || MediaServerConfig.FILE_STROAGE_ROOT.startsWith("./")) {
+                    dir = MediaServerConfig.FILE_STROAGE_ROOT + "/" + datePath;
+                } else {
+                    dir = "./" + MediaServerConfig.FILE_STROAGE_ROOT + "/" + datePath;
+                }
 
                 File dirFile = new File(dir);
                 boolean bFile  = dirFile.exists();
