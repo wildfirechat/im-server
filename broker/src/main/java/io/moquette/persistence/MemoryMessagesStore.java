@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
@@ -120,6 +121,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private ReadWriteLock mLock = new ReentrantReadWriteLock();
     private Lock mReadLock = mLock.readLock();
     private Lock mWriteLock = mLock.writeLock();
+
+    private Lock mUserSettingLock = new ReentrantLock();
 
     private final DatabaseStore databaseStore;
     private ConcurrentHashMap<String, Long> userMaxPullSeq = new ConcurrentHashMap<>();
@@ -1422,12 +1425,16 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     void removeFavGroup(String groupId, List<String> memberIds) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
-        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
         databaseStore.removeFavGroup(groupId, memberIds);
-
-        for (String member : memberIds) {
-            userSettingMap.remove(member);
+        try {
+            mUserSettingLock.lock();
+            MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+            for (String member : memberIds) {
+                userSettingMap.remove(member);
+            }
+        } finally {
+            mUserSettingLock.unlock();
         }
 
     }
@@ -1507,13 +1514,17 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private void removeGroupUserSettings(String groupId, List<String> users) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
-        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
         databaseStore.removeGroupUserSettings(groupId, users);
-        for (String userId:users) {
-            userSettingMap.remove(userId);
+        try {
+            mUserSettingLock.lock();
+            MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+            for (String userId:users) {
+                userSettingMap.remove(userId);
+            }
+        } finally {
+            mUserSettingLock.unlock();
         }
-
     }
 
     @Override
@@ -3587,9 +3598,15 @@ public class MemoryMessagesStore implements IMessagesStore {
         IMap<String, WFCMessage.GroupInfo> mGroups = hzInstance.getMap(GROUPS_MAP);
         IMap<String, WFCMessage.ChannelInfo> mChannels = hzInstance.getMap(CHANNELS);
 
-        Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
-        if (entries == null || entries.size() == 0) {
-            entries = loadPersistedUserSettings(userId, userSettingMap);
+        Collection<WFCMessage.UserSettingEntry> entries;
+        try {
+            mUserSettingLock.lock();
+            entries = userSettingMap.get(userId);
+            if (entries == null || entries.size() == 0) {
+                entries = loadPersistedUserSettings(userId, userSettingMap);
+            }
+        } finally {
+            mUserSettingLock.unlock();
         }
 
         ErrorCode ec = ErrorCode.ERROR_CODE_NOT_MODIFIED;
@@ -3668,17 +3685,22 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
-        Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
-        if (entries == null || entries.size() == 0) {
-            entries = loadPersistedUserSettings(userId, userSettingMap);
-        }
+        try {
+            mUserSettingLock.lock();
+            Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
+            if (entries == null || entries.size() == 0) {
+                entries = loadPersistedUserSettings(userId, userSettingMap);
+            }
 
-        if (entries != null) {
-            for (WFCMessage.UserSettingEntry entry : entries) {
-                if (entry.getScope() == scope && (key== null || key.equals(entry.getKey()))) {
-                    return entry;
+            if (entries != null) {
+                for (WFCMessage.UserSettingEntry entry : entries) {
+                    if (entry.getScope() == scope && (key== null || key.equals(entry.getKey()))) {
+                        return entry;
+                    }
                 }
             }
+        } finally {
+            mUserSettingLock.unlock();
         }
 
         return null;
@@ -3689,19 +3711,25 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
-        Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
-        if (entries == null || entries.size() == 0) {
-            entries = loadPersistedUserSettings(userId, userSettingMap);
-        }
+        List<WFCMessage.UserSettingEntry> result;
+        try {
+            mUserSettingLock.lock();
+            Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
+            if (entries == null || entries.size() == 0) {
+                entries = loadPersistedUserSettings(userId, userSettingMap);
+            }
 
-        List<WFCMessage.UserSettingEntry> result = new ArrayList<>();
-        if (entries != null) {
-            for (WFCMessage.UserSettingEntry entry : entries
-            ) {
-                if (entry.getScope() == scope) {
-                    result.add(entry);
+            result = new ArrayList<>();
+            if (entries != null) {
+                for (WFCMessage.UserSettingEntry entry : entries
+                ) {
+                    if (entry.getScope() == scope) {
+                        result.add(entry);
+                    }
                 }
             }
+        } finally {
+            mUserSettingLock.unlock();
         }
 
         return result;
@@ -3712,28 +3740,34 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
 
-        Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
-        if (entries == null || entries.size() == 0) {
-            entries = loadPersistedUserSettings(userId, userSettingMap);
-            if (entries == null) {
-                entries = new ArrayList<>();
+        long updateDt = 0;
+        try {
+            mUserSettingLock.lock();
+            Collection<WFCMessage.UserSettingEntry> entries = userSettingMap.get(userId);
+            if (entries == null || entries.size() == 0) {
+                entries = loadPersistedUserSettings(userId, userSettingMap);
+                if (entries == null) {
+                    entries = new ArrayList<>();
+                }
             }
-        }
 
-        long updateDt = System.currentTimeMillis();
-        WFCMessage.UserSettingEntry settingEntry = WFCMessage.UserSettingEntry.newBuilder().setScope(request.getScope()).setKey(request.getKey()).setValue(request.getValue()).setUpdateDt(updateDt).build();
-        databaseStore.persistUserSetting(userId, settingEntry);
+            updateDt = System.currentTimeMillis();
+            WFCMessage.UserSettingEntry settingEntry = WFCMessage.UserSettingEntry.newBuilder().setScope(request.getScope()).setKey(request.getKey()).setValue(request.getValue()).setUpdateDt(updateDt).build();
+            databaseStore.persistUserSetting(userId, settingEntry);
 
-        for (WFCMessage.UserSettingEntry entry : entries
-            ) {
-            if (entry.getScope() == request.getScope() && entry.getKey().equals(request.getKey())) {
-                userSettingMap.remove(userId, entry);
-                userSettingMap.put(userId, settingEntry);
-                break;
+            for (WFCMessage.UserSettingEntry entry : entries
+                ) {
+                if (entry.getScope() == request.getScope() && entry.getKey().equals(request.getKey())) {
+                    userSettingMap.remove(userId, entry);
+                    userSettingMap.put(userId, settingEntry);
+                    break;
+                }
             }
-        }
 
-        userSettingMap.put(userId, settingEntry);
+            userSettingMap.put(userId, settingEntry);
+        } finally {
+            mUserSettingLock.unlock();
+        }
 
         if(request.getScope() == UserSettingScope.kUserSettingConversationSilent) {
             int firstSplit = request.getKey().indexOf("-");
@@ -3758,8 +3792,14 @@ public class MemoryMessagesStore implements IMessagesStore {
     public void clearUserSettings(String userId) {
         databaseStore.clearUserSetting(userId);
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
-        MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
-        userSettingMap.remove(userId);
+
+        try {
+            mUserSettingLock.lock();
+            MultiMap<String, WFCMessage.UserSettingEntry> userSettingMap = hzInstance.getMultiMap(USER_SETTING);
+            userSettingMap.remove(userId);
+        } finally {
+            mUserSettingLock.unlock();
+        }
     }
 
     @Override
