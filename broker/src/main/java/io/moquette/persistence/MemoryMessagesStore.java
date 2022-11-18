@@ -4356,6 +4356,10 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public boolean checkSignature(String signature) {
+        if(mClientSignatureSet.isEmpty()) {
+            return true;
+        }
+
         if(StringUtil.isNullOrEmptyAfterTrim(signature)) {
             if(mRejectEmptySignature) {
                 LOG.info("Failed check signature, no signature");
@@ -4371,6 +4375,11 @@ public class MemoryMessagesStore implements IMessagesStore {
                 return false;
             }
         }
+    }
+
+    @Override
+    public boolean existSignatures() {
+        return !mClientSignatureSet.isEmpty();
     }
 
     @Override

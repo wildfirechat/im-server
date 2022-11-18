@@ -251,6 +251,7 @@ public interface IMessagesStore {
     String getShortUUID();
 
     boolean checkSignature(String signature);
+    boolean existSignatures();
     /**
      * Used to initialize all persistent store structures
      */

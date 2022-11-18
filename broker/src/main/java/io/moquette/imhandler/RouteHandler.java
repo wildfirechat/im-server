@@ -40,6 +40,11 @@ public class RouteHandler extends IMHandler<WFCMessage.RouteRequest> {
             return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
         }
 
+        if(request.getPlatform() != session.getPlatform() && m_messagesStore.existSignatures()) {
+            LOG.error("Session <{}, {}> platform is {} mismatch the request {}", session.getUsername(), session.getClientID(), session.getPlatform(), request.getPlatform());
+            return ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH;
+        }
+
         String serverIp = mServer.getServerIp();
         String longPort = mServer.getLongPort();
         String shortPort = mServer.getShortPort();
