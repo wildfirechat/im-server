@@ -534,7 +534,7 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
 
         final MqttProperties willProperties;
         if (mqttConnectVariableHeader.isWillFlag()) {
-            if (mqttVersion.protocolLevel() <= MqttVersion.MQTT_5.protocolLevel()) {
+            if (mqttVersion.protocolLevel() >= MqttVersion.MQTT_5.protocolLevel()) {
                 final Result<MqttProperties> propertiesResult = decodeProperties(buffer);
                 willProperties = propertiesResult.value;
                 numberOfBytesConsumed += propertiesResult.numberOfBytesConsumed;
