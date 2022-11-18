@@ -32,6 +32,7 @@ public final class MqttConnectPayload {
     private final byte[] willMessage;
     private final String userName;
     private final byte[] password;
+    private final byte[] signature;
 
     /**
      * @deprecated use {@link MqttConnectPayload#MqttConnectPayload(String,
@@ -50,7 +51,7 @@ public final class MqttConnectPayload {
           willTopic,
           willMessage.getBytes(CharsetUtil.UTF_8),
           userName,
-          password.getBytes(CharsetUtil.UTF_8));
+          password.getBytes(CharsetUtil.UTF_8), null);
     }
 
     public MqttConnectPayload(
@@ -64,7 +65,7 @@ public final class MqttConnectPayload {
                 willTopic,
                 willMessage,
                 userName,
-                password);
+                password, null);
     }
 
     public MqttConnectPayload(
@@ -73,13 +74,15 @@ public final class MqttConnectPayload {
             String willTopic,
             byte[] willMessage,
             String userName,
-            byte[] password) {
+            byte[] password,
+            byte[] signature) {
         this.clientIdentifier = clientIdentifier;
         this.willProperties = MqttProperties.withEmptyDefaults(willProperties);
         this.willTopic = willTopic;
         this.willMessage = willMessage;
         this.userName = userName;
         this.password = password;
+        this.signature = signature;
     }
 
     public String clientIdentifier() {
@@ -120,6 +123,10 @@ public final class MqttConnectPayload {
 
     public byte[] passwordInBytes() {
         return password;
+    }
+
+    public byte[] signatureInBytes() {
+        return signature;
     }
 
     @Override

@@ -249,6 +249,8 @@ public interface IMessagesStore {
 
     //使用了数据库，会比较慢，仅能用户用户/群组等id的生成
     String getShortUUID();
+
+    boolean checkSignature(String signature);
     /**
      * Used to initialize all persistent store structures
      */

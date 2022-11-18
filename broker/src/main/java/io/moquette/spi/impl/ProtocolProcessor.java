@@ -48,6 +48,7 @@ import win.liyufan.im.HttpUtils;
 import win.liyufan.im.IMTopic;
 import win.liyufan.im.Utility;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -339,6 +340,24 @@ public class ProtocolProcessor {
                     failedCredentials(channel);
                     return false;
                 }
+
+                if(session.getPlatform() == ProtoConstants.Platform.Platform_Android || session.getPlatform() == ProtoConstants.Platform.Platform_APad) {
+                    byte[] signature = msg.payload().signatureInBytes();
+                    String basedSign = null;
+                    if (signature != null && signature.length > 0) {
+                        signature = AES.AESDecrypt(signature, session.getSecret(), true);
+                    }
+                    if (signature != null && signature.length > 0) {
+                        basedSign = Base64.getEncoder().encodeToString(signature);
+                    }
+
+                    if (!m_messagesStore.checkSignature(basedSign)) {
+                        LOG.error("Bad signature of session <{}, {}>", session.getUsername(), session.getClientID());
+                        failedBadSignature(channel);
+                        return false;
+                    }
+                }
+
                 session.setMqttVersion(mqttVersion);
             } else {
                 LOG.error("Client didn't supply any password and MQTT anonymous mode is disabled CId={}", clientId);
@@ -444,6 +463,11 @@ public class ProtocolProcessor {
     private void failedNoSession(Channel session) {
         session.writeAndFlush(connAck(CONNECTION_REFUSED_SESSION_NOT_EXIST));
         LOG.info("Client {} failed to connect with bad username or password.", session);
+    }
+
+    private void failedBadSignature(Channel session) {
+        session.writeAndFlush(connAck(CONNECTION_REFUSED_SIGNATURE_FAILURE));
+        LOG.info("Client {} failed to connect with bad signature.", session);
     }
 
     private void setIdleTime(ChannelPipeline pipeline, int idleTime) {

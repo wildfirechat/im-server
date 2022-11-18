@@ -208,7 +208,7 @@ public final class MqttMessageBuilders {
                             keepAliveSecs,
                             properties);
             MqttConnectPayload mqttConnectPayload =
-                    new MqttConnectPayload(clientId, willProperties, willTopic, willMessage, username, password);
+                    new MqttConnectPayload(clientId, willProperties, willTopic, willMessage, username, password, null);
             return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
         }
     }

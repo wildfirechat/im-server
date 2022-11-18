@@ -146,7 +146,7 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
      * bytes for the remaining length.
      *
      * @see
-     * https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180841
+     * <a href="https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180841">...</a>
      *
      * @param buffer the buffer to decode from
      * @return the fixed header
@@ -534,7 +534,7 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
 
         final MqttProperties willProperties;
         if (mqttConnectVariableHeader.isWillFlag()) {
-            if (mqttVersion == MqttVersion.MQTT_5) {
+            if (mqttVersion.protocolLevel() <= MqttVersion.MQTT_5.protocolLevel()) {
                 final Result<MqttProperties> propertiesResult = decodeProperties(buffer);
                 willProperties = propertiesResult.value;
                 numberOfBytesConsumed += propertiesResult.numberOfBytesConsumed;
@@ -550,6 +550,7 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
         }
         Result<String> decodedUserName = null;
         byte[] decodedPassword = null;
+        byte[] decodedSignature = null;
         if (mqttConnectVariableHeader.hasUserName()) {
             decodedUserName = decodeString(buffer);
             numberOfBytesConsumed += decodedUserName.numberOfBytesConsumed;
@@ -557,6 +558,10 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
         if (mqttConnectVariableHeader.hasPassword()) {
             decodedPassword = decodeByteArray(buffer);
             numberOfBytesConsumed += decodedPassword.length + 2;
+        }
+        if (mqttConnectVariableHeader.isWillRetain()) {
+            decodedSignature = decodeByteArray(buffer);
+            numberOfBytesConsumed += decodedSignature.length + 2;
         }
 
         final MqttConnectPayload mqttConnectPayload =
@@ -566,7 +571,9 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
                         decodedWillTopic != null ? decodedWillTopic.value : null,
                         decodedWillMessage,
                         decodedUserName != null ? decodedUserName.value : null,
-                        decodedPassword);
+                        decodedPassword,
+                        decodedSignature
+                    );
         return new Result<MqttConnectPayload>(mqttConnectPayload, numberOfBytesConsumed);
     }
 

@@ -110,6 +110,9 @@ public final class BrokerConstants {
     public static final String TOKEN_SECRET_KEY = "token.key";
     public static final String TOKEN_EXPIRE_TIME = "token.expire_time";
 
+    public static final String CONNECT_CLIENT_SIGNATURE_LIST = "connect.client_signature_list";
+    public static final String CONNECT_REJECT_EMPTY_SIGNATURE = "connect.reject_empty_signature";
+
     public static final String EMBED_DB_PROPERTY_NAME = "embed.db";
     public static final String DB_AUTO_CLEAN_HISTORY_MESSAGES = "db.auto_clean_history_messages";
     public static final String H2DB_PATH = "h2db.path";

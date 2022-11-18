@@ -147,6 +147,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mDisableStrangerChat = false;
     private Set<String> mAllowStrangerChatSet = new HashSet<>();
 
+    private Set<String> mClientSignatureSet = new HashSet<>();
+    private boolean mRejectEmptySignature = true;
+
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
     private boolean mChatroomCreateWhenNotExist = true;
@@ -190,6 +193,27 @@ public class MemoryMessagesStore implements IMessagesStore {
         IS_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_History_Message));
         IS_CHATROOM_MESSAGE_REMOTE_HISTORY_MESSAGE = "1".equals(m_Server.getConfig().getProperty(MESSAGE_Remote_Chatroom_History_Message, "1"));
         Constants.MAX_MESSAGE_QUEUE = Integer.parseInt(m_Server.getConfig().getProperty(MESSAGE_Max_Queue));
+
+        try {
+            String signatureList = m_Server.getConfig().getProperty(BrokerConstants.CONNECT_CLIENT_SIGNATURE_LIST);
+            if(!StringUtil.isNullOrEmptyAfterTrim(signatureList)) {
+                signatureList = signatureList.replace("，", ",");
+                for (String s : signatureList.split(",")) {
+                    mClientSignatureSet.add(s.trim());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if(!mClientSignatureSet.isEmpty()) {
+                mRejectEmptySignature = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CONNECT_REJECT_EMPTY_SIGNATURE, "true"));
+            } else {
+                mRejectEmptySignature = false;
+            }
+        } catch (Exception e) {
+        }
 
         try {
             mDisableStrangerChat = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Disable_Stranger_Chat));
@@ -4328,6 +4352,25 @@ public class MemoryMessagesStore implements IMessagesStore {
             return IDUtils.toUid(id);
         }
         return UUIDGenerator.getUUID();
+    }
+
+    @Override
+    public boolean checkSignature(String signature) {
+        if(StringUtil.isNullOrEmptyAfterTrim(signature)) {
+            if(mRejectEmptySignature) {
+                LOG.info("Failed check signature, no signature");
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if(mClientSignatureSet.contains(signature)) {
+                return true;
+            } else {
+                LOG.info("Failed check signature, signature no matched");
+                return false;
+            }
+        }
     }
 
     @Override
