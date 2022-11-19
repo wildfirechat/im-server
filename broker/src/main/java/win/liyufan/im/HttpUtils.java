@@ -88,7 +88,7 @@ public class HttpUtils {
                 System.out.println(logText);
                 e.printStackTrace();
                 LOG.error(logText);
-                LOG.error("POST to {} with data {} failure", url, jsonStr);
+                LOG.error("POST to {} failed", url);
                 if(httpCallback != null) {
                     httpCallback.onFailure(-1, e.getMessage());
                 }
