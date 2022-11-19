@@ -54,7 +54,7 @@
         </file>
 
         <file>
-            <source>src/main/files/release_note.md</source>
+            <source>../release_note.md</source>
         </file>
 
         <file>
