@@ -38,6 +38,10 @@ public class Main {
             commercialServer = Boolean.parseBoolean(args[3]);
             advanceVoip = Boolean.parseBoolean(args[4]);
         } else {
+            if(args.length == 1 && (args[0].equals("-h") || args[0].equals("--help") || args[0].equals("-help"))) {
+                System.out.println("Usage: java -jar checker.jar adminUrl adminSecret imUrl commercialServer advanceVoip \n      e.g. java -jar checker.jar http://192.168.1.80:18080 123456 http://192.168.1.80 false false");
+                return;
+            }
             System.out.println("Usage: java -jar checker.jar adminUrl adminSecret imUrl commercialServer advanceVoip \n      e.g. java -jar checker.jar http://192.168.1.80:18080 123456 http://192.168.1.80 false false");
             System.out.println();
             System.out.println();
