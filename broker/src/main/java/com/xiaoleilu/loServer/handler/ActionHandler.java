@@ -15,6 +15,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.Utility;
@@ -108,7 +109,7 @@ abstract public class ActionHandler extends SimpleChannelInboundHandler<FullHttp
 	 * @param response 响应对象
 	 */
 	private void doAction(ChannelHandlerContext ctx, Request request, Response response){
-	    if(("/route".equalsIgnoreCase(request.getPath()) || request.getPath().startsWith("/fs/"))
+	    if(("/route".equalsIgnoreCase(request.getPath()) || (!StringUtil.isNullOrEmpty(request.getPath()) && request.getPath().startsWith("/fs/")))
             && "OPTIONS".equalsIgnoreCase(request.getMethod())){
 	        handleOptions(ctx, request, response);
 	        return;
