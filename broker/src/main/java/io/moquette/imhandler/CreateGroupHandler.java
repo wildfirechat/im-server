@@ -21,7 +21,7 @@ import win.liyufan.im.IMTopic;
 public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.CreateGroupRequest request, Qos1PublishHandler.IMCallback callback) {
-        if(request.getGroup().getGroupInfo().getType() < 0 || request.getGroup().getGroupInfo().getType() > 2) {
+        if(request.getGroup().getGroupInfo().getType() < 0 || request.getGroup().getGroupInfo().getType() > 3) {
             return ErrorCode.ERROR_CODE_INVALID_DATA;
         }
 
