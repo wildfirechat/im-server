@@ -44,6 +44,12 @@ public class CreateGroupHandler extends GroupHandler<WFCMessage.CreateGroupReque
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Create_Group) > 0) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        }
         WFCMessage.GroupInfo groupInfo = m_messagesStore.createGroup(fromUser, request.getGroup().getGroupInfo(), request.getGroup().getMembersList(), request.getMemberExtra(), isAdmin);
         if (groupInfo != null) {
             if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

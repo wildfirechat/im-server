@@ -31,6 +31,13 @@ public class QuitGroupHandler extends GroupHandler<WFCMessage.QuitGroupRequest> 
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Quit_Group) > 0) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        }
+
         ErrorCode errorCode = m_messagesStore.quitGroup(fromUser, request.getGroupId(), isAdmin);
         if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

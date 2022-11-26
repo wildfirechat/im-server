@@ -30,6 +30,13 @@ public class SetGroupManagerHandler extends GroupHandler<WFCMessage.SetGroupMana
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Set_Group_Manage) > 0) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        }
+
         ErrorCode errorCode = m_messagesStore.setGroupManager(fromUser, request.getGroupId(), request.getType(), request.getUserIdList(), isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

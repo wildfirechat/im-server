@@ -31,6 +31,19 @@ public class ModifyGroupInfoHandler extends GroupHandler<WFCMessage.ModifyGroupI
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if(request.getType() == Modify_Group_Mute) {
+                if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Mute_Group) > 0) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+            } else {
+                if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Modify_Group_Info) > 0) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+            }
+        }
+
         ErrorCode errorCode= m_messagesStore.modifyGroupInfo(fromUser, request.getGroupId(), request.getType(), request.getValue(), isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS) {
             if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

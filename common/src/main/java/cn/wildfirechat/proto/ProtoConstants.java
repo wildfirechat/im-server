@@ -292,6 +292,34 @@ public class ProtoConstants {
         int ApplicationType_Admin = 2;
     }
 
+    //禁止客户端群操作。
+    // 第1位是禁止创建群组，
+    // 第2位是禁止销毁群组，
+    // 3位禁止加入群，
+    // 4位禁止退出群，
+    // 5位禁止邀请群成员，
+    // 6位禁止移出群成员，
+    // 7位禁止转移群
+    // 8位禁止设置群管理员
+    // 9位禁止允许群成员(专业版支持），
+    // 10位禁止群禁言
+    // 11位禁止修改群组信息，
+    // 12位禁止群成员禁言(专业版支持)
+    public interface ForbiddenClientGroupOperationMask {
+        int Forbidden_Create_Group = 0x01;
+        int Forbidden_Dismiss_Group = 0x02;
+        int Forbidden_Join_Group = 0x04;
+        int Forbidden_Quit_Group = 0x08;
+        int Forbidden_Invite_Group_Member = 0x10;
+        int Forbidden_Kickoff_Group_Member = 0x20;
+        int Forbidden_Transfer_Group = 0x40;
+        int Forbidden_Set_Group_Manage = 0x80;
+        int Forbidden_Allow_Group_Member = 0x100;
+        int Forbidden_Mute_Group = 0x200;
+        int Forbidden_Modify_Group_Info = 0x400;
+        int Forbidden_Mute_Group_Member = 0x800;
+    }
+
     public static final int MESSAGE_CONTENT_TYPE_CREATE_GROUP = 104;
     public static final int MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER = 105;
     public static final int MESSAGE_CONTENT_TYPE_KICKOF_GROUP_MEMBER = 106;

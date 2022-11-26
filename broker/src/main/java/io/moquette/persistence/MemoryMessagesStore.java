@@ -171,6 +171,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mGroupAllowClientCustomOperationNotification;
     private boolean mGroupAllowRobotCustomOperationNotification;
     private int mGroupVisibleQuitKickoffNotification;
+    private int mGroupForbiddenClientOperation;
     private int mSyncDataPartSize = 0;
     private boolean keepDisplayNameWhenDestroyUser = true;
 
@@ -458,6 +459,35 @@ public class MemoryMessagesStore implements IMessagesStore {
             mGroupVisibleQuitKickoffNotification = Integer.parseInt(server.getConfig().getProperty(GROUP_Visible_Quit_Kickoff_Notification, "0"));
         } catch (Exception e) {
 
+        }
+
+        try {
+            String s = server.getConfig().getProperty(GROUP_Forbidden_Client_Operation, null);
+            if(!StringUtil.isNullOrEmptyAfterTrim(s)) {
+                s = s.toLowerCase();
+                if(s.startsWith("0x")) {
+                    s = s.substring(2);
+                    for (int i = 0; i < s.length(); i++) {
+                        char ch = s.charAt(s.length()-1-i);
+                        mGroupForbiddenClientOperation <<= 4;
+                        if(ch <= 9) {
+                            mGroupForbiddenClientOperation += ch;
+                        } else {
+                            if(ch > 'f' || ch < 'a') {
+                                mGroupForbiddenClientOperation = 0;
+                                LOG.error("Invalid group.forbidden_client_operation {}", server.getConfig().getProperty(GROUP_Forbidden_Client_Operation, null));
+                                break;
+                            } else {
+                                mGroupForbiddenClientOperation += (ch - 'a' + 10);
+                            }
+                        }
+                    }
+                } else {
+                    mGroupForbiddenClientOperation = Integer.parseInt(s);
+                }
+            }
+        } catch (NumberFormatException e) {
+            LOG.error("Invalid group.forbidden_client_operation {}", server.getConfig().getProperty(GROUP_Forbidden_Client_Operation, null));
         }
 
         try {
@@ -4212,6 +4242,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public int getVisibleQuitKickoffNotification() {
         return mGroupVisibleQuitKickoffNotification;
+    }
+
+    @Override
+    public int getGroupForbiddenClientOperation() {
+        return mGroupForbiddenClientOperation;
     }
 
     @Override

@@ -24,6 +24,20 @@ public class AddGroupMember extends GroupHandler<WFCMessage.AddGroupMemberReques
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.AddGroupMemberRequest request, Qos1PublishHandler.IMCallback callback) {
         boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
+
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if(request.getAddedMemberList().size() == 1 && request.getAddedMember(0).getMemberId().equals(fromUser)) {
+                if ((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Join_Group) > 0) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+            } else {
+                if ((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Invite_Group_Member) > 0) {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+            }
+        }
+
         ErrorCode errorCode = m_messagesStore.addGroupMembers(fromUser, isAdmin, request.getGroupId(), request.getAddedMemberList(), request.getExtra());
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {

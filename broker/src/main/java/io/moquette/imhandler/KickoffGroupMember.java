@@ -62,6 +62,13 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
 
+                if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+                    int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+                    if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Kickoff_Group_Member) > 0) {
+                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                    }
+                }
+
                 //send notify message first, then kickoff the member
                 if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
                     sendGroupNotification(fromUser, groupInfo.getTargetId(), request.getToLineList(), request.getNotifyContent());

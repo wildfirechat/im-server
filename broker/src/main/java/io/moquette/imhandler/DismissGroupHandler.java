@@ -26,7 +26,6 @@ public class DismissGroupHandler extends GroupHandler<WFCMessage.DismissGroupReq
             ErrorCode errorCode;
             if (groupInfo == null) {
                 errorCode = m_messagesStore.dismissGroup(fromUser, request.getGroupId(), isAdmin);
-
             } else if (isAdmin || (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)
                 && groupInfo.getOwner() != null && groupInfo.getOwner().equals(fromUser)) {
 
@@ -36,6 +35,13 @@ public class DismissGroupHandler extends GroupHandler<WFCMessage.DismissGroupReq
 
                 if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && requestSourceType == ProtoConstants.RequestSourceType.Request_From_Robot && !m_messagesStore.isAllowRobotCustomGroupNotification()) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
+
+                if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+                    int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+                    if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Dismiss_Group) > 0) {
+                        return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                    }
                 }
 
                 //send notify message first, then dismiss group

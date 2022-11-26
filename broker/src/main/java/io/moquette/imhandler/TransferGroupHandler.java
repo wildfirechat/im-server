@@ -30,6 +30,13 @@ public class TransferGroupHandler extends GroupHandler<WFCMessage.TransferGroupR
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
+            int forbiddenClientOperation = m_messagesStore.getGroupForbiddenClientOperation();
+            if((forbiddenClientOperation & ProtoConstants.ForbiddenClientGroupOperationMask.Forbidden_Transfer_Group) > 0) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        }
+
         ErrorCode errorCode = m_messagesStore.transferGroup(fromUser, request.getGroupId(), request.getNewOwner(), isAdmin);
         if (errorCode == ERROR_CODE_SUCCESS) {
             if (request.hasNotifyContent() && request.getNotifyContent().getType() > 0) {
