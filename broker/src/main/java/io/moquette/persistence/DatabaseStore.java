@@ -1493,12 +1493,6 @@ public class DatabaseStore {
                 if (!strEqual(session.getAppName(), request.getApp())) {
                     sql += " `_package_name` = ?,";
                 }
-                if (session.getPlatform() != request.getPlatform()) {
-                    sql += " `_platform` = ?,";
-                }
-                if (session.getPushType() != request.getPushType()) {
-                    sql += " `_push_type` = ?,";
-                }
                 if (!strEqual(session.getDeviceName(), request.getDeviceName())) {
                     sql += " `_device_name` = ?,";
                 }
@@ -1525,12 +1519,6 @@ public class DatabaseStore {
 
                 if (!strEqual(session.getAppName(), request.getApp())) {
                     statement.setString(index++, request.getApp());
-                }
-                if (session.getPlatform() != request.getPlatform()) {
-                    statement.setInt(index++, request.getPlatform());
-                }
-                if (session.getPushType() != request.getPushType()) {
-                    statement.setInt(index++, request.getPushType() >= 32 ? 0 : request.getPushType());
                 }
                 if (!strEqual(session.getDeviceName(), request.getDeviceName())) {
                     statement.setString(index++, request.getDeviceName());

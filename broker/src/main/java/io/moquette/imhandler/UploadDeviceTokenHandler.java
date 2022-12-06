@@ -25,9 +25,11 @@ public class UploadDeviceTokenHandler extends IMHandler<WFCMessage.UploadDeviceT
             session.setPlatform(request.getPlatform());
             session.setAppName(request.getAppName());
             if (request.getPlatform() == ProtoConstants.Platform.Platform_iOS && request.getPushType() == 2) {
+                LOG.info("Set device token, userId {}", fromUser);
                 session.setVoipDeviceToken(request.getDeviceToken());
                 m_sessionsStore.updateSessionToken(session, true);
             } else {
+                LOG.info("Set device token, userId {}, platform {}, pushType {}", fromUser, session.getPlatform(), request.getPushType());
                 session.setDeviceToken(request.getDeviceToken());
                 session.setPushType(request.getPushType());
                 m_sessionsStore.updateSessionToken(session, false);
