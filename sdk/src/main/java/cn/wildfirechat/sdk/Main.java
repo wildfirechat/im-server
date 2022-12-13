@@ -1708,5 +1708,12 @@ public class Main {
                 System.out.println("list participants success");
             }
         }
+
+        IMResult<Void> rtpForwardResult = ConferenceAdmin.rtpForward("5156250396", "lhgqmws2k", "192.168.1.81", 8000);
+        if(rtpForwardResult == null || rtpForwardResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("rtp forward failure");
+        } else {
+            System.out.println("rtp forward success");
+        }
     }
 }

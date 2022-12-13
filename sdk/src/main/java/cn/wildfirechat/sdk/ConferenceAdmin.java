@@ -45,4 +45,15 @@ public class ConferenceAdmin {
         PojoConferenceRoomId conferenceRoomId = new PojoConferenceRoomId(roomId, advance);
         return AdminHttpUtils.httpJsonPost(path, conferenceRoomId, Void.class);
     }
+
+    public static IMResult<Void> rtpForward(String roomId, String userId, String rtpHost, int rtpPort) throws Exception {
+        String path = APIPath.Conference_Rtp_Forward;
+        PojoConferenceRtpForwardReq req = new PojoConferenceRtpForwardReq();
+        req.roomId = roomId;
+        req.publisherId = userId;
+        req.host = rtpHost;
+        req.audioPort = rtpPort;
+        req.videoPort = rtpPort;
+        return AdminHttpUtils.httpJsonPost(path, req, Void.class);
+    }
 }

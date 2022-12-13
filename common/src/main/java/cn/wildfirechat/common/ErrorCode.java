@@ -61,6 +61,8 @@ public enum ErrorCode {
     ERROR_CODE_SECRET_CHAT_MO_DISABLED(86, "origin side disable secret chat"),
     ERROR_CODE_SECRET_CHAT_MT_DISABLED(87, "target side disable secret chat"),
 
+    ERROR_CODE_CONFERENCE_ERROR(90, "Conference server response error"),
+
     ERROR_CODE_FUNCTION_DISABLED(220, "function disabled"),
 
     ERROR_CODE_CHANNEL_NO_EXIST(236, "channel no exist"),
