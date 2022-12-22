@@ -46,14 +46,22 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, conferenceRoomId, Void.class);
     }
 
-    public static IMResult<Void> rtpForward(String roomId, String userId, String rtpHost, int rtpPort) throws Exception {
+    public static IMResult<Void> rtpForward(String roomId, String userId, String rtpHost, int audioPort, int audioPt, long audioSSRC, int videoPort, int videoPt, long videoSSRC) throws Exception {
         String path = APIPath.Conference_Rtp_Forward;
-        PojoConferenceRtpForwardReq req = new PojoConferenceRtpForwardReq();
-        req.roomId = roomId;
-        req.publisherId = userId;
-        req.host = rtpHost;
-        req.audioPort = rtpPort;
-        req.videoPort = rtpPort;
+        PojoConferenceRtpForwardReq req = new PojoConferenceRtpForwardReq(roomId, userId, rtpHost, audioPort, audioPt, audioSSRC, videoPort, videoPt, videoSSRC);
         return AdminHttpUtils.httpJsonPost(path, req, Void.class);
+    }
+
+    public static IMResult<Void> stopRtpForward(String roomId, String userId, long streamId) throws Exception {
+        String path = APIPath.Conference_Stop_Rtp_Forward;
+        PojoConferenceStopRtpForwardReq req = new PojoConferenceStopRtpForwardReq(roomId, userId, streamId);
+        return AdminHttpUtils.httpJsonPost(path, req, Void.class);
+    }
+
+    public static IMResult<PojoConferenceRtpForwarders> listRtpForwarders(String roomId) throws Exception {
+        String path = APIPath.Conference_List_Rtp_Forward;
+        PojoConferenceRoomId req = new PojoConferenceRoomId();
+        req.roomId = roomId;
+        return AdminHttpUtils.httpJsonPost(path, req, PojoConferenceRtpForwarders.class);
     }
 }

@@ -1709,7 +1709,26 @@ public class Main {
             }
         }
 
-        IMResult<Void> rtpForwardResult = ConferenceAdmin.rtpForward("5156250396", "lhgqmws2k", "192.168.1.81", 8000);
+        IMResult<PojoConferenceRtpForwarders> listForwarderResult = ConferenceAdmin.listRtpForwarders("6366963312");
+        if(listForwarderResult == null || listForwarderResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("list rtp forward failure");
+        } else {
+            System.out.println("list rtp forward success");
+            listForwarderResult.getResult().forwarders.forEach(rtpForwarder -> rtpForwarder.streams.forEach(rtpStream -> {
+                try {
+                    IMResult<Void> stopRtpForwardResult = ConferenceAdmin.stopRtpForward(listForwarderResult.getResult().roomId, rtpForwarder.publisherId, rtpStream.streamId);
+                    if(stopRtpForwardResult == null || stopRtpForwardResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+                        System.out.println("rtp forward stop failure");
+                    } else {
+                        System.out.println("rtp forward stop success");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+        }
+
+        IMResult<Void> rtpForwardResult = ConferenceAdmin.rtpForward("6366963312", "cygqmws2k", "192.168.1.81", 10000, 111, 0, 10005, 98, 0);
         if(rtpForwardResult == null || rtpForwardResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("rtp forward failure");
         } else {

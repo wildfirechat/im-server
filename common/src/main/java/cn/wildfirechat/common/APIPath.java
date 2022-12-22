@@ -95,6 +95,8 @@ public interface APIPath {
     String Conference_Destroy = "/admin/conference/destroy";
     String Conference_Recording = "/admin/conference/recording";
     String Conference_Rtp_Forward = "/admin/conference/rtp_forward";
+    String Conference_Stop_Rtp_Forward = "/admin/conference/stop_rtp_forward";
+    String Conference_List_Rtp_Forward = "/admin/conference/list_rtp_forward";
 
     String Channel_User_Info = "/channel/user_info";
     String Channel_Update_Profile = "/channel/update_profile";
