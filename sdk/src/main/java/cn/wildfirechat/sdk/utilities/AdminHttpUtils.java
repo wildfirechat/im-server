@@ -128,7 +128,7 @@ public class AdminHttpUtils extends JsonUtils {
             if (object != null) {
                 jsonStr = gson.toJson(object);
             }
-            LOG.info("http request content: {}", jsonStr);
+            LOG.info("http request:{} content: {}", path, jsonStr);
 
             StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));
             entity.setContentEncoding("UTF-8");
