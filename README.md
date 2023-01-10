@@ -39,6 +39,7 @@
 | [open-platform](https://github.com/wildfirechat/open-platform)   | [open-platform](https://gitee.com/wfchat/open-platform)   | 野火开放平台服务。  |
 | [daily-report](https://github.com/wildfirechat/daily-report)   | [daily-report](https://github.com/wildfirechat/daily-report)   | 野火开放平台日报 demo服务。 |
 | [channel-platform](https://github.com/wildfirechat/channel-platform)   | [channel-platform](https://gitee.com/wfchat/channel-platform)   | 野火频道(公众号)平台服务。  |
+| [organization-platform](https://github.com/wildfirechat/organization-platform)   | [organization-platform](https://gitee.com/wfchat/organization-platform)   | 野火组织通讯录服务。  |
 | [android-chat](https://github.com/wildfirechat/android-chat) | [android-chat](https://gitee.com/wfchat/android-chat) | 野火IM Android SDK源码和App源码。 |
 | [ios-chat](https://github.com/wildfirechat/ios-chat)         | [ios-chat](https://gitee.com/wfchat/ios-chat)         | 野火IM iOS SDK源码和App源码。|
 | [pc-chat](https://github.com/wildfirechat/vue-pc-chat)       | [pc-chat](https://gitee.com/wfchat/vue-pc-chat)       | 基于[Electron](https://electronjs.org/)的PC 端，支持Windows、Mac、Linux（包括国产化linux系统和CPU）。   |
