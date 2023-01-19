@@ -47,7 +47,7 @@
 | [wx-chat](https://github.com/wildfirechat/wx-chat)           | [wx-chat](https://gitee.com/wfchat/wx-chat)           | 小程序平台的Demo(支持微信、百度、阿里、字节、QQ 等小程序平台)。  |
 | [uni-chat](https://github.com/wildfirechat/uni-chat)           | [uni-chat](https://gitee.com/wfchat/uni-chat)           | UniApp平台移动端应用(使用原生插件)。   |
 | [uni-wfc-client](https://github.com/wildfirechat/uni-wfc-client)           | [uni-wfc-client](https://gitee.com/wfchat/uni-wfc-client)           | UniApp平台原生插件。已[商店](https://ext.dcloud.net.cn/plugin?id=7895)上架   |
-| [flutter_imclient](https://github.com/wildfirechat/flutter_imclient)           | [flutter_imclient](https://gitee.com/wfchat/flutter_imclient)           | Flutter平台原生插件。   |
+| [wfc_flutter_plugins](https://github.com/wildfirechat/wfc_flutter_plugins)           | [flutter_imclient](https://gitee.com/wfchat/wfc_flutter_plugins)           | Flutter平台原生插件，支持IM和音视频通话。   |
 | [docs](https://github.com/wildfirechat/docs)                 | [docs](https://gitee.com/wfchat/docs)                 | 野火IM相关文档，包含设计、概念、开发、使用说明，[在线查看](https://docs.wildfirechat.cn/)。 |
 
 ## 野火开发文档
