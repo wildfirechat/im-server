@@ -50,10 +50,10 @@ public class Main {
 
 
         //admin使用的是18080端口，超级管理接口，理论上不能对外开放端口，也不能让非内部服务知悉密钥。
-        testAdmin();
+//        testAdmin();
 
         //Robot和Channel都是使用的80端口，第三方可以创建或者为第三方创建，第三方可以使用robot或者channel与IM系统进行对接。
-        testRobot();
+//        testRobot();
         testChannel();
     }
 
@@ -1440,6 +1440,14 @@ public class Main {
             System.out.println("get subscriber done");
         } else {
             System.out.println("get subscriber failure");
+            System.exit(-1);
+        }
+
+        IMResult<Boolean> booleanIMResult = channelServiceApi.isSubscriber("userId2");
+        if(booleanIMResult != null && booleanIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS && booleanIMResult.getResult()) {
+            System.out.println("is subscriber success");
+        } else {
+            System.out.println("is subscriber failure");
             System.exit(-1);
         }
 

@@ -9,7 +9,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.util.List;
 
 import static cn.wildfirechat.proto.ProtoConstants.ApplicationType.ApplicationType_Channel;
-import static cn.wildfirechat.proto.ProtoConstants.ApplicationType.ApplicationType_Robot;
 
 //仅专业版支持，社区版不支持
 public class ChannelServiceApi {
@@ -78,6 +77,12 @@ public class ChannelServiceApi {
     public IMResult<OutputStringList> getSubscriberList() throws Exception {
         String path = APIPath.Channel_Subscriber_List;
         return channelHttpUtils.httpJsonPost(path, null, OutputStringList.class);
+    }
+
+    public IMResult<Boolean> isSubscriber(String userId) throws Exception {
+        String path = APIPath.Channel_Is_Subscriber;
+        InputUserId input = new InputUserId(userId);
+        return channelHttpUtils.httpJsonPost(path, input, Boolean.class);
     }
 
     public IMResult<OutputApplicationUserInfo> applicationGetUserInfo(String authCode) throws Exception {

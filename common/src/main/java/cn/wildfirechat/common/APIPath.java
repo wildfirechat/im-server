@@ -104,6 +104,7 @@ public interface APIPath {
     String Channel_Message_Send = "/channel/message/send";
     String Channel_Subscribe = "/channel/subscribe";
     String Channel_Subscriber_List = "/channel/subscriber_list";
+    String Channel_Is_Subscriber = "/channel/is_subscriber";
     String Channel_Application_Get_UserInfo = "/channel/application/get_user_info";
 
     String Robot_User_Info = "/robot/user_info";
