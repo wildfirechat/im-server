@@ -182,6 +182,15 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                         }
                     }
                 }
+            } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Group) {
+                if(m_messagesStore.getGroupInfo(message.getConversation().getTarget()) == null) {
+                    return ErrorCode.ERROR_CODE_NOT_EXIST;
+                }
+            } else if (message.getConversation().getType() == ProtoConstants.ConversationType.ConversationType_Channel) {
+                WFCMessage.ChannelInfo channelData = m_messagesStore.getChannelInfo(message.getConversation().getTarget());
+                if(channelData == null || channelData.getStatus() == ProtoConstants.ChannelState.Channel_State_Mask_Deleted) {
+                    return ErrorCode.ERROR_CODE_NOT_EXIST;
+                }
             }
 
             long timestamp = System.currentTimeMillis();
