@@ -2,8 +2,10 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.ChannelHttpUtils;
+import com.google.gson.Gson;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.List;
@@ -47,6 +49,11 @@ public class ChannelServiceApi {
     public IMResult<OutputGetChannelInfo> getChannelInfo() throws Exception {
         String path = APIPath.Channel_Get_Profile;
         return channelHttpUtils.httpJsonPost(path, null, OutputGetChannelInfo.class);
+    }
+
+    public IMResult<Void> modifyChannelMenu(List<OutputGetChannelInfo.OutputMenu> menus) throws Exception {
+        String menuStr = new Gson().toJson(menus);
+        return modifyChannelInfo(ProtoConstants.ModifyChannelInfoType.Modify_Channel_Menu, menuStr);
     }
 
     public IMResult<SendMessageResult> sendMessage(int line, List<String> targets, MessagePayload payload) throws Exception {
