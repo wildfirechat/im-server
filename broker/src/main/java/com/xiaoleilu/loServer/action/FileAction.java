@@ -90,6 +90,8 @@ public class FileAction extends Action {
         }
 
         response.setContent(file);
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+
         return true;
     }
 

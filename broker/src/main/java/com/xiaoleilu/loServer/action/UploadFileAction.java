@@ -187,6 +187,10 @@ public class UploadFileAction extends Action {
                     return false;
                 }
 
+                if(remoteFileName != null && remoteFileName.length() > 2 && remoteFileName.startsWith("'") && remoteFileName.endsWith("'")) {
+                    remoteFileName = remoteFileName.substring(1, remoteFileName.length()-1);
+                }
+
                 if (StringUtil.isNullOrEmpty(remoteFileName)) {
                     logger.warn("remoteFileName is empty!");
 
