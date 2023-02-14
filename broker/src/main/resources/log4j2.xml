@@ -20,14 +20,14 @@
 
         <RollingRandomAccessFile name="RollingFileInfo" immediateFlush="false"
                                  fileName="${MSG_LOG_HOME}/wildfirechat.log"
-                                 filePattern="${MSG_LOG_HOME}/backup/wildfirechat.%d{yyyyMMddHH}.zip">
+                                 filePattern="${MSG_LOG_HOME}/backup/wildfirechat.%d{yyyyMMddHHmm}.zip">
             <Filters>
                 <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
             <PatternLayout pattern="${pattern}" />
             <Policies>
                 <!-- TimeBasedTriggeringPolicy :时间滚动策略,默认0点小时产生新的文件,interval="6" : 自定义文件滚动时间间隔,每隔6小时产生新文件, modulate="true" : 产生文件是否以0点偏移时间,即6点,12点,18点,0点-->
-<!--                <TimeBasedTriggeringPolicy interval="6" modulate="true"/>-->
+                <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
                 <!-- SizeBasedTriggeringPolicy :文件大小滚动策略-->
                 <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
