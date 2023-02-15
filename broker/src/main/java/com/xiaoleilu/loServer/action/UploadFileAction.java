@@ -239,7 +239,7 @@ public class UploadFileAction extends Action {
                 int offset = 0; // 断点续传开始位置
 
                 Date nowTime=new Date();
-                SimpleDateFormat time=new SimpleDateFormat("yyyy/MM/dd/HH");
+                SimpleDateFormat time=new SimpleDateFormat("yyyy/MM/dd/HH/mm/ss");
                 String datePath = time.format(nowTime);
 
                 datePath = "fs/" + bucket[0] + "/" + datePath; //add bucket
