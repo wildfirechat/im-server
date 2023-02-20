@@ -203,7 +203,7 @@ public class DatabaseStore {
             }
 
 
-            sql += " and _type <> 2"; //can search normal user(0) and robot(1) and admin(100), can not search things
+            sql += " and `_type` <> 2 and `_deleted` = 0"; //can search normal user(0) and robot(1) and admin(100), can not search things
 
             if (searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
                 sql += " limit 1";
