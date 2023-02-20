@@ -21,7 +21,7 @@ import java.util.List;
 public class GetGroupInfoHandler extends IMHandler<WFCMessage.PullUserRequest> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.PullUserRequest request, Qos1PublishHandler.IMCallback callback) {
-            List<WFCMessage.GroupInfo> infos = m_messagesStore.getGroupInfos(request.getRequestList());
+            List<WFCMessage.GroupInfo> infos = m_messagesStore.getGroupInfos(request.getRequestList(), fromUser, requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin);
 
             WFCMessage.PullGroupInfoResult result = WFCMessage.PullGroupInfoResult.newBuilder().addAllInfo(infos).build();
             byte[] data = result.toByteArray();

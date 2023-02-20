@@ -1886,7 +1886,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests) {
+    public List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests, String fromUser, boolean isAdmin) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.GroupInfo> mIMap = hzInstance.getMap(GROUPS_MAP);
         ArrayList<WFCMessage.GroupInfo> out = new ArrayList<>();
@@ -1900,6 +1900,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             if (groupInfo != null && groupInfo.getUpdateDt() > request.getUpdateDt()) {
+                if(!isAdmin && !StringUtil.isNullOrEmpty(fromUser)) {
+                    WFCMessage.GroupMember gm = getGroupMember(groupInfo.getTargetId(), fromUser);
+                    if(gm == null) {
+                        groupInfo = groupInfo.toBuilder().setMemberUpdateDt(-1).build();
+                    } else if(gm.getType() == GroupMemberType_Removed) {
+                        groupInfo = groupInfo.toBuilder().setMemberUpdateDt(-groupInfo.getMemberUpdateDt()).build();
+                    }
+                }
                 out.add(groupInfo);
             }
         }
