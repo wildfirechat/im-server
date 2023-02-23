@@ -257,6 +257,7 @@ public class UploadFileAction extends Action {
                 if(!bFile) {
                     bFile = dirFile.mkdirs();
                     if (!bFile) {
+                        logger.error("create dirs error! {}", dir);
                         response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
                         response.setContent("服务器错误：无法创建文件");
                         return false;
