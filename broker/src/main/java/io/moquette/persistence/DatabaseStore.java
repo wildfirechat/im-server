@@ -815,7 +815,7 @@ public class DatabaseStore {
         long beforeUid = before[0];
         String sql = "select `_mid`, `_from`, `_type`, `_target`, `_line`, `_data`, `_dt`, `_to` from " + table +" where";
         if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Private) {
-            sql += " _type = ? and _line = ? and _mid < ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?))";
+            sql += " _type = ? and _line = ? and _mid < ? and ((_target = ?  and _from = ?) or (_target = ?  and _from = ?)) and (_to = '' or _to = ?)";
         } else if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Channel && !user.equals(channelOwner)) {
             sql += " _type = ? and _line = ? and _mid < ? and _target = ? and ((_from = ? and (_to = '' or _to = ?)) or (_from = ?))";
         } else {
@@ -853,6 +853,7 @@ public class DatabaseStore {
                 statement.setString(index++, user);
                 statement.setString(index++, user);
                 statement.setString(index++, conversation.getTarget());
+                statement.setString(index++, user);
             } else if (conversation.getType() == ProtoConstants.ConversationType.ConversationType_Channel && !user.equals(channelOwner)) {
                 statement.setString(index++, channelOwner);
                 statement.setString(index++, user);
