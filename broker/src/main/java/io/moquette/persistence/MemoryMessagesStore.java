@@ -1012,7 +1012,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             mWriteLock.unlock();
         }
 
-        databaseStore.persistUserMessage(user, messageId, messageSeq, conversationType, target, line, directing, messageContentType);
+        databaseStore.persistUserMessage(user, sender, messageId, messageSeq, conversationType, target, line, directing, messageContentType);
         return messageSeq;
     }
 

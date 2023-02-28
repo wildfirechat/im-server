@@ -915,7 +915,7 @@ public class DatabaseStore {
         return false;
     }
 
-    void persistUserMessage(final String userId, final long messageId, final long messageSeq, int type, String target, int line, boolean directing, final int messageContentType) {
+    void persistUserMessage(final String userId, final  String sender, final long messageId, final long messageSeq, int type, String target, int line, boolean directing, final int messageContentType) {
         mScheduler.execute(()->{
             Connection connection = null;
             PreparedStatement statement = null;
@@ -930,7 +930,7 @@ public class DatabaseStore {
                 statement.setString(index++, userId);
                 statement.setLong(index++, messageSeq);
                 statement.setInt(index++, type);
-                statement.setString(index++, target);
+                statement.setString(index++, getPrivateChatUserMessageTarget(type, target, sender));
                 statement.setInt(index++, line);
                 statement.setInt(index++, directing ? 1 :0);
                 statement.setInt(index++, messageContentType);
@@ -944,6 +944,14 @@ public class DatabaseStore {
                 DBUtil.closeDB(connection, statement);
             }
         });
+    }
+
+    String getPrivateChatUserMessageTarget(int conversationType, String target, String userId) {
+        if(conversationType == ProtoConstants.ConversationType.ConversationType_Private) {
+            return target.compareTo(userId) > 0 ? (userId + "|" + target) : (target + "|" + userId);
+        } else {
+            return target;
+        }
     }
 
     void clearUserMessage(final String userId) {
