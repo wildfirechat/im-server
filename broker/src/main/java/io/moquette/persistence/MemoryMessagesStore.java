@@ -847,6 +847,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             mReadLock.unlock();
         }
 
+        if(current == 0) {
+            current = 2;
+            head = 2;
+        }
         builder.setCurrent(current);
         builder.setHead(head);
         return builder.build();
@@ -1000,7 +1004,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 messageSeq = maxPullSeq + 1;
             }
 
-            if (messageSeq == 0) {
+            if (messageSeq < messageId) {
                 messageSeq = messageId;
             }
 
