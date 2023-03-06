@@ -18,6 +18,7 @@ Release note 1.1.1:
 2. 搜索用户时，过滤掉已删除用户
 3. 支持单聊消息的定向消息
 4. 解决关闭roaming，且message.compensate_time_limit配置为-1时，首次消息无法同步的问题
+5. 解决禁止客户端群操作flag 解析错误
 
 --------------
 Release note 1.1:
