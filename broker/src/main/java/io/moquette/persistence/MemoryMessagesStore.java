@@ -467,21 +467,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                 s = s.toLowerCase();
                 if(s.startsWith("0x")) {
                     s = s.substring(2);
-                    for (int i = 0; i < s.length(); i++) {
-                        char ch = s.charAt(s.length()-1-i);
-                        mGroupForbiddenClientOperation <<= 4;
-                        if(ch <= 9) {
-                            mGroupForbiddenClientOperation += ch;
-                        } else {
-                            if(ch > 'f' || ch < 'a') {
-                                mGroupForbiddenClientOperation = 0;
-                                LOG.error("Invalid group.forbidden_client_operation {}", server.getConfig().getProperty(GROUP_Forbidden_Client_Operation, null));
-                                break;
-                            } else {
-                                mGroupForbiddenClientOperation += (ch - 'a' + 10);
-                            }
-                        }
-                    }
+                    mGroupForbiddenClientOperation = Integer.parseInt(s, 16);
                 } else {
                     mGroupForbiddenClientOperation = Integer.parseInt(s);
                 }
