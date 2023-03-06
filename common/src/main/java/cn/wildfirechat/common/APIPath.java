@@ -90,6 +90,7 @@ public interface APIPath {
     String Health = "/admin/health";
 
     String Conference_List = "/admin/conference/list";
+    String Conference_Exist = "/admin/conference/exist";
     String Conference_List_Participant = "/admin/conference/list_participant";
     String Conference_Create = "/admin/conference/create";
     String Conference_Destroy = "/admin/conference/destroy";

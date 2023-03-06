@@ -1691,6 +1691,14 @@ public class Main {
             System.out.println("create conference");
         }
 
+        IMResult<Boolean> booleanIMResult = ConferenceAdmin.existsConferences("helloroomid2");
+        if(booleanIMResult == null || booleanIMResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("exist conference failure");
+            System.exit(-1);
+        } else {
+            System.out.println("exit conference success");
+        }
+
         voidIMResult = ConferenceAdmin.enableRecording("helloroomid2", true, true);
         if(voidIMResult == null || voidIMResult.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("recording conference failure");

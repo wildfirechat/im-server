@@ -11,6 +11,12 @@ public class ConferenceAdmin {
         return AdminHttpUtils.httpJsonPost(path, null, PojoConferenceInfoList.class);
     }
 
+    public static IMResult<Boolean> existsConferences(String conferenceId) throws Exception {
+        String path = APIPath.Conference_Exist;
+        PojoConferenceRoomId data = new PojoConferenceRoomId(conferenceId, false);
+        return AdminHttpUtils.httpJsonPost(path, data, Boolean.class);
+    }
+
     public static IMResult<PojoConferenceParticipantList> listParticipants(String roomId, boolean advance) throws Exception {
         String path = APIPath.Conference_List_Participant;
         PojoConferenceRoomId data = new PojoConferenceRoomId(roomId, advance);
