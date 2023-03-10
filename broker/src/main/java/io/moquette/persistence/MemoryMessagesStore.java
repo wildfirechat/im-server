@@ -585,21 +585,17 @@ public class MemoryMessagesStore implements IMessagesStore {
         int pullType = ProtoConstants.PullType.Pull_Normal;
 
         if (type == ProtoConstants.ConversationType.ConversationType_Private) {
+            notifyReceivers.add(fromUser);
             if(message.getToCount() > 0) {
-                if(message.getToList().contains(fromUser)) {
-                    notifyReceivers.add(fromUser);
-                }
                 if(message.getToList().contains(message.getConversation().getTarget())) {
                     notifyReceivers.add(message.getConversation().getTarget());
                 }
             } else {
-                notifyReceivers.add(fromUser);
                 notifyReceivers.add(message.getConversation().getTarget());
             }
             pullType = ProtoConstants.PullType.Pull_Normal;
         } else if (type == ProtoConstants.ConversationType.ConversationType_Group) {
             notifyReceivers.add(fromUser);
-
             if (!StringUtil.isNullOrEmpty(message.getToUser())) {
                 notifyReceivers.add(message.getToUser());
             } else if(message.getToList()!=null && !message.getToList().isEmpty()) {
@@ -625,9 +621,6 @@ public class MemoryMessagesStore implements IMessagesStore {
                     }
                 }
             }
-
-            //如果是群助手的消息，返回pull type group，否则返回normal
-            //群助手还没有实现
             pullType = ProtoConstants.PullType.Pull_Normal;
         } else if (type == ProtoConstants.ConversationType.ConversationType_ChatRoom) {
             boolean isDirect = !StringUtil.isNullOrEmpty(message.getToUser());
