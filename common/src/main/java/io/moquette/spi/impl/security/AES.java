@@ -107,15 +107,20 @@ public class AES {
         }
         return key;
     }
+
     public static byte[] AESDecrypt(byte[] sSrc, String userKey, boolean checkTime) {
+        return AESDecrypt(sSrc, userKey, checkTime, null);
+    }
+
+    public static byte[] AESDecrypt(byte[] sSrc, String userKey, boolean checkTime, boolean[] invalidTime) {
         byte[] aesKey = aes_key;
         if (userKey != null && !userKey.isEmpty()) {
             aesKey = convertUserKey(userKey);
         }
-        return AESDecrypt(sSrc, aesKey, checkTime);
+        return AESDecrypt(sSrc, aesKey, checkTime, invalidTime);
     }
 
-    public static byte[] AESDecrypt(byte[] sSrc, byte[] aesKey, boolean checkTime) {
+    public static byte[] AESDecrypt(byte[] sSrc, byte[] aesKey, boolean checkTime, boolean[] invalidTime) {
         try {
 
             // 判断Key是否正确
@@ -152,6 +157,9 @@ public class AES {
                     int curhour = (int) ((System.currentTimeMillis()/1000 - 1514736000)/3600);
 
                     if (curhour - hours > 24 && checkTime) {
+                        if(invalidTime != null) {
+                            invalidTime[0] = true;
+                        }
                         return null;
                     }
                     byte[] neworiginal = new byte[original.length - 4];

@@ -39,17 +39,10 @@ public class RouteAction extends Action {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-
             response.setContentType("application/octet-stream");
             response.setHeader("Access-Control-Allow-Origin", "*");
 
             FullHttpRequest fullHttpRequest = (FullHttpRequest) request.getNettyRequest();
-            boolean b = false;
-            if ("web".equalsIgnoreCase(fullHttpRequest.headers().get("p"))) {
-                b = true;
-            }
-
-            final boolean base64Response = b;
 
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
 
@@ -57,15 +50,20 @@ public class RouteAction extends Action {
             try {
                 bytes = Base64.getDecoder().decode(str);
             } catch (IllegalArgumentException e) {
-                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null);
                 return true;
             }
 
             String cid = fullHttpRequest.headers().get("cid");
             byte[] cbytes = Base64.getDecoder().decode(cid);
-            cbytes = AES.AESDecrypt(cbytes, "", true);
+            boolean[] invalidTime = new boolean[1];
+            cbytes = AES.AESDecrypt(cbytes, "", true, invalidTime);
             if (cbytes == null) {
-                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
+                if(invalidTime[0]) {
+                    sendResponse(response, ErrorCode.ERROR_CODE_TIME_INCONSISTENT, null);
+                } else {
+                    sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null);
+                }
                 return true;
             }
             cid = new String(cbytes);
@@ -74,7 +72,7 @@ public class RouteAction extends Action {
             byte[] ubytes = Base64.getDecoder().decode(uid);
             ubytes = AES.AESDecrypt(ubytes, "", true);
             if (ubytes == null) {
-                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null);
                 return true;
             }
             uid = new String(ubytes);
@@ -84,7 +82,7 @@ public class RouteAction extends Action {
             if (session == null) {
                 ErrorCode errorCode = sessionsStore.loadActiveSession(uid, cid);
                 if (errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
-                    sendResponse(response, errorCode, null, base64Response);
+                    sendResponse(response, errorCode, null);
                     return true;
                 }
                 session = sessionsStore.sessionForClientAndUser(uid, cid);
@@ -94,13 +92,13 @@ public class RouteAction extends Action {
             if (session != null) {
                 bytes = AES.AESDecrypt(bytes, session.getSecret(), true);
             } else {
-                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
                 return true;
             }
 
 
             if (bytes == null) {
-                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null, base64Response);
+                sendResponse(response, ErrorCode.ERROR_CODE_SECRECT_KEY_MISMATCH, null);
                 return true;
             }
 
@@ -111,22 +109,22 @@ public class RouteAction extends Action {
                 String userId = Tokenor.getUserId(token.getBytes());
                 LOG.info("RouteAction token={}, userId={}", token, userId);
                 if (userId == null) {
-                    sendResponse(response, ErrorCode.ERROR_CODE_TOKEN_ERROR, null, base64Response);
+                    sendResponse(response, ErrorCode.ERROR_CODE_TOKEN_ERROR, null);
                 } else {
                     ServerAPIHelper.sendRequest(userId, wrapper.getClientId(), wrapper.getRequest(), wrapper.getData().toByteArray(), new ServerAPIHelper.Callback() {
                         @Override
                         public void onSuccess(byte[] result) {
-                            sendResponse(response, null, result, base64Response);
+                            sendResponse(response, null, result);
                         }
 
                         @Override
                         public void onError(ErrorCode errorCode) {
-                            sendResponse(response, errorCode, null, base64Response);
+                            sendResponse(response, errorCode, null);
                         }
 
                         @Override
                         public void onTimeout() {
-                            sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null, base64Response);
+                            sendResponse(response, ErrorCode.ERROR_CODE_TIMEOUT, null);
                         }
 
                         @Override
@@ -139,25 +137,21 @@ public class RouteAction extends Action {
                     return false;
                 }
             } catch (InvalidProtocolBufferException e) {
-                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null, false);
+                sendResponse(response, ErrorCode.ERROR_CODE_INVALID_DATA, null);
             }
         }
         return true;
     }
 
-    private void sendResponse(Response response, ErrorCode errorCode, byte[] contents, boolean base64Response) {
+    private void sendResponse(Response response, ErrorCode errorCode, byte[] contents) {
         response.setStatus(HttpResponseStatus.OK);
         if (contents == null) {
             ByteBuf ackPayload = Unpooled.buffer();
             ackPayload.ensureWritable(1).writeByte(errorCode.getCode());
             contents = ackPayload.array();
         }
-        if (base64Response) {
-            byte[] base64Data = Base64.getEncoder().encode(contents);
-            response.setContent(base64Data);
-        } else {
-            response.setContent(contents);
-        }
+
+        response.setContent(contents);
         response.send();
     }
 }
