@@ -77,7 +77,7 @@ public enum ErrorCode {
     ERROR_CODE_SENSITIVE_MATCHED(242, "sensitive matched"),
     ERROR_CODE_SIGN_EXPIRED(243, "sign expired"),
     ERROR_CODE_AUTH_FAILURE(244, "auth failure"),
-    ERROR_CODE_CLIENT_COUNT_OUT_OF_LIMIT(245, "client count out of limit"),
+    ERROR_CODE_USER_BLOCKED(245, "user is blocked"),
     ERROR_CODE_IN_BLACK_LIST(246, "user in black list"),
     ERROR_CODE_FORBIDDEN_SEND_MSG(247, "forbidden send msg globally"),
     ERROR_CODE_NOT_RIGHT(248, "no right to operate"),

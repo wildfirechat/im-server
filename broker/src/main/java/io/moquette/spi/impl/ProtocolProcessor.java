@@ -108,7 +108,7 @@ public class ProtocolProcessor {
                 ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
                 try {
                     if (descriptor != null) {
-                        processDisconnect(descriptor.getChannel(), true, false);
+                        processDisconnect(descriptor.getChannel(), false, false);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -650,11 +650,21 @@ public class ProtocolProcessor {
                 if(connectionDescriptors.removeConnection(oldConnDescr)) {
                     m_interceptor.notifyClientConnectionLost(clientID, username);
                 }
+                try {
+                    channel.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             });
         } else {
             ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel);
             if(connectionDescriptors.removeConnection(oldConnDescr)) {
                 m_interceptor.notifyClientConnectionLost(clientID, username);
+            }
+            try {
+                channel.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

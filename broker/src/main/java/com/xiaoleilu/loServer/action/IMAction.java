@@ -80,6 +80,11 @@ public class IMAction extends Action {
                 if (userId == null) {
                     sendResponse(response, ErrorCode.ERROR_CODE_TOKEN_ERROR, null);
                 } else {
+                    if(messagesStore.getUserStatus(userId) == ProtoConstants.UserStatus.Forbidden) {
+                        sendResponse(response, ErrorCode.ERROR_CODE_USER_BLOCKED, null);
+                        return true;
+                    }
+
                     ServerAPIHelper.sendRequest(userId, wrapper.getClientId(), wrapper.getRequest(), wrapper.getData().toByteArray(), new ServerAPIHelper.Callback() {
                         @Override
                         public void onSuccess(byte[] result) {

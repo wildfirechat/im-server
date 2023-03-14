@@ -102,6 +102,10 @@ public class RouteAction extends Action {
                 return true;
             }
 
+            if(messagesStore.getUserStatus(uid) == ProtoConstants.UserStatus.Forbidden) {
+                sendResponse(response, ErrorCode.ERROR_CODE_USER_BLOCKED, null);
+                return true;
+            }
 
             try {
                 WFCMessage.IMHttpWrapper wrapper = WFCMessage.IMHttpWrapper.parseFrom(bytes);
