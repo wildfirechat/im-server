@@ -608,8 +608,9 @@ public class ProtocolProcessor {
         channel.closeFuture();
 
         //disconnect the session
-
-        m_sessionsStore.sessionForClient(clientID).disconnect(session.getUsername(), isDup, isRetain);
+        if(session != null) {
+            m_sessionsStore.sessionForClient(clientID).disconnect(session.getUsername(), isDup, isRetain);
+        }
     }
 
 

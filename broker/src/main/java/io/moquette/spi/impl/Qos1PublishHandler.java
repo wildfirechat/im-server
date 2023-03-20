@@ -252,6 +252,13 @@ public class Qos1PublishHandler extends QosPublishHandler {
         
         MemorySessionStore.Session session = m_sessionStore.getSession(clientID);
         payloadContent = AES.AESDecrypt(payloadContent, session.getSecret(), true);
+        if(payloadContent == null) {
+            ByteBuf ackPayload = Unpooled.buffer();
+            ackPayload.ensureWritable(1).writeByte(ERROR_CODE_INVALID_DATA.getCode());
+            sendPubAck(clientID, messageID, ackPayload, ERROR_CODE_INVALID_DATA);
+            return;
+        }
+
         imHandler(clientID, username, imtopic, payloadContent, (errorCode, ackPayload) -> sendPubAck(clientID, messageID, ackPayload, errorCode), ProtoConstants.RequestSourceType.Request_From_User);
     }
 
