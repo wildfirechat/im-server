@@ -174,6 +174,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private int mGroupForbiddenClientOperation;
     private int mSyncDataPartSize = 0;
     private boolean keepDisplayNameWhenDestroyUser = true;
+    private String mRecallForwardUrl = null;
 
     private boolean mForwardMessageWithClientInfo = false;
     private boolean mRobotCallbackWithClientInfo = false;
@@ -518,7 +519,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
 
         }
+        try {
+            mRecallForwardUrl = server.getConfig().getProperty(BrokerConstants.MESSAGE_RecallMsg_Forward_Url);
+        } catch (Exception e) {
 
+        }
     }
 
     private void printMissConfigLog(String config, String defaultValue) {
@@ -2221,6 +2226,19 @@ public class MemoryMessagesStore implements IMessagesStore {
             if(message.getContent().getType() == 80) {
                 return ErrorCode.ERROR_CODE_SUCCESS;
             }
+
+            if(!StringUtil.isNullOrEmpty(mRecallForwardUrl)) {
+                OutputRecallMessageData event = new OutputRecallMessageData(OutputMessageData.fromProtoMessage(message, null), operatorId, System.currentTimeMillis(), isAdmin);
+                m_Server.getCallbackScheduler().execute(() -> {
+                    try {
+                        HttpUtils.httpJsonPost(mRecallForwardUrl, GsonUtil.gson.toJson(event), HttpUtils.HttpPostType.POST_TYPE_Forward_Recall_Callback);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                    }
+                });
+            }
+
 
             JSONObject json = new JSONObject();
             json.put("s", message.getFromUser());

@@ -50,7 +50,8 @@ public class HttpUtils {
         POST_TYPE_Channel_Message_Callback,
         POST_TYPE_Forward_Message_Callback,
         POST_TYPE_User_Online_Event_Callback,
-        POST_TYPE_Server_Exception_Callback;
+        POST_TYPE_Server_Exception_Callback,
+        POST_TYPE_Forward_Recall_Callback;
     }
 
     public static void httpJsonPost(String url, String jsonStr, HttpPostType postType) {
