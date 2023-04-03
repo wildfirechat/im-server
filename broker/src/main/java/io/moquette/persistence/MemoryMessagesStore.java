@@ -2179,9 +2179,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (isAdmin) {
                 canRecall = true;
             }
-            if (!isAdmin && message.getFromUser().equals(operatorId)) {
+            boolean isExpired = false;
+            if (!canRecall && message.getFromUser().equals(operatorId)) {
                 if (now - message.getServerTimestamp() > mRecallTimeLimit * 1000) {
-                    return ErrorCode.ERROR_CODE_RECALL_TIME_EXPIRED;
+                    isExpired = true;
                 } else {
                     canRecall = true;
                 }
@@ -2198,17 +2199,26 @@ public class MemoryMessagesStore implements IMessagesStore {
                     canRecall = true;
                 }
 
-                MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
-                Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
-                if (members == null || members.size() == 0) {
-                    members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
-                }
-                for (WFCMessage.GroupMember member : members) {
-                    if (member.getMemberId().equals(operatorId)) {
-                        if (member.getType() == GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
-                            canRecall = true;
+                if(!canRecall && !message.getFromUser().equals(operatorId)) {
+                    boolean isOperatorManager = false;
+                    int senderType = GroupMemberType_Normal;
+                    MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+                    Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
+                    if (members == null || members.size() == 0) {
+                        members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
+                    }
+                    for (WFCMessage.GroupMember member : members) {
+                        if (member.getMemberId().equals(operatorId)) {
+                            if (member.getType() == GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
+                                isOperatorManager = true;
+                            }
                         }
-                        break;
+                        if(member.getMemberId().equals(message.getFromUser())) {
+                            senderType = member.getType();
+                        }
+                    }
+                    if(isOperatorManager && senderType != GroupMemberType_Manager && senderType != GroupMemberType_Owner) {
+                        canRecall = true;
                     }
                 }
             }
@@ -2220,7 +2230,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
 
             if (!canRecall) {
-                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                if(isExpired) {
+                    return ErrorCode.ERROR_CODE_RECALL_TIME_EXPIRED;
+                } else {
+                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                }
             }
             
             if(message.getContent().getType() == 80) {
