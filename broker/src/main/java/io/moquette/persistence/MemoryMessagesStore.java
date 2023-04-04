@@ -1748,12 +1748,12 @@ public class MemoryMessagesStore implements IMessagesStore {
                     }
                 }
 
-                if (operatorMember == null) {
+                if (operatorMember == null || operatorMember.getType() == GroupMemberType_Removed) {
                     LOG.error("Modify group member alias error, the operator {} is not in group", operator);
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 }
 
-                if (targetMember == null) {
+                if (targetMember == null || targetMember.getType() == GroupMemberType_Removed) {
                     LOG.error("Modify group member alias error, the member {} is not in group", memberId);
                     return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
                 }
