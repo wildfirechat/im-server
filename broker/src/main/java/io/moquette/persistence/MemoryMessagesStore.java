@@ -3210,7 +3210,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             friendsMap.remove(userId);
             friendsMap.remove(request.getTargetUid());
 
-            callbackRelationEvent(userId, request.getTargetUid(), 0, "" + request.getStatus());
+            callbackRelationEvent(userId, request.getTargetUid(), 0, request.getStatus() == 0?"1":"0");
             return ErrorCode.ERROR_CODE_SUCCESS;
         }
 
