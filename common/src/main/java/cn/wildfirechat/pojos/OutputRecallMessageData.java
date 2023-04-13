@@ -8,10 +8,6 @@
 
 package cn.wildfirechat.pojos;
 
-import cn.wildfirechat.proto.WFCMessage;
-
-import java.util.List;
-
 public class OutputRecallMessageData {
     private OutputMessageData message;
     private String userId;

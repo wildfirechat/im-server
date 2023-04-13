@@ -9,6 +9,7 @@ public class ProtoConstants {
         int ConversationType_ChatRoom = 2;
         int ConversationType_Channel = 3;
         int ConversationType_Things = 4;
+        int ConversationType_SecretChat = 5;
     }
 
     //message GroupInfo -> type

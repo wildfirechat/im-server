@@ -21,6 +21,7 @@ public class PojoGroupInfo {
     int searchable;
     int max_member_count;
     int history_message;
+    boolean super_group;
 
     public String getTarget_id() {
         return target_id;
@@ -116,5 +117,13 @@ public class PojoGroupInfo {
 
     public void setHistory_message(int history_message) {
         this.history_message = history_message;
+    }
+
+    public boolean isSuper_group() {
+        return super_group;
+    }
+
+    public void setSuper_group(boolean super_group) {
+        this.super_group = super_group;
     }
 }

@@ -65,6 +65,9 @@ public class InputCreateGroup extends InputGroupBase {
         if(group_info.max_member_count > 0) {
             groupInfoBuilder.setMaxMemberCount(group_info.max_member_count);
         }
+        if(group_info.isSuper_group()) {
+            groupInfoBuilder.setSuperGroup(1);
+        }
 
         groupBuilder.setGroupInfo(groupInfoBuilder);
         if(group.getMembers() != null) {
