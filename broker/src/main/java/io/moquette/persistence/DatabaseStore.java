@@ -2411,59 +2411,55 @@ public class DatabaseStore {
     }
 
     void deleteUserStatus(String userId) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "delete from t_user_status where _uid = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, userId);
+            int count = statement.executeUpdate();
+            LOG.info("Update rows {}", count);
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    void updateUserStatus(String userId, int status) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            if (status == 0) {
                 String sql = "delete from t_user_status where _uid = ?";
                 statement = connection.prepareStatement(sql);
                 statement.setString(1, userId);
                 int count = statement.executeUpdate();
                 LOG.info("Update rows {}", count);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e, RDBS_Exception);
-            } finally {
-                DBUtil.closeDB(connection, statement);
+            } else {
+                String sql = "insert into t_user_status (`_uid`, `_status`, `_dt`) values(?,?,?) ON DUPLICATE KEY UPDATE `_status` = ?";
+
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setString(index++, userId);
+                statement.setInt(index++, status);
+                statement.setLong(index++,  System.currentTimeMillis());
+                statement.setInt(index++, status);
+
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
             }
-        });
-    }
-
-    void updateUserStatus(String userId, int status) {
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
-                if (status == 0) {
-                    String sql = "delete from t_user_status where _uid = ?";
-                    statement = connection.prepareStatement(sql);
-                    statement.setString(1, userId);
-                    int count = statement.executeUpdate();
-                    LOG.info("Update rows {}", count);
-                } else {
-                    String sql = "insert into t_user_status (`_uid`, `_status`, `_dt`) values(?,?,?) ON DUPLICATE KEY UPDATE `_status` = ?";
-
-                    statement = connection.prepareStatement(sql);
-                    int index = 1;
-                    statement.setString(index++, userId);
-                    statement.setInt(index++, status);
-                    statement.setLong(index++,  System.currentTimeMillis());
-                    statement.setInt(index++, status);
-
-                    int count = statement.executeUpdate();
-                    LOG.info("Update rows {}", count);
-                }
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e, RDBS_Exception);
-            } finally {
-                DBUtil.closeDB(connection, statement);
-            }
-        });
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     int getGeneratedId() {
@@ -3342,47 +3338,45 @@ public class DatabaseStore {
     }
 
     void updateChannelListener(final String channelId, final String listener, final boolean listen) {
-        LOG.info("Database remove channel {}", channelId);
-        mScheduler.execute(()->{
-            Connection connection = null;
-            PreparedStatement statement = null;
-            try {
-                connection = DBUtil.getConnection();
-                String sql;
-                if (listen) {
-                    sql = "insert into t_channel_listener (`_cid`" +
-                        ", `_mid`" +
-                        ", `_dt`) values(?, ?, ?)" +
-                        " ON DUPLICATE KEY UPDATE " +
-                        "`_dt` = ?";
-                    statement = connection.prepareStatement(sql);
-                    int index = 1;
-                    statement.setString(index++, channelId);
-                    statement.setString(index++, listener);
-                    statement.setLong(index++, System.currentTimeMillis());
-                    statement.setLong(index++, System.currentTimeMillis());
+        LOG.info("updateChannelListener channel {}, listener {}, listen {}", channelId, listener, listen);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            String sql;
+            if (listen) {
+                sql = "insert into t_channel_listener (`_cid`" +
+                    ", `_mid`" +
+                    ", `_dt`) values(?, ?, ?)" +
+                    " ON DUPLICATE KEY UPDATE " +
+                    "`_dt` = ?";
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setString(index++, channelId);
+                statement.setString(index++, listener);
+                statement.setLong(index++, System.currentTimeMillis());
+                statement.setLong(index++, System.currentTimeMillis());
 
-                    int count = statement.executeUpdate();
-                    LOG.info("Update rows {}", count);
-                } else {
-                    sql = "delete from t_channel_listener where `_cid`=? and `_mid`=?";
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
+            } else {
+                sql = "delete from t_channel_listener where `_cid`=? and `_mid`=?";
 
-                    statement = connection.prepareStatement(sql);
-                    int index = 1;
-                    statement.setString(index++, channelId);
-                    statement.setString(index++, listener);
+                statement = connection.prepareStatement(sql);
+                int index = 1;
+                statement.setString(index++, channelId);
+                statement.setString(index++, listener);
 
-                    int count = statement.executeUpdate();
-                    LOG.info("Update rows {}", count);
-                }
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                Utility.printExecption(LOG, e, RDBS_Exception);
-            } finally {
-                DBUtil.closeDB(connection, statement);
+                int count = statement.executeUpdate();
+                LOG.info("Update rows {}", count);
             }
-        });
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
     }
 
     List<String> getUserChannels(String userId) {
