@@ -72,6 +72,10 @@ rem set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
 rem set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 rem set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=10M"
 
+rem 如果JDK版本是9及以上，请打开这个配置
+rem set JAVA_OPTS=%JAVA_OPTS% --add-modules java.se --add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
+
+
 echo
 echo "Please set Xmx and Xms parameters!"
 echo "Please set Xmx and Xms parameters!"

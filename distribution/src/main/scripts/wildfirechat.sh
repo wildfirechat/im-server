@@ -86,6 +86,8 @@ JAVA_OPTS="$JAVA_OPTS -XX:MaxGCPauseMillis=500"
 #JAVA_OPTS="$JAVA_OPTS -XX:NumberOfGCLogFiles=10"
 #JAVA_OPTS="$JAVA_OPTS -XX:GCLogFileSize=10M"
 
+#如果JDK版本是9及以上，请打开这个配置
+#JAVA_OPTS="$JAVA_OPTS --add-modules java.se --add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED"
 
 echo "警告：没有设置JVM内存参数！"
 echo "请设置JVM参数Xmx和Xms，设置为您为IM服务预留的内存大小，注意需要刨除操作系统占用，如果有其它系统也需要相应去除占用。"
