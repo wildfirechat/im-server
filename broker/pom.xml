@@ -5,7 +5,7 @@
         <relativePath>../</relativePath>
         <artifactId>wildfirechat-parent</artifactId>
         <groupId>cn.wildfirechat</groupId>
-        <version>1.1.2</version>
+        <version>1.1.3</version>
     </parent>
 
     <artifactId>moquette-broker</artifactId>
