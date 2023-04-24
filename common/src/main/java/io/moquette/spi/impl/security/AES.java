@@ -5,6 +5,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -18,20 +19,19 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AES {
-    private static byte[] aes_key= {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F};
-    public static void init(byte[] secret) {
-        if (secret != null && secret.length == 16) {
-            aes_key = new byte[16];
-            for (int i = 0; i < 16; i++) {
-                aes_key[i] = secret[i];
-            }
-        } else {
-            System.out.println("Error int key error, secret incorrect");
-        }
-    }
+    public static int keyLen = 16;
+    private final static int ivLen = 16;
+    private static byte[] aes_key= {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F,0x3A,0x1F,0x28,0x39,0x4F,0x52,0x68,0x79,0x71,0x73,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F};
 
     public static byte[] AESEncrypt(String sSrc, String userKey) {
         return AESEncrypt(sSrc.getBytes(), userKey);
+    }
+
+    public static void useAes256(boolean aes256) {
+        if(aes256)
+            keyLen = 32;
+        else
+            keyLen = 16;
     }
 
     public static byte[] AESEncrypt(byte[] tobeencrypdata, byte[] aesKey) {
@@ -40,16 +40,25 @@ public class AES {
             return null;
         }
         // 判断Key是否为16位
-        if (aesKey.length != 16) {
+        if (aesKey.length < keyLen) {
             System.out.print("Key长度不是16位");
             return null;
         }
+        if(aesKey.length > keyLen) {
+            aesKey = Arrays.copyOfRange(aesKey, 0, keyLen);
+        }
 
+        byte[] ivKeys;
+        if(aesKey.length == ivLen) {
+            ivKeys = aesKey;
+        } else {
+            ivKeys = Arrays.copyOfRange(aesKey, 0, ivLen);
+        }
 
         try {
             SecretKeySpec skeySpec = new SecretKeySpec(aesKey, "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");//"算法/模式/补码方式"
-            IvParameterSpec iv = new IvParameterSpec(aesKey);//使用CBC模式，需要一个向量iv，可增加加密算法的强度
+            IvParameterSpec iv = new IvParameterSpec(ivKeys);//使用CBC模式，需要一个向量iv，可增加加密算法的强度
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
 
             //2018.1.1 0:0:0 以来的小时数
@@ -101,8 +110,8 @@ public class AES {
     }
 
     private static byte[] convertUserKey(String userKey) {
-        byte[] key = new byte[16];
-        for (int i = 0; i < 16; i++) {
+        byte[] key = new byte[keyLen];
+        for (int i = 0; i < keyLen; i++) {
             key[i] = (byte) (userKey.charAt(i) & 0xFF);
         }
         return key;
@@ -128,14 +137,25 @@ public class AES {
                 aesKey = aes_key;
             }
             // 判断Key是否为16位
-            if (aesKey.length != 16) {
+            if (aesKey.length < keyLen) {
                 System.out.print("Key长度不是16位");
                 return null;
             }
 
+            if(aesKey.length > keyLen) {
+                aesKey = Arrays.copyOfRange(aesKey, 0, keyLen);
+            }
+
+            byte[] ivKeys;
+            if(aesKey.length == ivLen) {
+                ivKeys = aesKey;
+            } else {
+                ivKeys = Arrays.copyOfRange(aesKey, 0, ivLen);
+            }
+
             SecretKeySpec skeySpec = new SecretKeySpec(aesKey, "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec iv = new IvParameterSpec(aesKey);
+            IvParameterSpec iv = new IvParameterSpec(ivKeys);
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
             try {
                 byte[] original = cipher.doFinal(sSrc);

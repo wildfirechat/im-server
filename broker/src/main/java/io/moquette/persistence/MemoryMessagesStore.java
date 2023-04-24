@@ -3492,7 +3492,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     private String ensureSecretLength(String secret) {
-        while ( secret.length() < 16) {
+        while ( secret.length() < AES.keyLen) {
             secret += "w";
             secret += secret;
         }

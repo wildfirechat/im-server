@@ -29,6 +29,8 @@ public final class BrokerConstants {
     public static final String HTTP_SERVER_PORT = "http_port";
     public static final String HTTP_LOCAL_PORT = "local_port";
 
+    public static final String ENCRYPT_AES256 = "encrypt.use_aes256";
+
     public static final String HTTP_ADMIN_PORT = "http.admin.port";
     public static final String DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME = "moquette_store.mapdb";
     public static final String DEFAULT_PERSISTENT_PATH = System.getProperty("user.dir") + File.separator
