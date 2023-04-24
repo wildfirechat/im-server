@@ -2510,6 +2510,28 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
     }
 
+    private boolean isOnlineValueEqual(WFCMessage.UserSettingEntry pcentry, String newValue) {
+        if(pcentry == null) {
+            return StringUtil.isNullOrEmpty(newValue);
+        }
+
+        String oldValue = pcentry.getValue();
+        if(StringUtil.isNullOrEmpty(oldValue) && StringUtil.isNullOrEmpty(newValue)) {
+            return true;
+        }
+
+        if(StringUtil.isNullOrEmpty(oldValue) || StringUtil.isNullOrEmpty(newValue)) {
+            return false;
+        }
+
+        String[] ssOld = oldValue.split("\\|");
+        String[] ssNew = newValue.split("\\|");
+        if(ssOld.length != 4 || ssNew.length != 4 || !ssOld[1].equals(ssNew[1]) || !ssOld[2].equals(ssNew[2]) || !ssOld[3].equals(ssNew[3])) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void updateUserOnlineSetting(MemorySessionStore.Session session, boolean online) {
         if(!mMultiPlatformNotification) {
@@ -2541,14 +2563,8 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
-        if (pcValue != null) {
-            if (pcentry == null || StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(pcValue).build(), session.clientID);
-            }
-        } else {
-            if (pcentry != null && !StringUtil.isNullOrEmpty(pcentry.getValue())) {
-                updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue("").build(), session.clientID);
-            }
+        if (!isOnlineValueEqual(pcentry, pcValue)) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(pcValue==null?"":pcValue).build(), session.clientID);
         }
     }
 
