@@ -572,6 +572,14 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<PojoGroupMember> groupMemberIMResult = GroupAdmin.getGroupMember(groupInfo.getTarget_id(), "user1");
+        if (groupMemberIMResult != null && groupMemberIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get group member success");
+        } else {
+            System.out.println("get group member failure");
+            System.exit(-1);
+        }
+
         voidIMResult = GroupAdmin.kickoffGroupMembers("user1", groupInfo.getTarget_id(), Arrays.asList("user3"), null, null);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("kickoff group member success");
@@ -1215,7 +1223,7 @@ public class Main {
         if (resultGetMembers != null && resultGetMembers.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("get group member success");
         } else {
-            System.out.println("create group failure");
+            System.out.println("get group member failure");
             System.exit(-1);
         }
 
@@ -1228,6 +1236,14 @@ public class Main {
             System.out.println("add group member success");
         } else {
             System.out.println("add group member failure");
+            System.exit(-1);
+        }
+
+        IMResult<PojoGroupMember> groupMemberIMResult = robotService.getGroupMember(groupInfo.getTarget_id(), "user0");
+        if (groupMemberIMResult != null && groupMemberIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get group member success");
+        } else {
+            System.out.println("get group member failure");
             System.exit(-1);
         }
 

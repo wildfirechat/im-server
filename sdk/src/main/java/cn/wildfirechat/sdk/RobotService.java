@@ -134,6 +134,14 @@ public class RobotService {
         return robotHttpUtils.httpJsonPost(path, input, OutputGroupMemberList.class);
     }
 
+    public IMResult<PojoGroupMember> getGroupMember(String groupId, String memberId) throws Exception {
+        String path = APIPath.Robot_Group_Member_Get;
+        InputGetGroupMember input = new InputGetGroupMember();
+        input.setGroupId(groupId);
+        input.setMemberId(memberId);
+        return robotHttpUtils.httpJsonPost(path, input, PojoGroupMember.class);
+    }
+
     public IMResult<Void> addGroupMembers(String groupId, List<PojoGroupMember> groupMembers, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Robot_Group_Member_Add;
         InputAddGroupMember addGroupMember = new InputAddGroupMember();

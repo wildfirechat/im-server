@@ -68,6 +68,7 @@ public interface APIPath {
     String Group_Get_Info = "/admin/group/get_info";
     String Group_Modify_Info = "/admin/group/modify";
     String Group_Member_List = "/admin/group/member/list";
+    String Group_Member_Get = "/admin/group/member/get";
     String Group_Member_Add = "/admin/group/member/add";
     String Group_Member_Kickoff = "/admin/group/member/del";
     String Group_Member_Quit = "/admin/group/member/quit";
@@ -122,6 +123,7 @@ public interface APIPath {
     String Robot_Group_Dismiss = "/robot/group/del";
     String Robot_Group_Get_Info = "/robot/group/get_info";
     String Robot_Group_Member_List = "/robot/group/member/list";
+    String Robot_Group_Member_Get = "/robot/group/member/get";
     String Robot_Group_Member_Kickoff = "/robot/group/member/del";
     String Robot_Group_Modify_Info = "/robot/group/modify";
     String Robot_Group_Set_Member_Alias = "/robot/group/member/set_alias";

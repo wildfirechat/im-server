@@ -71,6 +71,14 @@ public class GroupAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputGroupMemberList.class);
     }
 
+    public static IMResult<PojoGroupMember> getGroupMember(String groupId, String memberId) throws Exception {
+        String path = APIPath.Group_Member_Get;
+        InputGetGroupMember input = new InputGetGroupMember();
+        input.setGroupId(groupId);
+        input.setMemberId(memberId);
+        return AdminHttpUtils.httpJsonPost(path, input, PojoGroupMember.class);
+    }
+
     public static IMResult<Void> addGroupMembers(String operator, String groupId, List<PojoGroupMember> groupMembers, List<Integer> to_lines, MessagePayload  notify_message) throws Exception {
         String path = APIPath.Group_Member_Add;
         InputAddGroupMember addGroupMember = new InputAddGroupMember();

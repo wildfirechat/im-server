@@ -48,9 +48,7 @@ public enum ErrorCode {
     ERROR_CODE_NOT_YOUR_LOCKED(26, "unload failure, not your lock"),
     ERROR_CODE_ROBOT_NO_TOKEN(27, "robot no token"),
     ERROR_CODE_WS_NOT_CONFIGURED_CORRECTLY(28, "ws not configured correctly"),
-
     ERROR_CODE_TIME_INCONSISTENT(30, "time inconsistent"),
-
     ERROR_CODE_CONFERENCE_ROOM_NOT_EXIST(60, "conference room not exist"),
     ERROR_CODE_CONFERENCE_SERVICE_NOT_AVAILABLE(61, "conference service not available"),
 
