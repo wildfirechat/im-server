@@ -239,6 +239,8 @@ public interface IMessagesStore {
     boolean isRobotCallbackWithClientInfo();
     boolean isChannelCallbackWithClientInfo();
 
+    boolean isRobotAutoAcceptFriendRequest();
+
     List<Integer> getClientForbiddenSendTypes();
     List<Integer> getBlackListExceptionTypes();
     List<Integer> getGroupMuteExceptionTypes();

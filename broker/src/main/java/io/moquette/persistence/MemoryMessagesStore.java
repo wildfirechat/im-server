@@ -141,6 +141,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
+    private boolean mFriendRobotAutoAccept = true;
 
     private boolean mMultiPlatformNotification = false;
     private boolean mMobileDefaultSilentWhenPCOnline = true;
@@ -295,6 +296,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e);
             printMissConfigLog(FRIEND_Request_Expiration_Duration, mFriendRequestExpiration + "");
+        }
+
+
+        try {
+            mFriendRobotAutoAccept = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Request_Robot_Auto_Accept, "true"));
+        } catch (Exception e) {
         }
 
         try {
@@ -4304,6 +4311,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean isChannelCallbackWithClientInfo() {
         return mChannelCallbackWithClientInfo;
+    }
+
+    @Override
+    public boolean isRobotAutoAcceptFriendRequest() {
+        return mFriendRobotAutoAccept;
     }
 
     @Override

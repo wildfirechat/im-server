@@ -30,8 +30,10 @@ public class AddFriendHandler extends GroupHandler<WFCMessage.AddFriendRequest> 
                 if (user != null && user.getType() == ProtoConstants.UserType.UserType_Normal) {
                     publisher.publishNotification(IMTopic.NotifyFriendRequestTopic, request.getTargetUid(), head[0], fromUser, request.getReason());
                 } else if(user != null && user.getType() == ProtoConstants.UserType.UserType_Robot) {
-                    WFCMessage.HandleFriendRequest handleFriendRequest = WFCMessage.HandleFriendRequest.newBuilder().setTargetUid(fromUser).setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Accepted).build();
-                    mServer.onApiMessage(request.getTargetUid(), null, handleFriendRequest.toByteArray(), 0, fromUser, HandleFriendRequestTopic, requestSourceType);
+                    if(m_messagesStore.isRobotAutoAcceptFriendRequest()) {
+                        WFCMessage.HandleFriendRequest handleFriendRequest = WFCMessage.HandleFriendRequest.newBuilder().setTargetUid(fromUser).setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Accepted).build();
+                        mServer.onApiMessage(request.getTargetUid(), null, handleFriendRequest.toByteArray(), 0, fromUser, HandleFriendRequestTopic, requestSourceType);
+                    }
                 }
             }
             return errorCode;
