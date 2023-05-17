@@ -9,7 +9,7 @@ fi
 
 kill -15 $pid
 
-for i in {1..15}
+for i in {1..30}
 do
   pid=`ps -ef | grep wildfirechat.server.Server | grep -v grep | awk '{print $2}'`
   if [ -z $pid ]; then
