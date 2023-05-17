@@ -5,6 +5,8 @@ ADD distribution-*-bundle-tar.tar.gz /opt/im-server/
 RUN sed -i 's/#JAVA_OPTS="$JAVA_OPTS -Xmx128M"/JAVA_OPTS="$JAVA_OPTS -Xmx$JVM_XMX"/g' /opt/im-server/bin/wildfirechat.sh
 RUN sed -i 's/#JAVA_OPTS="$JAVA_OPTS -Xms128M"/JAVA_OPTS="$JAVA_OPTS -Xms$JVM_XMS"/g' /opt/im-server/bin/wildfirechat.sh
 
+RUN chmod a+x /opt/im-server/bin/wildfirechat.sh
+
 WORKDIR /opt/im-server
 
 VOLUME /opt/im-server/config
