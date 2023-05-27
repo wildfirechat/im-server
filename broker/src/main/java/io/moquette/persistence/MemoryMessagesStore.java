@@ -3101,25 +3101,14 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
-
-        FriendData friendData1 = null;
-        Collection<FriendData> friendDatas = friendsMap.get(userId);
-        if (friendDatas == null || friendDatas.size() == 0) {
-            friendDatas = loadFriend(friendsMap, userId);
-        }
-        for (FriendData fd : friendDatas) {
-            if (fd.getFriendUid().equals(request.getTargetUid())) {
-                friendData1 = fd;
-                break;
-            }
-        }
-        if (friendData1 != null && friendData1.getBlacked() > 0 && !isAdmin) {
-            return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
-        }
-
+        FriendData friendData1 = getFriendData(userId, request.getTargetUid());
         if (friendData1 != null && friendData1.getState() == 0) {
             return ErrorCode.ERROR_CODE_ALREADY_FRIENDS;
+        }
+
+        FriendData friendData2 = getFriendData(request.getTargetUid(), userId);
+        if (friendData2 != null && friendData2.getBlacked() > 0 && !isAdmin) {
+            return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
         }
 
         WFCMessage.FriendRequest newRequest = WFCMessage.FriendRequest
