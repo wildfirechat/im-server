@@ -26,6 +26,7 @@ public interface APIPath {
     String User_Get_Token = "/admin/user/get_token";
     String User_Update_Block_Status = "/admin/user/update_block_status";
     String User_Get_Info = "/admin/user/get_info";
+    String User_Get_All = "/admin/user/all";
     String User_Get_Robot_Info = "/admin/user/get_robot_info";
     String User_Get_Blocked_List = "/admin/user/get_blocked_list";
     String User_Check_Block_Status = "/admin/user/check_block_status";

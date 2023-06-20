@@ -158,6 +158,8 @@ public interface IMessagesStore {
     WFCMessage.User getUserInfoByMobile(String mobile);
     List<WFCMessage.User> searchUser(String keyword, int searchType, int page);
 
+    List<WFCMessage.User> getUserInfoList(int count, int offset);
+
     boolean updateSystemSetting(int id, String value, String desc);
     SystemSettingPojo getSystemSetting(int id);
     void createChatroom(String chatroomId, WFCMessage.ChatroomInfo chatroomInfo);

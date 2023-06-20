@@ -24,6 +24,14 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
+    public static IMResult<OutputGetUserList> getAllUsers(int count, int offset) throws Exception {
+        String path = APIPath.User_Get_All;
+        InputGetUserList input = new InputGetUserList();
+        input.count = count;
+        input.offset = offset;
+        return AdminHttpUtils.httpJsonPost(path, input, OutputGetUserList.class);
+    }
+
     public static IMResult<OutputCreateUser> createUser(InputOutputUserInfo user) throws Exception {
         String path = APIPath.Create_User;
         return AdminHttpUtils.httpJsonPost(path, user, OutputCreateUser.class);

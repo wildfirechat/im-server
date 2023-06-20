@@ -2764,6 +2764,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         String userId = databaseStore.getUserIdByMobile(mobile);
         return getUserInfo(userId);
     }
+
+    @Override
+    public List<WFCMessage.User> getUserInfoList(int count, int offset) {
+        return databaseStore.getAllUsers(count, offset);
+    }
+
     @Override
     public List<WFCMessage.User> searchUser(String keyword, int searchType, int page) {
         if (mDisableSearch) {
