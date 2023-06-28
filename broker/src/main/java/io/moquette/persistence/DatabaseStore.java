@@ -39,6 +39,7 @@ import static cn.wildfirechat.common.IMExceptionEvent.EventType.RDBS_Exception;
 import static cn.wildfirechat.proto.ProtoConstants.PersistFlag.Transparent;
 import static io.moquette.server.Constants.MAX_MESSAGE_QUEUE;
 import static cn.wildfirechat.proto.ProtoConstants.SearchUserType.*;
+import static win.liyufan.im.UserSettingScope.kUserSettingPrivacySearchable;
 
 public class DatabaseStore {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseStore.class);
@@ -161,18 +162,15 @@ public class DatabaseStore {
         }
         return null;
     }
-    //searchType
-    // 0 模糊匹配displayName, 精确匹配账户名和电话号码
-    // 1 精确匹配账户名和电话号码
-    // 2 精确匹配账户名
-    // 3 精确匹配电话号码
-    List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
+
+    List<WFCMessage.User> searchUserByNameMobile(String keyword, int searchType, int page) {
+        ArrayList<WFCMessage.User> out = new ArrayList<>();
+        if(page > 0) {
+            return out;
+        }
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
-
-        ArrayList<WFCMessage.User> out = new ArrayList<>();
-
         try {
             connection = DBUtil.getConnection();
             String sql = "select `_uid`, `_name`" +
@@ -186,60 +184,33 @@ public class DatabaseStore {
                 ", `_social`" +
                 ", `_extra`" +
                 ", `_dt` from t_user";
-            switch (searchType) {
-                case SearchUserType_Name_Mobile:
-                    sql += " where (`_name` = ? or `_mobile` = ?) ";
-                    break;
-                case SearchUserType_Name:
-                    sql += " where `_name` = ? ";
-                    break;
-                case SearchUserType_Mobile:
-                    sql += " where `_mobile` = ? ";
-                    break;
-                case SearchUserType_General:
-                default:
-                    sql += " where (`_display_name` like ? or `_name` = ? or `_mobile` = ?) ";
-                    break;
-            }
 
+            if(searchType == SearchUserType_Name) {
+                sql += " where `_name` = ? ";
+            } else if(searchType == SearchUserType_Mobile) {
+                sql += " where `_mobile` = ? ";
+            } else {
+                sql += " where (`_name` = ? or `_mobile` = ?) ";
+            }
 
             sql += " and `_type` <> 2 and `_deleted` = 0"; //can search normal user(0) and robot(1) and admin(100), can not search things
 
-            if (searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
+            if(searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
                 sql += " limit 1";
             } else {
-                sql += " limit 20";
-            }
-            
-            if (page > 0) {
-                sql += " offset " + page * 20;
+                sql += " limit 2";
             }
 
             statement = connection.prepareStatement(sql);
-            int index = 1;
-
-            switch (searchType) {
-                case SearchUserType_Name_Mobile:
-                    statement.setString(index++, keyword);
-                    statement.setString(index++, keyword);
-                    break;
-                case SearchUserType_Name:
-                case SearchUserType_Mobile:
-                    statement.setString(index++, keyword);
-                    break;
-                case SearchUserType_General:
-                default:
-                    statement.setString(index++, "%" + keyword + "%");
-                    statement.setString(index++, keyword);
-                    statement.setString(index++, keyword);
-                    break;
+            statement.setString(1, keyword);
+            if(searchType != SearchUserType_Name && searchType != SearchUserType_Mobile) {
+                statement.setString(2, keyword);
             }
-
 
             rs = statement.executeQuery();
             while (rs.next()) {
                 WFCMessage.User.Builder builder = WFCMessage.User.newBuilder();
-                index = 1;
+                int index = 1;
 
                 String value = rs.getString(index++);
                 value = (value == null ? "" : value);
@@ -297,6 +268,139 @@ public class DatabaseStore {
             Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
             DBUtil.closeDB(connection, statement, rs);
+        }
+
+        List<WFCMessage.User> filter = new ArrayList<>();
+        for (WFCMessage.User user : out) {
+            WFCMessage.UserSettingEntry userSettingEntry = Server.getServer().getStore().messagesStore().getUserSetting(user.getUid(), kUserSettingPrivacySearchable, null);
+            if(userSettingEntry != null) {
+                int value = 0;
+                try {
+                    value = StringUtil.isNullOrEmpty(userSettingEntry.getValue())?0:Integer.parseInt(userSettingEntry.getValue());
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0) {
+                    if (searchType == SearchUserType_Name) {
+                        filter.add(user);
+                        continue;
+                    } else if(searchType != SearchUserType_Mobile) {
+                        if(keyword.equals(user.getName())) {
+                            if(!keyword.equals(user.getMobile())) {
+                                filter.add(user);
+                                continue;
+                            } else if((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+                                filter.add(user);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                if ((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+                    if (searchType == SearchUserType_Mobile) {
+                        filter.add(user);
+                    } else if(searchType != SearchUserType_Name) {
+                        if(keyword.equals(user.getMobile()) && !keyword.equals(user.getName())) {
+                            filter.add(user);
+                        }
+                    }
+                }
+            }
+        }
+        out.removeAll(filter);
+
+        return out;
+    }
+    List<WFCMessage.User> searchUserByDisplayName(String keyword, int page) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        ArrayList<WFCMessage.User> out = new ArrayList<>();
+
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select u._uid, u._name, u._display_name, u._portrait, u._mobile, u._gender, u._email, u._address, u._company, u._social, u._extra, u._dt " +
+                " from t_user u left join (select _uid, _value from t_user_setting where _scope = 27) s on u._uid = s._uid " +
+                " where u._display_name like ? and u._type <> 2 and u._deleted = 0 and (s._value is null or (s._value <> 1 and s._value <> 3 and s._value <> 5 and s._value <> 7)) limit 20";
+
+            if (page > 0) {
+                sql += " offset " + page * 20;
+            }
+
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, "%" + keyword + "%");
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                WFCMessage.User.Builder builder = WFCMessage.User.newBuilder();
+                int index = 1;
+
+                String value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setUid(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setName(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setDisplayName(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setPortrait(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setMobile(value);
+
+                int gender = rs.getInt(index++);
+                builder.setGender(gender);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setEmail(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setAddress(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setCompany(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setSocial(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setExtra(value);
+
+                long longValue = rs.getLong(index++);
+                builder.setUpdateDt(longValue);
+
+                WFCMessage.User user = builder.build();
+
+                out.add(user);
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return out;
+    }
+
+    List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
+        List<WFCMessage.User> out = searchUserByNameMobile(keyword, searchType, page);
+        if(searchType == SearchUserType_General) {
+            List<WFCMessage.User> general = searchUserByDisplayName(keyword, page);
+            out.addAll(general);
         }
         return out;
     }

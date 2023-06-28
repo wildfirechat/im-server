@@ -218,6 +218,12 @@ public class ProtoConstants {
         int SearchUserType_Mobile = 3;
     }
 
+    public interface DisableSearchMask {
+        int DisableSearchDisplayNameMask = 1;
+        int DisableSearchNameMask = 2;
+        int DisableSearchMobileMask = 4;
+    }
+
     public interface UserStatus {
         int Normal = 0;
         int Muted = 1;

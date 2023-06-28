@@ -14,5 +14,10 @@ public interface UserSettingScope {
     int kUserSettingConversationDraft = 19;
     int kUserSettingDisableSyncDraft = 20;
     int kUserSettingVoipSilent = 21;
-
+    int kUserSettingPttReserved = 22;
+    int kUserSettingCustomState = 23;
+    int kUserSettingDisableSecretChat = 24;
+    int kUserSettingPttSilent = 25;
+    int kUserSettingGroupRemark = 26;
+    int kUserSettingPrivacySearchable = 27;
 }
