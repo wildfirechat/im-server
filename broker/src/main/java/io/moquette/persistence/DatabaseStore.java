@@ -183,7 +183,7 @@ public class DatabaseStore {
                 ", `_company`" +
                 ", `_social`" +
                 ", `_extra`" +
-                ", `_dt` from t_user";
+                ", `_dt`, `_type` from t_user";
 
             if(searchType == SearchUserType_Name) {
                 sql += " where `_name` = ? ";
@@ -258,6 +258,9 @@ public class DatabaseStore {
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
 
+                int type = rs.getInt(index++);
+                builder.setType( type);
+
                 WFCMessage.User user = builder.build();
 
                 out.add(user);
@@ -321,7 +324,7 @@ public class DatabaseStore {
 
         try {
             connection = DBUtil.getConnection();
-            String sql = "select u._uid, u._name, u._display_name, u._portrait, u._mobile, u._gender, u._email, u._address, u._company, u._social, u._extra, u._dt " +
+            String sql = "select u._uid, u._name, u._display_name, u._portrait, u._mobile, u._gender, u._email, u._address, u._company, u._social, u._extra, u._dt, u._type " +
                 " from t_user u left join (select _uid, _value from t_user_setting where _scope = 27) s on u._uid = s._uid " +
                 " where u._display_name like ? and u._type <> 2 and u._deleted = 0 and (s._value is null or (s._value <> 1 and s._value <> 3 and s._value <> 5 and s._value <> 7)) limit 20";
 
@@ -381,6 +384,9 @@ public class DatabaseStore {
 
                 long longValue = rs.getLong(index++);
                 builder.setUpdateDt(longValue);
+
+                int type = rs.getInt(index++);
+                builder.setType(type);
 
                 WFCMessage.User user = builder.build();
 
