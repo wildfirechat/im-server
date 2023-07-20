@@ -4139,6 +4139,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         return databaseStore.searchChannelFromDB(keyword, buzzy, page);
     }
 
+
+    @Override
+    public List<String> getListenedChannels(String userId) {
+        return databaseStore.getUserChannels(userId);
+    }
     @Override
     public ErrorCode listenChannel(String operator, String channelId, boolean listen) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();

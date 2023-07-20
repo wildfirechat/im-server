@@ -77,6 +77,7 @@ public interface IMTopic {
     String ChannelSearchTopic = "CHS";
     String ChannelListenTopic = "CHL";
     String ChannelPullTopic = "CHP";
+    String ListenedChannelListTopic = "CHLL";
 
     String GetTokenTopic = "GETTOKEN";
     String DestroyUserTopic = "DESTROYUSER";

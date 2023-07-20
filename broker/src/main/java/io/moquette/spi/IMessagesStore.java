@@ -218,6 +218,7 @@ public interface IMessagesStore {
     ErrorCode transferChannel(String operator, String channelId, String newOwner);
     ErrorCode destroyChannel(String operator, String channelId, boolean isAdmin);
     List<WFCMessage.ChannelInfo> searchChannel(String keyword, boolean buzzy, int page);
+    List<String> getListenedChannels(String userId);
     ErrorCode listenChannel(String operator, String channelId, boolean listen);
     WFCMessage.ChannelInfo getChannelInfo(String channelId);
     boolean canSendMessageInChannel(String user, String channelId);
