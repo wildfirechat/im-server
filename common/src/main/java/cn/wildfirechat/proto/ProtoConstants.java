@@ -156,6 +156,8 @@ public class ProtoConstants {
         int Modify_Group_History_Message = 7;
         //仅专业版的server api支持
         int Modify_Group_Max_Member_Count = 8;
+        //仅专业版的server api支持
+        int Modify_Group_Super_Group = 9;
     }
 
     //ModifyGroupInfoRequest -> type

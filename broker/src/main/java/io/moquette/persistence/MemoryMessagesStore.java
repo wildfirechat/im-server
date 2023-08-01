@@ -810,7 +810,7 @@ public class MemoryMessagesStore implements IMessagesStore {
                         }
 
                         if (bundle.getMessage().getContent().getExpireDuration() > 0) {
-                            if (System.currentTimeMillis() > bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration()*1000) {
+                            if (System.currentTimeMillis() > bundle.getMessage().getServerTimestamp() + bundle.getMessage().getContent().getExpireDuration()* 1000L) {
                                 continue;
                             }
                         }
