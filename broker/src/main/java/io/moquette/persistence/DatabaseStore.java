@@ -163,11 +163,8 @@ public class DatabaseStore {
         return null;
     }
 
-    List<WFCMessage.User> searchUserByNameMobile(String keyword, int searchType, int page) {
+    List<WFCMessage.User> searchUserByNameMobile(String keyword, int searchType) {
         ArrayList<WFCMessage.User> out = new ArrayList<>();
-        if(page > 0) {
-            return out;
-        }
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -315,7 +312,8 @@ public class DatabaseStore {
 
         return out;
     }
-    List<WFCMessage.User> searchUserByDisplayName(String keyword, int page) {
+
+    List<WFCMessage.User> searchUserByDisplayName(String keyword, int page, List<WFCMessage.User> nameOrIdMatched) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -326,14 +324,36 @@ public class DatabaseStore {
             connection = DBUtil.getConnection();
             String sql = "select u._uid, u._name, u._display_name, u._portrait, u._mobile, u._gender, u._email, u._address, u._company, u._social, u._extra, u._dt, u._type " +
                 " from t_user u left join (select _uid, _value from t_user_setting where _scope = 27) s on u._uid = s._uid " +
-                " where u._display_name like ? and u._type <> 2 and u._deleted = 0 and (s._value is null or (s._value <> 1 and s._value <> 3 and s._value <> 5 and s._value <> 7)) limit 20";
+                " where u._display_name like ? and u._type <> 2 and u._deleted = 0 ";
+            if(nameOrIdMatched.size() == 1) {
+                sql += " and u._uid <> ? and u._name <> ?";
+            } else if(nameOrIdMatched.size() == 2) {
+                sql += " and u._uid <> ? and u._uid <>? and u._name <> ? and u._name <>? ";
+            }
+            sql += " and (s._value is null or (s._value <> 1 and s._value <> 3 and s._value <> 5 and s._value <> 7)) limit ";
+
+            if(page == 0) {
+                sql += (20 - nameOrIdMatched.size());
+            } else {
+                sql += 20;
+            }
 
             if (page > 0) {
-                sql += " offset " + page * 20;
+                sql += " offset " + (page * 20 - nameOrIdMatched.size());
             }
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, "%" + keyword + "%");
+            if(nameOrIdMatched.size() == 1) {
+                statement.setString(2, nameOrIdMatched.toArray(new WFCMessage.User[0])[0].getUid());
+                statement.setString(3, nameOrIdMatched.toArray(new WFCMessage.User[0])[0].getUid());
+            } else if(nameOrIdMatched.size() == 2) {
+                statement.setString(2, nameOrIdMatched.toArray(new WFCMessage.User[0])[0].getUid());
+                statement.setString(3, nameOrIdMatched.toArray(new WFCMessage.User[0])[1].getUid());
+                statement.setString(4, nameOrIdMatched.toArray(new WFCMessage.User[0])[0].getUid());
+                statement.setString(5, nameOrIdMatched.toArray(new WFCMessage.User[0])[1].getUid());
+            }
+
             rs = statement.executeQuery();
             while (rs.next()) {
                 WFCMessage.User.Builder builder = WFCMessage.User.newBuilder();
@@ -403,9 +423,15 @@ public class DatabaseStore {
     }
 
     List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
-        List<WFCMessage.User> out = searchUserByNameMobile(keyword, searchType, page);
+        List<WFCMessage.User> nameOrIdMatched = searchUserByNameMobile(keyword, searchType);
+        List<WFCMessage.User> out = new ArrayList<>();
+        if(page == 0) {
+            out.addAll(nameOrIdMatched);
+        }
+
         if(searchType == SearchUserType_General) {
-            List<WFCMessage.User> general = searchUserByDisplayName(keyword, page);
+            List<WFCMessage.User> general = searchUserByDisplayName(keyword, page, nameOrIdMatched);
+            general.removeAll(nameOrIdMatched);
             out.addAll(general);
         }
         return out;
