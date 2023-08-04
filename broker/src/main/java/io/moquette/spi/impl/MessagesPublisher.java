@@ -35,14 +35,11 @@ import io.moquette.spi.ISessionsStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
-import win.liyufan.im.GsonUtil;
-import win.liyufan.im.HttpUtils;
-import win.liyufan.im.IMTopic;
+import win.liyufan.im.*;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import win.liyufan.im.Utility;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -168,6 +165,9 @@ public class MessagesPublisher {
         }
 
         WFCMessage.Message message = null;
+        String senderName = null;
+        String senderPortrait = null;
+        boolean sendNameLoaded = false;
         for (String user : receivers) {
             if (!user.equals(sender)) {
                 WFCMessage.User userInfo = m_messagesStore.getUserInfo(user);
@@ -207,10 +207,10 @@ public class MessagesPublisher {
             }
 
             Collection<Session> sessions = m_sessionsStore.sessionForUser(user);
-            String senderName = null;
-            String targetName = null;
-            boolean nameLoaded = false;
 
+            String targetName = null;
+            String targetPortrait = null;
+            boolean targetNameLoaded = false;
 
             Collection<String> targetClients = null;
             if (pullType == ProtoConstants.PullType.Pull_ChatRoom) {
@@ -386,10 +386,22 @@ public class MessagesPublisher {
 
                     boolean isHiddenDetail = m_messagesStore.getUserPushHiddenDetail(user);
 
-                    if(!nameLoaded) {
-                        senderName = getUserDisplayName(sender, conversationType == ProtoConstants.ConversationType.ConversationType_Group ? target : null);
-                        targetName = getTargetName(target, conversationType);
-                        nameLoaded = true;
+                    if(!sendNameLoaded) {
+                        List<String> list = new ArrayList<>();
+                        senderName = getUserDisplayName(sender, conversationType == ProtoConstants.ConversationType.ConversationType_Group ? target : null, list);
+                        if(!list.isEmpty()) {
+                            senderPortrait = list.get(0);
+                        }
+                        sendNameLoaded = true;
+                    }
+
+                    if(!targetNameLoaded) {
+                        List<String> list = new ArrayList<>();
+                        targetName = getTargetName(target, conversationType, user, list);
+                        if(!list.isEmpty()) {
+                            targetPortrait = list.get(0);
+                        }
+                        targetNameLoaded = true;
                     }
 
                     String name = senderName;
@@ -399,7 +411,7 @@ public class MessagesPublisher {
                             name = fd.getAlias();
                         }
                     }
-                    this.messageSender.sendPush(sender, conversationType, target, line, messageId, targetSession.getClientID(), pushContent, pushData, messageContentType, serverTime, name, targetName, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
+                    this.messageSender.sendPush(sender, conversationType, target, line, messageId, targetSession.getClientID(), pushContent, pushData, messageContentType, serverTime, name, senderPortrait, targetName, targetPortrait, targetSession.getUnReceivedMsgs(), curMentionType, isHiddenDetail, targetSession.getLanguage());
                 }
 
             }
@@ -461,10 +473,13 @@ public class MessagesPublisher {
         }
     }
 
-    String getUserDisplayName(String userId, String groupId) {
+    String getUserDisplayName(String userId, String groupId, List<String> portraitList) {
         WFCMessage.User user = m_messagesStore.getUserInfo(userId);
         String userName = null;
         if(user != null) {
+            if(portraitList != null && !StringUtil.isNullOrEmpty(user.getPortrait())) {
+                portraitList.add(user.getPortrait());
+            }
             userName = user.getDisplayName();
         }
         if (!StringUtil.isNullOrEmpty(groupId)) {
@@ -476,17 +491,28 @@ public class MessagesPublisher {
         return userName;
     }
 
-    String getTargetName(String targetId, int cnvType) {
+    String getTargetName(String targetId, int cnvType, String fromUser, List<String> portraitList) {
         if (cnvType == ProtoConstants.ConversationType.ConversationType_Private) {
-            return getUserDisplayName(targetId, null);
+            return getUserDisplayName(targetId, null, portraitList);
         } else if(cnvType == ProtoConstants.ConversationType.ConversationType_Group) {
             WFCMessage.GroupInfo group = m_messagesStore.getGroupInfo(targetId);
             if(group != null) {
+                if(!StringUtil.isNullOrEmpty(group.getPortrait())) {
+                    portraitList.add(group.getPortrait());
+                }
+
+                WFCMessage.UserSettingEntry entry = m_messagesStore.getUserSetting(fromUser, UserSettingScope.kUserSettingGroupRemark, targetId);
+                if(entry != null && !StringUtil.isNullOrEmpty(entry.getValue())) {
+                    return entry.getValue();
+                }
                 return group.getName();
             }
         } else if(cnvType == ProtoConstants.ConversationType.ConversationType_Channel) {
             WFCMessage.ChannelInfo channelInfo = m_messagesStore.getChannelInfo(targetId);
             if (channelInfo != null) {
+                if(!StringUtil.isNullOrEmpty(channelInfo.getPortrait())) {
+                    portraitList.add(channelInfo.getPortrait());
+                }
                 return channelInfo.getName();
             }
         }

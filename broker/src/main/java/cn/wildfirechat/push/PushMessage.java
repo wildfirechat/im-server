@@ -12,9 +12,11 @@ package cn.wildfirechat.push;
 public class PushMessage {
     public String sender;
     public String senderName;
+    public String senderPortrait;
     public int convType;
     public String target;
     public String targetName;
+    public String targetPortrait;
     public String userId;
     public int line;
     public int cntType;
@@ -34,12 +36,14 @@ public class PushMessage {
     public String language;
     public long messageId;
 
-    public PushMessage(String sender, int conversationType, String target, int line, int messageContentType, long serverTime, String senderName, String targetName, int unReceivedMsg, int mentionedType, boolean isHiddenDetail, String language) {
+    public PushMessage(String sender, int conversationType, String target, int line, int messageContentType, long serverTime, String senderName, String senderPortrait, String targetName, String targetPortrait, int unReceivedMsg, int mentionedType, boolean isHiddenDetail, String language) {
         this.sender = sender;
         this.convType = conversationType;
         this.target = target;
         this.senderName = senderName;
+        this.senderPortrait = senderPortrait;
         this.targetName = targetName;
+        this.targetPortrait = targetPortrait;
         this.line = line;
         this.cntType = messageContentType;
         this.serverTime = serverTime;
