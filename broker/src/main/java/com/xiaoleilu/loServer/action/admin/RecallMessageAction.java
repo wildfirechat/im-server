@@ -25,6 +25,9 @@ import io.netty.util.internal.StringUtil;
 import cn.wildfirechat.common.ErrorCode;
 import win.liyufan.im.IMTopic;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 @Route(APIPath.Msg_Recall)
 @HttpMethod("POST")
 public class RecallMessageAction extends AdminAction {
@@ -42,10 +45,9 @@ public class RecallMessageAction extends AdminAction {
 
                 WFCMessage.INT64Buf idBuf = WFCMessage.INT64Buf.newBuilder().setId(recallMessageData.getMessageUid()).build();
                 sendApiMessage(response, recallMessageData.getOperator(), IMTopic.RecallMessageTopic, idBuf.toByteArray(), result -> {
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    byteBuf.writeBytes(result);
-                    ErrorCode errorCode = ErrorCode.fromCode(byteBuf.readByte());
-                    return new Result(errorCode);
+                    ErrorCode errorCode = ErrorCode.fromCode(result[0]);
+                    byte[] data = Arrays.copyOfRange(result,1, result.length);
+                    return new Result(errorCode, new String(data, StandardCharsets.UTF_8));
                 });
                 return false;
             } else {

@@ -23,7 +23,7 @@ public class RecallMessageHandler extends IMHandler<WFCMessage.INT64Buf> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.INT64Buf int64Buf, Qos1PublishHandler.IMCallback callback) {
         boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
-        ErrorCode errorCode = m_messagesStore.recallMessage(int64Buf.getId(), fromUser, clientID, isAdmin);
+        ErrorCode errorCode = m_messagesStore.recallMessage(int64Buf.getId(), fromUser, clientID, isAdmin, ackPayload);
 
         if(errorCode != ErrorCode.ERROR_CODE_SUCCESS) {
             return errorCode;

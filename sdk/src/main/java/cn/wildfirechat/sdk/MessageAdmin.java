@@ -25,12 +25,12 @@ public class MessageAdmin {
         return AdminHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
     }
 
-    public static IMResult<Void> recallMessage(String operator, long messageUid) throws Exception {
+    public static IMResult<String> recallMessage(String operator, long messageUid) throws Exception {
         String path = APIPath.Msg_Recall;
         RecallMessageData messageData = new RecallMessageData();
         messageData.setOperator(operator);
         messageData.setMessageUid(messageUid);
-        return AdminHttpUtils.httpJsonPost(path, messageData, Void.class);
+        return AdminHttpUtils.httpJsonPost(path, messageData, String.class);
     }
 
     //仅专业版支持

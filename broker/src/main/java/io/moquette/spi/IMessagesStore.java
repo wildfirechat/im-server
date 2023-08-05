@@ -128,7 +128,7 @@ public interface IMessagesStore {
     ErrorCode canSendMessageInGroup(String member, String groupId);
     Set<String> getGroupManagers(String groupId, boolean includeOwner);
 
-    ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin);
+    ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin, ByteBuf ackPayload);
     ErrorCode recallCastMessage(long messageUid, String operatorId);
 
     void clearUserMessages(String userId);

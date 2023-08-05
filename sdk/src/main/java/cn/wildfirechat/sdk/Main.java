@@ -747,8 +747,8 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<Void> voidIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
-        if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+        IMResult<String> stringIMResult = MessageAdmin.recallMessage("user1", resultSendMessage.getResult().getMessageUid());
+        if (stringIMResult != null && stringIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("recall message success");
         } else {
             System.out.println("recall message failure");
@@ -756,7 +756,7 @@ public class Main {
         }
 
         if (commercialServer) {
-            voidIMResult = MessageAdmin.deleteMessage(resultSendMessage.getResult().getMessageUid());
+            IMResult<Void> voidIMResult = MessageAdmin.deleteMessage(resultSendMessage.getResult().getMessageUid());
             if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
                 System.out.println("delete message success");
             } else {
@@ -832,7 +832,7 @@ public class Main {
             System.exit(-1);
         }
 
-        voidIMResult = MessageAdmin.recallMultiCastMessage("user1", resultMulticastMessage.result.getMessageUid(), multicastReceivers);
+        IMResult<Void> voidIMResult = MessageAdmin.recallMultiCastMessage("user1", resultMulticastMessage.result.getMessageUid(), multicastReceivers);
         if (voidIMResult != null && voidIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("Success");
         } else {

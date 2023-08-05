@@ -35,6 +35,7 @@ import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.impl.security.AES;
 import io.moquette.spi.security.Tokenor;
 import io.moquette.spi.impl.subscriptions.Topic;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.json.simple.JSONObject;
@@ -44,6 +45,7 @@ import win.liyufan.im.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -2177,7 +2179,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin) {
+    public ErrorCode recallMessage(long messageUid, String operatorId, String clientId, boolean isAdmin, ByteBuf ackPayload) {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<Long, MessageBundle> mIMap = hzInstance.getMap(MESSAGES_MAP);
 
@@ -2303,6 +2305,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             databaseStore.deleteMessage(messageUid);
 
             mIMap.put(messageUid, messageBundle, 7, TimeUnit.DAYS);
+            ackPayload.writeBytes(recalledContent.getBytes(StandardCharsets.UTF_8));
             return ErrorCode.ERROR_CODE_SUCCESS;
         } else {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
