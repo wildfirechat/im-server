@@ -2074,6 +2074,10 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_RIGHT;
         }
 
+        if(userList.contains(groupInfo.getOwner())) {
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
+
         long updateDt = System.currentTimeMillis();
         MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
         Collection<WFCMessage.GroupMember> members = groupMembers.get(groupId);
