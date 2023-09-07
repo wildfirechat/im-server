@@ -2278,7 +2278,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             json.put("c", message.getContent().getContent());
             json.put("e", message.getContent().getExtra());
             if (message.getContent().getData() != null && message.getContent().getData().size() > 0) {
-                json.put("b", Base64.getEncoder().encode(message.getContent().getData().toByteArray()));
+                json.put("b", Base64.getEncoder().encodeToString(message.getContent().getData().toByteArray()));
             }
             if (message.getContent().getMediaType() > 0) {
                 json.put("mt", message.getContent().getMediaType());
