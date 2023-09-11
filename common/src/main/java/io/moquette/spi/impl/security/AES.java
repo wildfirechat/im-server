@@ -176,7 +176,7 @@ public class AES {
                     //2018.1.1 0:0:0 以来的小时数
                     int curhour = (int) ((System.currentTimeMillis()/1000 - 1514736000)/3600);
 
-                    if (curhour - hours > 24 && checkTime) {
+                    if (Math.abs(curhour - hours)  > 24 && checkTime) {
                         if(invalidTime != null) {
                             invalidTime[0] = true;
                         }
