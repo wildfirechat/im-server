@@ -145,6 +145,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mFriendRequestExpiration = 7 * 24 * 60 * 60 * 1000;
     private boolean mFriendRobotAutoAccept = true;
 
+    private long mPushExpiredTimes = 604800000L;
+
     private boolean mMultiPlatformNotification = false;
     private boolean mMobileDefaultSilentWhenPCOnline = true;
     private boolean mDisableStrangerChat = false;
@@ -303,6 +305,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mFriendRobotAutoAccept = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Request_Robot_Auto_Accept, "true"));
+        } catch (Exception e) {
+        }
+
+        try {
+            mPushExpiredTimes = Long.parseLong(m_Server.getConfig().getProperty(BrokerConstants.MESSAGE_Push_Expired_Days, "7")) * 86400000L;
+            if(mPushExpiredTimes == 0) mPushExpiredTimes = Long.MAX_VALUE;
         } catch (Exception e) {
         }
 
@@ -4327,6 +4335,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     @Override
     public boolean isRobotAutoAcceptFriendRequest() {
         return mFriendRobotAutoAccept;
+    }
+
+    @Override
+    public long getPushExpiredTimes() {
+        return mPushExpiredTimes;
     }
 
     @Override

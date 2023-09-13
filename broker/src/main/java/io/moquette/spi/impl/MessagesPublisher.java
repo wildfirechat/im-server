@@ -235,7 +235,7 @@ public class MessagesPublisher {
 
             for (Session targetSession : sessions) {
                 //超过7天不活跃的用户忽略
-                if(System.currentTimeMillis() - targetSession.getLastActiveTime() > 7 * 24 * 60 * 60 * 1000) {
+                if(System.currentTimeMillis() - targetSession.getLastActiveTime() > m_messagesStore.getPushExpiredTimes()) {
                     continue;
                 }
 

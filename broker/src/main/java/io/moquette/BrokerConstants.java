@@ -153,6 +153,8 @@ public final class BrokerConstants {
 
     public static final String MESSAGE_NO_Forward_Admin_Message = "message.no_forward_admin_message";
 
+    public static final String MESSAGE_Push_Expired_Days = "message.push_expired_days";
+
     public static final String MESSAGE_Forward_With_Client_Info = "message.forward_with_client_info";
     public static final String ROBOT_Callback_With_Client_Info = "robot.callback_with_client_info";
     public static final String CHANNEL_Callback_With_Client_Info = "channel.callback_with_client_info";
