@@ -79,7 +79,7 @@ public class RobotHttpUtils extends JsonUtils {
             if (object != null) {
                 jsonStr = gson.toJson(object);
             }
-            LOG.info("http request:{} content: {}", path, jsonStr);
+            LOG.info("http request:{} content: {}", url, jsonStr);
 
             if(!StringUtil.isNullOrEmpty(jsonStr)) {
                 StringEntity entity = new StringEntity(jsonStr, Charset.forName("UTF-8"));
