@@ -137,6 +137,13 @@ public class MemoryMessagesStore implements IMessagesStore {
     private ConcurrentHashMap<String, Boolean> userPushHiddenDetail = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Boolean> userConvSlientMap = new ConcurrentHashMap<>();
 
+    private LinkedHashMap<String, Long> repeatFriendRequest = new LinkedHashMap<String, Long>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Long> eldest) {
+            return System.currentTimeMillis() - eldest.getValue() > 5 * 60 * 1000;
+        }
+    };
+
     private boolean mDisableSearch = false;
     private boolean mDisableNicknameSearch = false;
     private boolean mDisableFriendRequest = false;
@@ -3120,6 +3127,18 @@ public class MemoryMessagesStore implements IMessagesStore {
             if (!(mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration)) {
                 if(System.currentTimeMillis() - existRequest.getUpdateDt() > 5 * 60 * 1000) {
                     return ErrorCode.ERROR_CODE_FRIEND_ALREADY_REQUEST;
+                } else {
+                    mWriteLock.lock();
+                    try {
+                        String repeatKey = userId + "-" + existRequest.getToUid();
+                        Long lastTime = repeatFriendRequest.get(repeatKey);
+                        if(lastTime != null && System.currentTimeMillis() - lastTime < 5 * 60 * 1000) {
+                            return ErrorCode.ERROR_CODE_FRIEND_ALREADY_REQUEST;
+                        }
+                        repeatFriendRequest.put(repeatKey, System.currentTimeMillis());
+                    } finally {
+                        mWriteLock.unlock();
+                    }
                 }
             }
         }
