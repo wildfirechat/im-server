@@ -3111,9 +3111,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        boolean alreadyExist = false;
         if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted && !isAdmin) {
-            alreadyExist = true;
             if (mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
                 if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
                     && System.currentTimeMillis() - existRequest.getUpdateDt() < mFriendRejectDuration) {
@@ -3144,7 +3142,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             .setExtra(request.getExtra())
             .setStatus(ProtoConstants.FriendRequestStatus.RequestStatus_Sent)
             .setToReadStatus(false)
-            .setUpdateDt(alreadyExist ? existRequest.getUpdateDt() : System.currentTimeMillis())
+            .setUpdateDt(System.currentTimeMillis())
             .build();
 
         databaseStore.persistOrUpdateFriendRequest(newRequest);
