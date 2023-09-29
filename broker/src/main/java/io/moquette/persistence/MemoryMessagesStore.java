@@ -3112,12 +3112,12 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (existRequest != null && existRequest.getStatus() != ProtoConstants.FriendRequestStatus.RequestStatus_Accepted && !isAdmin) {
-            if (mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration) {
-                if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
-                    && System.currentTimeMillis() - existRequest.getUpdateDt() < mFriendRejectDuration) {
-                    return ErrorCode.ERROR_CODE_FRIEND_REQUEST_BLOCKED;
-                }
-            } else {
+            if (existRequest.getStatus() == ProtoConstants.FriendRequestStatus.RequestStatus_Rejected
+                && System.currentTimeMillis() - existRequest.getUpdateDt() < mFriendRejectDuration) {
+                return ErrorCode.ERROR_CODE_FRIEND_REQUEST_BLOCKED;
+            }
+
+            if (!(mFriendRequestDuration > 0 && System.currentTimeMillis() - existRequest.getUpdateDt() > mFriendRequestDuration)) {
                 if(System.currentTimeMillis() - existRequest.getUpdateDt() > 5 * 60 * 1000) {
                     return ErrorCode.ERROR_CODE_FRIEND_ALREADY_REQUEST;
                 }
