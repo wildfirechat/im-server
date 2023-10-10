@@ -1945,6 +1945,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public Set<String> getUserGroupIds(String userId, List<Integer> memberTypes) {
+        return databaseStore.getUserGroupIds(userId, memberTypes);
+    }
+
+    @Override
     public Set<String> getCommonGroupIds(String userId1, String userId2) {
         return databaseStore.getCommonGroupIds(userId1, userId2);
     }

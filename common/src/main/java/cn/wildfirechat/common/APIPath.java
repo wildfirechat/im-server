@@ -77,6 +77,7 @@ public interface APIPath {
     String Group_Mute_Member = "/admin/group/manager/mute";
     String Group_Allow_Member = "/admin/group/manager/allow";
     String Get_User_Groups = "/admin/group/of_user";
+    String Get_User_Groups_By_Type = "/admin/group/of_user_by_type";
     String Group_Set_Member_Alias = "/admin/group/member/set_alias";
     String Group_Set_Member_Extra = "/admin/group/member/set_extra";
     String Get_Common_Groups = "/admin/group/common_group";

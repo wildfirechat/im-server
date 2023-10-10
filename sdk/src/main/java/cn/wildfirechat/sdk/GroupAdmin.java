@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
@@ -176,6 +177,12 @@ public class GroupAdmin {
         InputUserId inputUserId = new InputUserId();
         inputUserId.setUserId(user);
         return AdminHttpUtils.httpJsonPost(path, inputUserId, OutputGroupIds.class);
+    }
+
+    public static IMResult<OutputGroupIds> getUserGroupsByType(String user, List</*ProtoConstants.GroupMemberType*/Integer> groupMemberType) throws Exception {
+        String path = APIPath.Get_User_Groups_By_Type;
+        InputGetUserGroupByType input = new InputGetUserGroupByType(user, groupMemberType);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputGroupIds.class);
     }
 
     public static IMResult<OutputGroupIds> getCommonGroups(String user1, String user2) throws Exception {

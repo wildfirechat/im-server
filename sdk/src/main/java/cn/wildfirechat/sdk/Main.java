@@ -388,7 +388,6 @@ public class Main {
             System.out.println("success");
         } else {
             System.out.println("send friend request success");
-            System.exit(-1);
         }
 
         IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true, "{\"from\":1}");
@@ -654,6 +653,14 @@ public class Main {
             }
         } else {
             System.out.println("get user groups failure");
+            System.exit(-1);
+        }
+
+        groupIdsIMResult = GroupAdmin.getUserGroupsByType("user2", Arrays.asList(ProtoConstants.GroupMemberType.GroupMemberType_Manager, ProtoConstants.GroupMemberType.GroupMemberType_Owner));
+        if (groupIdsIMResult != null && groupIdsIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get user groups by type success");
+        } else {
+            System.out.println("get user groups by type failure");
             System.exit(-1);
         }
 
