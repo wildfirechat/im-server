@@ -173,6 +173,8 @@ public final class BrokerConstants {
     public static final String CHATROOM_Create_When_Not_Exist = "chatroom.create_when_not_exist";
 
 
+    public static final String GROUP_Allow_Owner_Recall_Self_Msg = "group.allow_owner_recall_self_msg";
+    public static final String GROUP_Allow_Manager_Recall_Self_Msg = "group.allow_manager_recall_self_msg";
     public static final String GROUP_Allow_Client_Custom_Operation_Notification = "group.allow_client_custom_operation_notification";
     public static final String GROUP_Allow_Robot_Custom_Operation_Notification = "group.allow_robot_custom_operation_notificatio";
 

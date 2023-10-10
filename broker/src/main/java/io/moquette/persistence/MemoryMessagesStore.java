@@ -180,6 +180,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private String mChannelInfoUpdateCallback;
     private String mChatroomInfoUpdateCallback;
     private String mChatroomMemberUpdateCallback;
+    private boolean mGroupAllowOwnerRecallSelfMsg = false;
+    private boolean mGroupAllowManagerRecallSelfMsg = false;
     private boolean mGroupAllowClientCustomOperationNotification;
     private boolean mGroupAllowRobotCustomOperationNotification;
     private int mGroupVisibleQuitKickoffNotification;
@@ -464,6 +466,17 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         try {
             mChatroomMemberUpdateCallback = server.getConfig().getProperty(CHATROOM_MEMBER_UPDATE_CALLBACK);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            mGroupAllowOwnerRecallSelfMsg = Boolean.parseBoolean(server.getConfig().getProperty(GROUP_Allow_Owner_Recall_Self_Msg, "true"));
+        } catch (Exception e) {
+
+        }
+        try {
+            mGroupAllowManagerRecallSelfMsg = Boolean.parseBoolean(server.getConfig().getProperty(GROUP_Allow_Manager_Recall_Self_Msg, "false"));
         } catch (Exception e) {
 
         }
@@ -2232,7 +2245,28 @@ public class MemoryMessagesStore implements IMessagesStore {
                     return ErrorCode.ERROR_CODE_RECALL_TIME_EXPIRED;
                 }
                 if (operatorId.equals(groupInfo.getOwner())) {
-                    canRecall = true;
+                    if(operatorId.equals(message.getFromUser())) {
+                        if(mGroupAllowOwnerRecallSelfMsg) {
+                            canRecall = true;
+                        }
+                    } else {
+                        canRecall = true;
+                    }
+                } else {
+                    if(message.getFromUser().equals(operatorId) && mGroupAllowManagerRecallSelfMsg) {
+                        MultiMap<String, WFCMessage.GroupMember> groupMembers = hzInstance.getMultiMap(GROUP_MEMBERS);
+                        Collection<WFCMessage.GroupMember> members = groupMembers.get(message.getConversation().getTarget());
+                        if (members == null || members.size() == 0) {
+                            members = loadGroupMemberFromDB(hzInstance, message.getConversation().getTarget());
+                        }
+                        for (WFCMessage.GroupMember member : members) {
+                            if (member.getMemberId().equals(operatorId)) {
+                                if (member.getType() == GroupMemberType_Manager || member.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Owner) {
+                                    canRecall = true;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if(!canRecall && !message.getFromUser().equals(operatorId)) {
