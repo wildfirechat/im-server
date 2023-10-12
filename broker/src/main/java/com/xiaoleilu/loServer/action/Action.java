@@ -47,6 +47,8 @@ abstract public class Action {
     protected static RateLimiter robotLimiter = null;
     protected static RateLimiter channelLimiter = null;
 
+    protected static boolean closeApiVersion = false;
+
     public static void init(IConfig config) {
         int adminRate = 10000;
         int robotRate = 1000;
@@ -70,6 +72,11 @@ abstract public class Action {
         adminLimiter = new RateLimiter(10, adminRate);
         robotLimiter = new RateLimiter(10, robotRate);
         channelLimiter = new RateLimiter(10, channelRate);
+
+        try {
+            closeApiVersion = Boolean.parseBoolean(config.getProperty(HTTP_CLOSE_API_VERSION, "false"));
+        } catch (Exception e) {
+        }
     }
 
     protected class Result {

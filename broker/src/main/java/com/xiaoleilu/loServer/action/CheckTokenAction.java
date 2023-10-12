@@ -31,6 +31,11 @@ public class CheckTokenAction extends Action {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
+            if(closeApiVersion) {
+                response.sendError(HttpResponseStatus.NOT_FOUND, "404 Not found!");
+                return true;
+            }
+
             response.setStatus(HttpResponseStatus.OK);
             String userId = request.getParam("userId");
             String clientId = request.getParam("clientId");

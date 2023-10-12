@@ -203,6 +203,9 @@ public final class BrokerConstants {
     public static final String HTTP_CHANNEL_RATE_LIMIT = "http.channel.rate_limit";
     public static final String CLIENT_REQUEST_RATE_LIMIT = "client.request_rate_limit";
 
+    public static final String HTTP_CLOSE_API_VERSION = "http.close_api_version";
+
+
     private BrokerConstants() {
     }
 }
