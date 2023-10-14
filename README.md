@@ -54,6 +54,9 @@
 ## 野火开发文档
 [在线文档](https://docs.wildfirechat.cn/)
 
+## 野火IM论坛
+[野火IM论坛](https://bbs.wildfirechat.cn)
+
 ## 野火性能测试报告及测试方法
 [Github](https://github.com/wildfirechat/Performance_Test), [码云](https://gitee.com/wfchat/Performance_Test)。
 
@@ -70,7 +73,7 @@ PC客户端点[这里](https://github.com/wildfirechat/vue-pc-chat/releases)下�
 
 ![野火IM](http://static.wildfirechat.net/wx.jpg)
 
-## 快速使用
+## 快速开始
 可以按照[快速开始](https://docs.wildfirechat.cn/quick_start/)来部署应用服务和IM服务，然后打包移动端，就可以完成聊天和通话功能。
 
 之后再部署开放平台服务、频道（公众号）服务、机器人服务、推送服务、Turn服务（音视频服务）来实现完整的应用功能，详情可以详细阅读文档。
@@ -127,6 +130,15 @@ mvn clean package
 8. 从0.78 版本起把MySQL数据库中关键字都改为大小写敏感，另外生成id的方法也做了改变，只生成小写的id，避免出现id重复的问题，建议所有客户都升级
 9. 从0.79 版本起把log4j升级到log4j2，因为log4j已经不再维护而且还有已知的漏洞，建议所有客户都升级，升级时注意更新log4j2的配置文件
 10. 0.97版本更改了启动脚本```wildfirechat.sh```，如果是升级服务，请注意更新启动脚本。
+
+## 维护说明
+野火设计理念当中，IM服务和客户端协议栈构成个管道工具，数据在人和人或者人和服务或者服务和服务之间传递，可以通过Server API和自定义消息来对接和开发业务。业务系统把IM系统当作一个工具来使用，是不需要把任何业务逻辑写在IM服务中的。
+
+如果修改了IM服务可能会引起跟客户端协议栈的不兼容，以后也没有可能从社区版IM服务迁移到专业版IM服务，还有一旦修改就跟我们代码不一样了，如果出了问题我们就无法分析和解决。所以 ***我们强烈不推荐在IM服务修改代码，如果修改过就不再提供任何技术支持和服务了***。除了IM服务以外的所有代码可以任意修改。
+
+现有接口足够对接和二开任何业务了，如果发现无法实现你们的业务需求，可以在[论坛](https://bbs.wildfirechat.cn)来咨询，我们会分析如何实现，如果需要添加新接口，我们会及时免费添加。请切记：***不要修改IM服务的代码!*** ***不要修改IM服务的代码!*** ***不要修改IM服务的代码!***
+
+详细维护说明请参考 [野火维护说明](https://docs.wildfirechat.cn/base_knowledge/maintain.html)。
 
 ## 应用截图
 登录界面
