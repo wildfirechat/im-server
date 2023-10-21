@@ -37,19 +37,25 @@
 		</dependency>
 
 		<dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+		<dependency>
 			<groupId>cn.wildfirechat</groupId>
 			<artifactId>sdk</artifactId>
-			<version>0.20</version>
+			<version>1.1.9</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/lib/sdk-0.20.jar</systemPath>
+			<systemPath>${project.basedir}/src/lib/sdk-1.1.9.jar</systemPath>
 		</dependency>
 
 		<dependency>
 			<groupId>cn.wildfirechat</groupId>
 			<artifactId>common</artifactId>
-			<version>0.20</version>
+			<version>1.1.9</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/lib/common-0.20.jar</systemPath>
+			<systemPath>${project.basedir}/src/lib/common-1.1.9.jar</systemPath>
 		</dependency>
 	</dependencies>
 
