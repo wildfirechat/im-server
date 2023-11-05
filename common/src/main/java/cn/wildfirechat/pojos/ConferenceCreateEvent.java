@@ -10,4 +10,9 @@ public class ConferenceCreateEvent {
     public int bitrate;
     public boolean advance;
     public boolean recording;
+    public long timestamp;
+
+    public ConferenceCreateEvent() {
+        timestamp = System.currentTimeMillis();
+    }
 }

@@ -300,18 +300,12 @@ public class Main {
             System.exit(-1);
         }
 
-        int limit = 5;
-        for (int i = 0; i < 100; i++) {
-            IMResult<OutputGetUserList> getUserListIMResult = UserAdmin.getAllUsers(limit, i*limit);
-            if (getUserListIMResult != null && getUserListIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-                System.out.println("getUserListIMResult success");
-                if(getUserListIMResult.getResult().userInfoList.size() < limit) {
-                    break;
-                }
-            } else {
-                System.out.println("getUserListIMResult failure");
-                System.exit(-1);
-            }
+        IMResult<OutputGetUserList> getUserListIMResult = UserAdmin.getAllUsers(100, 0);
+        if (getUserListIMResult != null && getUserListIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("getUserListIMResult success");
+        } else {
+            System.out.println("getUserListIMResult failure");
+            System.exit(-1);
         }
 
         if (commercialServer) {

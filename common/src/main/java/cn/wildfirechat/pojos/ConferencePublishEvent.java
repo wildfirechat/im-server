@@ -5,4 +5,9 @@ public class ConferencePublishEvent {
     public boolean video;
     public String roomId;
     public boolean screenSharing;
+    public long timestamp;
+
+    public ConferencePublishEvent() {
+        timestamp = System.currentTimeMillis();
+    }
 }

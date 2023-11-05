@@ -6,4 +6,9 @@ public class ConferenceLeaveEvent {
     public boolean rejoin;
     public boolean kicked;
     public boolean screenSharing;
+    public long timestamp;
+
+    public ConferenceLeaveEvent() {
+        timestamp = System.currentTimeMillis();
+    }
 }
