@@ -2995,7 +2995,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (mDisableStrangerChat) {
             //在禁止私聊时，是否是允许私聊的用户id
-            if(mAllowStrangerChatSet.contains(targetUser)) {
+            if(mAllowStrangerChatSet.contains(targetUser) || mAllowStrangerChatSet.contains(fromUser)) {
                 return ErrorCode.ERROR_CODE_SUCCESS;
             }
 
