@@ -146,6 +146,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     private boolean mDisableSearch = false;
     private boolean mDisableNicknameSearch = false;
+    private boolean mDisableUserIdSearch = false;
     private boolean mDisableFriendRequest = false;
     private long mFriendRequestDuration = 7 * 24 * 60 * 60 * 1000;
     private long mFriendRejectDuration = 30 * 24 * 60 * 60 * 1000;
@@ -279,6 +280,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             Utility.printExecption(LOG, e);
             printMissConfigLog(FRIEND_Disable_NickName_Search, mDisableNicknameSearch + "");
         }
+        try {
+            mDisableUserIdSearch = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_UserId_Search, "true"));
+        } catch (Exception e) {
+
+        }
+
         try {
             mDisableFriendRequest = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.FRIEND_Disable_Friend_Request));
         } catch (Exception e) {
@@ -2838,6 +2845,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         if (mDisableNicknameSearch && searchType == ProtoConstants.SearchUserType.SearchUserType_General) {
+            searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_UserId;
+        }
+
+        if(mDisableUserIdSearch && (searchType == ProtoConstants.SearchUserType.SearchUserType_General || searchType == ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_UserId)) {
             searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile;
         }
 

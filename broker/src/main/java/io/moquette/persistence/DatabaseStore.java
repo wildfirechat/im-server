@@ -12,7 +12,6 @@ import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
@@ -163,7 +162,7 @@ public class DatabaseStore {
         return null;
     }
 
-    List<WFCMessage.User> searchUserByNameMobile(String keyword, int searchType) {
+    List<WFCMessage.User> searchUserByNameMobileUserId(String keyword, int searchType) {
         ArrayList<WFCMessage.User> out = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -182,26 +181,34 @@ public class DatabaseStore {
                 ", `_extra`" +
                 ", `_dt`, `_type` from t_user";
 
+            int sqlParaCount = 1;
             if(searchType == SearchUserType_Name) {
                 sql += " where `_name` = ? ";
             } else if(searchType == SearchUserType_Mobile) {
                 sql += " where `_mobile` = ? ";
-            } else {
+            } else if(searchType == SearchUserType_UserId) {
+                sql += " where `_uid` = ? ";
+            } else if(searchType == SearchUserType_Name_Mobile) {
+                sqlParaCount = 2;
                 sql += " where (`_name` = ? or `_mobile` = ?) ";
+            } else {
+                sqlParaCount = 3;
+                sql += " where (`_name` = ? or `_mobile` = ? or `_uid` = ?) ";
             }
 
             sql += " and `_type` <> 2 and `_deleted` = 0"; //can search normal user(0) and robot(1) and admin(100), can not search things
 
-            if(searchType == SearchUserType_Name || searchType == SearchUserType_Mobile) {
+            if(searchType == SearchUserType_Name || searchType == SearchUserType_Mobile || searchType == SearchUserType_UserId) {
                 sql += " limit 1";
-            } else {
+            } else if(searchType == SearchUserType_Name_Mobile) {
                 sql += " limit 2";
+            } else {
+                sql += " limit 3";
             }
 
             statement = connection.prepareStatement(sql);
-            statement.setString(1, keyword);
-            if(searchType != SearchUserType_Name && searchType != SearchUserType_Mobile) {
-                statement.setString(2, keyword);
+            for (int i = 0; i < sqlParaCount; i++) {
+                statement.setString(i+1, keyword);
             }
 
             rs = statement.executeQuery();
@@ -284,7 +291,7 @@ public class DatabaseStore {
                     if (searchType == SearchUserType_Name) {
                         filter.add(user);
                         continue;
-                    } else if(searchType != SearchUserType_Mobile) {
+                    } else if(searchType == SearchUserType_Name_Mobile) {
                         if(keyword.equals(user.getName())) {
                             if(!keyword.equals(user.getMobile())) {
                                 filter.add(user);
@@ -294,15 +301,96 @@ public class DatabaseStore {
                                 continue;
                             }
                         }
+                    } else if(searchType == SearchUserType_Name_Mobile_UserId) {
+                        if(keyword.equals(user.getName())) {
+                            if(keyword.equals(user.getMobile()) && keyword.equals(user.getUid())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0 && (value & ProtoConstants.DisableSearchMask.DisableSearchUserIdMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getMobile())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getUid())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchUserIdMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else {
+                                filter.add(user);
+                                continue;
+                            }
+                        }
                     }
                 }
 
-                if ((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+
+                if((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
                     if (searchType == SearchUserType_Mobile) {
                         filter.add(user);
-                    } else if(searchType != SearchUserType_Name) {
-                        if(keyword.equals(user.getMobile()) && !keyword.equals(user.getName())) {
-                            filter.add(user);
+                        continue;
+                    } else if(searchType == SearchUserType_Name_Mobile) {
+                        if(keyword.equals(user.getMobile())) {
+                            if(!keyword.equals(user.getName())) {
+                                filter.add(user);
+                                continue;
+                            } else if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0) {
+                                filter.add(user);
+                                continue;
+                            }
+                        }
+                    } else if(searchType == SearchUserType_Name_Mobile_UserId) {
+                        if(keyword.equals(user.getMobile())) {
+                            if(keyword.equals(user.getName()) && keyword.equals(user.getUid())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0 && (value & ProtoConstants.DisableSearchMask.DisableSearchUserIdMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getName())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getUid())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchUserIdMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else {
+                                filter.add(user);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                if((value & ProtoConstants.DisableSearchMask.DisableSearchUserIdMask) > 0) {
+                    if (searchType == SearchUserType_UserId) {
+                        filter.add(user);
+                        continue;
+                    } else if(searchType == SearchUserType_Name_Mobile_UserId) {
+                        if(keyword.equals(user.getUid())) {
+                            if(keyword.equals(user.getName()) && keyword.equals(user.getMobile())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0 && (value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getName())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchNameMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else if(keyword.equals(user.getMobile())) {
+                                if((value & ProtoConstants.DisableSearchMask.DisableSearchMobileMask) > 0) {
+                                    filter.add(user);
+                                    continue;
+                                }
+                            } else {
+                                filter.add(user);
+                                continue;
+                            }
                         }
                     }
                 }
@@ -423,7 +511,7 @@ public class DatabaseStore {
     }
 
     List<WFCMessage.User> searchUserFromDB(String keyword, int searchType, int page) {
-        List<WFCMessage.User> nameOrIdMatched = searchUserByNameMobile(keyword, searchType);
+        List<WFCMessage.User> nameOrIdMatched = searchUserByNameMobileUserId(keyword, searchType);
         List<WFCMessage.User> out = new ArrayList<>();
         if(page == 0) {
             out.addAll(nameOrIdMatched);
