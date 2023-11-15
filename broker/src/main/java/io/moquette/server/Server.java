@@ -357,7 +357,11 @@ public class Server {
     private String getServerIp(IConfig config) {
         String serverIp = config.getProperty(BrokerConstants.SERVER_IP_PROPERTY_NAME);
         if (serverIp == null || serverIp.equals("0.0.0.0")) {
-            serverIp = Utility.getLocalAddress().getHostAddress();
+            if(Utility.getLocalAddress() != null) {
+                serverIp = Utility.getLocalAddress().getHostAddress();
+            } else {
+                serverIp = "0.0.0.0";
+            }
         }
         return serverIp;
     }
