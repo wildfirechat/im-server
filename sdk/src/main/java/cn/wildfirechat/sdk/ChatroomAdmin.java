@@ -37,6 +37,12 @@ public class ChatroomAdmin {
         return AdminHttpUtils.httpJsonPost(path, input, OutputStringList.class);
     }
 
+    public static IMResult<OutputUserChatroom> getUserChatroom(String userId) throws Exception {
+        String path = APIPath.Chatroom_GetUserChatroom;
+        InputUserId input = new InputUserId(userId);
+        return AdminHttpUtils.httpJsonPost(path, input, OutputUserChatroom.class);
+    }
+
     //仅专业版支持
     //status：0，正常；1，禁言；2，禁止加入
     public static IMResult<Void> setChatroomBlacklist(String chatroomId, String userId, int status) throws Exception {

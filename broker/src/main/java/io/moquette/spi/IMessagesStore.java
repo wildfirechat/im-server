@@ -17,6 +17,7 @@
 package io.moquette.spi;
 
 import cn.wildfirechat.pojos.InputOutputUserInfo;
+import cn.wildfirechat.pojos.OutputUserChatroom;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -173,6 +174,7 @@ public interface IMessagesStore {
 
     long insertChatroomMessages(String target, int line, long messageId);
     Collection<UserClientEntry> getChatroomMembers(String chatroomId);
+    OutputUserChatroom getUserChatroom(String userId);
     WFCMessage.PullMessageResult fetchChatroomMessage(String fromUser, String chatroomId, String exceptClientId, long fromMessageId);
 
     ErrorCode verifyToken(String userId, String token, List<String> serverIPs, List<Integer> ports);

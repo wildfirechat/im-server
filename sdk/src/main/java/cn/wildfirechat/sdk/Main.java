@@ -974,6 +974,14 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<OutputUserChatroom>  userChatroomIMResult = ChatroomAdmin.getUserChatroom("hygqmws2k");
+        if(userChatroomIMResult != null && (userChatroomIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS || userChatroomIMResult.getErrorCode() == ErrorCode.ERROR_CODE_NOT_EXIST)) {
+            System.out.println("get user chatroom success");
+        } else {
+            System.out.println("get user chatroom failure");
+            System.exit(-1);
+        }
+
         //下面仅专业版支持
         if(commercialServer) {
             //设置用户聊天室黑名单。0正常；1禁言；2禁止加入。

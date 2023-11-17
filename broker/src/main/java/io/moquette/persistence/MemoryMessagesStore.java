@@ -933,7 +933,29 @@ public class MemoryMessagesStore implements IMessagesStore {
         Collection<UserClientEntry> members = chatroomMembers.get(chatroomId);
         return members;
     }
-    //Todo chatroom
+
+    @Override
+    public OutputUserChatroom getUserChatroom(String userId) {
+        String chatroomId = (String) m_Server.getHazelcastInstance().getMap(USER_CHATROOM).get(userId);
+        if(chatroomId != null) {
+            MultiMap<String, UserClientEntry> chatroomMembers = m_Server.getHazelcastInstance().getMultiMap(CHATROOM_MEMBER_IDS);
+            for (UserClientEntry userClientEntry : chatroomMembers.get(chatroomId)) {
+                if(userClientEntry.userId.equals(userId)) {
+                    OutputUserChatroom outputUserChatroom = new OutputUserChatroom();
+                    outputUserChatroom.userId = userId;
+                    outputUserChatroom.chatroomId = chatroomId;
+                    outputUserChatroom.clientId = userClientEntry.clientId;
+                    MemorySessionStore.Session session = m_Server.getStore().sessionsStore().getSession(userClientEntry.clientId);
+                    if(session != null) {
+                        outputUserChatroom.platform = session.getPlatform();
+                    }
+                    return outputUserChatroom;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public WFCMessage.PullMessageResult fetchChatroomMessage(String fromUser, String chatroomId, String exceptClientId, long fromMessageId) {
         WFCMessage.PullMessageResult.Builder builder = WFCMessage.PullMessageResult.newBuilder();

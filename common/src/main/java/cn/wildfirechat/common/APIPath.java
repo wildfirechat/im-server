@@ -5,6 +5,7 @@ public interface APIPath {
     String Chatroom_Destroy = "/admin/chatroom/del";
     String Chatroom_Info = "/admin/chatroom/info";
     String Chatroom_GetMembers = "/admin/chatroom/members";
+    String Chatroom_GetUserChatroom = "/admin/chatroom/user_chatroom";
     String Chatroom_SetBlacklist = "/admin/chatroom/set_black_status";
     String Chatroom_GetBlacklist = "/admin/chatroom/get_black_status";
     String Chatroom_SetManager = "/admin/chatroom/set_manager";
