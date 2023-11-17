@@ -166,6 +166,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private long mChatroomParticipantIdleTime = 900000;
     private boolean mChatroomRejoinWhenActive = true;
     private boolean mChatroomCreateWhenNotExist = true;
+    private boolean mChatroomKickoffOtherPlatform = true;
 
     private List<Integer> mForbiddenClientSendTypes = new ArrayList<>();
     private List<Integer> mBlackListExceptionTypes = new ArrayList<>();
@@ -345,6 +346,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             Utility.printExecption(LOG, e);
             printMissConfigLog(CHATROOM_Create_When_Not_Exist, mChatroomCreateWhenNotExist + "");
         }
+
+        try {
+            mChatroomKickoffOtherPlatform = Boolean.parseBoolean(m_Server.getConfig().getProperty(BrokerConstants.CHATROOM_Kickoff_Other_Platform, "true"));
+        } catch (Exception e) {
+        }
+
 
         try {
             mChatroomParticipantIdleTime = Long.parseLong(m_Server.getConfig().getProperty(CHATROOM_Participant_Idle_Time, "900000"));
@@ -3563,9 +3570,25 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
+        MultiMap<String, UserClientEntry> chatroomMembers = m_Server.getHazelcastInstance().getMultiMap(CHATROOM_MEMBER_IDS);
+        String alreadyInChatroom = (String) m_Server.getHazelcastInstance().getMap(USER_CHATROOM).get(userId);
+        if(alreadyInChatroom != null) {
+            for (UserClientEntry userClientEntry : chatroomMembers.get(alreadyInChatroom)) {
+                if(userClientEntry.userId.equals(userId)) {
+                    if(!chatroomId.equals(alreadyInChatroom) || !userClientEntry.clientId.equals(clientId)) {
+                        if(mChatroomKickoffOtherPlatform) {
+                            handleQuitChatroom(userId, userClientEntry.clientId, chatroomId);
+                        } else {
+                            return ErrorCode.ERROR_CODE_OTHER_CLIENT_ALREADY_IN_CHATROOM;
+                        }
+                    }
+                }
+            }
+        }
+
         m_Server.getStore().sessionsStore().getSession(clientId).refreshLastChatroomActiveTime();
         m_Server.getHazelcastInstance().getMap(USER_CHATROOM).put(userId, chatroomId);
-        m_Server.getHazelcastInstance().getMultiMap(CHATROOM_MEMBER_IDS).put(chatroomId, new UserClientEntry(userId, clientId));
+        chatroomMembers.put(chatroomId, new UserClientEntry(userId, clientId));
 
         mWriteLock.lock();
         chatroomMessages.put(userId, new TreeMap<>());

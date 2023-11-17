@@ -172,7 +172,7 @@ public final class BrokerConstants {
     public static final String CHATROOM_Participant_Idle_Time = "chatroom.participant_idle_time";
     public static final String CHATROOM_Rejoin_When_Active = "chatroom.rejoin_when_active";
     public static final String CHATROOM_Create_When_Not_Exist = "chatroom.create_when_not_exist";
-
+    public static final String CHATROOM_Kickoff_Other_Platform = "chatroom.kickoff_other_platform";
 
     public static final String GROUP_Allow_Owner_Recall_Self_Msg = "group.allow_owner_recall_self_msg";
     public static final String GROUP_Allow_Manager_Recall_Self_Msg = "group.allow_manager_recall_self_msg";

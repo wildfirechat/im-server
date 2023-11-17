@@ -66,6 +66,8 @@ public enum ErrorCode {
 
     ERROR_CODE_FUNCTION_DISABLED(220, "function disabled"),
 
+    ERROR_CODE_OTHER_CLIENT_ALREADY_IN_CHATROOM(225, "other client already in chatroom"),
+
     ERROR_CODE_CHANNEL_NO_EXIST(236, "channel no exist"),
     ERROR_CODE_CHANNEL_NO_SECRET(237, "channel no secret"),
     ERROR_CODE_USER_NOT_PREPARED(238, "user not prepared"),
