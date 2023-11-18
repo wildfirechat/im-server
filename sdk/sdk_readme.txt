@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>cn.wildfirechat</groupId>
 			<artifactId>sdk</artifactId>
-			<version>1.1.9</version>
+			<version>1.2.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/lib/sdk-1.1.9.jar</systemPath>
 		</dependency>
@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>cn.wildfirechat</groupId>
 			<artifactId>common</artifactId>
-			<version>1.1.9</version>
+			<version>1.2.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/lib/common-1.1.9.jar</systemPath>
 		</dependency>
