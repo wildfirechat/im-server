@@ -4368,6 +4368,35 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public int getOnlineUserCount() {
+        return m_Server.getProcessor().getConnectionDescriptors().getActiveConnectionsNo();
+    }
+
+    @Override
+    public GetOnlineUserResult getOnlineUsers(int offset, int count) {
+        List<String> onlineUserIds = new ArrayList<>(m_Server.getProcessor().getConnectionDescriptors().getConnectedClientIds());
+        GetOnlineUserResult result = new GetOnlineUserResult();
+        result.userClients = new ArrayList<>();
+        result.totalCount = onlineUserIds.size();
+        result.offset = offset;
+
+        if(onlineUserIds.size() > offset) {
+            List<String> clientIds = onlineUserIds.subList(offset, Math.min(offset+count, onlineUserIds.size()));
+            for (String clientId : clientIds) {
+                MemorySessionStore.Session session = m_Server.getStore().sessionsStore().getSession(clientId);
+                if(session != null) {
+                    GetOnlineUserResult.UserClient userClient = new GetOnlineUserResult.UserClient();
+                    userClient.userId = session.getUsername();
+                    userClient.clientId = session.getClientID();
+                    userClient.platform = session.getPlatform();
+                    result.userClients.add(userClient);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Set<String> handleSensitiveWord(String message) {
         updateSensitiveWord();
         return mSensitiveFilter.getSensitiveWords(message, SensitiveFilter.MatchType.MAX_MATCH);

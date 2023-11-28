@@ -616,6 +616,11 @@ public class MemorySessionStore implements ISessionsStore {
     }
 
     @Override
+    public boolean isClientOnline(String clientId) {
+        return mServer.getProcessor().getConnectionDescriptors().isConnected(clientId);
+    }
+
+    @Override
     public StoredMessage inFlightAck(String clientID, int messageID) {
         return getSession(clientID).outboundFlightMessages.remove(messageID);
     }

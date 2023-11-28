@@ -74,6 +74,8 @@ public interface ISessionsStore {
      */
     Collection<ClientSession> getAllSessions();
 
+    boolean isClientOnline(String clientId);
+
     StoredMessage inFlightAck(String clientID, int messageID);
 
     /**

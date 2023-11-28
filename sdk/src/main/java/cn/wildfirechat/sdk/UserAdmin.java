@@ -151,4 +151,9 @@ public class UserAdmin {
         input.setAuthCode(authCode);
         return AdminHttpUtils.httpJsonPost(path, input, OutputApplicationUserInfo.class);
     }
+
+    public static IMResult<GetUserSessionResult> getUserSession(String userId) throws Exception {
+        InputUserId inputUserId = new InputUserId(userId);
+        return AdminHttpUtils.httpJsonPost(APIPath.User_Session_List, inputUserId, GetUserSessionResult.class);
+    }
 }

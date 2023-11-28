@@ -324,6 +324,14 @@ public class Main {
                 System.out.println("get user online failure");
                 System.exit(-1);
             }
+
+            IMResult<GetUserSessionResult> getUserSessionResultIMResult = UserAdmin.getUserSession("hygqmws2k");
+            if (getUserSessionResultIMResult != null && getUserSessionResultIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("get user session success");
+            } else {
+                System.out.println("get user session failure");
+                System.exit(-1);
+            }
         }
     }
 

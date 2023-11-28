@@ -731,6 +731,10 @@ public class ProtocolProcessor {
         channel.flush();
     }
 
+    public ConnectionDescriptorStore getConnectionDescriptors() {
+        return connectionDescriptors;
+    }
+
     public void addInterceptHandler(InterceptHandler interceptHandler) {
         this.m_interceptor.addInterceptHandler(interceptHandler);
     }

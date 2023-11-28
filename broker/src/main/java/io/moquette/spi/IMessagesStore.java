@@ -16,13 +16,10 @@
 
 package io.moquette.spi;
 
-import cn.wildfirechat.pojos.InputOutputUserInfo;
-import cn.wildfirechat.pojos.OutputUserChatroom;
-import cn.wildfirechat.pojos.SystemSettingPojo;
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
-import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import io.moquette.persistence.DatabaseStore;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.persistence.UserClientEntry;
@@ -32,10 +29,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import cn.wildfirechat.common.ErrorCode;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Defines the SPI to be implemented by a StorageService that handle persistence of messages
@@ -227,6 +221,9 @@ public interface IMessagesStore {
     boolean canSendMessageInChannel(String user, String channelId);
     boolean checkUserInChannel(String user, String channelId);
     Collection<String> getChannelSubscriber(String channelId);
+
+    int getOnlineUserCount();
+    GetOnlineUserResult getOnlineUsers(int offset, int count);
 
     Set<String> handleSensitiveWord(String message);
     boolean addSensitiveWords(List<String> words);
