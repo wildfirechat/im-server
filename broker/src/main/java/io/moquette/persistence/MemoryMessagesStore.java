@@ -2877,8 +2877,16 @@ public class MemoryMessagesStore implements IMessagesStore {
             searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_UserId;
         }
 
-        if(mDisableUserIdSearch && (searchType == ProtoConstants.SearchUserType.SearchUserType_General || searchType == ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_UserId)) {
+        if(mDisableUserIdSearch && searchType == ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_UserId) {
             searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile;
+        }
+
+        if(mDisableUserIdSearch && searchType == ProtoConstants.SearchUserType.SearchUserType_General) {
+            searchType = ProtoConstants.SearchUserType.SearchUserType_Name_Mobile_DisplayName;
+        }
+
+        if(mDisableUserIdSearch && searchType == ProtoConstants.SearchUserType.SearchUserType_UserId) {
+            return new ArrayList<>();
         }
 
         return databaseStore.searchUserFromDB(keyword, searchType, page);

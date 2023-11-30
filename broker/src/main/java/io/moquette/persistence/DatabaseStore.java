@@ -188,7 +188,7 @@ public class DatabaseStore {
                 sql += " where `_mobile` = ? ";
             } else if(searchType == SearchUserType_UserId) {
                 sql += " where `_uid` = ? ";
-            } else if(searchType == SearchUserType_Name_Mobile) {
+            } else if(searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name_Mobile_DisplayName) {
                 sqlParaCount = 2;
                 sql += " where (`_name` = ? or `_mobile` = ?) ";
             } else {
@@ -200,7 +200,7 @@ public class DatabaseStore {
 
             if(searchType == SearchUserType_Name || searchType == SearchUserType_Mobile || searchType == SearchUserType_UserId) {
                 sql += " limit 1";
-            } else if(searchType == SearchUserType_Name_Mobile) {
+            } else if(searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name_Mobile_DisplayName) {
                 sql += " limit 2";
             } else {
                 sql += " limit 3";
@@ -291,7 +291,7 @@ public class DatabaseStore {
                     if (searchType == SearchUserType_Name) {
                         filter.add(user);
                         continue;
-                    } else if(searchType == SearchUserType_Name_Mobile) {
+                    } else if(searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name_Mobile_DisplayName) {
                         if(keyword.equals(user.getName())) {
                             if(!keyword.equals(user.getMobile())) {
                                 filter.add(user);
@@ -331,7 +331,7 @@ public class DatabaseStore {
                     if (searchType == SearchUserType_Mobile) {
                         filter.add(user);
                         continue;
-                    } else if(searchType == SearchUserType_Name_Mobile) {
+                    } else if(searchType == SearchUserType_Name_Mobile || searchType == SearchUserType_Name_Mobile_DisplayName) {
                         if(keyword.equals(user.getMobile())) {
                             if(!keyword.equals(user.getName())) {
                                 filter.add(user);
@@ -517,7 +517,7 @@ public class DatabaseStore {
             out.addAll(nameOrIdMatched);
         }
 
-        if(searchType == SearchUserType_General) {
+        if(searchType == SearchUserType_General || searchType == SearchUserType_Name_Mobile_DisplayName) {
             List<WFCMessage.User> general = searchUserByDisplayName(keyword, page, nameOrIdMatched);
             general.removeAll(nameOrIdMatched);
             out.addAll(general);

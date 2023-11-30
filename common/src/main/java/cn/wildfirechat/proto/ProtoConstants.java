@@ -220,6 +220,7 @@ public class ProtoConstants {
         int SearchUserType_Mobile = 3;
         int SearchUserType_UserId = 4;
         int SearchUserType_Name_Mobile_UserId = 5;
+        int SearchUserType_Name_Mobile_DisplayName = 100;
     }
 
     public interface DisableSearchMask {
