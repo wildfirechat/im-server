@@ -10,7 +10,7 @@ CREATE TABLE `t_messages_0` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -28,7 +28,7 @@ CREATE TABLE `t_messages_1` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -46,7 +46,7 @@ CREATE TABLE `t_messages_2` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -63,7 +63,7 @@ CREATE TABLE `t_messages_3` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -81,7 +81,7 @@ CREATE TABLE `t_messages_4` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -99,7 +99,7 @@ CREATE TABLE `t_messages_5` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -116,7 +116,7 @@ CREATE TABLE `t_messages_6` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -134,7 +134,7 @@ CREATE TABLE `t_messages_7` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -152,7 +152,7 @@ CREATE TABLE `t_messages_8` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -169,7 +169,7 @@ CREATE TABLE `t_messages_9` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -187,7 +187,7 @@ CREATE TABLE `t_messages_10` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -205,7 +205,7 @@ CREATE TABLE `t_messages_11` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -222,7 +222,7 @@ CREATE TABLE `t_messages_12` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -240,7 +240,7 @@ CREATE TABLE `t_messages_13` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -258,7 +258,7 @@ CREATE TABLE `t_messages_14` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -275,7 +275,7 @@ CREATE TABLE `t_messages_15` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -293,7 +293,7 @@ CREATE TABLE `t_messages_16` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -311,7 +311,7 @@ CREATE TABLE `t_messages_17` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -328,7 +328,7 @@ CREATE TABLE `t_messages_18` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -346,7 +346,7 @@ CREATE TABLE `t_messages_19` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -364,7 +364,7 @@ CREATE TABLE `t_messages_20` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -381,7 +381,7 @@ CREATE TABLE `t_messages_21` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -399,7 +399,7 @@ CREATE TABLE `t_messages_22` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -417,7 +417,7 @@ CREATE TABLE `t_messages_23` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -434,7 +434,7 @@ CREATE TABLE `t_messages_24` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -452,7 +452,7 @@ CREATE TABLE `t_messages_25` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -470,7 +470,7 @@ CREATE TABLE `t_messages_26` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -487,7 +487,7 @@ CREATE TABLE `t_messages_27` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -505,7 +505,7 @@ CREATE TABLE `t_messages_28` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -523,7 +523,7 @@ CREATE TABLE `t_messages_29` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -540,7 +540,7 @@ CREATE TABLE `t_messages_30` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -558,7 +558,7 @@ CREATE TABLE `t_messages_31` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -576,7 +576,7 @@ CREATE TABLE `t_messages_32` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -593,7 +593,7 @@ CREATE TABLE `t_messages_33` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -611,7 +611,7 @@ CREATE TABLE `t_messages_34` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
@@ -629,7 +629,7 @@ CREATE TABLE `t_messages_35` (
     `_data` BLOB NOT NULL,
     `_searchable_key` TEXT DEFAULT NULL,
     `_dt` DATETIME NOT NULL,
-    INDEX `message_uid_index` (`_mid` DESC)
+    UNIQUE INDEX `message_uid_index` (`_mid` DESC)
   )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

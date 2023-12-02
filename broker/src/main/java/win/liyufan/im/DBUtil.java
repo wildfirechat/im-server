@@ -116,6 +116,27 @@ public class DBUtil {
                 } else if(flyway.info().current().getVersion().getMajor().intValue() < 43) {
                     System.out.println("数据库执行升级需要较长时间，可能长达数分钟或更长，请耐心等待，不要中断。。。");
                 }
+
+                if(flyway.info().current() != null && flyway.info().current().getVersion().getMajor().intValue() < 55) {
+                    Connection connection = null;
+                    PreparedStatement statement = null;
+                    try {
+                        connection = getConnection();
+
+                        String sql = "update flyway_schema_history set checksum = ? where version = ? and checksum = ?";
+
+                        statement = connection.prepareStatement(sql);
+                        int index = 1;
+                        statement.setLong(index++, -931486413L);
+                        statement.setString(index++, "3");
+                        statement.setLong(index++, 478454046L);
+                        statement.executeUpdate();
+                    } catch (SQLException e) {
+                        Utility.printExecption(LOG, e, RDBS_Exception);
+                    } finally {
+                        DBUtil.closeDB(connection, statement);
+                    }
+                }
             }
             flyway.migrate();
 
