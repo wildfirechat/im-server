@@ -192,6 +192,8 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean keepDisplayNameWhenDestroyUser = true;
     private String mRecallForwardUrl = null;
 
+    private boolean mBroadcastTargetFromUserTable = false;
+
     private boolean mForwardMessageWithClientInfo = false;
     private boolean mRobotCallbackWithClientInfo = false;
     private boolean mChannelCallbackWithClientInfo = false;
@@ -560,6 +562,13 @@ public class MemoryMessagesStore implements IMessagesStore {
         } catch (Exception e) {
 
         }
+
+        try {
+            mBroadcastTargetFromUserTable = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.BROADCAST_Target_From_User_Table, "false"));
+        } catch (Exception e) {
+
+        }
+
         try {
             mRobotCallbackWithClientInfo = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.ROBOT_Callback_With_Client_Info, "false"));
         } catch (Exception e) {
@@ -748,7 +757,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
     @Override
     public Set<String> getAllEnds() {
-        return databaseStore.getAllEnds();
+        return databaseStore.getAllEnds(mBroadcastTargetFromUserTable);
     }
     @Override
     public WFCMessage.PullMessageResult fetchMessage(String user, String exceptClientId, long fromMessageId, int pullType) {

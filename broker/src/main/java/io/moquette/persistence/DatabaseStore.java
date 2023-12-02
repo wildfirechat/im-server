@@ -3000,16 +3000,19 @@ public class DatabaseStore {
         return outList;
     }
 
-    Set<String> getAllEnds() {
+    Set<String> getAllEnds(boolean fromUserTable) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
         try {
             connection = DBUtil.getConnection();
-            String sql = "select distinct(`_uid`) from t_user_session where `_deleted` = 0";
+            String sql;
+            if(fromUserTable) {
+                sql = "select distinct(`_uid`) from t_user_session";
+            } else {
+                sql = "select distinct(`_uid`) from t_user where `_deleted` = 0 and `_type` <> 1 and `_type` <> 2";
+            }
             statement = connection.prepareStatement(sql);
-
-
 
             rs = statement.executeQuery();
             Set<String> out = new HashSet<>();
