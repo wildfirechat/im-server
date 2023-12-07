@@ -20,6 +20,8 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import com.xiaoleilu.loServer.action.ClassUtil;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.slf4j.LoggerFactory;
 import win.liyufan.im.Utility;
 
@@ -70,6 +72,7 @@ public class LoServer {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 10240) // 服务端可连接队列大小
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_SNDBUF, 1024*64)
@@ -77,6 +80,8 @@ public class LoServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.pipeline().addLast(new ReadTimeoutHandler(10));
+                        socketChannel.pipeline().addLast(new IdleStateHandler(0, 0, 10));
                         socketChannel.pipeline().addLast(new HttpRequestDecoder());
                         socketChannel.pipeline().addLast(new HttpResponseEncoder());
                         socketChannel.pipeline().addLast(new ChunkedWriteHandler());
