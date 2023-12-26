@@ -17,6 +17,10 @@ public class RobotService {
         robotHttpUtils = new RobotHttpUtils(url, robotId, robotSecret);
     }
 
+    public String getRobotId() {
+        return robotHttpUtils.getRobotId();
+    }
+
     public IMResult<SendMessageResult> sendMessage(String sender, Conversation conversation, MessagePayload payload) throws Exception {
         String path = APIPath.Robot_Message_Send;
         SendMessageData messageData = new SendMessageData();
@@ -24,6 +28,23 @@ public class RobotService {
         messageData.setConv(conversation);
         messageData.setPayload(payload);
         return robotHttpUtils.httpJsonPost(path, messageData, SendMessageResult.class);
+    }
+
+    public IMResult<String> recallMessage(long messageUid) throws Exception {
+        String path = APIPath.Robot_Message_Recall;
+        RecallMessageData messageData = new RecallMessageData();
+        messageData.setMessageUid(messageUid);
+        return robotHttpUtils.httpJsonPost(path, messageData, String.class);
+    }
+
+    public IMResult<Void> updateMessage(long messageUid, MessagePayload payload) throws Exception {
+        String path = APIPath.Robot_Message_Update;
+        UpdateMessageContentData updateMessageContentData = new UpdateMessageContentData();
+        updateMessageContentData.setMessageUid(messageUid);
+        updateMessageContentData.setPayload(payload);
+        updateMessageContentData.setUpdateTimestamp(0);
+        updateMessageContentData.setDistribute(1);
+        return robotHttpUtils.httpJsonPost(path, updateMessageContentData, Void.class);
     }
 
     public IMResult<InputOutputUserInfo> getUserInfo(String userId) throws Exception {

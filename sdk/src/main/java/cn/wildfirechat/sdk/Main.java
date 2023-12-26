@@ -982,7 +982,7 @@ public class Main {
             System.exit(-1);
         }
 
-        IMResult<OutputUserChatroom>  userChatroomIMResult = ChatroomAdmin.getUserChatroom("hygqmws2k");
+        IMResult<OutputUserChatroom>  userChatroomIMResult = ChatroomAdmin.getUserChatroom("uygqmws2k");
         if(userChatroomIMResult != null && (userChatroomIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS || userChatroomIMResult.getErrorCode() == ErrorCode.ERROR_CODE_NOT_EXIST)) {
             System.out.println("get user chatroom success");
         } else {
@@ -1181,13 +1181,44 @@ public class Main {
         payload.setType(1);
         payload.setSearchableContent("hello world");
 
-        IMResult<SendMessageResult> resultRobotSendMessage = robotService.sendMessage("robot1", conversation, payload);
+        IMResult<SendMessageResult> resultRobotSendMessage = robotService.sendMessage(robotService.getRobotId(), conversation, payload);
         if (resultRobotSendMessage != null && resultRobotSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
             System.out.println("robot send message success");
         } else {
             System.out.println("robot send message failure");
             System.exit(-1);
         }
+
+        if(commercialServer) {
+            Thread.sleep(1000);
+            IMResult<String> recallMessageResult = robotService.recallMessage(resultRobotSendMessage.result.getMessageUid());
+            if (recallMessageResult != null && recallMessageResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("robot recall message success");
+            } else {
+                System.out.println("robot recall message failure");
+                System.exit(-1);
+            }
+
+            payload.setSearchableContent("hello world, hello world");
+            resultRobotSendMessage = robotService.sendMessage(robotService.getRobotId(), conversation, payload);
+            if (resultRobotSendMessage != null && resultRobotSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("robot send message success");
+            } else {
+                System.out.println("robot send message failure");
+                System.exit(-1);
+            }
+
+            Thread.sleep(1000);
+            payload.setSearchableContent("hello world, updated message content");
+            IMResult<Void> updateMessageResult = robotService.updateMessage(resultRobotSendMessage.result.getMessageUid(), payload);
+            if (updateMessageResult != null && updateMessageResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("robot update message success");
+            } else {
+                System.out.println("robot update message failure");
+                System.exit(-1);
+            }
+        }
+
 
         IMResult<InputOutputUserInfo> resultRobotGetUserInfo = robotService.getUserInfo("userId1");
         if (resultRobotGetUserInfo != null && resultRobotGetUserInfo.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
