@@ -412,7 +412,7 @@ public class DatabaseStore {
             connection = DBUtil.getConnection();
             String sql = "select u._uid, u._name, u._display_name, u._portrait, u._mobile, u._gender, u._email, u._address, u._company, u._social, u._extra, u._dt, u._type " +
                 " from t_user u left join (select _uid, _value from t_user_setting where _scope = 27) s on u._uid = s._uid " +
-                " where u._display_name like ? and u._type <> 2 and u._deleted = 0 ";
+                " where u._display_name like ? ESCAPE '!' and u._type <> 2 and u._deleted = 0 ";
             if(nameOrIdMatched.size() == 1) {
                 sql += " and u._uid <> ? and u._name <> ?";
             } else if(nameOrIdMatched.size() == 2) {
@@ -429,6 +429,12 @@ public class DatabaseStore {
             if (page > 0) {
                 sql += " offset " + (page * 20 - nameOrIdMatched.size());
             }
+
+            keyword = keyword
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_")
+                .replace("[", "![");
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, "%" + keyword + "%");
@@ -3631,7 +3637,7 @@ public class DatabaseStore {
                 ", `_extra`" +
                 ", `_dt` from t_channel";
             if (buzzy) {
-                sql += " where `_name` like ?";
+                sql += " where `_name` like ? ESCAPE '!' ";
             } else {
                 sql += " where `_name` = ?";
             }
@@ -3644,6 +3650,12 @@ public class DatabaseStore {
             if (page > 0) {
                 sql += " offset " + page * 20;
             }
+
+            keyword = keyword
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_")
+                .replace("[", "![");
 
             statement = connection.prepareStatement(sql);
             int index = 1;
