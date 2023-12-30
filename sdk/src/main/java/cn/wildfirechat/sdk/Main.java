@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.messagecontentbuilder.RichNotificationContentBuilder;
+import cn.wildfirechat.messagecontentbuilder.StreamingTextMessageContentBuilder;
 import cn.wildfirechat.messagecontentbuilder.TextMessageContentBuilder;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
@@ -375,21 +376,6 @@ public class Main {
         } else {
             System.out.println("failure");
             System.exit(-1);
-        }
-
-        result = RelationAdmin.sendFriendRequest("ff1", "ff2", "hello2", false);
-        if (result != null && result.getErrorCode() != ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("success");
-        } else {
-            System.out.println("failure");
-            System.exit(-1);
-        }
-
-        result = RelationAdmin.sendFriendRequest("ff1", "ff2", "hello3", true);
-        if (result != null && (result.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS || result.getErrorCode() == ErrorCode.ERROR_CODE_ALREADY_FRIENDS)) {
-            System.out.println("success");
-        } else {
-            System.out.println("send friend request success");
         }
 
         IMResult<Void> updateFriendStatusResult = RelationAdmin.setUserFriend("ff1", "ff2", true, "{\"from\":1}");
@@ -846,6 +832,42 @@ public class Main {
             System.out.println("Success");
         } else {
             System.out.println("failure");
+        }
+
+        testStreamingText();
+    }
+
+    static void testStreamingText() throws Exception {
+        Conversation conversation = new Conversation();
+        conversation.setTarget("uygqmws2k");
+        conversation.setType(ProtoConstants.ConversationType.ConversationType_Private);
+
+        String fullText = "北京野火无限网络科技有限公司是成立于2019年底的一家科技创新企业，公司的主要目标是为广大企业和单位提供优质可控、私有部署的即时通讯和实时音视频能力，为社会信息化水平提高作出自己的贡献。\n" +
+            "\n" +
+            "野火IM是公司研发一套自主可控的即时通讯组件，具有全部私有化、功能齐全、协议稳定可靠、全平台支持、安全性高和支持国产化等技术特点。客户端分层设计，既可开箱即用，也可与现有系统深度融合。具有完善的服务端API和自定义消息功能，可以任意扩展功能。代码开源率高，方便二次开发和使用。支持多人实时音视频和会议功能，线上沟通更通畅。\n" +
+            "\n" +
+            "公司致力于开源项目，在Github上开源项目广受好评，其中Server项目有超过7.1K个Star，组织合计Star超过1万个。有大量的技术公司受益于我们的开源，为自己的产品添加了即时通讯能力，这也算是我们公司为社会信息化建设做出的一点点贡献吧。\n" +
+            "\n" +
+            "公司以即时通讯技术为核心，持续努力优化和完善即时通讯和实时音视频产品，努力为客户提供最优质的即时通讯和实时音视频能力。";
+        int i = 0;
+        String streamId = UUID.randomUUID().toString();
+        while (i < fullText.length()) {
+            i+= 15;
+
+            boolean finish = i >= fullText.length();
+            String partText = finish?fullText:fullText.substring(0, i);
+
+            MessagePayload payload = StreamingTextMessageContentBuilder.newBuilder(streamId).text(partText).generating(!finish).build();
+
+            IMResult<SendMessageResult> resultSendMessage = MessageAdmin.sendMessage("admin", conversation, payload, null);
+            if (resultSendMessage != null && resultSendMessage.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+                System.out.println("send message success");
+            } else {
+                System.out.println("send message failure");
+                System.exit(-1);
+            }
+
+            Thread.sleep(500);
         }
     }
 
