@@ -24,6 +24,7 @@ import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
 import com.xiaoleilu.hutool.system.UserInfo;
+import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.common.ErrorCode;
@@ -1355,17 +1356,35 @@ public class MemoryMessagesStore implements IMessagesStore {
         mIMap.set(groupId, groupInfo);
         databaseStore.persistGroupMember(groupId, updatedMemberList, false);
 
-        callbackGroupEvent(fromUser, groupInfo.getTargetId(), ProtoConstants.GroupUpdateEventType.Group_Event_Create);
+        callbackGroupEvent(fromUser, groupInfo.getTargetId(), ProtoConstants.GroupUpdateEventType.Group_Event_Create, groupInfo);
         return groupInfo;
     }
 
 
-    private void callbackGroupEvent(String operatorId, String groupId, int type) {
+    private void callbackGroupEvent(String operatorId, String groupId, int type, WFCMessage.GroupInfo groupInfo) {
         if (!StringUtil.isNullOrEmpty(mGroupInfoUpdateCallback)) {
             GroupUpdateEvent event = new GroupUpdateEvent();
             event.operatorId = operatorId;
             event.groupId = groupId;
             event.type = type;
+            PojoGroupInfo pojoGroupInfo = new PojoGroupInfo();
+            event.groupInfo = pojoGroupInfo;
+            if (groupInfo != null) {
+                pojoGroupInfo.setExtra(groupInfo.getExtra());
+                pojoGroupInfo.setName(groupInfo.getName());
+                pojoGroupInfo.setOwner(groupInfo.getOwner());
+                pojoGroupInfo.setPortrait(groupInfo.getPortrait());
+                pojoGroupInfo.setTarget_id(groupInfo.getTargetId());
+                pojoGroupInfo.setType(groupInfo.getType());
+                pojoGroupInfo.setMute(groupInfo.getMute());
+                pojoGroupInfo.setJoin_type(groupInfo.getJoinType());
+                pojoGroupInfo.setPrivate_chat(groupInfo.getPrivateChat());
+                pojoGroupInfo.setSearchable(groupInfo.getSearchable());
+                pojoGroupInfo.setMax_member_count(groupInfo.getMemberCount());
+                pojoGroupInfo.setHistory_message(groupInfo.getHistoryMessage());
+                pojoGroupInfo.setSuper_group(groupInfo.getSuperGroup()>0);
+            }
+
             m_Server.getCallbackScheduler().execute(() -> {
                 try {
                     HttpUtils.httpJsonPost(mGroupInfoUpdateCallback, GsonUtil.gson.toJson(event), HttpUtils.HttpPostType.POST_TYPE_Grout_Event_Callback);
@@ -1779,7 +1798,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         removeFavGroup(groupId, ids);
         removeGroupUserSettings(groupId, ids);
 
-        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Destroy);
+        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Destroy, groupInfo);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
@@ -1864,12 +1883,12 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (modifyType == Modify_Group_Mute) {
             if (newInfoBuilder.getMute() > 0) {
-                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Mute);
+                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Mute, newInfoBuilder.build());
             } else {
-                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Unmute);
+                callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Unmute, newInfoBuilder.build());
             }
         } else {
-            callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Update);
+            callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Update, newInfoBuilder.build());
         }
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
@@ -2216,7 +2235,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             }
         }
 
-        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Transfer);
+        callbackGroupEvent(operator, groupId, ProtoConstants.GroupUpdateEventType.Group_Event_Transfer, groupInfo);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
