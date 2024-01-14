@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
+import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.model.FriendData;
 import cn.wildfirechat.common.ErrorCode;
@@ -159,6 +160,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     private boolean mMobileDefaultSilentWhenPCOnline = true;
     private boolean mDisableStrangerChat = false;
     private Set<String> mAllowStrangerChatSet = new HashSet<>();
+    private boolean mDisableStrangerAddGroup = false;
 
     private Set<String> mClientSignatureSet = new HashSet<>();
     private boolean mRejectEmptySignature = true;
@@ -513,6 +515,11 @@ public class MemoryMessagesStore implements IMessagesStore {
             mGroupVisibleQuitKickoffNotification = Integer.parseInt(server.getConfig().getProperty(GROUP_Visible_Quit_Kickoff_Notification, "0"));
         } catch (Exception e) {
 
+        }
+
+        try {
+            mDisableStrangerAddGroup = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.GROUP_Disable_Stranger_Invite, "false"));
+        } catch (Exception e) {
         }
 
         try {
@@ -1192,6 +1199,85 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         return messageSeq;
+    }
+
+    @Override
+    public ErrorCode canAddGroupMembers(String fromUser, List<WFCMessage.GroupMember> memberList) {
+        HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
+        MultiMap<String, FriendData> friendsMap = hzInstance.getMultiMap(USER_FRIENDS);
+        IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
+
+        WFCMessage.User operator = mUserMap.get(fromUser);
+        if(operator != null && operator.getType() > 1) {
+            return ErrorCode.ERROR_CODE_SUCCESS;
+        }
+
+        if (mDisableStrangerAddGroup) {
+            for (WFCMessage.GroupMember groupMember : memberList) {
+                String targetUser = groupMember.getMemberId();
+                if(fromUser.equals(targetUser)) {
+                    continue;
+                }
+
+                Collection<FriendData> friendDatas = friendsMap.get(targetUser);
+                if (friendDatas == null || friendDatas.size() == 0) {
+                    friendDatas = loadFriend(friendsMap, targetUser);
+                }
+
+                boolean allow = false;
+                for (FriendData friendData : friendDatas) {
+                    if (friendData.getFriendUid().equals(fromUser)) {
+                        if (friendData.getBlacked() == 1) {
+                            return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
+                        } else {
+                            if (friendData.getState() == 0) {
+                                allow = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+                if(allow) {
+                    continue;
+                }
+
+                //在禁止私聊时，是否是允许私聊的用户id
+                if(mAllowStrangerChatSet.contains(targetUser) || mAllowStrangerChatSet.contains(fromUser)) {
+                    continue;
+                }
+
+                //在禁止私聊时，允许机器人，物联网设备及管理员进行私聊。
+                WFCMessage.User target = mUserMap.get(targetUser);
+                if (target != null && target.getType() != ProtoConstants.UserType.UserType_Normal) {
+                    continue;
+                }
+
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
+        } else {
+            for (WFCMessage.GroupMember groupMember : memberList) {
+                String targetUser = groupMember.getMemberId();
+                if(fromUser.equals(targetUser)) {
+                    continue;
+                }
+
+                Collection<FriendData> friendDatas = friendsMap.get(targetUser);
+                if (friendDatas == null || friendDatas.size() == 0) {
+                    friendDatas = loadFriend(friendsMap, targetUser);
+                }
+
+                for (FriendData friendData : friendDatas) {
+                    if (friendData.getFriendUid().equals(fromUser)) {
+                        if (friendData.getBlacked() == 1) {
+                            return ErrorCode.ERROR_CODE_IN_BLACK_LIST;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return ErrorCode.ERROR_CODE_SUCCESS;
     }
 
     @Override
