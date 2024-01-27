@@ -138,4 +138,6 @@ public interface APIPath {
     String Robot_Group_Member_Quit = "/robot/group/member/quit";
     String Robot_Group_Transfer = "/robot/group/transfer";
     String Robot_Group_Set_Manager = "/robot/group/manager/set";
+
+    String Robot_Conference_Request = "/robot/conference/request";
 }

@@ -268,5 +268,10 @@ public class RobotService {
         return configData;
     }
 
+    public IMResult<String> sendConferenceRequest(String robotId, String clientId, String request, long sessionId, String roomId, String data, boolean advance) throws Exception {
+        String path = APIPath.Robot_Conference_Request;
+        InputConferenceRequest input = new InputConferenceRequest(robotId, clientId, request, sessionId, roomId, data, advance);
+        return robotHttpUtils.httpJsonPost(path, input, String.class);
+    }
 
 }
