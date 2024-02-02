@@ -97,4 +97,8 @@ public class GeneralAdmin {
     public static IMResult<HealthCheckResult> healthCheck() throws Exception {
         return AdminHttpUtils.httpGet(APIPath.Health, HealthCheckResult.class);
     }
+
+    public static IMResult<String> getCustomer() throws Exception {
+        return AdminHttpUtils.httpJsonPost(APIPath.GET_CUSTOMER, null, String.class);
+    }
 }

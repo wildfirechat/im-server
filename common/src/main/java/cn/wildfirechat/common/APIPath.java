@@ -91,7 +91,7 @@ public interface APIPath {
     String Check_User_Subscribe_Channel = "/admin/channel/is_subscribed";
     String Get_System_Setting = "/admin/system/get_setting";
     String Put_System_Setting = "/admin/system/put_setting";
-
+    String GET_CUSTOMER = "/admin/customer";
     String Health = "/admin/health";
 
     String Conference_List = "/admin/conference/list";
