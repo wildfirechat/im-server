@@ -2764,6 +2764,7 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
 
         String pcValue = null;
+        String padValue = null;
         for (MemorySessionStore.Session s : m_Server.getStore().sessionsStore().sessionForUser(session.username)) {
             if (s.getDeleted() != 0 || !m_Server.getConnectionsManager().isConnected(s.getClientID())) {
                 continue;
@@ -2773,7 +2774,13 @@ public class MemoryMessagesStore implements IMessagesStore {
                 case Platform_LINUX:
                 case Platform_Windows:
                 case Platform_OSX:
+                case Platform_HarmonyPC:
                     pcValue = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
+                    break;
+                case Platform_iPad:
+                case Platform_APad:
+                case Platform_HarmonyPad:
+                    padValue = System.currentTimeMillis() + "|" + s.getPlatform() + "|" + s.getClientID() + "|" + s.getPhoneName();
                     break;
                 default:
                     break;
@@ -2783,6 +2790,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         WFCMessage.UserSettingEntry pcentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "PC");
         if (!isOnlineValueEqual(pcentry, pcValue)) {
             updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("PC").setValue(pcValue==null?"":pcValue).build(), session.clientID);
+        }
+
+        WFCMessage.UserSettingEntry padentry = getUserSetting(session.getUsername(), kUserSettingPCOnline, "Pad");
+        if (!isOnlineValueEqual(padentry, padValue)) {
+            updateUserSettings(session.username, WFCMessage.ModifyUserSettingReq.newBuilder().setScope(kUserSettingPCOnline).setKey("Pad").setValue(padValue==null?"":padValue).build(), session.clientID);
         }
     }
 

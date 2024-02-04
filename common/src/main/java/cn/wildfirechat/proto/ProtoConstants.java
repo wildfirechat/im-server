@@ -53,6 +53,9 @@ public class ProtoConstants {
         int Platform_LINUX = 7;
         int Platform_iPad = 8;
         int Platform_APad = 9;
+        int Platform_Harmony = 10;
+        int Platform_HarmonyPad = 11;
+        int Platform_HarmonyPC = 12;
     }
 
     //message NotifyMessage & PullMessageRequest -> type

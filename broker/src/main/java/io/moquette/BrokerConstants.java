@@ -135,6 +135,7 @@ public final class BrokerConstants {
 
     public static final String SERVER_MULTI_ENDPOINT = "server.multi_endpoint";
     public static final String SERVER_MULTI_PC_ENDPOINT = "server.multi_pc_endpoint";
+    public static final String SERVER_MULTI_PAD_ENDPOINT = "server.multi_pad_endpoint";
     public static final String SERVER_MULTI_PLATFROM_NOTIFICATION = "server.multi_platform_notification";
     public static final String SERVER_MOBILE_DEFAULT_SILENT_WHEN_PC_ONLINE = "server.mobile_default_silent_when_pc_online";
     public static final String SERVER_CLIENT_SUPPORT_KICKOFF_EVENT = "server.client_support_kickoff_event";

@@ -1798,10 +1798,12 @@ public class DatabaseStore {
         try {
             connection = DBUtil.getConnection();
             String sql;
-            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX) {
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX || platform == ProtoConstants.Platform.Platform_HarmonyPC) {
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ? or `_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
+            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_Harmony) {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
-            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
-                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
+            } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad || platform == ProtoConstants.Platform.Platform_HarmonyPad) {
+                sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and (`_platform` = ? or `_platform` = ? or `_platform` = ?)  and `_cid` <> ? and `_deleted` = 0";
             } else {
                 sql = "update t_user_session set `_deleted` = ?, `_token` = ?, `_voip_token` = ?, `_dt` = ?  where `_uid`=? and `_platform` = ? and `_cid` <> ? and `_deleted` = 0";
             }
@@ -1816,13 +1818,19 @@ public class DatabaseStore {
 
             statement.setString(index++, uid);
 
-            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX) {
+            if (platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_LINUX || platform == ProtoConstants.Platform.Platform_HarmonyPC) {
                 statement.setInt(index++, ProtoConstants.Platform.Platform_Windows);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_OSX);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_LINUX);
-            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_HarmonyPC);
+            } else if(platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_Harmony) {
                 statement.setInt(index++, ProtoConstants.Platform.Platform_iOS);
                 statement.setInt(index++, ProtoConstants.Platform.Platform_Android);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_Harmony);
+            } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad || platform == ProtoConstants.Platform.Platform_HarmonyPad) {
+                statement.setInt(index++, ProtoConstants.Platform.Platform_iPad);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_APad);
+                statement.setInt(index++, ProtoConstants.Platform.Platform_HarmonyPad);
             } else {
                 statement.setInt(index++, platform);
             }

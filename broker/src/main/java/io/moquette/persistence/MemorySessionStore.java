@@ -40,6 +40,7 @@ public class MemorySessionStore implements ISessionsStore {
 
     private boolean supportMultiEndpoint = false;
     private boolean supportMultiPCEndpoint = false;
+    private boolean supportMultiPadEndpoint = false;
     private boolean clientSupportKickoff = false;
 
     public static class Session implements Comparable<Session>{
@@ -292,6 +293,10 @@ public class MemorySessionStore implements ISessionsStore {
             supportMultiPCEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_PC_ENDPOINT, "false"));
         } catch (Exception e) {
         }
+        try {
+            supportMultiPadEndpoint = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_MULTI_PAD_ENDPOINT, "false"));
+        } catch (Exception e) {
+        }
 
         try {
             clientSupportKickoff = Boolean.parseBoolean(server.getConfig().getProperty(BrokerConstants.SERVER_CLIENT_SUPPORT_KICKOFF_EVENT, "false"));
@@ -396,6 +401,10 @@ public class MemorySessionStore implements ISessionsStore {
             && !(platform == ProtoConstants.Platform.Platform_Windows && supportMultiPCEndpoint)
             && !(platform == ProtoConstants.Platform.Platform_LINUX && supportMultiPCEndpoint)
             && !(platform == ProtoConstants.Platform.Platform_OSX && supportMultiPCEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_HarmonyPC && supportMultiPCEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_iPad && supportMultiPadEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_APad && supportMultiPadEndpoint)
+            && !(platform == ProtoConstants.Platform.Platform_HarmonyPad && supportMultiPadEndpoint)
         ) {
             databaseStore.clearMultiEndpoint(username, clientID, platform);
             if (userSessions.get(username) != null) {
@@ -410,15 +419,19 @@ public class MemorySessionStore implements ISessionsStore {
                         }
 
                         boolean remove = false;
-                        if (platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_iOS) {
-                            if (s.getPlatform() == ProtoConstants.Platform.Platform_Android || s.getPlatform() == ProtoConstants.Platform.Platform_iOS) {
+                        if (platform == ProtoConstants.Platform.Platform_Android || platform == ProtoConstants.Platform.Platform_iOS || platform == ProtoConstants.Platform.Platform_Harmony) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_Android || s.getPlatform() == ProtoConstants.Platform.Platform_iOS || s.getPlatform() == ProtoConstants.Platform.Platform_Harmony) {
                                 remove = true;
                             }
-                        } else if(platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_LINUX) {
-                            if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows || s.getPlatform() == ProtoConstants.Platform.Platform_LINUX) {
+                        } else if(platform == ProtoConstants.Platform.Platform_iPad || platform == ProtoConstants.Platform.Platform_APad || platform == ProtoConstants.Platform.Platform_HarmonyPad) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_iPad || s.getPlatform() == ProtoConstants.Platform.Platform_APad || s.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPad) {
                                 remove = true;
                             }
-                        } else {
+                        } else if(platform == ProtoConstants.Platform.Platform_OSX || platform == ProtoConstants.Platform.Platform_Windows || platform == ProtoConstants.Platform.Platform_LINUX || platform == ProtoConstants.Platform.Platform_HarmonyPC) {
+                            if (s.getPlatform() == ProtoConstants.Platform.Platform_OSX || s.getPlatform() == ProtoConstants.Platform.Platform_Windows || s.getPlatform() == ProtoConstants.Platform.Platform_LINUX || s.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPC) {
+                                remove = true;
+                            }
+                        } else { //web, microapp
                             if (s.getPlatform() ==platform) {
                                 remove = true;
                             }
@@ -747,7 +760,12 @@ public class MemorySessionStore implements ISessionsStore {
             if (session.getPlatform() == ProtoConstants.Platform.Platform_LINUX
                 || session.getPlatform() == ProtoConstants.Platform.Platform_WEB
                 || session.getPlatform() == ProtoConstants.Platform.Platform_Windows
-                || session.getPlatform() == ProtoConstants.Platform.Platform_OSX) {
+                || session.getPlatform() == ProtoConstants.Platform.Platform_OSX
+                || session.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPC
+                || session.getPlatform() == ProtoConstants.Platform.Platform_iPad
+                || session.getPlatform() == ProtoConstants.Platform.Platform_APad
+                || session.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPad
+            ) {
                 databaseStore.updateSessionDeleted(operator, pcClientId, 1);
                 sessions.remove(pcClientId);
                 mServer.getProcessor().kickoffSession(session);

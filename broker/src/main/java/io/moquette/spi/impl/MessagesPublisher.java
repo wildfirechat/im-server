@@ -223,7 +223,12 @@ public class MessagesPublisher {
                     if (targetSession.getPlatform() == ProtoConstants.Platform.Platform_WEB
                         || targetSession.getPlatform() == ProtoConstants.Platform.Platform_Windows
                         || targetSession.getPlatform() == ProtoConstants.Platform.Platform_LINUX
-                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_OSX) {
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_OSX
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPC
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_iPad
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_APad
+                        || targetSession.getPlatform() == ProtoConstants.Platform.Platform_HarmonyPad
+                    ) {
                         boolean targetIsActive = this.connectionDescriptors.isConnected(targetSession.getClientSession().clientID);
                         if (targetIsActive) {
                             isPcOnline = true;
