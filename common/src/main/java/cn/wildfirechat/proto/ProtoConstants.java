@@ -56,6 +56,7 @@ public class ProtoConstants {
         int Platform_Harmony = 10;
         int Platform_HarmonyPad = 11;
         int Platform_HarmonyPC = 12;
+        int Platform_MAX = Platform_HarmonyPC;
     }
 
     //message NotifyMessage & PullMessageRequest -> type
