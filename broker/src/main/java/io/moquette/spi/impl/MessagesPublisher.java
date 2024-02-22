@@ -474,6 +474,33 @@ public class MessagesPublisher {
                         LOG.info("the target {} of user {} is not active", targetSession.getClientID(), targetSession.getUsername());
                     }
                 }
+
+                if(sessions.isEmpty() && message.getContent().getType() == 403 && !user.equals(message.getFromUser())) {
+                    WFCMessage.User userInfo = m_messagesStore.getUserInfo(user);
+                    if (userInfo != null && userInfo.getType() == ProtoConstants.UserType.UserType_Robot) {
+                        WFCMessage.Robot robot = m_messagesStore.getRobot(user);
+                        if (robot != null && !StringUtil.isNullOrEmpty(robot.getCallback())) {
+                            OutputClient outputClient = null;
+                            if(m_messagesStore.isRobotCallbackWithClientInfo() && !StringUtil.isNullOrEmpty(exceptClientId)) {
+                                Session session = m_sessionsStore.getSession(exceptClientId);
+                                if(session != null && session.getUsername().equals(message.getFromUser())) {
+                                    outputClient = new OutputClient(session.getPlatform(), exceptClientId);
+                                }
+                            }
+
+                            final WFCMessage.Message finalMsg = message;
+                            OutputClient finalOutputClient = outputClient;
+                            Server.getServer().getCallbackScheduler().execute(() -> {
+                                try {
+                                    HttpUtils.httpJsonPost(robot.getCallback(), GsonUtil.gson.toJson(OutputMessageData.fromProtoMessage(finalMsg, finalOutputClient), OutputMessageData.class), HttpUtils.HttpPostType.POST_TYPE_Robot_Message_Callback);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);
+                                }
+                            });
+                        }
+                    }
+                }
             }
         }
     }
