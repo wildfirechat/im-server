@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import cn.hutool.core.util.ReflectUtil;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.google.gson.Gson;
@@ -92,7 +93,7 @@ public class Qos1PublishHandler extends QosPublishHandler {
             for (Class cls:ClassUtil.getAllAssignedClass(IMHandler.class)) {
                 Handler annotation = (Handler)cls.getAnnotation(Handler.class);
                 if(annotation != null) {
-                    IMHandler handler = (IMHandler) com.xiaoleilu.hutool.util.ClassUtil.newInstance(cls);
+                    IMHandler handler = (IMHandler) ReflectUtil.newInstance(cls);
                     m_imHandlers.put(annotation.value(), handler);
                 }
             }

@@ -1,7 +1,7 @@
 package com.xiaoleilu.loServer.handler;
 
+import cn.hutool.core.lang.Singleton;
 import cn.wildfirechat.common.IMExceptionEvent;
-import com.xiaoleilu.hutool.lang.Singleton;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.UnknownErrorAction;

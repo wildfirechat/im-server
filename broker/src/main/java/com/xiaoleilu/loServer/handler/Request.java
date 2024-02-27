@@ -10,15 +10,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.xiaoleilu.hutool.http.HttpUtil;
-import com.xiaoleilu.hutool.lang.Conver;
-import com.xiaoleilu.hutool.log.Log;
-import com.xiaoleilu.hutool.log.StaticLog;
-import com.xiaoleilu.hutool.util.CharsetUtil;
-import com.xiaoleilu.hutool.util.DateUtil;
-import com.xiaoleilu.hutool.util.StrUtil;
-import com.xiaoleilu.hutool.util.URLUtil;
-
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.net.NetUtil;
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -261,7 +258,7 @@ public class Request {
 	 * @return 获得Integer类型请求参数
 	 */
 	public Integer getIntParam(String name, Integer defaultValue) {
-		return Conver.toInt(getParam(name), defaultValue);
+		return Convert.toInt(getParam(name), defaultValue);
 	}
 
 	/**
@@ -270,7 +267,7 @@ public class Request {
 	 * @return 获得long类型请求参数
 	 */
 	public Long getLongParam(String name, Long defaultValue) {
-		return Conver.toLong(getParam(name), defaultValue);
+		return Convert.toLong(getParam(name), defaultValue);
 	}
 
 	/**
@@ -279,7 +276,7 @@ public class Request {
 	 * @return 获得Double类型请求参数
 	 */
 	public Double getDoubleParam(String name, Double defaultValue) {
-		return Conver.toDouble(getParam(name), defaultValue);
+		return Convert.toDouble(getParam(name), defaultValue);
 	}
 
 	/**
@@ -288,7 +285,7 @@ public class Request {
 	 * @return 获得Float类型请求参数
 	 */
 	public Float getFloatParam(String name, Float defaultValue) {
-		return Conver.toFloat(getParam(name), defaultValue);
+		return Convert.toFloat(getParam(name), defaultValue);
 	}
 
 	/**
@@ -297,7 +294,7 @@ public class Request {
 	 * @return 获得Boolean类型请求参数
 	 */
 	public Boolean getBoolParam(String name, Boolean defaultValue) {
-		return Conver.toBool(getParam(name), defaultValue);
+		return Convert.toBool(getParam(name), defaultValue);
 	}
 
 	/**
@@ -477,7 +474,7 @@ public class Request {
 	protected void putIp(ChannelHandlerContext ctx) {
 		String ip = getHeader("X-Forwarded-For");
 		if (StrUtil.isNotBlank(ip)) {
-			ip = HttpUtil.getMultistageReverseProxyIp(ip);
+			ip = NetUtil.getMultistageReverseProxyIp(ip);
 		} else {
 			final InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
 			ip = insocket.getAddress().getHostAddress();

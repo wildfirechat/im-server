@@ -5,11 +5,9 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.xiaoleilu.hutool.lang.Singleton;
-import com.xiaoleilu.hutool.log.Log;
-import com.xiaoleilu.hutool.log.StaticLog;
-import com.xiaoleilu.hutool.util.FileUtil;
-import com.xiaoleilu.hutool.util.StrUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.Singleton;
+import cn.hutool.core.util.StrUtil;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.DefaultIndexAction;
 import com.xiaoleilu.loServer.action.UnknownErrorAction;
@@ -189,7 +187,7 @@ public class ServerSetting {
 	 * @param filterClass Filter类
 	 */
 	public static void setFilter(String path, Class<? extends Filter> filterClass) {
-		setFilter(path, (Filter)Singleton.get(filterClass));
+		setFilter(path, (Filter) Singleton.get(filterClass));
 	}
 	//----------------------------------------------------------------------------------------------- Filter end
 	

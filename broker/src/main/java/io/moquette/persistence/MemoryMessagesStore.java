@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
-import com.xiaoleilu.hutool.system.UserInfo;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.action.admin.AdminAction;
 import com.xiaoleilu.loServer.model.FriendData;

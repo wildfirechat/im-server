@@ -1,6 +1,6 @@
 package com.xiaoleilu.loServer;
 
-import com.xiaoleilu.hutool.util.DateUtil;
+import cn.hutool.core.date.DateUtil;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.AdminActionHandler;

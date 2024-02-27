@@ -10,7 +10,6 @@ package io.moquette.imhandler;
 
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
-import com.xiaoleilu.hutool.system.UserInfo;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.moquette.spi.impl.security.TokenAuthenticator;

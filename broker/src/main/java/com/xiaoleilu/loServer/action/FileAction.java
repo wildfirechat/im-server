@@ -8,13 +8,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.StrUtil;
 import com.hazelcast.core.HazelcastInstance;
-import com.xiaoleilu.hutool.log.Log;
-import com.xiaoleilu.hutool.log.StaticLog;
-import com.xiaoleilu.hutool.util.DateUtil;
-import com.xiaoleilu.hutool.util.FileUtil;
-import com.xiaoleilu.hutool.util.ReUtil;
-import com.xiaoleilu.hutool.util.StrUtil;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
@@ -23,6 +21,8 @@ import io.moquette.spi.IMessagesStore;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.LoggerFactory;
+
+import static cn.hutool.core.date.DatePattern.HTTP_DATETIME_PATTERN;
 
 /**
  * 默认的主页Action，当访问主页且没有定义主页Action时，调用此Action
@@ -96,7 +96,7 @@ public class FileAction extends Action {
     }
 
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-	private static final SimpleDateFormat HTTP_DATE_FORMATER = new SimpleDateFormat(DateUtil.HTTP_DATETIME_PATTERN, Locale.US);
+	private static final SimpleDateFormat HTTP_DATE_FORMATER = new SimpleDateFormat(HTTP_DATETIME_PATTERN, Locale.US);
 
 	
 	/**

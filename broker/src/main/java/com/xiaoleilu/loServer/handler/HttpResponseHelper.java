@@ -1,7 +1,6 @@
 package com.xiaoleilu.loServer.handler;
 
 import io.netty.util.internal.StringUtil;
-import com.xiaoleilu.hutool.util.FileUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;

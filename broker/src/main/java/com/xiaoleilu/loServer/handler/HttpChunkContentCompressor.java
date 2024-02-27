@@ -1,7 +1,6 @@
 package com.xiaoleilu.loServer.handler;
 
-import com.xiaoleilu.hutool.log.StaticLog;
-
+import cn.hutool.log.StaticLog;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.FileRegion;

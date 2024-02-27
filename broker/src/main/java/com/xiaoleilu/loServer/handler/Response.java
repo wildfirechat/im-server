@@ -13,12 +13,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 
-import com.xiaoleilu.hutool.http.HttpUtil;
-import com.xiaoleilu.hutool.log.Log;
-import com.xiaoleilu.hutool.log.StaticLog;
-import com.xiaoleilu.hutool.util.CharsetUtil;
-import com.xiaoleilu.hutool.util.DateUtil;
-import com.xiaoleilu.hutool.util.StrUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.listener.FileProgressiveFutureListener;
 
@@ -43,6 +40,8 @@ import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.apache.tika.Tika;
 import org.slf4j.LoggerFactory;
+
+import static cn.hutool.core.date.DatePattern.HTTP_DATETIME_PATTERN;
 
 /**
  * 响应对象
@@ -332,7 +331,7 @@ public class Response {
 	 * @param httpCacheSeconds 缓存时间，单位秒
 	 */
 	public void setDateAndCache(long lastModify, int httpCacheSeconds) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtil.HTTP_DATETIME_PATTERN, Locale.US);
+		SimpleDateFormat formatter = new SimpleDateFormat(HTTP_DATETIME_PATTERN, Locale.US);
 		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		// Date header

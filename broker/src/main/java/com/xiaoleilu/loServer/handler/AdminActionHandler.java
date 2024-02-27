@@ -8,7 +8,6 @@
 
 package com.xiaoleilu.loServer.handler;
 
-import com.xiaoleilu.hutool.lang.Singleton;
 import com.xiaoleilu.loServer.ServerSetting;
 import com.xiaoleilu.loServer.action.Action;
 import com.xiaoleilu.loServer.action.FileAction;
