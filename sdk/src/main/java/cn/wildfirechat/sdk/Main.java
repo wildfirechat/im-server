@@ -946,13 +946,6 @@ public class Main {
             System.out.println("health check failure");
             System.exit(-1);
         }
-
-        IMResult<String> customerResult = GeneralAdmin.getCustomer();
-        if(customerResult != null && customerResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
-            System.out.println("customer is " + customerResult.getResult());
-        } else {
-            System.out.println("not support get customer");
-        }
     }
 
     static void testChatroom() throws Exception {
