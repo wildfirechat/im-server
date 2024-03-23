@@ -48,10 +48,6 @@ public class CreateChatroomAction extends AdminAction {
                     inputCreateChatroom.setChatroomId(messagesStore.getShortUUID());
                 }
 
-                if (inputCreateChatroom.getPortrait() == null || inputCreateChatroom.getPortrait().length() == 0) {
-                    inputCreateChatroom.setPortrait("https://avatars.io/gravatar/" + inputCreateChatroom.getChatroomId());
-                }
-
                 WFCMessage.ChatroomInfo info = inputCreateChatroom.toChatroomInfo();
                 messagesStore.createChatroom(inputCreateChatroom.getChatroomId(), info);
                 setResponseContent(RestResult.ok(new OutputCreateChatroom(inputCreateChatroom.getChatroomId())), response);

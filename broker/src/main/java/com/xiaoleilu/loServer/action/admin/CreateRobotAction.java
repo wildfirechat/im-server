@@ -49,10 +49,6 @@ public class CreateRobotAction extends AdminAction {
                     inputCreateRobot.setUserId(messagesStore.getShortUUID());
                 }
 
-                if (inputCreateRobot.getPortrait() == null || inputCreateRobot.getPortrait().length() == 0) {
-                    inputCreateRobot.setPortrait("https://avatars.io/gravatar/" + inputCreateRobot.getUserId());
-                }
-
                 WFCMessage.User newUser = inputCreateRobot.toUser();
                 try {
                     messagesStore.addUserInfo(newUser);
