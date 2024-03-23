@@ -2893,7 +2893,7 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public void addUserInfo(WFCMessage.User user, String password) throws Exception {
+    public void addUserInfo(WFCMessage.User user) throws Exception {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.User> mUserMap = hzInstance.getMap(USERS);
         if (databaseStore.isUidAndNameConflict(user.getUid(), user.getName())) {
@@ -2901,7 +2901,6 @@ public class MemoryMessagesStore implements IMessagesStore {
         }
         databaseStore.updateUser(user);
         mUserMap.put(user.getUid(), user);
-        databaseStore.updateUserPassword(user.getUid(), password);
 
         callbackUserInfoEvent(user);
     }

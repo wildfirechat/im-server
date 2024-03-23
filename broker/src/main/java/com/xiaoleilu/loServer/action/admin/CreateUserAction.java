@@ -47,10 +47,6 @@ public class CreateUserAction extends AdminAction {
                 && !StringUtil.isNullOrEmpty(inputCreateUser.getName())
                 && (inputCreateUser.getType() == ProtoConstants.UserType.UserType_Normal || inputCreateUser.getType() == ProtoConstants.UserType.UserType_Admin || inputCreateUser.getType() == ProtoConstants.UserType.UserType_Super_Admin)) {
 
-                if(StringUtil.isNullOrEmpty(inputCreateUser.getPassword())) {
-                    inputCreateUser.setPassword(UUIDGenerator.getUUID());
-                }
-
                 if(StringUtil.isNullOrEmpty(inputCreateUser.getUserId())) {
                     inputCreateUser.setUserId(messagesStore.getShortUUID());
                 }
@@ -85,7 +81,7 @@ public class CreateUserAction extends AdminAction {
 
 
                 try {
-                    messagesStore.addUserInfo(newUserBuilder.build(), inputCreateUser.getPassword());
+                    messagesStore.addUserInfo(newUserBuilder.build());
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);

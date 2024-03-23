@@ -147,7 +147,7 @@ public interface IMessagesStore {
     List<InputOutputUserBlockStatus> getUserStatusList();
 
     ErrorCode updateUserInfo(InputOutputUserInfo userInfo, int flag);
-    void addUserInfo(WFCMessage.User user, String password) throws Exception;
+    void addUserInfo(WFCMessage.User user) throws Exception;
     void destroyUser(String userId);
     void updateUserInfo(WFCMessage.User user) throws Exception;
     WFCMessage.User getUserInfo(String userId);

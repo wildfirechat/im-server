@@ -45,10 +45,6 @@ public class CreateRobotAction extends AdminAction {
             if (inputCreateRobot != null
                 && !StringUtil.isNullOrEmpty(inputCreateRobot.getName())) {
 
-                if(StringUtil.isNullOrEmpty(inputCreateRobot.getPassword())) {
-                    inputCreateRobot.setPassword(UUIDGenerator.getUUID());
-                }
-
                 if(StringUtil.isNullOrEmpty(inputCreateRobot.getUserId())) {
                     inputCreateRobot.setUserId(messagesStore.getShortUUID());
                 }
@@ -58,10 +54,8 @@ public class CreateRobotAction extends AdminAction {
                 }
 
                 WFCMessage.User newUser = inputCreateRobot.toUser();
-
-
                 try {
-                    messagesStore.addUserInfo(newUser, inputCreateRobot.getPassword());
+                    messagesStore.addUserInfo(newUser);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, IMExceptionEvent.EventType.ADMIN_API_Exception);
