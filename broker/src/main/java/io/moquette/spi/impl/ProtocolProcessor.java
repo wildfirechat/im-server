@@ -17,6 +17,7 @@
 package io.moquette.spi.impl;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.pojos.OutputCheckUserOnline;
 import cn.wildfirechat.pojos.UserOnlineStatus;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -266,7 +267,27 @@ public class ProtocolProcessor {
         if (!StringUtil.isNullOrEmpty(mUserOnlineStatusCallback)) {
             mServer.getCallbackScheduler().execute(() -> {
                 try {
-                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, GsonUtil.gson.toJson(new UserOnlineStatus(userId, clientId, platform, status, packageName)), HttpUtils.HttpPostType.POST_TYPE_User_Online_Event_Callback);
+                    int sessionstatus;
+                    Collection<MemorySessionStore.Session> useSessions = m_sessionsStore.sessionForUser(userId);
+                    UserOnlineStatus userOnlineStatus = new UserOnlineStatus(userId, clientId, platform, status, packageName);
+                    userOnlineStatus.sessions = new ArrayList<>();
+
+                    for (MemorySessionStore.Session session : useSessions) {
+                        if (session.getDeleted() > 0) {
+                            continue;
+                        }
+
+                        ConnectionDescriptor descriptor = connectionDescriptors.getConnection(session.getClientID());
+                        if (descriptor == null) {
+                            sessionstatus = 1;
+                        } else {
+                            sessionstatus = 0;
+                        }
+
+                        userOnlineStatus.sessions.add(new OutputCheckUserOnline.Session(userId, session.getClientID(), session.getPlatform(), sessionstatus, session.getLastActiveTime(), session.getAppName()));
+                    }
+
+                    HttpUtils.httpJsonPost(mUserOnlineStatusCallback, GsonUtil.gson.toJson(userOnlineStatus), HttpUtils.HttpPostType.POST_TYPE_User_Online_Event_Callback);
                 } catch (Exception e) {
                     e.printStackTrace();
                     Utility.printExecption(LOG, e, EVENT_CALLBACK_Exception);

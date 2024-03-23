@@ -1,5 +1,7 @@
 package cn.wildfirechat.pojos;
 
+import java.util.List;
+
 public class UserOnlineStatus {
     public static final int ONLINE = 0;
     public static final int OFFLINE = 1;
@@ -11,6 +13,9 @@ public class UserOnlineStatus {
     public int status;
     public long timestamp;
     public String packageName;
+    public int customState;
+    public String customText;
+    public List<OutputCheckUserOnline.Session> sessions;
 
     public UserOnlineStatus() {
     }
