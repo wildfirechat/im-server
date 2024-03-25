@@ -2987,6 +2987,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public List<WFCMessage.User> getUserInfosByEmail(String email) {
+        return databaseStore.getUserInfosByEmail(email);
+    }
+
+    @Override
     public List<WFCMessage.User> getUserInfoList(int count, int offset) {
         return databaseStore.getAllUsers(count, offset);
     }

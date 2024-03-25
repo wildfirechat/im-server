@@ -153,6 +153,7 @@ public interface IMessagesStore {
     WFCMessage.User getUserInfo(String userId);
     WFCMessage.User getUserInfoByName(String name);
     WFCMessage.User getUserInfoByMobile(String mobile);
+    List<WFCMessage.User> getUserInfosByEmail(String email);
     List<WFCMessage.User> searchUser(String keyword, int searchType, int page);
 
     List<WFCMessage.User> getUserInfoList(int count, int offset);

@@ -178,6 +178,15 @@ public class Main {
             System.out.println("get user info by userId failure");
             System.exit(-1);
         }
+
+        IMResult<OutputUserInfoList> userInfoListIMResult = UserAdmin.getUserByEmail("13900000001@139.com");
+        if(userInfoListIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS || userInfoListIMResult.getErrorCode() == ErrorCode.ERROR_CODE_NOT_EXIST) {
+            System.out.println("getUserByEmail success");
+        } else {
+            System.out.println("getUserByEmail failure");
+            System.exit(-1);
+        }
+
         InputOutputUserInfo updateUserInfo = new InputOutputUserInfo();
         updateUserInfo.setUserId(System.currentTimeMillis()+"");
         updateUserInfo.setDisplayName("updatedUserName");

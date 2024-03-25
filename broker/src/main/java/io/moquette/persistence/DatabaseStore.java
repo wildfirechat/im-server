@@ -2917,6 +2917,99 @@ public class DatabaseStore {
         return null;
     }
 
+    List<WFCMessage.User> getUserInfosByEmail(String email) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        List<WFCMessage.User> outList = new ArrayList<>();
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select `_uid`, `_name`" +
+                ", `_display_name`" +
+                ", `_portrait`" +
+                ", `_mobile`" +
+                ", `_gender`" +
+                ", `_email`" +
+                ", `_address`" +
+                ", `_company`" +
+                ", `_social`" +
+                ", `_extra`" +
+                ", `_type`" +
+                ", `_deleted`" +
+                ", `_dt` from t_user where `_deleted` = 0 and `_email` = ?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, email);
+
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                WFCMessage.User.Builder builder = WFCMessage.User.newBuilder();
+                int index = 1;
+                String value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setUid(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setName(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setDisplayName(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setPortrait(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setMobile(value);
+
+                int gender = rs.getInt(index++);
+                builder.setGender(gender);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setEmail(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setAddress(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setCompany(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setSocial(value);
+
+                value = rs.getString(index++);
+                value = (value == null ? "" : value);
+                builder.setExtra(value);
+
+                int type = rs.getInt(index++);
+                builder.setType(type);
+
+                int deleted = rs.getInt(index++);
+                builder.setDeleted(deleted);
+
+                long longValue = rs.getLong(index++);
+                if(longValue <= 0)
+                    longValue = 1;
+                builder.setUpdateDt(longValue);
+
+                outList.add(builder.build());
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return outList;
+    }
+
     List<WFCMessage.User> getAllUsers(int count, int offset) {
         Connection connection = null;
         PreparedStatement statement = null;

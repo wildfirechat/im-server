@@ -24,6 +24,11 @@ public class UserAdmin {
         return AdminHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
     }
 
+    public static IMResult<OutputUserInfoList> getUserByEmail(String email) throws Exception {
+        String path = APIPath.User_Get_Email_Info;
+        return AdminHttpUtils.httpJsonPost(path, email, OutputUserInfoList.class);
+    }
+
     public static IMResult<OutputGetUserList> getAllUsers(int count, int offset) throws Exception {
         String path = APIPath.User_Get_All;
         InputGetUserList input = new InputGetUserList();
