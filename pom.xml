@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netty.version>4.1.68.Final</netty.version>
+        <netty.version>4.1.71.Final</netty.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
     </properties>
