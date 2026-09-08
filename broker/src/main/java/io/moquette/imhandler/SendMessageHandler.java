@@ -152,11 +152,6 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     return ErrorCode.INVALID_PARAMETER;
                 }
 
-                if(message.getContent().getType() >=200 && message.getContent().getType() < 300 && requestSourceType == ProtoConstants.RequestSourceType.Request_From_User) {
-                    LOG.error("Message type {} can not send by user", message.getContent().getType());
-                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
-                }
-                
                 if(m_messagesStore.getClientForbiddenSendTypes().contains(message.getContent().getType())) {
                     return ErrorCode.ERROR_CODE_NOT_RIGHT;
                 }
