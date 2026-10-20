@@ -3,21 +3,17 @@ package cn.wildfirechat.pojos;
 /**
  * 会议成员事件流水。
  *
- * 每次成员状态变化追加一条记录，不做修改。
+ * 每个事件类型表示一个状态维度，oldValue/newValue 表示状态变化：
+ * 1 表示开启/加入/静音/开始，0 表示关闭/离开/取消静音/停止。
  */
 public class PojoConferenceMemberEvent {
-    public static final int EVENT_JOIN = 1;
-    public static final int EVENT_LEAVE = 2;
-    public static final int EVENT_PUBLISH = 3;
-    public static final int EVENT_UNPUBLISH = 4;
-    public static final int EVENT_AUDIO_MUTE = 5;
-    public static final int EVENT_AUDIO_UNMUTE = 6;
-    public static final int EVENT_VIDEO_MUTE = 7;
-    public static final int EVENT_VIDEO_UNMUTE = 8;
-    public static final int EVENT_SCREEN_SHARE_START = 9;
-    public static final int EVENT_SCREEN_SHARE_STOP = 10;
-    public static final int EVENT_KICK = 11;
-    public static final int EVENT_UPDATE_EXTRA = 12;
+    public static final int EVENT_JOIN_STATE = 1;
+    public static final int EVENT_PUBLISH_STATE = 2;
+    public static final int EVENT_AUDIO_MUTE_STATE = 3;
+    public static final int EVENT_VIDEO_MUTE_STATE = 4;
+    public static final int EVENT_SCREEN_SHARE_STATE = 5;
+    public static final int EVENT_KICK = 6;
+    public static final int EVENT_UPDATE_EXTRA = 7;
 
     public static final int SOURCE_CLIENT = 1;
     public static final int SOURCE_JANUS = 2;
@@ -51,28 +47,22 @@ public class PojoConferenceMemberEvent {
     public long dt;
     public long timestamp;
 
-    public static String nameOf(int eventType) {
+    /**
+     * 根据状态维度和新状态生成可读事件名。
+     */
+    public static String nameOf(int eventType, String newValue) {
+        boolean on = "1".equals(newValue);
         switch (eventType) {
-            case EVENT_JOIN:
-                return "JOIN";
-            case EVENT_LEAVE:
-                return "LEAVE";
-            case EVENT_PUBLISH:
-                return "PUBLISH";
-            case EVENT_UNPUBLISH:
-                return "UNPUBLISH";
-            case EVENT_AUDIO_MUTE:
-                return "AUDIO_MUTE";
-            case EVENT_AUDIO_UNMUTE:
-                return "AUDIO_UNMUTE";
-            case EVENT_VIDEO_MUTE:
-                return "VIDEO_MUTE";
-            case EVENT_VIDEO_UNMUTE:
-                return "VIDEO_UNMUTE";
-            case EVENT_SCREEN_SHARE_START:
-                return "SCREEN_SHARE_START";
-            case EVENT_SCREEN_SHARE_STOP:
-                return "SCREEN_SHARE_STOP";
+            case EVENT_JOIN_STATE:
+                return on ? "JOIN" : "LEAVE";
+            case EVENT_PUBLISH_STATE:
+                return on ? "PUBLISH" : "UNPUBLISH";
+            case EVENT_AUDIO_MUTE_STATE:
+                return on ? "AUDIO_MUTE" : "AUDIO_UNMUTE";
+            case EVENT_VIDEO_MUTE_STATE:
+                return on ? "VIDEO_MUTE" : "VIDEO_UNMUTE";
+            case EVENT_SCREEN_SHARE_STATE:
+                return on ? "SCREEN_SHARE_START" : "SCREEN_SHARE_STOP";
             case EVENT_KICK:
                 return "KICK";
             case EVENT_UPDATE_EXTRA:
