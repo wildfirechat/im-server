@@ -25,13 +25,21 @@ import win.liyufan.im.RateLimiter;
 import win.liyufan.im.Utility;
 
 import java.util.concurrent.Executor;
+import java.nio.charset.StandardCharsets;
 
 abstract public class AdminAction extends Action {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AdminAction.class);
-    private static String SECRET_KEY = "123456";
+    private static final int MIN_SECRET_KEY_BYTES = 32;
+    private static String SECRET_KEY;
     private static boolean NO_CHECK_TIME = false;
     public static void setSecretKey(String secretKey) {
-        SECRET_KEY = secretKey;
+        String normalizedSecret = secretKey == null ? "" : secretKey.trim();
+        if (normalizedSecret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_KEY_BYTES) {
+            throw new IllegalStateException("Admin API secret must contain at least "
+                    + MIN_SECRET_KEY_BYTES + " UTF-8 bytes. Configure WILDFIRECHAT_ADMIN_SECRET_KEY "
+                    + "or http.admin.secret_key before startup.");
+        }
+        SECRET_KEY = normalizedSecret;
     }
 
     public static String getSecretKey() {
