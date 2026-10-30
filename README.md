@@ -42,9 +42,10 @@
 | [daily-report](https://github.com/wildfirechat/daily-report)                   | [daily-report](https://github.com/wildfirechat/daily-report)            | 野火开放平台日报 demo服务。 |
 | [channel-platform](https://github.com/wildfirechat/channel-platform)           | [channel-platform](https://gitee.com/wfchat/channel-platform)           | 野火频道(公众号)平台服务。  |
 | [organization-platform](https://github.com/wildfirechat/organization-platform) | [organization-platform](https://gitee.com/wfchat/organization-platform) | 野火组织通讯录服务。  |
-| [archive-server](https://github.com/wildfirechat/archive-server)               | [archive-server](https://gitee.com/wfchat/archive-server)               | 野火组织通讯录服务。  |
+| [archive-server](https://github.com/wildfirechat/archive-server)               | [archive-server](https://gitee.com/wfchat/archive-server)               | 野火归档服务。  |
 | [android-chat](https://github.com/wildfirechat/android-chat)                   | [android-chat](https://gitee.com/wfchat/android-chat)                   | 野火IM Android SDK源码和App源码。 |
 | [ios-chat](https://github.com/wildfirechat/ios-chat)                           | [ios-chat](https://gitee.com/wfchat/ios-chat)                           | 野火IM iOS SDK源码和App源码。|
+| [hm-chat](https://github.com/wildfirechat/hm-chat)                             | [hm-chat](https://gitee.com/wfchat/hm-chat)                             | 野火IM 鸿蒙 SDK源码和App源码。|
 | [pc-chat(electron)](https://github.com/wildfirechat/vue-pc-chat)               | [pc-chat(electron)](https://gitee.com/wfchat/vue-pc-chat)               | 基于[Electron](https://electronjs.org/)开发的PC 端                   |                         |
 | [pc-chat(Qt)](https://github.com/wildfirechat/qt-pc-chat)                      | [pc-chat(Qt)](https://gitee.com/wfchat/qt-pc-chat)                      | 基于Qt开发的PC 端                   |                         |
 | [web-chat](https://github.com/wildfirechat/vue-chat)                           | [web-chat](https://gitee.com/wfchat/vue-chat)                           | 野火IM Web 端, [体验地址](https://web.wildfirechat.cn)。  |
