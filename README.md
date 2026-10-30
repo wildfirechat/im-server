@@ -37,6 +37,16 @@
 | [robot_server](https://github.com/wildfirechat/robot_server)                   | [robot_server](https://gitee.com/wfchat/robot_server)                   | 机器人服务，演示野火机器人对接其它系统的方法。 |
 | [push_server](https://github.com/wildfirechat/push_server)                     | [push_server](https://gitee.com/wfchat/push_server)                     | 推送服务器，可以对接所有的系统厂商推送服务或者第三方推送服务。 |
 | [wf-minio](https://github.com/wildfirechat/WF-minio)                           | [wf-minio](https://gitee.com/wfchat/WF-minio)                           | 私有对象存储服务，用来支持野火IM专业版的文件存储。 |
+| [wf-pan](https://github.com/wildfirechat/wf-pan)                               | [wf-pan](https://gitee.com/wfchat/wf-pan)                               | 野火网盘服务。 |
+| [minutes-server](https://github.com/wildfirechat/minutes-server)               | [minutes-server](https://gitee.com/wfchat/minutes-server)               | 野火会议纪要服务。 |
+| [asr-api](https://github.com/wildfirechat/asr-api)                             | [asr-api](https://gitee.com/wfchat/asr-api)                             | 语音转文字接口服务。 |
+| [wf-voice-trail](https://github.com/wildfirechat/wf-voice-trail)               | [wf-voice-trail](https://gitee.com/wfchat/wf-voice-trail)               | 语音转文字模型服务。 |
+| [wf-jielong-server](https://github.com/wildfirechat/wf-jielong-server)         | [wf-jielong-server](https://gitee.com/wfchat/wf-jielong-server)         | 接龙服务。 |
+| [wf-poll-server](https://github.com/wildfirechat/wf-poll-server)               | [wf-poll-server](https://gitee.com/wfchat/wf-poll-server)               | 投票服务。 |
+| [search_server](https://github.com/wildfirechat/search_server)                 | [search_server](https://gitee.com/wfchat/search_server)                 | 搜索服务，仅支持Web客户端。 |
+| [ServerVoipDemo](https://github.com/wildfirechat/ServerVoipDemo)               | [ServerVoipDemo](https://gitee.com/wfchat/ServerVoipDemo)               | 服务端接入音视频demo服务。 |
+| [robot-gateway](https://github.com/wildfirechat/robot-gateway)                 | [robot-gateway](https://gitee.com/wfchat/robot-gateway)                 | 机器人网关服务，用户机器人内网穿透和本地Agent接入。 |
+| [mesh-bridge](https://github.com/wildfirechat/mesh-bridge)                     | [mesh-bridge](https://gitee.com/wfchat/mesh-bridge)                     | 多服务组网互通服务。 |
 | [wf-janus](https://github.com/wildfirechat/wf-janus  )                         | [wf-janus](https://gitee.com/wfchat/wf-janus  )                         | 高级音视频媒体服务。 |
 | [open-platform](https://github.com/wildfirechat/open-platform)                 | [open-platform](https://gitee.com/wfchat/open-platform)                 | 野火开放平台服务。  |
 | [daily-report](https://github.com/wildfirechat/daily-report)                   | [daily-report](https://github.com/wildfirechat/daily-report)            | 野火开放平台日报 demo服务。 |
@@ -46,8 +56,9 @@
 | [android-chat](https://github.com/wildfirechat/android-chat)                   | [android-chat](https://gitee.com/wfchat/android-chat)                   | 野火IM Android SDK源码和App源码。 |
 | [ios-chat](https://github.com/wildfirechat/ios-chat)                           | [ios-chat](https://gitee.com/wfchat/ios-chat)                           | 野火IM iOS SDK源码和App源码。|
 | [hm-chat](https://github.com/wildfirechat/hm-chat)                             | [hm-chat](https://gitee.com/wfchat/hm-chat)                             | 野火IM 鸿蒙 SDK源码和App源码。|
-| [pc-chat(electron)](https://github.com/wildfirechat/vue-pc-chat)               | [pc-chat(electron)](https://gitee.com/wfchat/vue-pc-chat)               | 基于[Electron](https://electronjs.org/)开发的PC 端                   |                         |
-| [pc-chat(Qt)](https://github.com/wildfirechat/qt-pc-chat)                      | [pc-chat(Qt)](https://gitee.com/wfchat/qt-pc-chat)                      | 基于Qt开发的PC 端                   |                         |
+| [pc-chat(electron)](https://github.com/wildfirechat/vue-pc-chat)               | [pc-chat(electron)](https://gitee.com/wfchat/vue-pc-chat)               | 基于[Electron](https://electronjs.org/)开发的PC 端                   | 
+| [pc-chat(Qt)](https://github.com/wildfirechat/qt-pc-chat)                      | [pc-chat(Qt)](https://gitee.com/wfchat/qt-pc-chat)                      | 基于Qt开发的PC 端                   | 
+| [hm-pc-chat(electron)](https://github.com/wildfirechat/hm-pc-chat)             | [hm-pc-chat](https://gitee.com/wfchat/hm-pc-chat)                       | 基于[Electron](https://electronjs.org/)开发的鸿蒙PC 端                   |
 | [web-chat](https://github.com/wildfirechat/vue-chat)                           | [web-chat](https://gitee.com/wfchat/vue-chat)                           | 野火IM Web 端, [体验地址](https://web.wildfirechat.cn)。  |
 | [wx-chat](https://github.com/wildfirechat/wx-chat)                             | [wx-chat](https://gitee.com/wfchat/wx-chat)                             | 小程序平台的Demo(支持微信、百度、阿里、字节、QQ 等小程序平台)。  |
 | [uni-chat](https://github.com/wildfirechat/uni-chat)                           | [uni-chat](https://gitee.com/wfchat/uni-chat)                           | UniApp平台移动端应用(使用原生插件)。   |
