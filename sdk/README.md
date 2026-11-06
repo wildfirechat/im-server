@@ -105,8 +105,12 @@ import cn.wildfirechat.sdk.model.IMResult;
 
 public class QuickStart {
     public static void main(String[] args) throws Exception {
-        // 初始化配置
-        AdminConfig.initAdmin("http://localhost:18080", "123456");
+        // 使用与 IM 服务相同的密钥；通过环境变量或密钥管理器注入，不要提交到代码仓库。
+        String adminSecret = System.getenv("WILDFIRECHAT_ADMIN_SECRET_KEY");
+        if (adminSecret == null || adminSecret.trim().isEmpty()) {
+            throw new IllegalStateException("WILDFIRECHAT_ADMIN_SECRET_KEY is required");
+        }
+        AdminConfig.initAdmin("http://localhost:18080", adminSecret);
         
         // 创建用户
         InputOutputUserInfo user = new InputOutputUserInfo();
@@ -224,19 +228,21 @@ mvn compile
 # 运行测试（使用默认配置）
 mvn exec:java -Dexec.mainClass="cn.wildfirechat.sdk.Main"
 
+# 设置为与 IM 服务相同的管理 API 密钥
+export WILDFIRECHAT_ADMIN_SECRET_KEY='<the same secret configured on the server>'
+
 # 运行测试（自定义配置）
 mvn exec:java -Dexec.mainClass="cn.wildfirechat.sdk.Main" \
-    -Dexec.args="http://your-server:18080 your-secret http://your-server false false"
+    -Dexec.args="http://your-server:18080 http://your-server false false"
 ```
 
 ### 命令行参数
 
 ```
-Usage: java -jar sdk.jar adminUrl adminSecret imUrl commercialServer advanceVoip
+Usage: java -jar sdk.jar adminUrl imUrl commercialServer advanceVoip
 
 参数说明:
   adminUrl         - 管理API地址，如 http://localhost:18080
-  adminSecret      - 管理员密钥
   imUrl            - IM服务地址（机器人/频道使用），如 http://localhost
   commercialServer - 是否为商业版服务器 (true/false)
   advanceVoip      - 是否启用高级音视频功能 (true/false)
