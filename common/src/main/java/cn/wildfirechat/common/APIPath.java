@@ -34,6 +34,7 @@ public interface APIPath {
     String Update_User = "/admin/user/update";
     String Destroy_User = "/admin/user/destroy";
     String Search_User = "/admin/user/search_user";
+    String User_Search_By_Name = "/admin/user/search_by_name";
     String Create_Robot = "/admin/robot/create";
     String CreateOrUpdate_Device = "/admin/device/create";
     String Get_Device = "/admin/device/get";
@@ -98,6 +99,7 @@ public interface APIPath {
     String Group_Transfer = "/admin/group/transfer";
     String Group_Get_Info = "/admin/group/get_info";
     String Group_Batch_Info = "/admin/group/batch_infos";
+    String Group_Search = "/admin/group/search";
     String Group_Modify_Info = "/admin/group/modify";
     String Group_Member_List = "/admin/group/member/list";
     String Group_Member_Get = "/admin/group/member/get";

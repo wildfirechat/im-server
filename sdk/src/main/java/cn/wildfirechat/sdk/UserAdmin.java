@@ -2,6 +2,7 @@ package cn.wildfirechat.sdk;
 
 import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.pojos.*;
+import cn.wildfirechat.pojos.mesh.PojoSearchUserRes;
 import cn.wildfirechat.sdk.model.IMResult;
 import cn.wildfirechat.sdk.utilities.AdminHttpUtils;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * 提供用户管理相关的功能，包括：
  * <ul>
  * <li>用户信息的获取、创建、更新、销毁</li>
+ * <li>按用户名称搜索用户</li>
  * <li>机器人管理</li>
  * <li>用户封禁状态管理</li>
  * <li>用户在线状态查询</li>
@@ -66,6 +68,47 @@ public class UserAdmin {
         String path = APIPath.User_Get_Info;
         InputGetUserInfo getUserInfo = new InputGetUserInfo(userId, null, null, includeDeleted);
         return AdminHttpUtils.httpJsonPost(path, getUserInfo, InputOutputUserInfo.class);
+    }
+
+    /**
+     * 根据用户名称搜索用户（第一页，20条）
+     * <p>对用户名和昵称进行模糊匹配，仅返回未删除的普通用户和机器人。</p>
+     * @param keyword 用户名称关键词
+     * @return 搜索结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public static IMResult<PojoSearchUserRes> searchUserByName(String keyword) throws Exception {
+        return searchUserByName(keyword, 0);
+    }
+
+    /**
+     * 根据用户名称搜索用户
+     * <p>对用户名和昵称进行模糊匹配，仅返回未删除的普通用户和机器人。每页默认20条记录。</p>
+     * @param keyword 用户名称关键词
+     * @param page 页码，从0开始
+     * @return 搜索结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public static IMResult<PojoSearchUserRes> searchUserByName(String keyword, int page) throws Exception {
+        return searchUserByName(keyword, page, 20);
+    }
+
+    /**
+     * 根据用户名称搜索用户
+     * <p>对用户名和昵称进行模糊匹配，仅返回未删除的普通用户和机器人。</p>
+     * @param keyword 用户名称关键词
+     * @param page 页码，从0开始
+     * @param count 每页数量，为0时服务端使用默认值20，最大100
+     * @return 搜索结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public static IMResult<PojoSearchUserRes> searchUserByName(String keyword, int page, int count) throws Exception {
+        String path = APIPath.User_Search_By_Name;
+        PojoSearchUserByNameReq req = new PojoSearchUserByNameReq();
+        req.keyword = keyword;
+        req.page = page;
+        req.count = count;
+        return AdminHttpUtils.httpJsonPost(path, req, PojoSearchUserRes.class);
     }
 
     /**

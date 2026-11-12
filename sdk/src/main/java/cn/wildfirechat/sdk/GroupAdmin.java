@@ -15,6 +15,7 @@ import java.util.List;
  * <ul>
  * <li>群组的创建、解散、转移</li>
  * <li>群组信息修改</li>
+ * <li>按群组名称搜索群组</li>
  * <li>群组成员管理（添加、移除、踢出）</li>
  * <li>群组管理员设置</li>
  * <li>群组成员禁言</li>
@@ -72,6 +73,33 @@ public class GroupAdmin {
     public static IMResult<PojoGroupInfoList> batchGroupInfos(List<String> groupIds) throws Exception {
         String path = APIPath.Group_Batch_Info;
         return AdminHttpUtils.httpJsonPost(path, groupIds, PojoGroupInfoList.class);
+    }
+
+    /**
+     * 根据群组名称搜索群组（第一页，20条）
+     * @param keyword 群组名称关键词，模糊匹配
+     * @return 搜索结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public static IMResult<PojoSearchGroupRes> searchGroupByName(String keyword) throws Exception {
+        return searchGroupByName(keyword, 0, 20);
+    }
+
+    /**
+     * 根据群组名称搜索群组
+     * @param keyword 群组名称关键词，模糊匹配
+     * @param page 页码，从0开始
+     * @param count 每页数量，为0时服务端使用默认值20，最大100
+     * @return 搜索结果
+     * @throws Exception 请求失败时抛出异常
+     */
+    public static IMResult<PojoSearchGroupRes> searchGroupByName(String keyword, int page, int count) throws Exception {
+        String path = APIPath.Group_Search;
+        PojoSearchGroupReq req = new PojoSearchGroupReq();
+        req.keyword = keyword;
+        req.page = page;
+        req.count = count;
+        return AdminHttpUtils.httpJsonPost(path, req, PojoSearchGroupRes.class);
     }
 
     /**

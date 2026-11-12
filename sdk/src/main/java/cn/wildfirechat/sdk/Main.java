@@ -321,6 +321,14 @@ public class Main {
             System.exit(-1);
         }
 
+        IMResult<PojoSearchUserRes> searchUserResIMResult = UserAdmin.searchUserByName("user 1");
+        if (searchUserResIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("get batch user success");
+        } else {
+            System.out.println("get batch user failure");
+            System.exit(-1);
+        }
+
         // 准备更新用户信息（先测试不存在的用户ID）
         InputOutputUserInfo updateUserInfo = new InputOutputUserInfo();
         updateUserInfo.setUserId(System.currentTimeMillis()+"");
@@ -762,6 +770,14 @@ public class Main {
                 System.out.println("group info is not expected");
                 System.exit(-1);
             }
+        } else {
+            System.out.println("create group failure");
+            System.exit(-1);
+        }
+
+        IMResult<PojoSearchGroupRes> searchGroupResIMResult = GroupAdmin.searchGroupByName("test_group");
+        if (searchGroupResIMResult != null && searchGroupResIMResult.getErrorCode() == ErrorCode.ERROR_CODE_SUCCESS) {
+            System.out.println("transfer success");
         } else {
             System.out.println("create group failure");
             System.exit(-1);

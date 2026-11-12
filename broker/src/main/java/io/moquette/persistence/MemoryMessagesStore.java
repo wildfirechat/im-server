@@ -2371,6 +2371,11 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
+    public List<WFCMessage.GroupInfo> searchGroup(String keyword, int page, int count) {
+        return databaseStore.searchGroupByName(keyword, page, count);
+    }
+
+    @Override
     public Set<String> getUserGroupIds(String userId) {
         return databaseStore.getUserGroupIds(userId);
     }
@@ -3402,6 +3407,11 @@ public class MemoryMessagesStore implements IMessagesStore {
         users.addAll(matchedUsers);
 
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public List<WFCMessage.User> searchUserByName(String keyword, int page, int count) {
+        return databaseStore.searchUserByName(keyword, page, count);
     }
 
     @Override

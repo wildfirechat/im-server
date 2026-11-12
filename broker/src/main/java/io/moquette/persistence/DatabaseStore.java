@@ -559,6 +559,96 @@ public class DatabaseStore {
         return out;
     }
 
+    /**
+     * 根据用户名称模糊搜索用户，同时匹配用户名和昵称，只返回未删除的普通用户和机器人
+     * @param keyword 搜索关键词
+     * @param page 页码，从0开始
+     * @param count 每页数量
+     * @return 匹配的用户列表
+     */
+    List<WFCMessage.User> searchUserByName(String keyword, int page, int count) {
+        List<WFCMessage.User> out = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select _uid, _name, _display_name, _portrait, _mobile, _gender, _email, _address, " +
+                "_company, _social, _extra, _dt, _type from t_user" +
+                " where (_name like ? ESCAPE '!' or _display_name like ? ESCAPE '!')" +
+                " and _deleted = 0 and _type <> 2" +
+                " order by _dt desc, _uid limit ? offset ?";
+
+            statement = connection.prepareStatement(sql);
+            String pattern = "%" + escapeLikeKeyword(keyword) + "%";
+            int index = 1;
+            statement.setString(index++, pattern);
+            statement.setString(index++, pattern);
+            statement.setInt(index++, count);
+            statement.setLong(index++, (long) page * count);
+
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                WFCMessage.User.Builder builder = WFCMessage.User.newBuilder();
+                int columnIndex = 1;
+
+                String value = rs.getString(columnIndex++);
+                builder.setUid(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setName(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setDisplayName(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setPortrait(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setMobile(value == null ? "" : value);
+
+                builder.setGender(rs.getInt(columnIndex++));
+
+                value = rs.getString(columnIndex++);
+                builder.setEmail(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setAddress(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setCompany(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setSocial(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setExtra(value == null ? "" : value);
+
+                builder.setUpdateDt(rs.getLong(columnIndex++));
+                builder.setType(rs.getInt(columnIndex));
+
+                out.add(builder.build());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return out;
+    }
+
+    /**
+     * 转义 like 语句中的特殊字符，转义符为 '!'
+     */
+    private static String escapeLikeKeyword(String keyword) {
+        return keyword.replace("!", "!!")
+            .replace("%", "!%")
+            .replace("_", "!_")
+            .replace("[", "![");
+    }
+
     Integer getUserStatus(String userId) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -2330,6 +2420,73 @@ public class DatabaseStore {
             DBUtil.closeDB(connection, statement, rs);
         }
         return null;
+    }
+
+    /**
+     * 根据群组名称模糊搜索群组，只返回未删除的群组
+     * @param keyword 搜索关键词
+     * @param page 页码，从0开始
+     * @param count 每页数量
+     * @return 匹配的群组列表
+     */
+    List<WFCMessage.GroupInfo> searchGroupByName(String keyword, int page, int count) {
+        List<WFCMessage.GroupInfo> out = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            connection = DBUtil.getConnection();
+            String sql = "select _gid, _name, _portrait, _owner, _type, _extra, _dt, _member_count, _member_dt, " +
+                "_mute, _join_type, _private_chat, _searchable, _deleted from t_group" +
+                " where _name like ? ESCAPE '!' and _deleted = 0" +
+                " order by _dt desc, _gid limit ? offset ?";
+
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, "%" + escapeLikeKeyword(keyword) + "%");
+            statement.setInt(2, count);
+            statement.setLong(3, (long) page * count);
+
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                WFCMessage.GroupInfo.Builder builder = WFCMessage.GroupInfo.newBuilder();
+                int columnIndex = 1;
+
+                String value = rs.getString(columnIndex++);
+                builder.setTargetId(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setName(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setPortrait(value == null ? "" : value);
+
+                value = rs.getString(columnIndex++);
+                builder.setOwner(value == null ? "" : value);
+
+                builder.setType(rs.getInt(columnIndex++));
+
+                value = rs.getString(columnIndex++);
+                builder.setExtra(value == null ? "" : value);
+
+                builder.setUpdateDt(rs.getLong(columnIndex++));
+                builder.setMemberCount(rs.getInt(columnIndex++));
+                builder.setMemberUpdateDt(rs.getLong(columnIndex++));
+                builder.setMute(rs.getInt(columnIndex++));
+                builder.setJoinType(rs.getInt(columnIndex++));
+                builder.setPrivateChat(rs.getInt(columnIndex++));
+                builder.setSearchable(rs.getInt(columnIndex++));
+                builder.setDeleted(rs.getInt(columnIndex));
+
+                out.add(builder.build());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return out;
     }
 
     void updateChatroomInfo(String chatroomId, WFCMessage.ChatroomInfo chatroomInfo) {

@@ -115,6 +115,15 @@ public interface IMessagesStore {
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests, String fromUser, boolean isAdmin);
     List<WFCMessage.GroupInfo> getGroupInfos(List<WFCMessage.UserRequest> requests);
     WFCMessage.GroupInfo getGroupInfo(String groupId);
+
+    /**
+     * 根据群组名称搜索群组
+     * @param keyword 搜索关键词
+     * @param page 页码，从0开始
+     * @param count 每页数量
+     * @return 匹配的群组列表
+     */
+    List<WFCMessage.GroupInfo> searchGroup(String keyword, int page, int count);
     Set<String> getUserGroupIds(String userId);
     Set<String> getUserGroupIds(String userId, List<Integer> types);
     Set<String> getCommonGroupIds(String userId1, String userId2);
@@ -157,6 +166,15 @@ public interface IMessagesStore {
     List<WFCMessage.User> getUserInfosByEmail(String email);
     List<WFCMessage.User> getUserInfosByMobile(String mobile, boolean includeDeleted);
     ErrorCode searchUser(String userId, String keyword, int searchType, int userType, int page, List<WFCMessage.User> users);
+
+    /**
+     * 根据用户名称搜索用户，模糊匹配用户名和昵称
+     * @param keyword 搜索关键词
+     * @param page 页码，从0开始
+     * @param count 每页数量
+     * @return 匹配的用户列表
+     */
+    List<WFCMessage.User> searchUserByName(String keyword, int page, int count);
 
     List<WFCMessage.User> getUserInfoList(int count, int offset);
     List<WFCMessage.Robot> getRobotInfoList(int count, int offset);
