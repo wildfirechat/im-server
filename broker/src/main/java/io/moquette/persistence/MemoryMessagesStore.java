@@ -4756,7 +4756,10 @@ public class MemoryMessagesStore implements IMessagesStore {
         HazelcastInstance hzInstance = m_Server.getHazelcastInstance();
         IMap<String, WFCMessage.ChannelInfo> mIMap = hzInstance.getMap(CHANNELS);
 
-        mIMap.put(channelInfo.getTargetId(), channelInfo);
+        if (mIMap.putIfAbsent(channelInfo.getTargetId(), channelInfo) != null) {
+            LOG.error("Create channel error, channel {} already exists", channelInfo.getTargetId());
+            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        }
 
         callbackChannelInfoUpdateEvent(operator, channelInfo.getTargetId(), Channel_Event_Create);
         return ErrorCode.ERROR_CODE_SUCCESS;

@@ -24,15 +24,19 @@ import static win.liyufan.im.UserSettingScope.kUserSettingMyChannels;
 public class CreateChannelHandler extends GroupHandler<WFCMessage.ChannelInfo> {
     @Override
     public ErrorCode action(ByteBuf ackPayload, String clientID, String fromUser, ProtoConstants.RequestSourceType requestSourceType, WFCMessage.ChannelInfo request, Qos1PublishHandler.IMCallback callback) {
+        boolean isAdmin = requestSourceType == Request_From_Admin;
         WFCMessage.ChannelInfo.Builder builder = request.toBuilder();
         if (StringUtil.isNullOrEmpty(request.getTargetId())) {
             builder.setTargetId(m_messagesStore.getShortUUID());
         }
-        if (StringUtil.isNullOrEmpty(request.getOwner())) {
+        if (!isAdmin || StringUtil.isNullOrEmpty(request.getOwner())) {
             builder.setOwner(fromUser);
         }
-        if (StringUtil.isNullOrEmpty(request.getSecret())) {
+        if (!isAdmin || StringUtil.isNullOrEmpty(request.getSecret())) {
             builder.setSecret(m_messagesStore.getShortUUID());
+        }
+        if (!isAdmin) {
+            builder.setStatus(request.getStatus() & ProtoConstants.ChannelState.Channel_State_Mask_Private);
         }
 
         long update = System.currentTimeMillis();
