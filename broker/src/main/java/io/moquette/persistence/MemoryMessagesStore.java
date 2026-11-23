@@ -2475,13 +2475,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
-            && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
-        }
-
-        if (!isAdmin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        if (!isAdmin) {
+            boolean isAllowedGroupType = groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted
+                || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal;
+            if (!isAllowedGroupType || groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
         }
 
         if(newOwner.equals(groupInfo.getOwner())) {
@@ -2549,9 +2548,12 @@ public class MemoryMessagesStore implements IMessagesStore {
             return ErrorCode.ERROR_CODE_NOT_EXIST;
         }
 
-        if (!isAdmin && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal)
-            && (groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator))) {
-            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+        if (!isAdmin) {
+            boolean isAllowedGroupType = groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted
+                || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal;
+            if (!isAllowedGroupType || groupInfo.getOwner() == null || !groupInfo.getOwner().equals(operator)) {
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
+            }
         }
 
         if(userList.contains(groupInfo.getOwner())) {
@@ -2565,7 +2567,7 @@ public class MemoryMessagesStore implements IMessagesStore {
             members = loadGroupMemberFromDB(hzInstance, groupId);
         }
         for (WFCMessage.GroupMember member : members) {
-            if (userList.contains(member.getMemberId())) {
+            if (userList.contains(member.getMemberId()) && member.getType() != GroupMemberType_Removed) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setType(type == 0 ? ProtoConstants.GroupMemberType.GroupMemberType_Normal : ProtoConstants.GroupMemberType.GroupMemberType_Manager).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);

@@ -29,7 +29,8 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
             errorCode = ErrorCode.ERROR_CODE_NOT_EXIST;
         } else {
             boolean isAdmin = requestSourceType == ProtoConstants.RequestSourceType.Request_From_Admin;
-            if (!isAdmin && groupInfo.getType() == ProtoConstants.GroupType.GroupType_Organization) {
+            if (!isAdmin && groupInfo.getType() != ProtoConstants.GroupType.GroupType_Normal
+                && groupInfo.getType() != ProtoConstants.GroupType.GroupType_Restricted) {
                 return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
 
@@ -49,10 +50,16 @@ public class KickoffGroupMember extends GroupHandler<WFCMessage.RemoveGroupMembe
             if (!isAllow) {
                 WFCMessage.GroupMember gm = m_messagesStore.getGroupMember(request.getGroupId(), fromUser);
                 if (gm != null && gm.getType() == ProtoConstants.GroupMemberType.GroupMemberType_Manager) {
+                    Set<String> managers = m_messagesStore.getGroupManagers(request.getGroupId(), true);
+                    for (String removed : request.getRemovedMemberList()) {
+                        if (managers.contains(removed)) {
+                            return ErrorCode.ERROR_CODE_NOT_RIGHT;
+                        }
+                    }
                     isAllow = true;
                 }
             }
-            if (!isAllow && (groupInfo.getType() == ProtoConstants.GroupType.GroupType_Normal || groupInfo.getType() == ProtoConstants.GroupType.GroupType_Restricted)) {
+            if (!isAllow) {
                 errorCode = ErrorCode.ERROR_CODE_NOT_RIGHT;
             } else {
                 if(request.hasNotifyContent() && request.getNotifyContent().getType() > 0 && requestSourceType == ProtoConstants.RequestSourceType.Request_From_User && !m_messagesStore.isAllowClientCustomGroupNotification()) {
