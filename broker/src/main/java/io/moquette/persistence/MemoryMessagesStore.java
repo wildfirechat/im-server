@@ -2175,39 +2175,42 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (StringUtil.isNullOrEmpty(memberId)) {
             memberId = operator;
-        } else {
-            if (!isAdmin && !operator.equals(groupInfo.getOwner())) {
-                WFCMessage.GroupMember operatorMember = null;
-                WFCMessage.GroupMember targetMember = null;
-                for (WFCMessage.GroupMember member : members) {
-                    if (member.getMemberId().equals(operator)) {
-                        operatorMember = member;
-                        if (targetMember != null) {
-                            break;
-                        }
-                    }
-                    if ((member.getMemberId().equals(memberId))) {
-                        targetMember = member;
-                        if (operatorMember != null) {
-                            break;
-                        }
+        }
+
+        if (!isAdmin && !operator.equals(memberId) && !operator.equals(groupInfo.getOwner())) {
+            WFCMessage.GroupMember operatorMember = null;
+            WFCMessage.GroupMember targetMember = null;
+            for (WFCMessage.GroupMember member : members) {
+                if (member.getMemberId().equals(operator)) {
+                    operatorMember = member;
+                    if (targetMember != null) {
+                        break;
                     }
                 }
-
-                if (operatorMember == null || operatorMember.getType() == GroupMemberType_Removed) {
-                    LOG.error("Modify group member alias error, the operator {} is not in group", operator);
-                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                if ((member.getMemberId().equals(memberId))) {
+                    targetMember = member;
+                    if (operatorMember != null) {
+                        break;
+                    }
                 }
+            }
 
-                if (targetMember == null || targetMember.getType() == GroupMemberType_Removed) {
-                    LOG.error("Modify group member alias error, the member {} is not in group", memberId);
-                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
-                }
+            if (operatorMember == null || operatorMember.getType() == GroupMemberType_Removed) {
+                LOG.error("Modify group member alias error, the operator {} is not in group", operator);
+                return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+            }
 
-                if (operatorMember.getType() == GroupMemberType_Manager && targetMember.getType() != GroupMemberType_Manager) {
-                    LOG.error("Modify group member alias error, the operator {} type is {} and the member {} type is {}", operator, operatorMember.getType(), memberId, targetMember.getType());
-                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
-                }
+            if (targetMember == null || targetMember.getType() == GroupMemberType_Removed) {
+                LOG.error("Modify group member alias error, the member {} is not in group", memberId);
+                return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+            }
+
+            if (operatorMember.getType() != GroupMemberType_Manager
+                    || targetMember.getType() == GroupMemberType_Manager
+                    || targetMember.getType() == GroupMemberType_Owner
+                    || memberId.equals(groupInfo.getOwner())) {
+                LOG.error("Modify group member alias error, the operator {} type is {} and the member {} type is {}", operator, operatorMember.getType(), memberId, targetMember.getType());
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
         }
 
@@ -2215,7 +2218,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         boolean inGroup = false;
         for (WFCMessage.GroupMember member : members) {
-            if (member.getMemberId().equals(memberId)) {
+            if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setAlias(alias).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
@@ -2260,39 +2263,42 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         if (StringUtil.isNullOrEmpty(memberId)) {
             memberId = operator;
-        } else {
-            if (!isAdmin && !operator.equals(groupInfo.getOwner())) {
-                WFCMessage.GroupMember operatorMember = null;
-                WFCMessage.GroupMember targetMember = null;
-                for (WFCMessage.GroupMember member : members) {
-                    if (member.getMemberId().equals(operator)) {
-                        operatorMember = member;
-                        if (targetMember != null) {
-                            break;
-                        }
-                    }
-                    if ((member.getMemberId().equals(memberId))) {
-                        targetMember = member;
-                        if (operatorMember != null) {
-                            break;
-                        }
+        }
+
+        if (!isAdmin && !operator.equals(memberId) && !operator.equals(groupInfo.getOwner())) {
+            WFCMessage.GroupMember operatorMember = null;
+            WFCMessage.GroupMember targetMember = null;
+            for (WFCMessage.GroupMember member : members) {
+                if (member.getMemberId().equals(operator)) {
+                    operatorMember = member;
+                    if (targetMember != null) {
+                        break;
                     }
                 }
-
-                if (operatorMember == null) {
-                    LOG.error("Modify group member extra error, the operator {} is not in group", operator);
-                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+                if ((member.getMemberId().equals(memberId))) {
+                    targetMember = member;
+                    if (operatorMember != null) {
+                        break;
+                    }
                 }
+            }
 
-                if (targetMember == null) {
-                    LOG.error("Modify group member extra error, the member {} is not in group", memberId);
-                    return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
-                }
+            if (operatorMember == null || operatorMember.getType() == GroupMemberType_Removed) {
+                LOG.error("Modify group member extra error, the operator {} is not in group", operator);
+                return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+            }
 
-                if (operatorMember.getType() == GroupMemberType_Manager && targetMember.getType() != GroupMemberType_Manager) {
-                    LOG.error("Modify group member extra error, the operator {} type is {} and the member {} type is {}", operator, operatorMember.getType(), memberId, targetMember.getType());
-                    return ErrorCode.ERROR_CODE_NOT_RIGHT;
-                }
+            if (targetMember == null || targetMember.getType() == GroupMemberType_Removed) {
+                LOG.error("Modify group member extra error, the member {} is not in group", memberId);
+                return ErrorCode.ERROR_CODE_NOT_IN_GROUP;
+            }
+
+            if (operatorMember.getType() != GroupMemberType_Manager
+                    || targetMember.getType() == GroupMemberType_Manager
+                    || targetMember.getType() == GroupMemberType_Owner
+                    || memberId.equals(groupInfo.getOwner())) {
+                LOG.error("Modify group member extra error, the operator {} type is {} and the member {} type is {}", operator, operatorMember.getType(), memberId, targetMember.getType());
+                return ErrorCode.ERROR_CODE_NOT_RIGHT;
             }
         }
 
@@ -2300,7 +2306,7 @@ public class MemoryMessagesStore implements IMessagesStore {
 
         boolean inGroup = false;
         for (WFCMessage.GroupMember member : members) {
-            if (member.getMemberId().equals(memberId)) {
+            if (member.getMemberId().equals(memberId) && member.getType() != GroupMemberType_Removed) {
                 groupMembers.remove(groupId, member);
                 member = member.toBuilder().setExtra(extra).setUpdateDt(updateDt).build();
                 databaseStore.persistGroupMember(groupId, Arrays.asList(member), false);
