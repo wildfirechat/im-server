@@ -119,6 +119,12 @@ mvn clean package
 ## 配置
 解压```distribution-xxxx-bundle-tar.tar.gz```，修改解压出来的```config```目录下的```wildfirechat.conf```，可以阅读配置文件注释和文档，对其它配置项进行调整。
 
+管理 API 不再提供默认密钥。启动前生成部署专用密钥并通过环境变量配置，所有调用管理 API 的 SDK 使用同一个值：
+```shell
+export WILDFIRECHAT_ADMIN_SECRET_KEY="$(openssl rand -hex 32)"
+```
+如使用私有配置文件保存密钥，至少使用 32 个 UTF-8 字节，并且不要提交到仓库。密钥缺失或过短时，IM 服务会在启动前失败。
+
 ## 运行
 在解压```distribution-xxxx-bundle-tar.tar.gz```后的目录下运行如下命令：
 ```

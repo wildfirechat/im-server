@@ -51,7 +51,7 @@ public class Main {
     /** 管理端口是18080 */
     private static String AdminUrl = "http://localhost:18080";
     /** 管理员密钥 */
-    private static String AdminSecret = "123456";
+    private static String AdminSecret = System.getenv("WILDFIRECHAT_ADMIN_SECRET_KEY");
 
     /** 机器人和频道使用IM服务的公开端口80，注意不是18080 */
     private static String IMUrl = "http://localhost";
@@ -59,28 +59,23 @@ public class Main {
 
     /**
      * 程序主入口
-     * @param args 命令行参数，包括：adminUrl、adminSecret、imUrl、commercialServer、advanceVoip
+     * @param args 命令行参数，包括：adminUrl、imUrl、commercialServer、advanceVoip；密钥从环境变量读取
      * @throws Exception 当测试过程中发生错误时抛出异常
      */
     public static void main(String[] args) throws Exception {
         // 解析命令行参数
-        if (args.length == 5) {
+        if (args.length == 4) {
             // 从命令行参数获取配置信息
             AdminUrl = args[0];
-            AdminSecret = args[1];
-            IMUrl = args[2];
-            commercialServer = Boolean.parseBoolean(args[3]);
-            advanceVoip = Boolean.parseBoolean(args[4]);
+            IMUrl = args[1];
+            commercialServer = Boolean.parseBoolean(args[2]);
+            advanceVoip = Boolean.parseBoolean(args[3]);
         } else {
-            // 显示帮助信息或使用默认值
-            if(args.length == 1 && (args[0].equals("-h") || args[0].equals("--help") || args[0].equals("-help"))) {
-                System.out.println("Usage: java -jar checker.jar adminUrl adminSecret imUrl commercialServer advanceVoip \n      e.g. java -jar checker.jar http://192.168.1.80:18080 123456 http://192.168.1.80 false false");
-                return;
-            }
-            System.out.println("Usage: java -jar checker.jar adminUrl adminSecret imUrl commercialServer advanceVoip \n      e.g. java -jar checker.jar http://192.168.1.80:18080 123456 http://192.168.1.80 false false");
-            System.out.println();
-            System.out.println();
-            System.out.println("Use default value: java -jar checker.jar http://127.0.0.1:18080 123456 http://127.0.0.1 false false");
+            System.out.println("Usage: java -jar checker.jar <adminUrl> <imUrl> <commercialServer> <advanceVoip>");
+            return;
+        }
+        if (AdminSecret == null || AdminSecret.trim().isEmpty()) {
+            throw new IllegalStateException("请将 WILDFIRECHAT_ADMIN_SECRET_KEY 设置为服务端配置的管理 API 密钥。");
         }
 
 

@@ -115,12 +115,17 @@ public class Server {
         instance.mConfig = config;
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.ADVANCED);
 
+        String adminSecret = System.getenv("WILDFIRECHAT_ADMIN_SECRET_KEY");
+        if (adminSecret == null || adminSecret.trim().isEmpty()) {
+            adminSecret = config.getProperty(HTTP_SERVER_SECRET_KEY);
+        }
+        AdminAction.setSecretKey(adminSecret);
+
         instance.startServer(config);
 
         int httpLocalPort = Integer.parseInt(config.getProperty(BrokerConstants.HTTP_LOCAL_PORT));
         int httpAdminPort = Integer.parseInt(config.getProperty(BrokerConstants.HTTP_ADMIN_PORT));
 
-        AdminAction.setSecretKey(config.getProperty(HTTP_SERVER_SECRET_KEY));
         AdminAction.setNoCheckTime(config.getProperty(HTTP_SERVER_API_NO_CHECK_TIME));
 
         final LoServer httpServer = new LoServer(httpLocalPort, httpAdminPort, instance.m_processor.getMessagesStore(), instance.m_store.sessionsStore());

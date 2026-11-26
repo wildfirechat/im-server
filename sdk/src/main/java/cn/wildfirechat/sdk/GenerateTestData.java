@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GenerateTestData {
     //IM服务Server API
     private static String AdminUrl = "http://10.206.0.5:18080";
-    private static String AdminSecret = "123456";
+    private static String AdminSecret = System.getenv("WILDFIRECHAT_ADMIN_SECRET_KEY");
 
     private static int totalUserCount = 20000;
 
@@ -55,6 +55,9 @@ public class GenerateTestData {
     private static AtomicInteger createGroupCount = new AtomicInteger(0);
 
     public static void main(String[] args) throws Exception {
+        if (AdminSecret == null || AdminSecret.trim().isEmpty()) {
+            throw new IllegalStateException("请将 WILDFIRECHAT_ADMIN_SECRET_KEY 设置为服务端配置的管理 API 密钥。");
+        }
         AdminConfig.initAdmin(AdminUrl, AdminSecret);
         int addFriendRequestCount = friendCount*totalUserCount/2;
         int createSmallGroupCount = smallGroupCount * totalUserCount / smallGroupMemberSize;
